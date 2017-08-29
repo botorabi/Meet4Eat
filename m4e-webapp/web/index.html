@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Meat4Eat Admin Panel</title>
+		<meta charset="UTF-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="public/libs/js/jquery.js"></script>
+		<script src="public/libs/js/bootstrap.js"></script>
+		<script src="public/libs/js/metisMenu.js"></script>
+		<script src="public/libs/js/jquery.dataTables.js"></script>
+		<script src="public/libs/js/dataTables.bootstrap.js"></script>
+		<script src="public/libs/js/dataTables.responsive.js"></script>
+		<script src="public/libs/js/sb-admin-2.js"></script>
+		<script src="public/libs/js/m4e.js"></script>
+		<link rel="stylesheet" href="public/libs/css/bootstrap.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/dataTables.bootstrap.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/dataTables.responsive.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/metisMenu.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/sb-admin-2.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/font-awesome.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/m4e.css" type="text/css">
+
+		<script>
+			var VIEW_VERSION = "1";
+			var m4eAuth = null;
+			var m4eAuthUser = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
+			var m4eUsers = null;
+			var m4eGroups = null;
+			var m4eAppInfo = {'clientVersion' : '0.0.0', 'serverVersion' : '0.0.0', 'viewVersion' : '0'};
+			var m4eUserTable = null;
+
+			/**
+			 * Init the page
+			 */
+			function init() {
+				var m4e = new Meet4EatREST();
+				m4eAppInfo.clientVersion = m4e.getVersion();
+				m4eAppInfo.viewVersion = VIEW_VERSION;
+				m4eAuth = m4e.buildUserAuthREST();
+				m4eUsers = m4e.buildUserREST();
+				m4eGroups = m4e.buildGroupREST();
+
+				setupDashboardPage();
+				setupAboutPage();
+				setupUser();
+			}
+
+			/**
+			 * Show a modal dialog with given content text, title and button texts.
+			 * If a callback object is given then it is used for propagating the 
+			 * button click event.
+			 * 
+			 * The callback object has the following form:
+			 * 
+			 *   {
+			 *		onClickBtn1: function(btnText) {
+			 *		    // handle button click 1
+			 *		},
+			 *		onClickBtn2: function(btnText) {
+			 *		    // handle button click 2
+			 *		}
+			 *   }
+			 *   
+			 * @param {type} text		    Messagebox text
+			 * @param {type} title		    Title
+			 * @param {type} textBtn1	    Text of button 1, pass null to hide button 1
+			 * @param {type} textBtn2       Text of button 2, pass null to hide button 2
+			 * @param {type} btnCallbacks	Optional callback object used on button clicks.
+			 */
+			function showModalBox(text, title, textBtn1, textBtn2, btnCallbacks) {
+
+				$('#msg_box_text').text(text);
+				$('#msg_box_title').text(title);
+				if (textBtn1) {
+					$('#msg_box_btn1').text(textBtn1);
+					$('#msg_box_btn1').removeClass("hide");
+					$("#msg_box_btn1").click(function() {
+						if (btnCallbacks && btnCallbacks.onClickBtn1) {
+							btnCallbacks.onClickBtn1(textBtn1);
+						}
+					});
+				}
+				else {
+					$('#msg_box_btn1').addClass("hide");
+				}
+				if (textBtn2) {
+					$('#msg_box_btn2').text(textBtn2);
+					$('#msg_box_btn2').removeClass("hide");
+					$("#msg_box_btn2").click(function() {
+						if (btnCallbacks && btnCallbacks.onClickBtn2) {
+							btnCallbacks.onClickBtn2(textBtn2);
+						}
+					});
+				}
+				else {
+					$('#msg_box_btn2').addClass("hide");				
+				}
+				$('#msg_box').modal("show");
+			}
+
+			/**
+			 * Show/hide an element given its ID.
+			 * 
+			 * @param {string} elemId   Element ID
+			 * @param {bool} show  Pass true for showing and false for hiding element
+			 */
+			function showElement(elemId, show) {
+				var elem = $('#' + elemId);
+				if (show) {
+					elem.removeClass("hide");
+				}
+				else {
+					elem.addClass("hide");					
+				}
+			}
+
+			function deferExecution(fcn, delay) {
+				setTimeout(fcn, delay);
+			}
+
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+			/*                ui init related stuff                   */
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+			function setupAboutPage() {
+				$('#info_clientversion').text(m4eAppInfo.clientVersion);
+				$('#info_viewversion').text(m4eAppInfo.viewVersion);
+				var m4e = new Meet4EatREST();
+				m4e.getServerInfo({
+					success: function(results, response) {
+						if (results.status === "ok") {
+							m4eAppInfo.serverVersion = results.data;
+							$('#info_serverversion').text(m4eAppInfo.serverVersion);
+						}
+					}
+				});
+			}
+
+			function setupDashboardPage() {
+				m4eGroups.getCount({
+					success: function(results, response) {
+						$('#count_groups').text(results);
+					}
+				});
+				m4eUsers.getCount({
+					success: function(results, response) {
+						$('#count_users').text(results);
+					}
+				});
+				m4eUserTable = $('#table_users').DataTable({
+					responsive: true,
+					"columns": [
+						{ "data": "name" },
+						{ "data": "login" },
+						{ "data": "lastlogin" },
+						{ "data": "roles" },
+						{ "data": "ops" }
+					]});
+
+				$('#table_groups').DataTable({
+					responsive: true
+				});
+			}
+
+			function getUserTable() {
+				return m4eUserTable;
+			}
+
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+			/*                   auth related stuff                   */
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+			function setupUser() {
+				m4eAuth.getAuthState({
+					success: function(results, response) {
+						if (results.status === "ok") {
+							if (response.auth === "yes") {
+								showElement('main_content', true);
+								showElement('main_login', false);
+								// get some info on logged-in user
+								deferExecution(function () {
+									m4eUsers.find({
+										success: function(res, resp) {
+											m4eAuthUser.auth = 'yes';
+											m4eAuthUser.login = res.login;
+											m4eAuthUser.name = res.name;
+											m4eAuthUser.id = res.id;
+											m4eAuthUser.roles = res.roles;
+											onAuthenticated();
+										},
+										error: function(err) {
+											showModalBox(err, "Connection Problem", "Dismiss");
+										}
+									}, response.userId);
+								}, 0);
+							}
+							else {
+								showElement('main_login', true);
+								showElement('main_content', false);
+								$("#form_login input[name='login']").focus();
+							}
+						}
+						else {
+							showModalBox(response, "Connection Problem", "Dismiss");
+						}
+					},
+					error: function(text, response) {
+						$('#display_error').html(response);
+						showModalBox(text, "Connection Problem", "Dismiss");
+					}
+				});
+			}
+
+			function login(loginName, pasword) {
+				$("#form_login").removeClass("has-error");
+				m4eAuth.login({
+					success: function(results, response) {
+						if (results.status === "ok") {
+							window.location.href = "index.html";
+						}
+						else {
+							$("#form_login input[name='login']").focus();
+							$("#form_login").addClass("has-error");
+						}
+					},
+					error: function(text, response) {
+						$('#display_error').html(response);
+						showModalBox(text, "Login Problem", "Dismiss");
+					}
+				}, loginName, pasword);
+			}
+
+			function logout() {
+				m4eAuth.logout({
+					success: function(results, response) {
+						window.location.href = "index.html";
+					},
+					error: function(text, response) {
+						$('#display_error').html(response);
+						showModalBox(text, "Logout Problem", "Dismiss");
+					}
+				});
+			}
+
+			function getAuthUser() {
+				return m4eAuthUser;
+			}
+
+			/**
+			 * Check if at least one of the given roles is contained in roles of
+			 * authenticated user.
+			 * 
+			 * @param  roles    Roles to check, a string array
+			 * @returns {bool}  Return true if at least one matching role was found, otherwise false.
+			 */
+			function authUserRolesContain(roles) {
+				for (var i= 0; i < roles.length; i++) {
+					if ($.inArray(roles[i], m4eAuthUser.roles) > -1) {
+						return true;
+					}
+				}
+				return false;
+			}
+
+			//--------------------------------------------
+			function onAuthenticated() {
+				$('#user_name').text(getAuthUser().name);
+				setupUiTableUser();
+			}
+
+			function onBtnLoginClicked() {
+				var fields = $('#form_login').serializeArray().reduce(function(obj, item) {
+					obj[item.name] = item.value;
+					return obj;
+				}, {});
+				login(fields.login, fields.password);
+				$("#form_login :input").val("");
+			}
+
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+			/*                   user related stuff                   */
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+			function setupUiTableUser() {
+				getUserTable().clear();
+				m4eUsers.getAll({
+					success: function(results, response) {
+						if (!results) {
+							return;
+						}
+						for (var i = 0; i < results.length; i++) {
+							updateUiUserTableAdd(results[i]);
+						}
+						getUserTable().draw("full-reset");
+					},
+					error: function(err) {
+						showModalBox(err, "Cannot retrieve users", "Dismiss");
+					}
+				});
+			}
+
+			function setupUiUserNew() {
+				$('#page_users_edit_title').text("Create a new user");
+				$("#page_users_edit_form :input").val("");
+				$('#page_users_edit_form_login').prop("disabled", false);
+			}
+
+			function updateUiUserTableAdd(userFields) {
+				if (userFields.id === "") {
+					showModalBox("updateUiUserTableNew: Cannot add user, invalid user id!", "Internal Error", "Dismiss");
+					return;
+				}
+				var lastlogin = "-";
+				if (userFields.lastLoginTime && userFields.lastLoginTime > 0) {
+					var timestamp = new Date(parseInt(userFields.lastLoginTime));
+					lastlogin = timestamp.getDate()  + "-" + (timestamp.getMonth()+1) + "-" + timestamp.getFullYear() + " " + timestamp.getHours() + ":" + timestamp.getMinutes();
+				}
+				var roles = userFields.roles ? userFields.roles.join("<br>") : "";
+				var me = (""+userFields.id === ""+getAuthUser().id);
+				var candelete = authUserRolesContain(["ADMIN", "MODERATOR"]) && !me;
+				var canedit = authUserRolesContain(["ADMIN", "MODERATOR"]) || me;
+				getUserTable().row.add({
+						"DT_RowId" : userFields.id,
+						// make 'me' bold
+						"name" : (me ? "<strong>" : "") + userFields.name + (me ? "</strong>" : ""),
+						"login" : userFields.login,
+						"lastlogin" : lastlogin,
+						"roles": roles,
+						"ops" :	(candelete ? "<a role='button' onclick='onBtnDeleteUser(\"" + userFields.id + "\")'>DELETE</a> | " : "") +
+								(canedit ? "<a role='button' onclick='onBtnEditUser(\"" + userFields.id + "\")'>EDIT</a>" : "")
+					});
+			}
+
+			function updateUiUserTableUpdate(userFields) {
+				if (userFields.id === "") {
+					showModalBox("updateUiUserTableUpdate Cannot update user, invalid user id!", "Internal Error", "Dismiss");
+					return;
+				}
+				var user = getUserTable().row('#' + userFields.id);
+				if (user) {
+					var cols = user.data();
+					if (userFields.name) {
+						cols.name = userFields.name;
+					}
+					if (userFields.login) {
+						cols.login = userFields.login;
+					}
+					if (userFields.email) {
+						cols.email = userFields.email;
+					}
+					if (userFields.roles) {
+						cols.roles = userFields.roles.join("<br>");
+					}
+					user.data(cols);
+					user.draw("page");
+				}
+			}
+
+			function updateUiUserTableRemove(id) {
+				var user = getUserTable().row('#' + id);
+				if (user) {
+					user.remove().draw(true);
+				}
+			}
+
+			function setupUiUserEdit(userId) {
+				$('#page_users_edit_title').text("Edit existing user");
+				$('#page_users_edit_form_login').prop("disabled", true);
+				$("#page_users_edit_form input[name='password']").val("");
+				$("#page_users_edit_form input[name='password-repeat']").val("");
+
+				var showpasswdinput = (authUserRolesContain(["ADMIN"]) || ((""+getAuthUser().id) === (""+userId)));
+				showElement('page_users_edit_form_grp_passwd', showpasswdinput);
+				showElement('page_users_edit_form_grp_passwd_repeat', showpasswdinput);
+
+				$('#page_users_edit_roles_sel').empty();
+
+				// fetch user details from server
+				m4eUsers.find({
+					success: function(results, response) {
+						if (!results) {
+							showModalBox("User was not found for edit!", "Error", "Dismiss");
+							return;
+						}
+						$("#page_users_edit_form input[name='id']").val(results.id);
+						$("#page_users_edit_form input[name='login']").val(results.login);
+						$("#page_users_edit_form input[name='name']").val(results.name);
+						$("#page_users_edit_form input[name='email']").val(results.email);
+
+						// setup the available roles
+						var elemrolesel = $('#page_users_edit_roles_sel');
+						elemrolesel.append(new Option("ADMIN", "ADMIN"));
+						elemrolesel.append(new Option("MODERATOR", "MODERATOR"));
+						elemrolesel.append(new Option("", ""));
+						elemrolesel.prop("disabled", !authUserRolesContain(["ADMIN", "MODERATOR"]));
+						// select user roles in list
+						elemrolesel.val(results.roles);
+					},
+					error: function(err) {
+						showModalBox(err, "Connection Error", "Dismiss");
+					}
+				}, userId);
+			}
+
+			function createOrUpdateUser(fields, resultsCallback) {
+				m4eUsers.createOrUpdate({
+					success: function(results) {
+						if (resultsCallback) {
+							resultsCallback(results);
+						}
+					},
+					error: function(text, response) {
+						$('#display_error').html(response);
+						showModalBox("Could not create or update user! Reason: " + text, "Connection Error", "Dismiss");
+					}					
+				}, fields.id, fields);
+			}
+
+			function deleteUser(id) {
+				m4eUsers.delete({
+					success: function(results) {
+						if (results.status !== "ok") {
+							showModalBox("Could not delete user! Reason: " + results.description, "Problem Deleting User", "Dismiss");
+							return;
+						}
+						showModalBox("User was successfully removed", "Delete User", "Dismiss");
+						updateUiUserTableRemove(id);
+						showElement('page_users_edit', false);
+						showElement('menu_users', true);
+					},
+					error: function(text, response) {
+						showModalBox(text, "Problem Deleting User", "Dismiss");
+						$('#display_error').html(response);
+					}
+				}, id);
+			}
+
+			function onBtnDeleteUser(id) {
+				showModalBox("Are you really sure, delete the user?", "Delete User", "No", "Yes", {
+					onClickBtn1: function() {
+						// nothing to do
+					},
+					onClickBtn2: function() {
+						// sure to delete
+						// NOTE as deleteUser opens also a modal messagebox we have to defer the call!
+						deferExecution(function() {
+							deleteUser(id);
+						}, 500);
+					}
+				});
+			}
+
+			function onBtnUserNew() {
+				showElement('menu_users', false);
+				showElement('page_users_edit', true);
+				setupUiUserNew();
+			}
+
+			function onBtnEditUser(id) {
+				showElement('menu_users', false);
+				showElement('page_users_edit', true);
+				setupUiUserEdit(id);
+			}
+
+			function onBtnUserEditApply() {
+				var inputfields = $('#page_users_edit_form').serializeArray().reduce(function(obj, item) {
+					obj[item.name] = item.value;
+					return obj;
+				}, {});
+				var fields = {};
+				var newuser = (inputfields.id === null) || (inputfields.id === "");
+
+				//! TODO validate the inputs
+				fields['id'] = inputfields.id;
+				fields['name'] = inputfields.name;
+				fields['login'] = inputfields.login;
+				fields['email'] = inputfields.email;
+				var passwd = inputfields['password'];
+				var passwdr = inputfields['password-repeat'];
+				if (passwd !== "" || passwdr !== "") {
+					if (passwd !== passwdr) {
+						showModalBox("Password fields do not match!", "Invalid Input", "Dismiss");
+						return;
+					}
+					fields['password'] = m4eAuth.createHash(passwd);
+				}
+				var roles = [];
+				var selroles = $('#page_users_edit_roles_sel option:selected');
+				selroles.each(function(index, item){
+					var r = $(item);
+					roles.push(r.text());
+				});
+				fields['roles'] = roles;
+
+				createOrUpdateUser(fields, function(results) {
+					if (results.status === "ok") {
+						showModalBox("Changes were successfully applied to user.", "User Update", "Dismiss");
+						if (newuser) {
+							// on successful creation the new user id is in results.data
+							fields.id = results.data;
+							updateUiUserTableAdd(fields);
+							getUserTable().draw("full-hold");
+						}
+						else {
+							updateUiUserTableUpdate(fields);
+						}
+						showElement('menu_users', true);
+						showElement('page_users_edit', false);
+						// are we editting our own settings?
+						if ((""+getAuthUser().id) === (""+fields.id)) {
+							getAuthUser().name = inputfields.name;
+							$('#user_name').text(inputfields.name);
+						}
+					}
+					else {
+						showModalBox("Could not apply changes to user! Reason: " + results.description, "User Update", "Dismiss");
+					}
+				});
+			}
+
+			function onBtnUserEditCancel() {
+				onBtnClearFormUser();
+				showElement('page_users_edit', false);
+				showElement('menu_users', true);
+			}
+
+			function onBtnClearFormUser() {
+				$("#page_users_edit_form :input").val("");
+			}
+
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+			/*                   menu related stuff                   */
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+			function onMenu(item) {
+				// main menu element IDs are expected to begin with menu_
+				var allitems = $("[id*='menu_'");
+				if (allitems) {
+					allitems.addClass("hide");
+				}
+				var wrapper = $('#menu_' + item);
+				if (wrapper) {
+					wrapper.removeClass("hide");
+				}
+				switch(item) {
+					case "dashboard":
+						onInitPageDashboard();
+						break;
+					case "users":
+						onInitPageUsers();
+						break;
+					case "groups":
+						onInitPageGroups();
+						break;
+					case "system":
+						onInitPageSystem();
+						break;
+					case "about":
+						onInitPageAbout();
+						break;
+				}
+			}
+
+			function onInitPageDashboard() {			
+			}
+
+			function onInitPageUsers() {
+				showElement("page_users_new", authUserRolesContain(["ADMIN"]));
+			}
+
+			function onInitPageGroups() {
+				
+			}
+
+			function onInitPageSystem() {
+			}
+
+			function onInitPageAbout() {	
+			}
+
+			/* initialize UI */
+			$(function() {
+				init();
+			});
+		</script>
+	</head>
+	<body>
+		<div class="container hide" id="main_login">
+			<h1 class="text-center">Welcome to Meet4Eat Admin Panel</h1>
+			<div class="row">
+				<div class="col-md-4 col-md-offset-4">
+					<div class="login-panel panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">Please Sign In</h3>
+						</div>
+						<div class="panel-body">
+							<form id="form_login" role="form">
+								<fieldset>
+									<div class="form-group">
+										<input class="form-control" placeholder="Login name" name="login" type="text" autofocus>
+									</div>
+									<div class="form-group">
+										<input class="form-control" placeholder="Password" name="password" type="password" value="">
+									</div>
+									<!--div class="checkbox">
+										<label>
+											<input name="remember" type="checkbox" value="Remember Me">Remember Me
+										</label>
+									</div-->
+									<input type="submit" hidden onclick="onBtnLoginClicked(); event.preventDefault();">
+									<a class="btn btn-lg btn-success btn-block" onclick="onBtnLoginClicked()">Login</a>
+								</fieldset>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="main_content" class="hide">
+			<!-- Navigation -->
+			<nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="index.html">Meet4Eat Admin Panel</a>
+				</div>
+				<!-- /.navbar-header -->
+				
+				<ul class="nav navbar-top-links navbar-right">
+					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+							<i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+						</a>
+						<ul class="dropdown-menu dropdown-user">
+							<li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+							</li>
+							<li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+							</li>
+							<li class="divider"></li>
+							<li><a onclick="logout()"><i class="fa fa-sign-out fa-fw"></i> Logout '<span id="user_name"></span>'</a>
+							</li>
+						</ul>
+						<!-- /.dropdown-user -->
+					</li>
+
+				</ul>
+	            <!-- /.navbar-top-links -->
+
+				<div class="navbar-default sidebar" role="navigation">
+					<div class="sidebar-nav navbar-collapse">
+						<ul class="nav" id="side-menu">
+							<li class="sidebar-search">
+								<div class="input-group">
+									<input type="text" class="form-control" placeholder="Search...">
+									<span class="input-group-btn">
+									<button class="btn btn-default" type="button">
+										<i class="fa fa-search"></i>
+									</button>
+								</span>
+								</div>
+								<!-- /input-group -->
+							</li>
+							<li>
+								<a onclick="onMenu('dashboard');"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+							</li>
+							<li>
+								<a onclick="onMenu('users');"><i class="fa fa-user fa-fw"></i> Users</a>
+							</li>
+							<li>
+								<a onclick="onMenu('groups');"><i class="fa fa-group fa-fw"></i> Groups</a>
+							</li>
+							<li>
+								<a onclick="onMenu('system');"><i class="fa fa-laptop fa-fw"></i> System<span class="fa arrow"></span></a>
+								<ul class="nav nav-second-level">
+									<li>
+										<a onclick="showModalBox('!!!TODO - System Alert!!!')">Alerts</a>
+									</li>
+									<li>
+										<a onclick="showModalBox('!!!TODO - System Logs!!!')">Logs</a>
+									</li>
+								</ul>
+								<!-- /.nav-second-level -->
+							</li>
+							<li>
+								<a onclick="onMenu('about');"><i class="fa fa-question-circle-o fa-fw"></i> About</a>
+							</li>
+						</ul>
+					</div>
+					<!-- /.sidebar-collapse -->
+				</div>
+				<!-- /.navbar-static-side -->
+
+			</nav>
+
+			<div id="page-wrapper">
+
+				<!-- NOTE main menu element IDs are expected to begin with menu_ see function onMenu -->
+				<div id="menu_dashboard">
+					<div class="row">
+						<div class="col-lg-12">
+							<h1 class="page-header">Dashboard</h1>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<div class="row">
+						<div class="col-lg-3 col-md-6">
+							<div class="panel panel-primary" role="button" onclick="onMenu('users')">
+								<div class="panel-heading">
+									<div class="row">
+										<div class="col-xs-3">
+											<i class="fa fa-user fa-5x"></i>
+										</div>
+										<div class="col-xs-9 text-right">
+											<div class="huge" id="count_users">?</div>
+											<div>Users</div>
+										</div>
+									</div>
+								</div>
+								<a>
+									<div class="panel-footer">
+										<span class="pull-left">View Details</span>
+										<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+										<div class="clearfix"></div>
+									</div>
+								</a>
+							</div>
+						</div>
+
+						<div class="col-lg-3 col-md-6">
+							<div class="panel panel-primary" role="button" onclick="onMenu('groups')">
+								<div class="panel-heading">
+									<div class="row">
+										<div class="col-xs-3">
+											<i class="fa fa-group fa-5x"></i>
+										</div>
+										<div class="col-xs-9 text-right">
+											<div class="huge" id="count_groups">?</div>
+											<div>Groups</div>
+										</div>
+									</div>
+								</div>
+								<a>
+									<div class="panel-footer">
+										<span class="pull-left">View Details</span>
+										<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+										<div class="clearfix"></div>
+									</div>
+								</a>
+							</div>
+						</div>
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- menu_dashboard -->
+
+				<div id="menu_users" class="hide">
+					<div class="row">
+						<div class="col-lg-12">
+							<h1 class="page-header">Users <a id="page_users_new" class="hide btn btn-sm btn-primary pull-right" onclick="onBtnUserNew()">New User</a></h1>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<strong>List of all users</strong>
+								</div>
+								<!-- /.panel-heading -->
+								<div class="panel-body">
+									<table id="table_users" width="100%" class="table table-striped table-bordered table-hover">
+										<thead>
+											<tr>
+												<th>Name</th>
+												<th>Login</th>
+												<th>Last login</th>
+												<th>Roles</th>
+												<th></th>
+											</tr>
+										</thead>
+										<tbody>
+										</tbody>
+									</table>
+								</div>
+								<!-- /.panel-body -->
+							</div>
+							<!-- /.panel -->
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<!-- /.row -->
+				</div>
+
+				<!-- menu_users_edit -->
+				<div id="page_users_edit" class="hide">
+					<div class="row">
+						<div class="col-lg-12">
+							<h1 class="page-header text-center">Edit User</h1>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<div class="row">
+						<div class="col-sm-6 col-sm-offset-3">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<strong><span id="page_users_edit_title"></span></strong>
+								</div>
+								<!-- /.panel-heading -->
+								<div class="panel-body">
+									<form role="form" id="page_users_edit_form">
+										<input name="id" hidden>
+										<div class="form-group">
+											<label>Login</label>
+											<input id="page_users_edit_form_login" class="form-control" name="login" placeholder="Login name">
+											<p class="help-block">This name is used for authentication (At least 8 characters).</p>
+										</div>
+										<div class="form-group">
+											<label>Name</label>
+											<input class="form-control" name="name" placeholder="Enter text">
+											<p class="help-block">Real user name</p>
+										</div>
+										<div class="form-group">
+											<label>E-Mail</label>
+											<input class="form-control" name="email" placeholder="E-Mail">
+											<p class="help-block">Contact e-mail address</p>
+										</div>
+										<div id="page_users_edit_form_grp_passwd" class="form-group">
+											<label>Password</label>
+											<input class="form-control" type="password" name="password" placeholder="Password">
+										</div>
+										<div id="page_users_edit_form_grp_passwd_repeat" class="form-group">
+											<label>Password Repeat</label>
+											<input class="form-control" type="password" name="password-repeat" placeholder="Password">
+										</div>
+										<div id="page_users_edit_roles" class="form-group">
+											<label>Roles</label>
+											<select id="page_users_edit_roles_sel" multiple class="form-control">
+												<option>MODERATOR</option>
+												<option>USER</option>
+												<option></option>
+											</select>
+											<p class="help-block">Assign special roles. Select multiple roles by holding down Ctrl key.</p>
+										</div>
+									</form>
+								</div>
+								<!-- /.panel-body -->
+								<div class="panel-footer">
+									<div class="btn-toolbar text-right">
+										<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="onBtnUserEditApply()">Apply</a>
+										<a class="btn btn-lg btn-primary col-lg-3 pull-right" onclick="onBtnUserEditCancel()">Cancel</a>
+									</div>
+								</div>
+								<!-- /.panel-footer -->
+							</div>
+							<!-- /.panel -->
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- page_users_edit -->
+
+
+				<div id="menu_groups" class="hide">
+					<div class="row">
+						<div class="col-lg-12">
+							<h1 class="page-header">Groups</h1>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<strong>List of all groups</strong>
+								</div>
+								<!-- /.panel-heading -->
+								<div class="panel-body">
+									<table width="100%" class="table table-striped table-bordered table-hover" id="table_groups">
+										<thead>
+											<tr>
+												<th>Rendering engine</th>
+												<th>Browser</th>
+												<th>Platform(s)</th>
+												<th>Engine version</th>
+												<th>CSS grade</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>Trident</td>
+												<td>Internet Explorer 4.0</td>
+												<td>Win 95+</td>
+												<td class="center">4</td>
+												<td class="center">X</td>
+											</tr>
+											<tr>
+												<td>Trident</td>
+												<td>Internet Explorer 5.0</td>
+												<td>Win 95+</td>
+												<td class="center">5</td>
+												<td class="center">C</td>
+											</tr>
+											<tr>
+												<td>Trident</td>
+												<td>Internet Explorer 5.5</td>
+												<td>Win 95+</td>
+												<td class="center">5.5</td>
+												<td class="center">A</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<!-- /.panel-body -->
+							</div>
+							<!-- /.panel -->
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- menu_groups -->
+
+				<div id="menu_system" class="hide">
+					<div class="row">
+						<div class="col-lg-12">
+							<h1 class="page-header">System</h1>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<div class="row">
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- menu_system -->
+
+				<div id="menu_about" class="hide">
+					<div class="row">
+						<div class="col-lg-12">
+							<h1 class="page-header">About</h1>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<div class="row">
+						<div class="col-sm-6 col-sm-offset-3">
+							<div class="panel panel-default info-box">					
+								<h1>Meet4Eat</h1>
+								<p>Copyright 2017</p>
+								<p>Web site <a href='https://github.com/botorabi/Meet4Eat'>https://github.com/botorabi/Meet4Eat</a></p>
+								<br>
+								<p>Admin panel version <span id="info_viewversion"></span></p>							
+								<p>Web service version <span id="info_serverversion"></span></p>
+								<p>Web interface version <span id="info_clientversion"></span></p>
+							</div>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- menu_about -->
+			</div>
+			<!-- page-wrapper -->
+		</div>
+		<!-- main_content -->
+
+		<!-- Modal used for message dialog -->
+		<div class="modal fade" id="msg_box" tabindex="-1" role="dialog" aria-labelledby="msg_box_title" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="msg_box_title">title</h4>
+					</div>
+					<div id="msg_box_text" class="modal-body">
+					</div>
+					<div class="modal-footer btn-toolbar">
+						<button id="msg_box_btn2" type="button" class="btn btn-primary col-sm-3 pull-right" data-dismiss="modal">Btn2</button>
+						<button id="msg_box_btn1" type="button" class="btn btn-primary col-sm-3 pull-right" data-dismiss="modal">Btn1</button>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+		<!-- /.modal -->
+
+		<div id="display_error"></div>
+	</body>
+</html>
