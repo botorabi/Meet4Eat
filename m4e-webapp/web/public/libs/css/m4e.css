@@ -1,0 +1,17 @@
+/*
+Copyright (c) 2017 by Botorabi. All rights reserved.
+https://github.com/botorabi/Meet4Eat
+
+License: MIT License (MIT), read the LICENSE text in
+         main directory for more details.
+*/
+/* 
+    Created on : 27.08.2017, 15:22:12
+    Author     : boto
+*/
+
+.info-box {
+    max-width: 350px;
+    margin-top: 50px;
+    text-align: center;
+}
