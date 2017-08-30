@@ -48,10 +48,11 @@ public class EntityUtils {
     public <T> void createEntity(T entity) throws Exception {
         try {
             userTransaction.begin();
-            entityManager.persist(entity);        
+            entityManager.persist(entity);
             userTransaction.commit();
         }
         catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            userTransaction.rollback();
             throw ex;
         }
     }
@@ -70,6 +71,7 @@ public class EntityUtils {
             userTransaction.commit();
         }
         catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            userTransaction.rollback();
             throw ex;
         }
     }
@@ -88,6 +90,7 @@ public class EntityUtils {
             userTransaction.commit();
         }
         catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            userTransaction.rollback();
             throw ex;
         }
     }

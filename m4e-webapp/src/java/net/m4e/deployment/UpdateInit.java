@@ -10,6 +10,7 @@ package net.m4e.deployment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.EntityManager;
@@ -19,6 +20,7 @@ import net.m4e.auth.AuthorityConfig;
 import net.m4e.auth.PermissionEntity;
 import net.m4e.auth.RoleEntity;
 import net.m4e.common.EntityUtils;
+import net.m4e.common.StatusEntity;
 import net.m4e.core.Log;
 import net.m4e.user.UserEntity;
 
@@ -160,13 +162,24 @@ public class UpdateInit extends BaseUpdate {
         user.setLogin("admin");
         user.setPassword(AuthorityConfig.getInstance().createPassword("admin"));
         eutils.createEntity(user);
-        
+
+        // setup the entity status
+        StatusEntity status = new StatusEntity();
+        status.setIdCreator(user.getId());
+        status.setIdOwner(user.getId());
+        Date now = new Date();
+        status.setDateCreation(now.getTime());
+        status.setDateLastUpdate(now.getTime());
+        user.setStatus(status);
+
+        // setup the roles
         List<RoleEntity> roles = eutils.findEntityByField(RoleEntity.class, "name", AuthRole.USER_ROLE_ADMIN);
         if (roles.size() < 1) {
             Log.error(TAG, "*** Counld not find role '" + AuthRole.USER_ROLE_ADMIN + "' for admin user");
             return;
         }
         user.setRoles(Arrays.asList(roles.get(0)));
+
         eutils.updateEntity(user);
         Log.debug(TAG, "   User 'admin' was successfully created.");
     }

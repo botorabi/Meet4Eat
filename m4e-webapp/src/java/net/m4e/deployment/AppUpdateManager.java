@@ -133,7 +133,7 @@ public class AppUpdateManager {
     private void createAppVersionEntry(String appVersion) {
         AppInfoEntity info = new AppInfoEntity();
         info.setVersion(appVersion);
-        info.setLastUpdate((int)(new Date().getTime()));
+        info.setDataLastUpdate((new Date().getTime()));
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         try {
             eutils.createEntity(info);
@@ -151,7 +151,7 @@ public class AppUpdateManager {
      */
     private void updateAppVersionEntry(AppInfoEntity info, String appVersion) {
         info.setVersion(appVersion);
-        info.setLastUpdate((int)(new Date().getTime()));
+        info.setDataLastUpdate((new Date().getTime()));
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         try {
             eutils.updateEntity(info);

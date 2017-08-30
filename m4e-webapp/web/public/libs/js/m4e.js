@@ -9,7 +9,7 @@
 
 function Meet4EatREST() {
 	/* API version */
-	this._version = "1.0.0";
+	this._version = "0.2.0";
 
 	/* Root path of web service */
 	this._webRoot = "/m4e-webapp";
@@ -41,6 +41,15 @@ function Meet4EatREST() {
 	 */
 	this.getServerInfo = function(resultsCallback) {
 		this._requestJSON(this._urlAppInfo, null, 'GET', resultsCallback);
+	};
+
+	/**
+	 * Get server stats
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 */
+	this.getServerStats = function(resultsCallback) {
+		this._requestJSON(this._urlAppInfo + "/stats", null, 'POST', resultsCallback);
 	};
 
 	/**
@@ -345,6 +354,7 @@ function Meet4EatAuth() {
 	*  http://www.happycode.info/
 	*  
 	*  NOTE (boto): Big thanks go to http://coursesweb.net/javascript/sha512-encrypt-hash_cs
+	*               No Copyright notice was found.
 	*  
 	*  @param {string} str   String which will be used for creating a SHA512 hash
 	*  @return {string}      SHA512 hash of given string

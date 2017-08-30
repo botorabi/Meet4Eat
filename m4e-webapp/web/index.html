@@ -23,6 +23,7 @@
 
 		<script>
 			var VIEW_VERSION = "1";
+			var m4e = null;
 			var m4eAuth = null;
 			var m4eAuthUser = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
 			var m4eUsers = null;
@@ -34,16 +35,13 @@
 			 * Init the page
 			 */
 			function init() {
-				var m4e = new Meet4EatREST();
+				m4e = new Meet4EatREST();
 				m4eAppInfo.clientVersion = m4e.getVersion();
 				m4eAppInfo.viewVersion = VIEW_VERSION;
 				m4eAuth = m4e.buildUserAuthREST();
 				m4eUsers = m4e.buildUserREST();
 				m4eGroups = m4e.buildGroupREST();
-
-				setupDashboardPage();
-				setupAboutPage();
-				setupUser();
+				setupUi();
 			}
 
 			/**
@@ -115,10 +113,46 @@
 				}
 			}
 
+
+			/**
+			 * Parse a JSON string and convert it to an object.
+			 * 
+			 * @param  {string} jsonString JSON string to parse
+			 * @returns {Object} Object representing the JSON string, null if invalid format found.
+			 */
+			function parseJSON(jsonString) {
+				var obj = null;
+				try {
+					obj = $.parseJSON(jsonString);
+				}
+				catch(e) {
+				}
+				return obj;
+			}
+
+			/**
+			 * Deferr the execution of given function by 'delay' milliseconds.
+			 * 
+			 * @param {function} fcn   Function to execute
+			 * @param {int} delay      Execution delay in millisecond
+			 */
 			function deferExecution(fcn, delay) {
 				setTimeout(fcn, delay);
 			}
 
+			/**
+			 * Given a time stamp format it to a string.
+			 * 
+			 * @param {Date} timeStamp Time stamp to be formatted
+			 * @returns {string} Formatted time string
+			 */
+			function formatTime(timeStamp) {
+				var minutes = "" + timeStamp.getMinutes();
+				minutes = minutes < 10 ? ("0" + minutes) : minutes;
+				var text = timeStamp.getFullYear() + "-" + (timeStamp.getMonth()+1) + "-" + timeStamp.getDate()  
+							 + " " + timeStamp.getHours() + ":" + minutes;
+				return text;
+			}
 			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 			/*                ui init related stuff                   */
 			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -126,7 +160,6 @@
 			function setupAboutPage() {
 				$('#info_clientversion').text(m4eAppInfo.clientVersion);
 				$('#info_viewversion').text(m4eAppInfo.viewVersion);
-				var m4e = new Meet4EatREST();
 				m4e.getServerInfo({
 					success: function(results, response) {
 						if (results.status === "ok") {
@@ -153,6 +186,7 @@
 					"columns": [
 						{ "data": "name" },
 						{ "data": "login" },
+						{ "data": "creation" },
 						{ "data": "lastlogin" },
 						{ "data": "roles" },
 						{ "data": "ops" }
@@ -171,7 +205,7 @@
 			/*                   auth related stuff                   */
 			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-			function setupUser() {
+			function setupUi() {
 				m4eAuth.getAuthState({
 					success: function(results, response) {
 						if (results.status === "ok") {
@@ -265,7 +299,12 @@
 
 			//--------------------------------------------
 			function onAuthenticated() {
+				if (authUserRolesContain(["ADMIN"])) {
+					setupUiAdmin();
+				}
 				$('#user_name').text(getAuthUser().name);
+				setupDashboardPage();
+				setupAboutPage();
 				setupUiTableUser();
 			}
 
@@ -276,6 +315,38 @@
 				}, {});
 				login(fields.login, fields.password);
 				$("#form_login :input").val("");
+			}
+
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+			/*                   admin related stuff                  */
+			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+			function setupUiAdmin() {
+				m4e.getServerStats({
+					success: function(results, reponse) {
+						if (results.status !== "ok") {
+							showModalBox("Cannot retrieve server stats!", "Communication Problem", "Dismiss");
+							return;
+						}
+						var stats = parseJSON(results.data);
+						var maintenance = "-";
+						if (parseInt(stats.dateLastMaintenance) > 0) {
+							maintenance = formatTime(new Date(parseInt(stats.dateLastMaintenance)));
+						}
+						var update = "-";
+						if (parseInt(stats.dateLastUpdate) > 0) {
+							update = formatTime(new Date(parseInt(stats.dateLastUpdate)));
+						}
+						$('#sys_serverversion').text(stats.version);
+						$('#sys_lastmaintenance').text(maintenance);
+						$('#sys_lastupdate').text(update);
+						$('#sys_countuserspurge').text(stats.userCountPurge);
+						$('#sys_countgroupspurge').text(stats.groupCountPurge);
+					},
+					error: function(err) {
+						showModalBox("Cannot retrieve server stats! Reason: " + err, "Connection Problem", "Dismiss");
+					}
+				});
 			}
 
 			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -311,9 +382,14 @@
 					return;
 				}
 				var lastlogin = "-";
-				if (userFields.lastLoginTime && userFields.lastLoginTime > 0) {
-					var timestamp = new Date(parseInt(userFields.lastLoginTime));
-					lastlogin = timestamp.getDate()  + "-" + (timestamp.getMonth()+1) + "-" + timestamp.getFullYear() + " " + timestamp.getHours() + ":" + timestamp.getMinutes();
+				var datecreation = "-";
+				if (userFields.dateLastLogin && userFields.dateLastLogin > 0) {
+					var timestamp = new Date(parseInt(userFields.dateLastLogin));
+					lastlogin = formatTime(timestamp);
+				}
+				if (userFields.dateCreation && userFields.dateCreation > 0) {
+					var timestamp = new Date(parseInt(userFields.dateCreation));
+					datecreation = formatTime(timestamp);
 				}
 				var roles = userFields.roles ? userFields.roles.join("<br>") : "";
 				var me = (""+userFields.id === ""+getAuthUser().id);
@@ -324,6 +400,7 @@
 						// make 'me' bold
 						"name" : (me ? "<strong>" : "") + userFields.name + (me ? "</strong>" : ""),
 						"login" : userFields.login,
+						"creation" : datecreation,
 						"lastlogin" : lastlogin,
 						"roles": roles,
 						"ops" :	(candelete ? "<a role='button' onclick='onBtnDeleteUser(\"" + userFields.id + "\")'>DELETE</a> | " : "") +
@@ -569,7 +646,6 @@
 			}
 
 			function onInitPageGroups() {
-				
 			}
 
 			function onInitPageSystem() {
@@ -778,6 +854,7 @@
 											<tr>
 												<th>Name</th>
 												<th>Login</th>
+												<th>Creation Date</th>
 												<th>Last login</th>
 												<th>Roles</th>
 												<th></th>
@@ -931,9 +1008,32 @@
 						<div class="col-lg-12">
 							<h1 class="page-header">System</h1>
 						</div>
-						<!-- /.col-lg-12 -->
 					</div>
 					<div class="row">
+						<div class="col-lg-12">
+							<table class="table-condensed">
+								<tr>
+									<td>Web service version</td>
+									<td><span id="sys_serverversion"></span></td>
+								</tr>
+								<tr>
+									<td>Last maintenance</td>
+									<td><span id="sys_lastmaintenance"></span></td>
+								</tr>
+								<tr>
+									<td>Last update</td>
+									<td><span id="sys_lastupdate"></span></td>
+								</tr>
+								<tr>
+									<td>Count users to purge</td>
+									<td><span id="sys_countuserspurge"></span></td>
+								</tr>
+								<tr>
+									<td>Count groups to purge</td>
+									<td><span id="sys_countgroupspurge"></span></td>
+								</tr>
+							</table>
+						</div>
 					</div>
 					<!-- /.row -->
 				</div>
@@ -944,7 +1044,6 @@
 						<div class="col-lg-12">
 							<h1 class="page-header">About</h1>
 						</div>
-						<!-- /.col-lg-12 -->
 					</div>
 					<div class="row">
 						<div class="col-sm-6 col-sm-offset-3">
@@ -958,7 +1057,6 @@
 								<p>Web interface version <span id="info_clientversion"></span></p>
 							</div>
 						</div>
-						<!-- /.col-lg-12 -->
 					</div>
 					<!-- /.row -->
 				</div>

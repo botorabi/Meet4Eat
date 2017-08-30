@@ -25,8 +25,14 @@ import javax.persistence.OneToMany;
 @Entity
 public class RoleEntity implements Serializable {
 
+    /**
+     * Serialization version
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Entity's unique ID
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

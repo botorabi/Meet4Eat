@@ -25,6 +25,9 @@ import javax.transaction.UserTransaction;
 import net.m4e.auth.AuthRole;
 import net.m4e.auth.RoleEntity;
 import net.m4e.common.EntityUtils;
+import net.m4e.common.StatusEntity;
+import net.m4e.core.AppInfoEntity;
+import net.m4e.core.AppInfoUtils;
 import net.m4e.core.Log;
 
 /**
@@ -103,6 +106,31 @@ public class UserUtils {
     }
 
     /**
+     * Mark a user as deleted by setting its status' deletion time stamp.
+     * 
+     * @param user          User entity
+     * @throws Exception    Throws exception if any problem occurred.
+     */
+    public void markUserAsDeleted(UserEntity user) throws Exception {
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        StatusEntity status = user.getStatus();
+        if (Objects.isNull(status)) {
+            throw new Exception("User has not status field!");
+        }
+        status.setDateDeletion((new Date().getTime()));
+        eutils.updateEntity(user);
+
+        // update the app stats
+        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfoEntity appinfo = autils.getAppInfoEntity();
+        if (Objects.isNull(appinfo)) {
+            throw new Exception("Problem occured while retrieving AppInfo entity!");
+        }
+        appinfo.incrementUserCountPurge(1L);
+        eutils.updateEntity(appinfo);
+    }
+
+    /**
      * Delete the given entity in database.
      * 
      * @param user          User entity
@@ -113,7 +141,6 @@ public class UserUtils {
         // first we remove all aggregates such as roles
         // this will delete all bridge rows in database
         user.setRoles(null);
-        eutils.updateEntity(user);
         // now we are safe to delete the entity
         eutils.deleteEntity(user);
     }
@@ -143,7 +170,7 @@ public class UserUtils {
      */
     public void updateUserLastLogin(UserEntity user) {
         EntityUtils eutils = new EntityUtils(getEntityManager(), getUserTransaction());
-        user.setLastLoginTime((new Date().getTime()));
+        user.setDateLastLogin((new Date().getTime()));
         try {
             eutils.updateEntity(user);
         }
@@ -185,7 +212,8 @@ public class UserUtils {
         json.add("name", Objects.nonNull(entity.getName()) ? entity.getName() : "");
         json.add("login", Objects.nonNull(entity.getLogin()) ? entity.getLogin() : "");
         json.add("email", Objects.nonNull(entity.getEmail()) ? entity.getEmail() : "");
-        json.add("lastLoginTime", "" + (Objects.nonNull(entity.getLastLoginTime()) ? entity.getLastLoginTime() : 0));
+        json.add("dateLastLogin", "" + (Objects.nonNull(entity.getDateLastLogin()) ? entity.getDateLastLogin() : 0));
+        json.add("dateCreation", "" + (Objects.nonNull(entity.getStatus()) ? entity.getStatus().getDateCreation() : 0));
         JsonArrayBuilder roles = Json.createArrayBuilder();
         for (RoleEntity r: entity.getRoles()) {
             roles.add(r.getName());
@@ -232,7 +260,7 @@ public class UserUtils {
         entity.setName(name);
         entity.setPassword(passwd);
         entity.setEmail(email);
-        entity.setLastLoginTime(0L);
+        entity.setDateLastLogin(0L);
         entity.setLogin(login);
         return entity;
     }

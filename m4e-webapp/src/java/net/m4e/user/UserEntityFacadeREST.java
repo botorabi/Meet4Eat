@@ -10,8 +10,11 @@ package net.m4e.user;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -37,6 +40,9 @@ import net.m4e.auth.AuthRole;
 import net.m4e.auth.AuthorityConfig;
 import net.m4e.common.EntityUtils;
 import net.m4e.common.ResponseResults;
+import net.m4e.common.StatusEntity;
+import net.m4e.core.AppInfoEntity;
+import net.m4e.core.AppInfoUtils;
 import net.m4e.core.Log;
 
 /**
@@ -73,46 +79,28 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.auth.AuthRole(grant={AuthRole.USER_ROLE_MODERATOR})
-    public String createUser(String userJson) {
-        UserUtils utils = new UserUtils(entityManager, userTransaction);
-        UserEntity reqentity = utils.importUserJSON(userJson);
-        if (reqentity == null) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to created user.", 400, null);
-        }
-        // perform some checks
-        if (Objects.isNull(reqentity.getLogin()) || reqentity.getLogin().isEmpty() ||
-            Objects.isNull(reqentity.getPassword()) || reqentity.getPassword().isEmpty()) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Missing login name or password.", 400, null);
+    public String createUser(String userJson, @Context HttpServletRequest request) {
+        UserEntity sessionuser = getSessionUser(request);
+        if (Objects.isNull(sessionuser)) {
+            Log.error(TAG, "*** Internal error, cannot create user, no user in session found!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", 400, null);
         }
 
-        UserUtils userutils = new UserUtils(entityManager, userTransaction);
-        if (Objects.nonNull(userutils.findUser(reqentity.getLogin()))) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Login name is not available.", 406, null);            
-        }
-
-        // validate the roles
-        List<String> allowedroles = utils.getAvailableUserRoles();
-        List<String> reqentityroles = reqentity.getRolesAsString();
-        for (int i = 0; i < reqentityroles.size(); i++) {
-            if (!allowedroles.contains(reqentityroles.get(i))) {
-                return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK,
-                        "Failed to update user, unsupported role '" + reqentityroles.get(i) + "'detected.", 400, null);
-            }
-        }
-
-        // setup the new entity
-        UserEntity newuser = new UserEntity();
-        newuser.setLogin(reqentity.getLogin());
-        newuser.setPassword(reqentity.getPassword());
-        newuser.setName(reqentity.getName());
-        newuser.setEmail(Objects.nonNull(reqentity.getEmail()) ? reqentity.getEmail() : "");
-        newuser.setRoles(new ArrayList<>());
-        userutils.addUserRoles(newuser, reqentity.getRolesAsString());
-
+        UserEntity reqentity;
         try {
-            userutils.createUser(newuser);
+            reqentity = validateNewEntityInput(userJson);
         }
         catch (Exception ex) {
+            Log.warning(TAG, "*** Could not create new user, validation failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), 400, null);
+        }
+
+        UserEntity newuser;
+        try {
+            newuser = createNewUser(reqentity, sessionuser.getId());
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not create new user, reaon: " + ex.getLocalizedMessage());
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new entity.", 400, null);
         }
 
@@ -126,6 +114,12 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.auth.AuthRole(grant={AuthRole.USER_ROLE_MODERATOR, AuthRole.VIRT_ROLE_USER})
     public String edit(@PathParam("id") Long id, String userJson, @Context HttpServletRequest request) {
+        UserEntity sessionuser = getSessionUser(request);
+        if (Objects.isNull(sessionuser)) {
+            Log.error(TAG, "*** Internal error, cannot update user, no user in session found!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.", 400, null);
+        }
+
         UserUtils utils = new UserUtils(entityManager, userTransaction);
         UserEntity reqentity = utils.importUserJSON(userJson);
         if (reqentity == null) {
@@ -135,13 +129,6 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         UserEntity user = super.find(id);
         if (Objects.isNull(user)) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, invalid user ID.", 400, null);            
-        }
-
-        HttpSession session = request.getSession();
-        Object sessionuser = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (Objects.isNull(sessionuser)) {
-            Log.error(TAG, "*** Internal error, cannot update user, no user in session found!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.", 400, null);
         }
 
         // check if a user is updating itself or a user with higher privilege is trying to modify a user
@@ -191,27 +178,32 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.auth.AuthRole(grant={AuthRole.USER_ROLE_MODERATOR})
     public String remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
-        UserEntity entity = super.find(id);
-        if (entity == null) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion", 400, null);
-        }
-        HttpSession session = request.getSession();
-        Object      user    = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (Objects.isNull(user)) {
+        UserEntity sessionuser = getSessionUser(request);
+        if (Objects.isNull(sessionuser)) {
             Log.error(TAG, "*** Internal error, cannot delete user, no user in session found!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", 400, null);
         }
-        if (((UserEntity)user).getId().equals(id)) {
+
+        if (sessionuser.getId().equals(id)) {
             Log.warning(TAG, "*** User was attempting to delete iteself! Call a doctor.");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete yourself.", 400, null);            
         }
+
+        UserEntity entity = super.find(id);
+        if (entity == null) {
+            Log.warning(TAG, "*** User was attempting to delete non-existing user!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion", 400, null);
+        }
+
         UserUtils utils = new UserUtils(entityManager, userTransaction);
         try {
-            utils.deleteUser(entity);
+            utils.markUserAsDeleted(entity);
         }
         catch (Exception ex) {
+            Log.warning(TAG, "*** Could not mark user as deleted, reason: " + ex.getLocalizedMessage());
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", 400, null);
         }
+
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User successfully deleted", 200, null);
     }
 
@@ -221,10 +213,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.auth.AuthRole(grant={AuthRole.VIRT_ROLE_USER})
     public String find(@PathParam("id") Long id) {
         UserEntity user = super.find(id);
-        if (Objects.isNull(user)) {
+        if (Objects.isNull(user) || user.getStatus().getIsDeleted()) {
             return null;
         }
-        
         UserUtils utils = new UserUtils(entityManager, userTransaction);
         return utils.exportUserJSON(user).build().toString();
     }
@@ -237,7 +228,10 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         JsonArrayBuilder allusers = Json.createArrayBuilder();
         List<UserEntity> users = super.findAll();
         for (UserEntity user: users) {
-            allusers.add(utils.exportUserJSON(user));
+            // users which are marked as deleted are excluded from export
+            if (!user.getStatus().getIsDeleted()) {
+                allusers.add(utils.exportUserJSON(user));
+            }
         }
         return allusers.build().toString();
     }
@@ -251,7 +245,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         JsonArrayBuilder allusers = Json.createArrayBuilder();
         List<UserEntity> users = super.findRange(new int[]{from, to});
         for (UserEntity user: users) {
-            allusers.add(utils.exportUserJSON(user));
+            if (!user.getStatus().getIsDeleted()) {
+                allusers.add(utils.exportUserJSON(user));
+            }
         }
         return allusers.build().toString();
     }
@@ -261,7 +257,100 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.auth.AuthRole(grant={AuthRole.VIRT_ROLE_USER})
     public String countREST() {
-        return "" + super.count();
+        // NOTE the final user count is the count of UserEntity entries in database minus the count of users to be purged
+        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfoEntity appinfo = autils.getAppInfoEntity();
+        Long userpurges = appinfo.getUserCountPurge();
+        return "" + (super.count() - userpurges);
+    }
+
+    /**
+     * Given a HTTP request object, return the user entity set in its session.
+     * 
+     * @param request   HTTP request
+     * @return          Return session's UserEntity, or null if no user was set in session
+     */
+    private UserEntity getSessionUser(HttpServletRequest request) {
+       HttpSession session = request.getSession();
+        Object sessionuser = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
+        if (Objects.isNull(sessionuser) || !(sessionuser instanceof UserEntity)) {
+            return null;
+        }
+        return (UserEntity)sessionuser;
+    }
+
+   /**
+     * Given a JSON string as input containing data for creating a new user, validate 
+     * all fields and return an UserEntity, or throw an exception if the validation failed.
+     * 
+     * @param userJson       Data for creating a new user in JSON format
+     * @return               A UserEntity created out of given input
+     * @throws Exception     Throws an exception if the validation fails.
+     */
+    private UserEntity validateNewEntityInput(String userJson) throws Exception {
+        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        UserEntity reqentity = userutils.importUserJSON(userJson);
+        if (reqentity == null) {
+            throw new Exception("Failed to created user, invalid input.");
+        }
+
+        // perform user name and passwd checks
+        if (Objects.isNull(reqentity.getLogin()) || reqentity.getLogin().isEmpty() ||
+            Objects.isNull(reqentity.getPassword()) || reqentity.getPassword().isEmpty()) {
+            throw new Exception("Missing login name or password.");
+        }
+
+        if (Objects.nonNull(userutils.findUser(reqentity.getLogin()))) {
+            throw new Exception("Login name is not available.");            
+        }
+
+        // validate the roles
+        List<String> allowedroles = userutils.getAvailableUserRoles();
+        List<String> reqentityroles = reqentity.getRolesAsString();
+        for (int i = 0; i < reqentityroles.size(); i++) {
+            if (!allowedroles.contains(reqentityroles.get(i))) {
+                throw new Exception("Failed to update user, unsupported role '" + reqentityroles.get(i) + "'detected.");
+            }
+        }
+        return reqentity;
+    }
+
+    /**
+     * Create a new user entity basing on data in given input entity.
+     * 
+     * @param inputEntity   Input data for new entity
+     * @param creatorID     ID of creator
+     * @return              New created entity
+     * @throws Exception    Throws exception if something went wrong.
+     */
+    private UserEntity createNewUser(UserEntity inputEntity, Long creatorID) throws Exception {
+        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        // setup the new entity
+        UserEntity newuser = new UserEntity();
+        newuser.setLogin(inputEntity.getLogin());
+        newuser.setPassword(inputEntity.getPassword());
+        newuser.setName(inputEntity.getName());
+        newuser.setEmail(Objects.nonNull(inputEntity.getEmail()) ? inputEntity.getEmail() : "");
+        newuser.setRoles(new ArrayList<>());
+        userutils.addUserRoles(newuser, inputEntity.getRolesAsString());
+
+        // setup the status
+        StatusEntity status = new StatusEntity();
+        status.setIdCreator(creatorID);
+        Date now = new Date();
+        status.setDateCreation(now.getTime());
+        status.setDateLastUpdate(now.getTime());
+
+        try {
+            userutils.createUser(newuser);
+            status.setIdOwner(newuser.getId());
+            newuser.setStatus(status);
+            userutils.updateUserLastLogin(newuser);
+        }
+        catch (Exception ex) {
+            throw ex;
+        }
+        return newuser;
     }
 
     @Override
