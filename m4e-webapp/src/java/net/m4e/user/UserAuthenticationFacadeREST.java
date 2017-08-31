@@ -68,37 +68,36 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
     @Path("state")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grant={AuthRole.VIRT_ENDPOINT_CHECK})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ENDPOINT_CHECK})
     public String state(@Context HttpServletRequest request) {
+        JsonObjectBuilder json = Json.createObjectBuilder();
         HttpSession session = request.getSession();
         Object user = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        JsonObjectBuilder json = Json.createObjectBuilder();
-
         if (Objects.nonNull(user)) {
             UserEntity userentity = (UserEntity)user;
             json.add("auth", "yes");
-            json.add("userId", userentity.getId());
+            json.add("id", userentity.getId());
         }
         else {
             json.add("auth", "no");
-            json.add("userId", "0");
+            json.add("id", "0");
         }
 
         json.add("sid", session.getId());
         String respdata = json.build().toString();
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Session state", 200, respdata);
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Session state", ResponseResults.CODE_OK, respdata);
     }
 
     @POST
     @Path("login")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grant={AuthRole.VIRT_ENDPOINT_CHECK})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ENDPOINT_CHECK})
     public String login(String input, @Context HttpServletRequest request) {
         // roughly check the input
         if (input == null || input.isEmpty()) {
             Log.debug(TAG, "*** Invalid login attempt");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user", 400, null);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_BAD_REQUEST, null);
         }
         // try to get login and password
         String login, passwd;
@@ -114,7 +113,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         }
         if (login.isEmpty() || passwd.isEmpty()) {
             Log.debug(TAG, "*** No valid login data");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user", 400, null);           
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_BAD_REQUEST, null);           
         }
         Log.verbose(TAG, "User tries to login: " + login);
 
@@ -122,7 +121,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         Object      user    = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (Objects.nonNull(user)) {
             Log.debug(TAG, "  User login attempt failed, user is already logged in, user (" + login+ ")");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user. A user is already logged in.", 400, null);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user. A user is already logged in.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }
 
         // try to find the user in database
@@ -130,13 +129,13 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         UserEntity existinguser = userutils.findUser(login);
         if (Objects.isNull(existinguser)) {
             Log.debug(TAG, "  User login attempt failed, no user with this login found, user (" + login+ ")");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", 400, null);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_FOUND, null);
         }
         // check user password
         String saltedpasswd = AuthorityConfig.getInstance().createPassword(existinguser.getPassword() + session.getId());
         if (!saltedpasswd.contentEquals(passwd)) {
             Log.debug(TAG, "  User login attempt failed, wrong password, user (" + login + ")");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", 400, null);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_UNAUTHORIZED, null);
         }
 
         Log.verbose(TAG, " User successfully logged in: " + login);
@@ -144,24 +143,27 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         session.setAttribute(AuthorityConfig.SESSION_ATTR_USER, existinguser);
         // update user
         userutils.updateUserLastLogin(existinguser);
-        
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully logged in.", 200, null);
+
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("id", existinguser.getId());
+        json.add("sid", session.getId());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully logged in.", ResponseResults.CODE_OK, json.build().toString());
     }
 
     @POST
     @Path("logout")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grant={AuthRole.VIRT_ROLE_USER})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String logout(@Context HttpServletRequest request) {
         HttpSession session = request.getSession(true);
         Object user = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (Objects.isNull(user)) {
             Log.debug(TAG, "*** Invalid logout attempt");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to logout user. User was not logged in before.", 400, null);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to logout user. User was not logged in before.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }
         session.invalidate();
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully logged out.", 200, null);
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully logged out.", ResponseResults.CODE_OK, null);
     }
 
     /**

@@ -20,9 +20,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import net.m4e.auth.RoleEntity;
+import net.m4e.common.StatusEntity;
 
 
 /**
@@ -32,14 +34,37 @@ import net.m4e.auth.RoleEntity;
  * Date of creation Aug 18, 2017
  */
 @Entity
-@XmlRootElement
 public class UserEntity implements Serializable {
 
+    /**
+     * Serialization version
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Unique entity ID
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    /**
+     * Entity status
+     */
+    @OneToOne(optional=false, cascade = CascadeType.ALL)
+    private StatusEntity status;       
+
+    /**
+     * Entity profile
+     */
+    @OneToOne(optional=true, cascade = CascadeType.ALL)
+    private UserProfileEntity profile;       
+
+    /**
+     * A list of roles belonging to this user.
+     */
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    private Collection<RoleEntity> roles;
 
     /**
      * User login
@@ -48,14 +73,14 @@ public class UserEntity implements Serializable {
     private String login;
 
     /**
-     * Password
-     */
-    private String password;
-
-    /**
      * User name
      */
     private String name;
+
+    /**
+     * Password
+     */
+    private String password;
 
     /**
      * User's E-Mail address
@@ -65,13 +90,7 @@ public class UserEntity implements Serializable {
     /**
      * Timestamp of last login (time in milliseconds)
      */
-    private Long lastLoginTime;
-
-    /**
-     * A list of roles belonging to this user.
-     */
-    @OneToMany(cascade = CascadeType.ALL)
-    private Collection<RoleEntity> roles;
+    private Long dateLastLogin;
 
     /**
      * Get ID.
@@ -90,21 +109,75 @@ public class UserEntity implements Serializable {
     }
 
     /**
-     * Get user name.
+     * Get entity status. It contains information about entity's life-cycle,
+     * ownership, etc.
      * 
-     * @return  User name
+     * @return Entity status
      */
-    public String getName() {
-        return name;
+    public StatusEntity getStatus() {
+        return status;
     }
 
     /**
-     * Set user name.
+     * Set entity status.
      * 
-     * @param name User name
+     * @param status Entity status
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setStatus(StatusEntity status) {
+        this.status = status;
+    }
+
+    /**
+     * Get user's profile entity.
+     * 
+     * @return Entity profile
+     */
+    public UserProfileEntity getProfile() {
+        return profile;
+    }
+
+    /**
+     * Set user's profile entity.
+     * 
+     * @param profile Entity profile
+     */
+    public void setProfile(UserProfileEntity profile) {
+        this.profile = profile;
+    }
+
+    /**
+     * Get user roles.
+     * 
+     * @return User roles
+     */
+    public Collection<RoleEntity> getRoles() {
+        return roles;
+    }
+
+    /**
+     * Get user roles as a string list filled with role names.
+     * 
+     * @return User roles as string list
+     */
+    @XmlTransient
+    public List<String> getRolesAsString() {
+        List<String> stringlist = new ArrayList<>();
+        if (Objects.isNull(roles)) {
+            return stringlist;
+        }
+        roles.stream().forEach((role) -> {
+            stringlist.add(role.getName());
+        });
+        return stringlist;
+    }
+
+    /**
+     * Set user roles.
+     * 
+     * @param roles User roles
+     */
+    public void setRoles(Collection<RoleEntity> roles) {
+        this.roles = roles;
     }
 
     /**
@@ -121,6 +194,24 @@ public class UserEntity implements Serializable {
      */
     public void setLogin(String login) {
         this.login = login;
+    }
+
+    /**
+     * Get user name.
+     * 
+     * @return  User name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set user name.
+     * 
+     * @param name User name
+     */
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -164,8 +255,8 @@ public class UserEntity implements Serializable {
      * 
      * @return Last login timestamp
      */
-    public Long getLastLoginTime() {
-        return lastLoginTime;
+    public Long getDateLastLogin() {
+        return dateLastLogin;
     }
 
     /**
@@ -173,44 +264,8 @@ public class UserEntity implements Serializable {
      * 
      * @param timeStamp Current timestamp
      */
-    public void setLastLoginTime(Long timeStamp) {
-        this.lastLoginTime = timeStamp;
-    }
-
-    /**
-     * Get user roles.
-     * 
-     * @return User roles
-     */
-    @XmlTransient
-    public Collection<RoleEntity> getRoles() {
-        return roles;
-    }
-
-    /**
-     * Get user roles as a string list filled with role names.
-     * 
-     * @return User roles as string list
-     */
-    @XmlTransient
-    public List<String> getRolesAsString() {
-        List<String> stringlist = new ArrayList<>();
-        if (Objects.isNull(roles)) {
-            return stringlist;
-        }
-        roles.stream().forEach((role) -> {
-            stringlist.add(role.getName());
-        });
-        return stringlist;
-    }
-
-    /**
-     * Set user roles.
-     * 
-     * @param roles User roles
-     */
-    public void setRoles(Collection<RoleEntity> roles) {
-        this.roles = roles;
+    public void setDateLastLogin(Long timeStamp) {
+        this.dateLastLogin = timeStamp;
     }
 
     @Override

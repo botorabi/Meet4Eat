@@ -9,7 +9,7 @@
 
 function Meet4EatREST() {
 	/* API version */
-	this._version = "1.0.0";
+	this._version = "0.3.0";
 
 	/* Root path of web service */
 	this._webRoot = "/m4e-webapp";
@@ -41,6 +41,15 @@ function Meet4EatREST() {
 	 */
 	this.getServerInfo = function(resultsCallback) {
 		this._requestJSON(this._urlAppInfo, null, 'GET', resultsCallback);
+	};
+
+	/**
+	 * Get server stats
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 */
+	this.getServerStats = function(resultsCallback) {
+		this._requestJSON(this._urlAppInfo + "/stats", null, 'POST', resultsCallback);
 	};
 
 	/**
@@ -107,19 +116,23 @@ function Meet4EatREST() {
 			contentType: "application/json; charset=UTF-8",
 			dataType: "text",
 			cache: false,
-            success: function(data) {
+            success: function(response) {
                 if (responseCallback !== null) {
-                    var obj = null;
+                    var results = null;
                     try {
-                        obj = $.parseJSON(data);
+                        results = $.parseJSON(response);
+						// the data is also expected to be in JSON format
+						if (results.data) {
+							results.data = $.parseJSON(results.data);
+						}
                     }
                     catch(e) {
 						if (responseCallback.error) {
-							responseCallback.error("Exception occurred while parsing JSON response, reason: " + e, data);
+							responseCallback.error("Exception occurred while parsing JSON response, reason: " + e, response);
 						}
                     }
 					if (responseCallback.success) {
-						responseCallback.success(obj, data);
+						responseCallback.success(results, response);
 					}
                 }
             },
@@ -249,27 +262,7 @@ function Meet4EatAuth() {
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
 	this.getAuthState = function(resultsCallback) {
-		this._fcnRequestJson(this._rootPath + '/state', null, 'GET', {
-			success: function(response) {
-				// already authenticated?
-				try {
-					var state = $.parseJSON(response.data);
-					if (resultsCallback){
-						resultsCallback.success(response, state);
-					}
-				}
-				catch(e) {
-					if (resultsCallback.error) {
-						resultsCallback.error("Exception occurred while parsing JSON response of auth state, reason: " + e, response);
-					}
-				}
-			},
-			error: function(err) {
-				if (resultsCallback){
-					resultsCallback.error(err);
-				}
-			}
-		});
+		this._fcnRequestJson(this._rootPath + '/state', null, 'GET', resultsCallback);
 	};
 
 	/**
@@ -281,18 +274,17 @@ function Meet4EatAuth() {
 	 */
 	this.login = function(resultsCallback, userName, userPassword) {
 		this._fcnRequestJson(this._rootPath + '/state', null, 'GET', {
-			success: function(response) {
+			success: function(results, response) {
 				var sid = "";
 				// already authenticated?
 				try {
-					var state = $.parseJSON(response.data);
-					if (state.auth === "yes") {
+					if (results.data.auth === "yes") {
 						if (resultsCallback){
-							resultsCallback.success(response);
+							resultsCallback.success(results, response);
 							return;
 						}
 					}
-					sid = state.sid;
+					sid = results.data.sid;
 				}
 				catch(e) {
 					if (resultsCallback.error) {
@@ -345,6 +337,7 @@ function Meet4EatAuth() {
 	*  http://www.happycode.info/
 	*  
 	*  NOTE (boto): Big thanks go to http://coursesweb.net/javascript/sha512-encrypt-hash_cs
+	*               No Copyright notice was found.
 	*  
 	*  @param {string} str   String which will be used for creating a SHA512 hash
 	*  @return {string}      SHA512 hash of given string

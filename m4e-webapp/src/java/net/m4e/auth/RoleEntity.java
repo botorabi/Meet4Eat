@@ -25,8 +25,14 @@ import javax.persistence.OneToMany;
 @Entity
 public class RoleEntity implements Serializable {
 
+    /**
+     * Serialization version
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Entity's unique ID
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -39,7 +45,7 @@ public class RoleEntity implements Serializable {
     /**
      * A list of permissions belonging to this role.
      */
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private Collection<PermissionEntity> permissions;
 
     /**

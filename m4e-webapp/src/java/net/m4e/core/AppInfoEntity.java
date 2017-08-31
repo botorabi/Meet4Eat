@@ -15,16 +15,26 @@ import javax.persistence.Id;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Entity holding information about the application
+ * This entity contains general application information which can also be used for
+ * maintenance and statistics reports.
+ * 
+ * NOTE: This entity exists only once in database, it is created automatically 
+ * by AppUpdateManager.
  * 
  * @author boto
  * Date of creation Aug 16, 2017
  */
 @Entity
-@XmlRootElement
 public class AppInfoEntity implements Serializable {
 
+    /**
+     * Serialization version
+     */
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Unique entity ID
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -32,12 +42,27 @@ public class AppInfoEntity implements Serializable {
     /**
      * Current application version
      */
-    private String version;
+    private String version = "";
 
     /**
-     * Last update (milliseconds since epoche)
+     * Date of last update (milliseconds since epoch)
      */
-    private int lastUpdate;
+    private Long dateLastUpdate = 0L;
+
+    /**
+     * Date of last maintenance run (database purging etc.)
+     */
+    private Long dateLastMaintenance = 0L;
+
+    /**
+     * Count of user entities which are marked as deleted and can be purged.
+     */
+    private Long userCountPurge = 0L;
+
+    /**
+     * Count of group entities which are marked as deleted and can be purged.
+     */
+    private Long groupCountPurge = 0L;
 
     /**
      * Get the entity ID.
@@ -75,21 +100,92 @@ public class AppInfoEntity implements Serializable {
     }
 
     /**
-     * Get the date of last update (milliseconds since last epoche).
+     * Get the date of last update (milliseconds since last epoch).
      * 
      * @return Last update
      */
-    public int getLastUpdate() {
-        return lastUpdate;
+    public Long getDateLastUpdate() {
+        return dateLastUpdate;
     }
 
     /**
-     * Set the date of last update (milliseconds since last epoche).
+     * Set the date of last update (milliseconds since last epoch).
      * 
      * @param lastUpdate Date of last update
      */
-    public void setLastUpdate(int lastUpdate) {
-        this.lastUpdate = lastUpdate;
+    public void setDataLastUpdate(Long lastUpdate) {
+        this.dateLastUpdate = lastUpdate;
+    }
+
+    /**
+     * Get date of last maintenance run (database purge, etc.)
+     * @return Date of last maintenance run
+     */
+    public Long getDateLastMaintenance() {
+        return dateLastMaintenance;
+    }
+
+    /**
+     * Set date of last maintenance run (database purge, etc.)
+     * 
+     * @param dateLastMaintenance Date of last maintenance run
+     */
+    public void setDateLastMaintenance(Long dateLastMaintenance) {
+        this.dateLastMaintenance = dateLastMaintenance;
+    }
+
+    /**
+     * Get the count of UserEntity entries which are marked as deleted.
+     * 
+     * @return Count of user entities which can be purged
+     */
+    public Long getUserCountPurge() {
+        return userCountPurge;
+    }
+
+    /**
+     * Set the count of UserEntity entries which are marked as deleted.
+     * 
+     * @param userCountPurge of user entities which can be purged
+     */
+    public void setUserCountPurge(Long userCountPurge) {
+        this.userCountPurge = userCountPurge;
+    }
+
+    /**
+     * Increment the user purge counter by given 'count'.
+     * 
+     * @param count Count of incrementation.
+     */
+    public void incrementUserCountPurge(Long count) {
+        userCountPurge += count;
+    }
+
+    /**
+     * Get the count of GroupEntity entries which are marked as deleted.
+     * 
+     * @return Count of group entities which can be purged
+     */
+    public Long getGroupCountPurge() {
+        return groupCountPurge;
+    }
+
+    /**
+     * Set the count of GroupEntity entries which are marked as deleted.
+     * 
+     * @param groupCountPurge of group entities which can be purged
+     */
+    public void setGroupCountPurge(Long groupCountPurge) {
+        this.groupCountPurge = groupCountPurge;
+    }
+
+    /**
+     * Increment the group purge counter by given 'count'.
+     * 
+     * @param count Count of incrementation.
+     */
+    public void incrementGroupCountPurge(Long count) {
+        groupCountPurge += count;
     }
 
     @Override

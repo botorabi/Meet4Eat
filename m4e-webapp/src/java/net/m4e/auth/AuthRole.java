@@ -68,5 +68,12 @@ public @interface AuthRole {
      * 
      * @return A list of role names
      */
-    String[] grant() default "";
+    String[] grantRoles() default "";
+
+    /**
+     * List of permissions which have access to a resource.
+     * 
+     * @return A list of permission names
+     */
+    String[] grantPermissions() default "";
 }

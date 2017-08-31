@@ -22,8 +22,14 @@ import javax.persistence.Id;
 @Entity
 public class PermissionEntity implements Serializable {
 
+    /**
+     * Serialization version
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Entity's unique ID
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
