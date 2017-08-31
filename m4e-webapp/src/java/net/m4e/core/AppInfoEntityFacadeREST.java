@@ -46,26 +46,28 @@ public class AppInfoEntityFacadeREST extends net.m4e.common.AbstractFacade<AppIn
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grant={AuthRole.VIRT_ROLE_GUEST})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
     public String getInfo() {
         AppInfoEntity info = getInfoEntity();
         if (Objects.isNull(info)) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists", 404, null);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "", 200, info.getVersion());
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        jsonresponse.add("version", info.getVersion());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     @POST
     @Path("stats")
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grant={AuthRole.USER_ROLE_ADMIN})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String getStats() {
         AppInfoEntity info = getInfoEntity();
         if (Objects.isNull(info)) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists", 404, null);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
         String appstats = exportAppInfoJSON(info).build().toString();
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "", 200, appstats);
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "", ResponseResults.CODE_OK, appstats);
     }
 
     /**

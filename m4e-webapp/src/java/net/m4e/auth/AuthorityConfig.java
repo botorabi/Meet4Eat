@@ -13,7 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import net.m4e.core.Log;
+import net.m4e.user.UserEntity;
 
 /**
  * Central place for holding all authority related configuration
@@ -53,6 +56,21 @@ public class AuthorityConfig {
      * Construct the instance.
      */
     private AuthorityConfig() {}
+
+    /**
+     * Given a HTTP request object, return the user entity set in its session.
+     * 
+     * @param request   HTTP request
+     * @return          Return session's UserEntity, or null if no user was set in session
+     */
+    public UserEntity getSessionUser(HttpServletRequest request) {
+       HttpSession session = request.getSession();
+        Object sessionuser = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
+        if (Objects.isNull(sessionuser) || !(sessionuser instanceof UserEntity)) {
+            return null;
+        }
+        return (UserEntity)sessionuser;
+    }
 
     /**
      * Get the single instance of authority configuration.
@@ -95,7 +113,7 @@ public class AuthorityConfig {
      * Given a password, create a representing hash using SHA-512.
      * 
      * @param string    String to build hash for
-     * @return          Hash string, null if somehting went wrong
+     * @return          Hash string, null if something went wrong
      */
     public String createPassword(String string) {
         String pw = "" + string;

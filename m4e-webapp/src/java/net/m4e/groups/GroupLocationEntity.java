@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.user;
+package net.m4e.groups;
 
 import java.io.Serializable;
 import javax.persistence.CascadeType;
@@ -18,13 +18,12 @@ import javax.persistence.OneToOne;
 import net.m4e.common.ImageEntity;
 
 /**
- * UserProfileEntity holds user's profile information such as bio, birthday etc.
- * 
- * @author boto
- * Date of creation 30.08.2017
+ *
+ * @author abotorabi
+ * Date of creation Aug 31, 2017
  */
 @Entity
-public class UserProfileEntity implements Serializable {
+public class GroupLocationEntity implements Serializable {
 
     /**
      * Serialization version
@@ -39,75 +38,83 @@ public class UserProfileEntity implements Serializable {
     private Long id;
 
     /**
-     * Birthday
+     * Group name
      */
-    private Long birthday;
+    private String name;
 
     /**
-     * Biography
+     * Group description
      */
-    private String bio;
+    private String description;
 
     /**
-     * Photo, a photo may be a sharable icon
+     * Photo
      */
-    @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(optional=true, cascade = CascadeType.ALL)
     private ImageEntity photo;
 
     /**
-     * Get ID.
-     * @return ID
+     * Create a group location instance.
+     */
+    public GroupLocationEntity() {
+    }
+
+    /**
+     * Get group ID.
+     * 
+     * @return Group ID
      */
     public Long getId() {
         return id;
     }
 
     /**
-     * Set ID.
-     * @param id
+     * Set Group ID.
+     * 
+     * @param id Group ID
      */
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
-     * Get birthday.
+     * Get group location name.
      * 
-     * @return Birthday in millisecond since epoch
+     * @return Group location name
      */
-    public Long getBirthday() {
-        return birthday;
+    public String getName() {
+        return name;
     }
 
     /**
-     * Set birthday.
+     * Set group location name.
      * 
-     * @param birthday Birthday
+     * @param name Group location name
      */
-    public void setBirthday(Long birthday) {
-        this.birthday = birthday;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
-     * Get biography.
+     * Get group location description.
      * 
-     * @return Biography
+     * @return Group location description
      */
-    public String getBio() {
-        return bio;
+    public String getDescription() {
+        return description;
     }
 
     /**
-     * Set biography.
+     * Set group location description.
      * 
-     * @param bio Biography
+     * @param description Group location description 
      */
-    public void setBio(String bio) {
-        this.bio = bio;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
-     * Get photo.
+     * Get group photo.
      * 
      * @return ImageEntity containing the photo
      */
@@ -116,7 +123,7 @@ public class UserProfileEntity implements Serializable {
     }
 
     /**
-     * Set the profile photo.
+     * Set the photo.
      * 
      * @param photo ImageEntity containing the photo
      */
@@ -133,10 +140,10 @@ public class UserProfileEntity implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof UserProfileEntity)) {
+        if (!(object instanceof GroupLocationEntity)) {
             return false;
         }
-        UserProfileEntity other = (UserProfileEntity) object;
+        GroupLocationEntity other = (GroupLocationEntity) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -145,7 +152,6 @@ public class UserProfileEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.user.UserProfileEntity[ id=" + id + " ]";
+        return "net.m4e.groups.GroupLocationEntity[ id=" + id + " ]";
     }
-
 }

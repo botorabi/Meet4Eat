@@ -45,7 +45,7 @@ public class RoleEntity implements Serializable {
     /**
      * A list of permissions belonging to this role.
      */
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private Collection<PermissionEntity> permissions;
 
     /**

@@ -106,6 +106,21 @@ public class UserUtils {
     }
 
     /**
+     * Update user.
+     * 
+     * @param user User entity to update
+     */
+    public void updateUser(UserEntity user) {
+        EntityUtils eutils = new EntityUtils(getEntityManager(), getUserTransaction());
+        try {
+            eutils.updateEntity(user);
+        }
+        catch (Exception ex) {
+            Log.error(TAG, "*** Could not update user '" + user.getLogin() + "'");
+        }
+    }
+
+    /**
      * Mark a user as deleted by setting its status' deletion time stamp.
      * 
      * @param user          User entity
@@ -115,7 +130,7 @@ public class UserUtils {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         StatusEntity status = user.getStatus();
         if (Objects.isNull(status)) {
-            throw new Exception("User has not status field!");
+            throw new Exception("User has no status field!");
         }
         status.setDateDeletion((new Date().getTime()));
         eutils.updateEntity(user);
@@ -138,10 +153,6 @@ public class UserUtils {
      */
     public void deleteUser(UserEntity user) throws Exception {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
-        // first we remove all aggregates such as roles
-        // this will delete all bridge rows in database
-        user.setRoles(null);
-        // now we are safe to delete the entity
         eutils.deleteEntity(user);
     }
 
@@ -188,6 +199,10 @@ public class UserUtils {
     public void addUserRoles(UserEntity user, List<String> roles) {
         EntityUtils eutils = new EntityUtils(getEntityManager(), getUserTransaction());
         for (String role: roles) {
+            // ignore empty strings
+            if (role.isEmpty()) {
+                continue;
+            }
             List<RoleEntity> ent = eutils.findEntityByField(RoleEntity.class, "name", role);
             if (ent.size() != 1) {
                 Log.error(TAG, "*** Unexpected count of role type found in database '" + role + "', count: " + ent.size());

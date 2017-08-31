@@ -34,7 +34,6 @@ import net.m4e.common.StatusEntity;
  * Date of creation Aug 18, 2017
  */
 @Entity
-@XmlRootElement
 public class UserEntity implements Serializable {
 
     /**
@@ -62,6 +61,12 @@ public class UserEntity implements Serializable {
     private UserProfileEntity profile;       
 
     /**
+     * A list of roles belonging to this user.
+     */
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    private Collection<RoleEntity> roles;
+
+    /**
      * User login
      */
     @Column(unique=true)
@@ -86,12 +91,6 @@ public class UserEntity implements Serializable {
      * Timestamp of last login (time in milliseconds)
      */
     private Long dateLastLogin;
-
-    /**
-     * A list of roles belonging to this user.
-     */
-    @OneToMany(cascade = CascadeType.ALL)
-    private Collection<RoleEntity> roles;
 
     /**
      * Get ID.
@@ -129,7 +128,7 @@ public class UserEntity implements Serializable {
     }
 
     /**
-     * Get user' profile entity.
+     * Get user's profile entity.
      * 
      * @return Entity profile
      */
@@ -138,12 +137,47 @@ public class UserEntity implements Serializable {
     }
 
     /**
-     * Set entity prfile.
+     * Set user's profile entity.
      * 
      * @param profile Entity profile
      */
-    public void setStatus(UserProfileEntity profile) {
+    public void setProfile(UserProfileEntity profile) {
         this.profile = profile;
+    }
+
+    /**
+     * Get user roles.
+     * 
+     * @return User roles
+     */
+    public Collection<RoleEntity> getRoles() {
+        return roles;
+    }
+
+    /**
+     * Get user roles as a string list filled with role names.
+     * 
+     * @return User roles as string list
+     */
+    @XmlTransient
+    public List<String> getRolesAsString() {
+        List<String> stringlist = new ArrayList<>();
+        if (Objects.isNull(roles)) {
+            return stringlist;
+        }
+        roles.stream().forEach((role) -> {
+            stringlist.add(role.getName());
+        });
+        return stringlist;
+    }
+
+    /**
+     * Set user roles.
+     * 
+     * @param roles User roles
+     */
+    public void setRoles(Collection<RoleEntity> roles) {
+        this.roles = roles;
     }
 
     /**
@@ -232,42 +266,6 @@ public class UserEntity implements Serializable {
      */
     public void setDateLastLogin(Long timeStamp) {
         this.dateLastLogin = timeStamp;
-    }
-
-    /**
-     * Get user roles.
-     * 
-     * @return User roles
-     */
-    @XmlTransient
-    public Collection<RoleEntity> getRoles() {
-        return roles;
-    }
-
-    /**
-     * Get user roles as a string list filled with role names.
-     * 
-     * @return User roles as string list
-     */
-    @XmlTransient
-    public List<String> getRolesAsString() {
-        List<String> stringlist = new ArrayList<>();
-        if (Objects.isNull(roles)) {
-            return stringlist;
-        }
-        roles.stream().forEach((role) -> {
-            stringlist.add(role.getName());
-        });
-        return stringlist;
-    }
-
-    /**
-     * Set user roles.
-     * 
-     * @param roles User roles
-     */
-    public void setRoles(Collection<RoleEntity> roles) {
-        this.roles = roles;
     }
 
     @Override

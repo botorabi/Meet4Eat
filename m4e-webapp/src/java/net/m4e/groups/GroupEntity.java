@@ -9,11 +9,17 @@
 package net.m4e.groups;
 
 import java.io.Serializable;
+import java.util.Collection;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import net.m4e.common.ImageEntity;
+import net.m4e.common.StatusEntity;
+import net.m4e.user.UserEntity;
 
 /**
  * A class describing a group of users
@@ -22,14 +28,25 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Date of creation Aug 18, 2017
  */
 @Entity
-@XmlRootElement
 public class GroupEntity implements Serializable {
 
+    /**
+     * Serialization version
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Unique entity ID
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    /**
+     * Entity status
+     */
+    @OneToOne(optional=false, cascade = CascadeType.ALL)
+    private StatusEntity status;       
 
     /**
      * Group name
@@ -40,6 +57,24 @@ public class GroupEntity implements Serializable {
      * Group description
      */
     private String description;
+
+    /**
+     * Photo
+     */
+    @OneToOne(optional=true, cascade = CascadeType.ALL)
+    private ImageEntity photo;
+
+    /**
+     * Group members
+     */
+    @OneToMany(targetEntity=UserEntity.class, cascade = {CascadeType.REFRESH, CascadeType.DETACH})
+    private Collection<UserEntity> members;
+
+    /**
+     * A list of locations which represent possible meeting points
+     */
+    @OneToMany(targetEntity=GroupLocationEntity.class, cascade = CascadeType.ALL)
+    private Collection<GroupLocationEntity> locations;
 
     /**
      * User alarm start time in millisecond.
@@ -76,6 +111,25 @@ public class GroupEntity implements Serializable {
     }
 
     /**
+     * Get entity status. It contains information about entity's life-cycle,
+     * ownership, etc.
+     * 
+     * @return Entity status
+     */
+    public StatusEntity getStatus() {
+        return status;
+    }
+
+    /**
+     * Set entity status.
+     * 
+     * @param status Entity status
+     */
+    public void setStatus(StatusEntity status) {
+        this.status = status;
+    }
+
+    /**
      * Get group name.
      * 
      * @return Group name
@@ -85,7 +139,7 @@ public class GroupEntity implements Serializable {
     }
 
     /**
-     * Set group  name.
+     * Set group name.
      * 
      * @param name Group name
      */
@@ -112,6 +166,24 @@ public class GroupEntity implements Serializable {
     }
 
     /**
+     * Get group photo.
+     * 
+     * @return ImageEntity containing the photo
+     */
+    public ImageEntity getPhoto() {
+        return photo;
+    }
+
+    /**
+     * Set the group photo.
+     * 
+     * @param photo ImageEntity containing the photo
+     */
+    public void setPhoto(ImageEntity photo) {
+        this.photo = photo;
+    }
+
+    /**
      * Get alarm start time.
      * 
      * @return Alarm start in millisecond
@@ -127,6 +199,42 @@ public class GroupEntity implements Serializable {
      */
     public void setAlarmStart(Long alarmStart) {
         this.alarmStart = alarmStart;
+    }
+
+    /**
+     * Get group members.
+     * 
+     * @return Group members
+     */
+    public Collection<UserEntity> getMembers() {
+        return members;
+    }
+
+    /**
+     * Set group members.
+     * 
+     * @param members Group members
+     */
+    public void setMembers(Collection<UserEntity> members) {
+        this.members = members;
+    }
+
+    /**
+     * Get group locations.
+     * 
+     * @return Group locations
+     */
+    public Collection<GroupLocationEntity> getLocations() {
+        return locations;
+    }
+
+    /**
+     * Set group locations.
+     * 
+     * @param locations Group locations
+     */
+    public void setLocations(Collection<GroupLocationEntity> locations) {
+        this.locations = locations;
     }
 
     /**

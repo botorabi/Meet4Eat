@@ -12,7 +12,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -26,7 +25,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Date of creation Aug 16, 2017
  */
 @Entity
-@XmlRootElement
 public class AppInfoEntity implements Serializable {
 
     /**

@@ -26,7 +26,7 @@ public class AppInfoUtils {
     private final static String TAG = "UserUtils";
 
     private final EntityManager entityManager;
-    
+
     private final UserTransaction userTransaction;
 
     /**

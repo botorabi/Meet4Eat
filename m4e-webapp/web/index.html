@@ -22,7 +22,7 @@
 		<link rel="stylesheet" href="public/libs/css/m4e.css" type="text/css">
 
 		<script>
-			var VIEW_VERSION = "1";
+			var VIEW_VERSION = "2";
 			var m4e = null;
 			var m4eAuth = null;
 			var m4eAuthUser = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
@@ -163,7 +163,7 @@
 				m4e.getServerInfo({
 					success: function(results, response) {
 						if (results.status === "ok") {
-							m4eAppInfo.serverVersion = results.data;
+							m4eAppInfo.serverVersion = results.data.version;
 							$('#info_serverversion').text(m4eAppInfo.serverVersion);
 						}
 					}
@@ -173,12 +173,12 @@
 			function setupDashboardPage() {
 				m4eGroups.getCount({
 					success: function(results, response) {
-						$('#count_groups').text(results);
+						$('#count_groups').text(results.data.count);
 					}
 				});
 				m4eUsers.getCount({
 					success: function(results, response) {
-						$('#count_users').text(results);
+						$('#count_users').text(results.data.count);
 					}
 				});
 				m4eUserTable = $('#table_users').DataTable({
@@ -209,24 +209,29 @@
 				m4eAuth.getAuthState({
 					success: function(results, response) {
 						if (results.status === "ok") {
-							if (response.auth === "yes") {
+							if (results.data.auth === "yes") {
 								showElement('main_content', true);
 								showElement('main_login', false);
 								// get some info on logged-in user
 								deferExecution(function () {
 									m4eUsers.find({
 										success: function(res, resp) {
-											m4eAuthUser.auth = 'yes';
-											m4eAuthUser.login = res.login;
-											m4eAuthUser.name = res.name;
-											m4eAuthUser.id = res.id;
-											m4eAuthUser.roles = res.roles;
-											onAuthenticated();
+											if (res.status === "ok") {
+												m4eAuthUser.auth = 'yes';
+												m4eAuthUser.login = res.data.login;
+												m4eAuthUser.name = res.data.name;
+												m4eAuthUser.id = res.data.id;
+												m4eAuthUser.roles = res.data.roles;
+												onAuthenticated();
+											}
+											else {
+												showModalBox(res.description, "Connection Problem", "Dismiss");
+											}
 										},
 										error: function(err) {
 											showModalBox(err, "Connection Problem", "Dismiss");
 										}
-									}, response.userId);
+									}, results.data.id);
 								}, 0);
 							}
 							else {
@@ -328,13 +333,13 @@
 							showModalBox("Cannot retrieve server stats!", "Communication Problem", "Dismiss");
 							return;
 						}
-						var stats = parseJSON(results.data);
+						var stats = results.data;
 						var maintenance = "-";
-						if (parseInt(stats.dateLastMaintenance) > 0) {
+						if (stats.dateLastMaintenance) {
 							maintenance = formatTime(new Date(parseInt(stats.dateLastMaintenance)));
 						}
 						var update = "-";
-						if (parseInt(stats.dateLastUpdate) > 0) {
+						if (stats.dateLastUpdate) {
 							update = formatTime(new Date(parseInt(stats.dateLastUpdate)));
 						}
 						$('#sys_serverversion').text(stats.version);
@@ -356,11 +361,11 @@
 				getUserTable().clear();
 				m4eUsers.getAll({
 					success: function(results, response) {
-						if (!results) {
+						if (results.status !== "ok") {
 							return;
 						}
-						for (var i = 0; i < results.length; i++) {
-							updateUiUserTableAdd(results[i]);
+						for (var i = 0; i < results.data.length; i++) {
+							updateUiUserTableAdd(results.data[i]);
 						}
 						getUserTable().draw("full-reset");
 					},
@@ -455,14 +460,15 @@
 				// fetch user details from server
 				m4eUsers.find({
 					success: function(results, response) {
-						if (!results) {
+						if (results.status !== "ok") {
 							showModalBox("User was not found for edit!", "Error", "Dismiss");
 							return;
 						}
-						$("#page_users_edit_form input[name='id']").val(results.id);
-						$("#page_users_edit_form input[name='login']").val(results.login);
-						$("#page_users_edit_form input[name='name']").val(results.name);
-						$("#page_users_edit_form input[name='email']").val(results.email);
+						var user = results.data;
+						$("#page_users_edit_form input[name='id']").val(user.id);
+						$("#page_users_edit_form input[name='login']").val(user.login);
+						$("#page_users_edit_form input[name='name']").val(user.name);
+						$("#page_users_edit_form input[name='email']").val(user.email);
 
 						// setup the available roles
 						var elemrolesel = $('#page_users_edit_roles_sel');
@@ -471,7 +477,7 @@
 						elemrolesel.append(new Option("", ""));
 						elemrolesel.prop("disabled", !authUserRolesContain(["ADMIN", "MODERATOR"]));
 						// select user roles in list
-						elemrolesel.val(results.roles);
+						elemrolesel.val(user.roles);
 					},
 					error: function(err) {
 						showModalBox(err, "Connection Error", "Dismiss");
@@ -574,7 +580,7 @@
 						showModalBox("Changes were successfully applied to user.", "User Update", "Dismiss");
 						if (newuser) {
 							// on successful creation the new user id is in results.data
-							fields.id = results.data;
+							fields.id = results.data.id;
 							updateUiUserTableAdd(fields);
 							getUserTable().draw("full-hold");
 						}

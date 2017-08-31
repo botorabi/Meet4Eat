@@ -56,20 +56,20 @@ public class AnnotationUtils {
     }
 
     /**
-     * Get a list of methods with annotations Path, AuthRole, and access method (GET, POST, etc.).
+     * Get a list of methods with annotations Path, AuthRole having grantRoles entries, and access method (GET, POST, etc.).
      * 
      * @param <T>   Class type
      * @param cls   Class which is checked for Path annotation
-     * @return      Paths, access method, and AuthRole of all methods which were annotated accordingly
+     * @return      Paths, access method, and AuthRole roles of all methods which were annotated accordingly
      */
-    public <T> Map<String /*path*/, Map<String /*access method*/, List<String /*roles*/>>> getMethodsAuthRule(Class<T> cls) {
+    public <T> Map<String /*path*/, Map<String /*access method*/, List<String /*roles*/>>> getMethodsAuthRoles(Class<T> cls) {
         Map<String/*path*/, Map<String /*access method*/, List<String /*roles*/>>> rules = new HashMap<>();
         for(Method method : cls.getDeclaredMethods()){
-            javax.ws.rs.Path        p      = method.getDeclaredAnnotation(javax.ws.rs.Path.class);
-            net.m4e.auth.AuthRole roles  = method.getDeclaredAnnotation(net.m4e.auth.AuthRole.class);
-            String   path         = Objects.isNull(p) ? "" : p.value();
-            String   accessmethod = getAccessMethod(method);
-            String[] rolesgrant   = Objects.isNull(roles) ? null : roles.grant();
+            javax.ws.rs.Path p = method.getDeclaredAnnotation(javax.ws.rs.Path.class);
+            net.m4e.auth.AuthRole authrole = method.getDeclaredAnnotation(net.m4e.auth.AuthRole.class);
+            String path = Objects.isNull(p) ? "" : p.value();
+            String accessmethod = getAccessMethod(method);
+            String[] rolesgrant = Objects.isNull(authrole) ? null : authrole.grantRoles();
 
             if (!Objects.isNull(path) && !Objects.isNull(accessmethod) && !Objects.isNull(rolesgrant)) {
                 Map<String /*access*/, List<String /*roles*/>> accessmethods = rules.get(path);
@@ -83,6 +83,39 @@ public class AnnotationUtils {
                     accessmethods.put(accessmethod, accessroles);
                 }
                 accessroles.addAll(Arrays.asList(rolesgrant));
+            }
+        }       
+        return rules;
+    }
+
+    /**
+     * Get a list of methods with annotations Path, AuthPermissions having grantPermissions entries, and access method (GET, POST, etc.).
+     * 
+     * @param <T>   Class type
+     * @param cls   Class which is checked for Path annotation
+     * @return      Paths, access method, and AuthRole permissions of all methods which were annotated accordingly
+     */
+    public <T> Map<String /*path*/, Map<String /*access method*/, List<String /*perms*/>>> getMethodsAuthPermissions(Class<T> cls) {
+        Map<String/*path*/, Map<String /*access method*/, List<String /*perms*/>>> rules = new HashMap<>();
+        for(Method method : cls.getDeclaredMethods()){
+            javax.ws.rs.Path p  = method.getDeclaredAnnotation(javax.ws.rs.Path.class);
+            net.m4e.auth.AuthRole authrole = method.getDeclaredAnnotation(net.m4e.auth.AuthRole.class);
+            String path = Objects.isNull(p) ? "" : p.value();
+            String accessmethod = getAccessMethod(method);
+            String[] permsgrant = Objects.isNull(authrole) ? null : authrole.grantPermissions();
+
+            if (!Objects.isNull(path) && !Objects.isNull(accessmethod) && !Objects.isNull(permsgrant)) {
+                Map<String /*access*/, List<String /*perms*/>> accessmethods = rules.get(path);
+                if (Objects.isNull(accessmethods)) {
+                    accessmethods = new HashMap<>();
+                    rules.put(path, accessmethods);
+                }
+                List<String /*perms*/> accessperms = accessmethods.get(accessmethod);
+                if (Objects.isNull(accessperms)) {
+                    accessperms = new ArrayList<>();
+                    accessmethods.put(accessmethod, accessperms);
+                }
+                accessperms.addAll(Arrays.asList(permsgrant));
             }
         }       
         return rules;

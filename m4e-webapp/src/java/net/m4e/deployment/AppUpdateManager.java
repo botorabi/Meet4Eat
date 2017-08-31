@@ -19,9 +19,10 @@ import net.m4e.core.Log;
 /**
  * This class cares about application updates. Whenever a new app version
  * is deployed this class deals with necessary steps to update data structures
- * etc.
+ * etc. The update manager is used during application startup.
  * 
- * The update manager is used during application startup.
+ * NOTE: Every deployed application version must have an own registered updater
+ *       in order to handle incremental updates properly. See UpdateResistry class.
  * 
  * @author boto
  * Date of creation Aug 22, 2017
@@ -160,7 +161,7 @@ public class AppUpdateManager {
             Log.error(TAG, "*** Problem occured while updating app information in database, reason: " + ex.getLocalizedMessage());
         }
     }
-    
+
     /**
      * Perform an update from current version to a new version.
      * 
@@ -170,20 +171,28 @@ public class AppUpdateManager {
      */
     private boolean performUpdate(String currentVersion, String newVersion) {
         Log.info(TAG, "Start updating deployment...");
-        int beg = updateRegistry.indexOf(findUpdater(currentVersion));
-        int end = updateRegistry.indexOf(findUpdater(newVersion));
-        // do some deployment consistency checks
-        if (beg < 0 || end < 0) {
-            Log.error(TAG, "*** Could not find proper updaters (" + beg + ", " + end + "). Check the deployed package, it may contain errors.");
-            return false;
+        int indexcurrent = updateRegistry.indexOf(findUpdater(currentVersion));
+        int indexnew = updateRegistry.indexOf(findUpdater(newVersion));
+        // check if there is an updater for this version
+        if (indexnew < 0) {
+            Log.debug(TAG, "There is no need for update migration for this version: " + currentVersion);
+            Log.info(TAG, "Deployment updating successfully completed");
+            return true;
         }
-        beg++;
-        if (beg > end) {
-            Log.error(TAG, "*** New updater is older than the current updater (" + beg + " > " + end + "). Check the deployed package, it may contain errors.");
+
+        if (indexcurrent < 0) {
+            Log.warning(TAG, "   Current version had no updater, update to new version skipping potention versions in between!");
+            indexcurrent = indexnew;
+        }
+
+        // do some deployment consistency checks
+        indexcurrent++;
+        if (indexcurrent > indexnew) {
+            Log.error(TAG, "*** New updater is older than the current updater (" + indexcurrent + " > " + indexnew + "). Check the deployed package, it may contain errors.");
             return false;
         }
         // go through every incremental update up to the current version
-        for (int i = beg; i <= end; i++) {
+        for (int i = indexcurrent; i <= indexnew; i++) {
             Log.info(TAG, "  Start updating to version " + updateRegistry.get(i).getAppVersion());
             try {
                 updateRegistry.get(i).performUpdate(entityManager, userTransaction);
