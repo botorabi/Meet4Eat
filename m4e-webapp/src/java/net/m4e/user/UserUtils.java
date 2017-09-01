@@ -63,7 +63,7 @@ public class UserUtils {
      * 
      * @return User roles
      */
-    public List<String> getAvailableUserRoles() {
+    public static List<String> getAvailableUserRoles() {
         List<String> roles = new ArrayList<>();
         roles.add(AuthRole.USER_ROLE_ADMIN);
         roles.add(AuthRole.USER_ROLE_MODERATOR);

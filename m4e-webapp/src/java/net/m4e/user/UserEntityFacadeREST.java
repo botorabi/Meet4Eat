@@ -10,7 +10,9 @@ package net.m4e.user;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Resource;
@@ -23,7 +25,6 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.auth.AuthRole;
 import net.m4e.auth.AuthorityConfig;
+import net.m4e.auth.RoleEntity;
 import net.m4e.common.EntityUtils;
 import net.m4e.common.ResponseResults;
 import net.m4e.common.StatusEntity;
@@ -77,7 +79,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @Path("create")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_MODERATOR})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String createUser(String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
@@ -94,6 +96,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             Log.warning(TAG, "*** Could not create new user, validation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
+
+        // validate and adapt requested user roles
+        reqentity.setRoles(adaptRequestedRoles(sessionuser, reqentity.getRoles()));
 
         UserEntity newuser;
         try {
@@ -136,21 +141,14 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
         // check if a user is updating itself or a user with higher privilege is trying to modify a user
         boolean owner = ((UserEntity)sessionuser).getId().equals(id);
-        boolean privuser = utils.checkUserRoles((UserEntity)sessionuser, Arrays.asList(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR));
+        boolean privuser = utils.checkUserRoles((UserEntity)sessionuser, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         if (!owner && !privuser) {
             Log.warning(TAG, "*** User was attempting to update another user without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
-        // validate the roles
-        List<String> allowedroles = utils.getAvailableUserRoles();
-        List<String> reqentityroles = reqentity.getRolesAsString();
-        for (int i = 0; i < reqentityroles.size(); i++) {
-            if (!allowedroles.contains(reqentityroles.get(i))) {
-                return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK,
-                        "Failed to update user, unsupported role '" + reqentityroles.get(i) + "'detected.", ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
-            }
-        }
+        // validate the requested roles, check for roles, e.g. only admins can define admin role for other users
+        user.setRoles(adaptRequestedRoles(sessionuser, reqentity.getRoles()));
         
         // take over non-empty fields
         if (Objects.nonNull(reqentity.getName()) && !reqentity.getName().isEmpty()) {
@@ -162,8 +160,6 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         if (Objects.nonNull(reqentity.getPassword()) && !reqentity.getPassword().isEmpty()) {
             user.setPassword(reqentity.getPassword());
         }
-        //! TODO check for roles, e.g. only admins can define admin role for other users
-        user.setRoles(reqentity.getRoles());
 
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         try {
@@ -178,7 +174,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @DELETE
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_MODERATOR})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
@@ -346,6 +342,35 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             throw ex;
         }
         return newuser;
+    }
+
+    /**
+     * Given a requesting user, check the requested roles and eliminate invalid
+     * roles from returned role set. Also doublicates are eliminated. On validating
+     * requested roles, the requesting user's roles are checked too.
+     * 
+     * @param requestingUser    User requesting for roles
+     * @param requestedRoles    Requeste roles
+     * @return A set of valid roles.
+     */
+    private Collection<RoleEntity> adaptRequestedRoles(UserEntity requestingUser, Collection<RoleEntity> requestedRoles) {
+        Collection<RoleEntity> res = new HashSet<>();
+        List<String> allowedroles = UserUtils.getAvailableUserRoles();
+        List<String> reqroles = requestingUser.getRolesAsString();
+        boolean isadmin  = reqroles.contains(AuthRole.USER_ROLE_ADMIN);
+        // check if any invalid role definitions exist, e.g. a normal user is not permitted to request for an admin role.
+        for (RoleEntity role: requestedRoles) {
+            if (!allowedroles.contains(role.getName())) {
+                Log.warning(TAG, "*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
+                continue;
+            }
+            if (!isadmin && role.getName().contentEquals(AuthRole.USER_ROLE_ADMIN)) {
+                Log.warning(TAG, "*** Requesting user has no sufficient permission for requesting for  role '" + role.getName() + "', ignoring it.");
+                continue;
+            }
+            res.add(role);
+        }
+        return res;
     }
 
     @Override
