@@ -61,7 +61,7 @@ public class GroupEntity implements Serializable {
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = CascadeType.ALL)
+    @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private ImageEntity photo;
 
     /**
@@ -77,14 +77,14 @@ public class GroupEntity implements Serializable {
     private Collection<GroupLocationEntity> locations;
 
     /**
-     * User alarm start time in millisecond.
+     * User event start time in millisecond.
      */
-    private Long alarmStart;
+    private Long eventStart;
 
     /**
-     * User alarm interval in millisecond.
+     * User event interval in millisecond.
      */
-    private Long alarmInterval;
+    private Long eventInterval;
 
     /**
      * Create a group entity.
@@ -184,21 +184,39 @@ public class GroupEntity implements Serializable {
     }
 
     /**
-     * Get alarm start time.
+     * Get the event start time.
      * 
-     * @return Alarm start in millisecond
+     * @return Event start in millisecond
      */
-    public Long getAlarmStart() {
-        return alarmStart;
+    public Long getEventStart() {
+        return eventStart;
     }
 
     /**
-     * Set alarm start time.
+     * Set the event start time.
      * 
-     * @param alarmStart Alarm start in millisecond
+     * @param eventStart Event start in millisecond
      */
-    public void setAlarmStart(Long alarmStart) {
-        this.alarmStart = alarmStart;
+    public void setEventStart(Long eventStart) {
+        this.eventStart = eventStart;
+    }
+
+    /**
+     * Get the event interval. A value 0 means no periodic event.
+     * 
+     * @return Event interval in millisecond.
+     */
+    public Long getEventInterval() {
+        return eventInterval;
+    }
+
+    /**
+     * Set the event interval. Let it be 0 in order to disable periodic event.
+     * 
+     * @param eventInterval Event interval in millisecond.
+     */
+    public void setEventInterval(Long eventInterval) {
+        this.eventInterval = eventInterval;
     }
 
     /**
@@ -236,25 +254,6 @@ public class GroupEntity implements Serializable {
     public void setLocations(Collection<GroupLocationEntity> locations) {
         this.locations = locations;
     }
-
-    /**
-     * Get alarm interval. A value 0 means no periodic alarm.
-     * 
-     * @return Alarm interval in millisecond.
-     */
-    public Long getAlarmInterval() {
-        return alarmInterval;
-    }
-
-    /**
-     * Set alarm interval. Let it be 0 in order to disable periodic alarm.
-     * 
-     * @param alarmInterval Alarm interval in millisecond.
-     */
-    public void setAlarmInterval(Long alarmInterval) {
-        this.alarmInterval = alarmInterval;
-    }
-
 
     @Override
     public int hashCode() {

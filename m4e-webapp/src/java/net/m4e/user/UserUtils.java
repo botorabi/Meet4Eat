@@ -10,6 +10,7 @@ package net.m4e.user;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +32,7 @@ import net.m4e.core.AppInfoUtils;
 import net.m4e.core.Log;
 
 /**
- * A collection of user utilities
+ * A collection of user related utilities
  * 
  * @author boto
  * Date of creation Aug 28, 2017
@@ -68,6 +69,19 @@ public class UserUtils {
         roles.add(AuthRole.USER_ROLE_ADMIN);
         roles.add(AuthRole.USER_ROLE_MODERATOR);
         return roles;
+    }
+
+    /**
+     * Check if the given user has an ADMIN role or is the owner of a resource.
+     * 
+     * @param user              User which is checked for admin role and ownership
+     * @param resourceStatus    Resource status object
+     * @return                  Return true if the given user has ADMIN role or 
+     *                           is the owner of a resource, otherwise return false.
+     */
+    public boolean userIsOwnerOrAdmin(UserEntity user, StatusEntity resourceStatus) {
+        return user.getId().equals(resourceStatus.getIdOwner()) ||
+               checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
     }
 
     /**
@@ -111,7 +125,7 @@ public class UserUtils {
      * @param user User entity to update
      */
     public void updateUser(UserEntity user) {
-        EntityUtils eutils = new EntityUtils(getEntityManager(), getUserTransaction());
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         try {
             eutils.updateEntity(user);
         }
@@ -121,7 +135,8 @@ public class UserUtils {
     }
 
     /**
-     * Mark a user as deleted by setting its status' deletion time stamp.
+     * Mark a user as deleted by setting its status deletion time stamp. This
+     * method also updates the system app info entity.
      * 
      * @param user          User entity
      * @throws Exception    Throws exception if any problem occurred.
@@ -163,7 +178,7 @@ public class UserUtils {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUser(String login) {
-        EntityUtils eutils = new EntityUtils(getEntityManager(), getUserTransaction());
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         List<UserEntity> entities = eutils.findEntityByField(UserEntity.class, "login", login);
         if (entities.size() == 1) {
             return entities.get(0);
@@ -180,7 +195,7 @@ public class UserUtils {
      * @param user User entity to update
      */
     public void updateUserLastLogin(UserEntity user) {
-        EntityUtils eutils = new EntityUtils(getEntityManager(), getUserTransaction());
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         user.setDateLastLogin((new Date().getTime()));
         try {
             eutils.updateEntity(user);
@@ -197,7 +212,7 @@ public class UserUtils {
      * @param roles     User roles
      */
     public void addUserRoles(UserEntity user, List<String> roles) {
-        EntityUtils eutils = new EntityUtils(getEntityManager(), getUserTransaction());
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         for (String role: roles) {
             // ignore empty strings
             if (role.isEmpty()) {
@@ -278,22 +293,5 @@ public class UserUtils {
         entity.setDateLastLogin(0L);
         entity.setLogin(login);
         return entity;
-    }
-
-    /**
-     * Get the entity manager.
-     * 
-     * @return Entity manager
-     */
-    private EntityManager getEntityManager() {
-        return entityManager;
-    }
-
-    /**
-     * Get the user transaction instance.
-     * @return User transaction
-     */
-    private UserTransaction getUserTransaction() {
-        return userTransaction;
     }
 }

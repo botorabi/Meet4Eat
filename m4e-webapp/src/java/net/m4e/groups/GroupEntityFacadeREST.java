@@ -8,6 +8,8 @@
 
 package net.m4e.groups;
 
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Resource;
@@ -15,6 +17,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -33,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import net.m4e.auth.AuthRole;
 import net.m4e.auth.AuthorityConfig;
 import net.m4e.common.ResponseResults;
+import net.m4e.common.StatusEntity;
 import net.m4e.core.AppInfoEntity;
 import net.m4e.core.AppInfoUtils;
 import net.m4e.core.Log;
@@ -96,7 +100,7 @@ public class GroupEntityFacadeREST extends net.m4e.common.AbstractFacade<GroupEn
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new group.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
-        //! NOTE on successful entity creation the new ID is sent back by results.data field.
+        //! NOTE on successful entity creation the new group ID is sent back by results.data field.
         jsonresponse.add("id", newgroup.getId());
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Group was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
@@ -106,49 +110,140 @@ public class GroupEntityFacadeREST extends net.m4e.common.AbstractFacade<GroupEn
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ENDPOINT_CHECK})
-    public String edit(@PathParam("id") Long id, GroupEntity entity) {
-        if (entity == null) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update group", 400, null);
+    public String edit(@PathParam("id") Long id, String groupJson, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        jsonresponse.add("id", id);
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (Objects.isNull(sessionuser)) {
+            Log.error(TAG, "*** Cannot update user, no user in session found!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update group, no authentication.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
         }
-        super.edit(entity);
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Group successfully updated", 200, null);
+
+        GroupUtils grouputils = new GroupUtils(entityManager, userTransaction);
+        GroupEntity reqentity = grouputils.importGroupJSON(groupJson);
+        if (reqentity == null) {
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update group, invalid input.", ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+        }
+
+        GroupEntity group = super.find(id);
+        if (Objects.isNull(group)) {
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find group for updating.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        // check if the group owner or a user with higher privilege is trying to modify the group
+        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        if (!userutils.userIsOwnerOrAdmin(sessionuser, group.getStatus())) {
+            Log.warning(TAG, "*** User was attempting to update a group without proper privilege!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update group, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+        }
+        
+        // take over non-empty fields
+        if (Objects.nonNull(reqentity.getName()) && !reqentity.getName().isEmpty()) {
+            group.setName(reqentity.getName());
+        }
+        if (Objects.nonNull(reqentity.getDescription()) && !reqentity.getDescription().isEmpty()) {
+            group.setDescription(reqentity.getDescription());
+        }
+        if (reqentity.getEventStart() > 0L) {
+            group.setEventStart(reqentity.getEventStart());
+        }
+        if (reqentity.getEventInterval() > 0L) {
+            group.setEventInterval(reqentity.getEventInterval());
+        }
+
+        try {
+            grouputils.updateGroup(group);
+        }
+        catch (Exception ex) {
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update group.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        }
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Group successfully updated", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     @DELETE
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ENDPOINT_CHECK})
-    public String remove(@PathParam("id") Long id) {
-        GroupEntity entity = super.find(id);
-        if (entity == null) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find group for deletion", 400, null);
+    public String remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        jsonresponse.add("id", id);
+
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (Objects.isNull(sessionuser)) {
+            Log.error(TAG, "*** Cannot delete group, no user in session found!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete group.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
         }
-        super.remove(entity);
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Group successfully deleted", 200, null);
+
+        GroupEntity group = super.find(id);
+        if (group == null) {
+            Log.warning(TAG, "*** User was attempting to delete non-existing group!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        // check if the group owner or a user with higher privilege is trying to remove the group
+        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        if (!userutils.userIsOwnerOrAdmin(sessionuser, group.getStatus())) {
+            Log.warning(TAG, "*** User was attempting to remove a group without proper privilege!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove group, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+        }
+
+        GroupUtils utils = new GroupUtils(entityManager, userTransaction);
+        try {
+            utils.markGroupAsDeleted(group);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not mark group as deleted, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete group.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        }
+
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Group successfully deleted", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public GroupEntity find(@PathParam("id") Long id) {
-        return super.find(id);
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
+    public String find(@PathParam("id") Long id) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        GroupEntity group = super.find(id);
+        if (Objects.isNull(group) || group.getStatus().getIsDeleted()) {
+            jsonresponse.add("id", id);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Group was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+        GroupUtils utils = new GroupUtils(entityManager, userTransaction);
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Group was found.", ResponseResults.CODE_OK, utils.exportGroupJSON(group).build().toString());
     }
 
     @GET
-    @Override
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public List<GroupEntity> findAll() {
-        return super.findAll();
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
+    public String findAllGroups() {
+        GroupUtils utils = new GroupUtils(entityManager, userTransaction);
+        JsonArrayBuilder allgroups = Json.createArrayBuilder();
+        List<GroupEntity> groups = super.findAll();
+        for (GroupEntity group: groups) {
+            // groups which are marked as deleted are excluded from export
+            if (!group.getStatus().getIsDeleted()) {
+                allgroups.add(utils.exportGroupJSON(group));
+            }
+        }
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "List of groups", ResponseResults.CODE_OK, allgroups.build().toString());
     }
 
     @GET
     @Path("{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public List<GroupEntity> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-        return super.findRange(new int[]{from, to});
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
+    public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
+        GroupUtils utils = new GroupUtils(entityManager, userTransaction);
+        JsonArrayBuilder allgroups = Json.createArrayBuilder();
+        List<GroupEntity> groups = super.findRange(new int[]{from, to});
+        for (GroupEntity group: groups) {
+            if (!group.getStatus().getIsDeleted()) {
+                allgroups.add(utils.exportGroupJSON(group));
+            }
+        }
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "List of groups", ResponseResults.CODE_OK, allgroups.build().toString());
     }
 
     @GET
@@ -157,11 +252,11 @@ public class GroupEntityFacadeREST extends net.m4e.common.AbstractFacade<GroupEn
     @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String countREST() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        // NOTE the final user count is the count of GroupEntity entries in database minus the count of groups to be purged
+        // NOTE the final group count is the count of GroupEntity entries in database minus the count of groups to be purged
         AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
-        Long userpurges = appinfo.getGroupCountPurge();
-        jsonresponse.add("count", super.count() - userpurges);
+        Long grouppurges = appinfo.getGroupCountPurge();
+        jsonresponse.add("count", super.count() - grouppurges);
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Count of groups", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
@@ -175,16 +270,14 @@ public class GroupEntityFacadeREST extends net.m4e.common.AbstractFacade<GroupEn
      * all fields and return an GroupEntity, or throw an exception if the validation failed.
      * 
      * @param groupJson      Data for creating a new group in JSON format
-     * @return               A UserEntity created out of given input
+     * @return               A GroupEntity created out of given input
      * @throws Exception     Throws an exception if the validation fails.
      */
     private GroupEntity validateNewEntityInput(String groupJson) throws Exception {
-        //! TODO
-        /*
         GroupUtils grouputils = new GroupUtils(entityManager, userTransaction);
-        GroupEntity reqentity = grouputils.importUserJSON(groupJson);
+        GroupEntity reqentity = grouputils.importGroupJSON(groupJson);
         if (reqentity == null) {
-            throw new Exception("Failed to created user, invalid input.");
+            throw new Exception("Failed to created group, invalid input.");
         }
 
         // perform some checks
@@ -193,8 +286,6 @@ public class GroupEntityFacadeREST extends net.m4e.common.AbstractFacade<GroupEn
         }
 
         return reqentity;
-        */
-        return null;
     }
 
     /**
@@ -206,7 +297,29 @@ public class GroupEntityFacadeREST extends net.m4e.common.AbstractFacade<GroupEn
      * @throws Exception    Throws exception if something went wrong.
      */
     private GroupEntity createNewGroup(GroupEntity inputEntity, Long creatorID) throws Exception {
-        //! TODO
-        return null;
+        GroupUtils grouputils = new GroupUtils(entityManager, userTransaction);
+        // setup the new entity
+        GroupEntity newgroup = new GroupEntity();
+        newgroup.setName(inputEntity.getName());
+        newgroup.setDescription(inputEntity.getDescription());
+        newgroup.setEventStart(inputEntity.getEventStart());
+        newgroup.setEventInterval(inputEntity.getEventInterval());
+
+        // setup the status
+        StatusEntity status = new StatusEntity();
+        status.setIdCreator(creatorID);
+        status.setIdOwner(creatorID);
+        Date now = new Date();
+        status.setDateCreation(now.getTime());
+        status.setDateLastUpdate(now.getTime());
+        newgroup.setStatus(status);
+
+        try {
+            grouputils.createGroup(newgroup);
+        }
+        catch (Exception ex) {
+            throw ex;
+        }
+        return newgroup;
     }
 }

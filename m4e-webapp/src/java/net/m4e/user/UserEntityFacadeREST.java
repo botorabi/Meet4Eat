@@ -39,7 +39,6 @@ import javax.ws.rs.core.MediaType;
 import net.m4e.auth.AuthRole;
 import net.m4e.auth.AuthorityConfig;
 import net.m4e.auth.RoleEntity;
-import net.m4e.common.EntityUtils;
 import net.m4e.common.ResponseResults;
 import net.m4e.common.StatusEntity;
 import net.m4e.core.AppInfoEntity;
@@ -128,8 +127,8 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
         }
 
-        UserUtils utils = new UserUtils(entityManager, userTransaction);
-        UserEntity reqentity = utils.importUserJSON(userJson);
+        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        UserEntity reqentity = userutils.importUserJSON(userJson);
         if (reqentity == null) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, invalid input.", ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
@@ -140,9 +139,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         // check if a user is updating itself or a user with higher privilege is trying to modify a user
-        boolean owner = ((UserEntity)sessionuser).getId().equals(id);
-        boolean privuser = utils.checkUserRoles((UserEntity)sessionuser, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
-        if (!owner && !privuser) {
+        if (!userutils.userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
             Log.warning(TAG, "*** User was attempting to update another user without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -161,9 +158,8 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             user.setPassword(reqentity.getPassword());
         }
 
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         try {
-            eutils.updateEntity(user);
+            userutils.updateUser(user);
         }
         catch (Exception ex) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
@@ -211,7 +207,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String find(@PathParam("id") Long id) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity user = super.find(id);
@@ -225,7 +221,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String findAllUsers() {
         UserUtils utils = new UserUtils(entityManager, userTransaction);
         JsonArrayBuilder allusers = Json.createArrayBuilder();
@@ -242,7 +238,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @GET
     @Path("{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         UserUtils utils = new UserUtils(entityManager, userTransaction);
         JsonArrayBuilder allusers = Json.createArrayBuilder();
@@ -359,16 +355,18 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         List<String> reqroles = requestingUser.getRolesAsString();
         boolean isadmin  = reqroles.contains(AuthRole.USER_ROLE_ADMIN);
         // check if any invalid role definitions exist, e.g. a normal user is not permitted to request for an admin role.
-        for (RoleEntity role: requestedRoles) {
-            if (!allowedroles.contains(role.getName())) {
-                Log.warning(TAG, "*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
-                continue;
+        if (Objects.nonNull(requestedRoles)) {
+            for (RoleEntity role: requestedRoles) {
+                if (!allowedroles.contains(role.getName())) {
+                    Log.warning(TAG, "*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
+                    continue;
+                }
+                if (!isadmin && role.getName().contentEquals(AuthRole.USER_ROLE_ADMIN)) {
+                    Log.warning(TAG, "*** Requesting user has no sufficient permission for requesting for  role '" + role.getName() + "', ignoring it.");
+                    continue;
+                }
+                res.add(role);
             }
-            if (!isadmin && role.getName().contentEquals(AuthRole.USER_ROLE_ADMIN)) {
-                Log.warning(TAG, "*** Requesting user has no sufficient permission for requesting for  role '" + role.getName() + "', ignoring it.");
-                continue;
-            }
-            res.add(role);
         }
         return res;
     }

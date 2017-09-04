@@ -21,7 +21,7 @@ The system consists of two major parts: a server providing proper web services a
 
 # Web Services? Tel me more!
 
-The web services are implemented by using the bare-bone Java EE providing RESTful services. They provide necessary functionality such as
+The web services are implemented by using bare-bone Java EE providing RESTful services. They provide necessary functionality such as
 
  - User authentication
  
@@ -38,4 +38,4 @@ An administration panel provides a convenient user interface for system monitori
 # What about the User Interaction
 
 The user interacts with the system by the means of an application client. For desktops a Qt based application is unter development. Later, native apps for smartphones and a browser based solution may follow.
-All clients have the same RESTful interface for interacting with the system, so it is simple to develop third party applications for **Meet4Eat**.
+All clients have the same REST interface for interacting with the system, so it is simple to develop third party applications for **Meet4Eat**.

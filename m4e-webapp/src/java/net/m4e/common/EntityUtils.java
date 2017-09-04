@@ -126,6 +126,18 @@ public class EntityUtils {
     }
 
     /**
+     * Try to find any entity given its ID.
+     * 
+     * @param <T>           Entity class type
+     * @param entityClass   Pass the entity class
+     * @param id            Entity's ID
+     * @return Instance of found entity, or null if no entity with given ID was found.
+     */
+    public <T> T findEntity(Class<T> entityClass, Long id) {
+        return entityManager.find(entityClass, id);
+    }
+
+    /**
      * Try to find all entities which has the value 'matchName' in their field 'fieldValue'.
      * 
      * @param <T>           Entity class type

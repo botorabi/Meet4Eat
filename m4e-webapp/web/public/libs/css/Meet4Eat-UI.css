@@ -15,3 +15,22 @@ License: MIT License (MIT), read the LICENSE text in
     margin-top: 50px;
     text-align: center;
 }
+
+.weekday input {
+    display: none!important;
+}
+
+.weekday input[type=checkbox] + label {
+    background: #ddd;
+    width: 60px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.weekday input[type=checkbox]:checked + label {
+    background: #337ab7;
+    border-color: #2e6da4;
+    color: #ffffff;
+}

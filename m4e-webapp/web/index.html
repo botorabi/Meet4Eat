@@ -7,38 +7,23 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script src="public/libs/js/jquery.js"></script>
 		<script src="public/libs/js/bootstrap.js"></script>
+		<script src="public/libs/js/moment.js"></script>
 		<script src="public/libs/js/metisMenu.js"></script>
 		<script src="public/libs/js/jquery.dataTables.js"></script>
 		<script src="public/libs/js/dataTables.bootstrap.js"></script>
 		<script src="public/libs/js/dataTables.responsive.js"></script>
+		<script src="public/libs/js/bootstrap-datetimepicker.min.js"></script>
 		<script src="public/libs/js/sb-admin-2.js"></script>
 		<script src="public/libs/js/Meet4Eat-REST.js"></script>
 		<script src="public/libs/js/Meet4Eat-UI.js"></script>
 		<link rel="stylesheet" href="public/libs/css/bootstrap.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/dataTables.bootstrap.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/dataTables.responsive.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/bootstrap-datetimepicker.min.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/metisMenu.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/sb-admin-2.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/font-awesome.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/Meet4Eat-UI.css" type="text/css">
-
-		<script>
-			var m4eUI = null;
-
-			/**
-			 * Get the UI controller.
-			 * @returns {Meet4EatUI}  UI controller
-			 */
-			function getMeet4EatUI() {
-				return m4eUI;
-			}
-
-			/* initialize UI */
-			$(function() {
-				m4eUI = new Meet4EatUI();
-				m4eUI.inititialize();
-			});
-		</script>
 	</head>
 	<body>
 		<div class="container hide" id="main_login">
@@ -219,7 +204,6 @@
 						<div class="col-lg-12">
 							<h1 class="page-header">Users <a id="page_users_new" class="hide btn btn-sm btn-primary pull-right" onclick="getMeet4EatUI().onBtnUserNew()">New User</a></h1>
 						</div>
-						<!-- /.col-lg-12 -->
 					</div>
 					<div class="row">
 						<div class="col-lg-12">
@@ -322,11 +306,10 @@
 				</div>
 				<!-- page_users_edit -->
 
-
 				<div id="menu_groups" class="hide">
 					<div class="row">
 						<div class="col-lg-12">
-							<h1 class="page-header">Groups</h1>
+							<h1 class="page-header">Groups <a id="page_groups_new" class="btn btn-sm btn-primary pull-right" onclick="getMeet4EatUI().onBtnGroupNew()">New Group</a></h1>
 						</div>
 						<!-- /.col-lg-12 -->
 					</div>
@@ -338,38 +321,17 @@
 								</div>
 								<!-- /.panel-heading -->
 								<div class="panel-body">
-									<table width="100%" class="table table-striped table-bordered table-hover" id="table_groups">
+									<table id="table_groups" width="100%" class="table table-striped table-bordered table-hover">
 										<thead>
 											<tr>
-												<th>Rendering engine</th>
-												<th>Browser</th>
-												<th>Platform(s)</th>
-												<th>Engine version</th>
-												<th>CSS grade</th>
+												<th>Name</th>
+												<th>Description</th>
+												<th>Event Start</th>
+												<th>Event Interval</th>
+												<th></th>
 											</tr>
 										</thead>
 										<tbody>
-											<tr>
-												<td>Trident</td>
-												<td>Internet Explorer 4.0</td>
-												<td>Win 95+</td>
-												<td class="center">4</td>
-												<td class="center">X</td>
-											</tr>
-											<tr>
-												<td>Trident</td>
-												<td>Internet Explorer 5.0</td>
-												<td>Win 95+</td>
-												<td class="center">5</td>
-												<td class="center">C</td>
-											</tr>
-											<tr>
-												<td>Trident</td>
-												<td>Internet Explorer 5.5</td>
-												<td>Win 95+</td>
-												<td class="center">5.5</td>
-												<td class="center">A</td>
-											</tr>
 										</tbody>
 									</table>
 								</div>
@@ -382,6 +344,111 @@
 					<!-- /.row -->
 				</div>
 				<!-- menu_groups -->
+
+				<!-- menu_groups_edit -->
+				<div id="page_groups_edit" class="hide">
+					<div class="row">
+						<div class="col-sm-12">
+							<h1 class="page-header text-center">Edit Group</h1>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<div class="row">
+						<div class="col-lg-8 col-lg-offset-2 col-sm-12">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<strong><span id="page_groups_edit_title"></span></strong>
+								</div>
+								<!-- /.panel-heading -->
+								<div class="panel-body">
+									<form role="form" id="page_groups_edit_form">
+										<input name="id" hidden>
+										<div class="form-group col-sm-12">
+											<label>Name</label>
+											<input class="form-control" name="name" placeholder="Enter text">
+											<p class="help-block">Group name</p>
+										</div>
+										<div class="form-group col-sm-12">
+											<label>Description</label>
+											<input class="form-control" name="description" placeholder="Short description">
+											<p class="help-block">Optional short group description</p>
+										</div>
+										<div class="form-group col-sm-12">
+											<label>Event Start</label>
+											<div id="page_groups_edit_form_eventstart" class='input-group date'>
+												<input type='text' class="form-control" />
+												<span class="input-group-addon">
+													<span class="glyphicon glyphicon-calendar"></span>
+												</span>
+											</div>
+											<p class="help-block">Start of event</p>
+										</div>
+										<div class="row form-group">
+											<div class="col-sm-6">
+												<label>Event Repeat: Week Days</label>
+												<div class="weekday">
+													<input type="checkbox" id="page_groups_edit_form_weekday0"/>
+													<label for="page_groups_edit_form_weekday0">Mon</label>
+													<input type="checkbox" id="page_groups_edit_form_weekday1"/>
+													<label for="page_groups_edit_form_weekday1">Tue</label>
+													<input type="checkbox" id="page_groups_edit_form_weekday2"/>
+													<label for="page_groups_edit_form_weekday2">Wed</label>
+													<input type="checkbox" id="page_groups_edit_form_weekday3"/>
+													<label for="page_groups_edit_form_weekday3">Thu</label>
+													<input type="checkbox" id="page_groups_edit_form_weekday4"/>
+													<label for="page_groups_edit_form_weekday4">Fri</label>
+													<input type="checkbox" id="page_groups_edit_form_weekday5"/>
+													<label for="page_groups_edit_form_weekday5">Sat</label>
+													<input type="checkbox" id="page_groups_edit_form_weekday6"/>
+													<label for="page_groups_edit_form_weekday6">Sun</label>
+												</div>
+												<p class="help-block">Define days of week for a repeating event.</p>
+											</div>
+											<div class="col-sm-6">
+												<label>Event Repeat: Day Time</label>
+												<div id="page_groups_edit_form_daytime" class='input-group date'>
+													<input type='text' class="form-control" />
+													<span class="input-group-addon">
+														<span class="glyphicon glyphicon-time"></span>
+													</span>
+												</div>
+												<p class="help-block">Define a day time for a repeating event.</p>
+											</div>
+										</div>
+										<div class="row">
+											<div class="form-group col-sm-6">
+												<label>Group Members</label>
+												<ul class="list-group" id="page_groups_edit_members" style="max-height:200px; overflow-y:auto;">
+													<li class="list-group-item">Member 1</li>
+													<li class="list-group-item">Member 2</li>
+													<li class="list-group-item">Member 3</li>
+												</ul>
+												<a class="btn btn-default">Add Member...</a>
+											</div>
+											<div class="form-group col-sm-6">
+												<input hidden name="photo">
+												<label>Group Image</label>
+												<a class="form-control btn btn-lg btn-info" onclick="alert('TODO');">IMG</a>
+											</div>
+										</div>
+									</form>
+								</div>
+								<!-- /.panel-body -->
+								<div class="panel-footer">
+									<div class="btn-toolbar text-right">
+										<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="getMeet4EatUI().onBtnGroupEditApply()">Apply</a>
+										<a class="btn btn-lg btn-primary col-lg-3 pull-right" onclick="getMeet4EatUI().onBtnGroupEditCancel()">Cancel</a>
+									</div>
+								</div>
+								<!-- /.panel-footer -->
+							</div>
+							<!-- /.panel -->
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- page_users_edit -->
 
 				<div id="menu_system" class="hide">
 					<div class="row">
@@ -468,5 +535,22 @@
 		<!-- /.modal -->
 
 		<div id="display_error"></div>
+		<script>
+			var m4eUI = null;
+
+			/**
+			 * Get the UI controller.
+			 * @returns {Meet4EatUI}  UI controller
+			 */
+			function getMeet4EatUI() {
+				return m4eUI;
+			}
+
+			/* initialize UI */
+			$(function() {
+				m4eUI = new Meet4EatUI();
+				m4eUI.inititialize();
+			});
+		</script>
 	</body>
 </html>
