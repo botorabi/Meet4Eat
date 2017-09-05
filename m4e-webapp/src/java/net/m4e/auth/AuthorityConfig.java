@@ -44,7 +44,7 @@ public class AuthorityConfig {
         net.m4e.core.AppInfoEntityFacadeREST.class,
         net.m4e.user.UserEntityFacadeREST.class,
         net.m4e.user.UserAuthenticationFacadeREST.class,
-        net.m4e.groups.GroupEntityFacadeREST.class
+        net.m4e.event.EventEntityFacadeREST.class
     };
 
     /**

@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.groups;
+package net.m4e.event;
 
 import java.io.Serializable;
 import javax.persistence.CascadeType;
@@ -18,12 +18,13 @@ import javax.persistence.OneToOne;
 import net.m4e.common.ImageEntity;
 
 /**
- *
+ * This entity describes an event location.
+ * 
  * @author abotorabi
  * Date of creation Aug 31, 2017
  */
 @Entity
-public class GroupLocationEntity implements Serializable {
+public class EventLocationEntity implements Serializable {
 
     /**
      * Serialization version
@@ -38,12 +39,12 @@ public class GroupLocationEntity implements Serializable {
     private Long id;
 
     /**
-     * Group name
+     * Event name
      */
     private String name;
 
     /**
-     * Group description
+     * Event description
      */
     private String description;
 
@@ -54,67 +55,67 @@ public class GroupLocationEntity implements Serializable {
     private ImageEntity photo;
 
     /**
-     * Create a group location instance.
+     * Create an event location instance.
      */
-    public GroupLocationEntity() {
+    public EventLocationEntity() {
     }
 
     /**
-     * Get group ID.
+     * Get event location ID.
      * 
-     * @return Group ID
+     * @return Event location ID
      */
     public Long getId() {
         return id;
     }
 
     /**
-     * Set Group ID.
+     * Set event location ID.
      * 
-     * @param id Group ID
+     * @param id Event location ID
      */
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
-     * Get group location name.
+     * Get event location name.
      * 
-     * @return Group location name
+     * @return Event location name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Set group location name.
+     * Set event location name.
      * 
-     * @param name Group location name
+     * @param name Event location name
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * Get group location description.
+     * Get event location description.
      * 
-     * @return Group location description
+     * @return Event location description
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * Set group location description.
+     * Set event location description.
      * 
-     * @param description Group location description 
+     * @param description Event location description 
      */
     public void setDescription(String description) {
         this.description = description;
     }
 
     /**
-     * Get group photo.
+     * Get event location photo.
      * 
      * @return ImageEntity containing the photo
      */
@@ -123,7 +124,7 @@ public class GroupLocationEntity implements Serializable {
     }
 
     /**
-     * Set the photo.
+     * Set event location photo.
      * 
      * @param photo ImageEntity containing the photo
      */
@@ -140,10 +141,10 @@ public class GroupLocationEntity implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof GroupLocationEntity)) {
+        if (!(object instanceof EventLocationEntity)) {
             return false;
         }
-        GroupLocationEntity other = (GroupLocationEntity) object;
+        EventLocationEntity other = (EventLocationEntity) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -152,6 +153,6 @@ public class GroupLocationEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.groups.GroupLocationEntity[ id=" + id + " ]";
+        return "net.m4e.events.EventLocationEntity[ id=" + id + " ]";
     }
 }

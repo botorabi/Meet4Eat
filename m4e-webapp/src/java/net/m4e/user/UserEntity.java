@@ -68,17 +68,19 @@ public class UserEntity implements Serializable {
     /**
      * User login
      */
-    @Column(unique=true)
+    @Column(unique=true, nullable=false)
     private String login;
 
     /**
      * User name
      */
+    @Column(nullable=false)
     private String name;
 
     /**
      * Password
      */
+    @Column(nullable=false)
     private String password;
 
     /**
@@ -89,7 +91,7 @@ public class UserEntity implements Serializable {
     /**
      * Timestamp of last login (time in milliseconds)
      */
-    private Long dateLastLogin;
+    private Long dateLastLogin = 0L;
 
     /**
      * Get ID.

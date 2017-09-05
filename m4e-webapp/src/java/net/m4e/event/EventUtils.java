@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.groups;
+package net.m4e.event;
 
 import java.io.StringReader;
 import java.util.Collection;
@@ -21,93 +21,94 @@ import javax.transaction.UserTransaction;
 import net.m4e.common.EntityUtils;
 import net.m4e.common.ImageEntity;
 import net.m4e.common.StatusEntity;
+import net.m4e.common.StringUtils;
 import net.m4e.core.AppInfoEntity;
 import net.m4e.core.AppInfoUtils;
 import net.m4e.core.Log;
 import net.m4e.user.UserEntity;
 
 /**
- * A collection of group related utilities
+ * A collection of event related utilities
  *
  * @author boto
  * Date of creation Sep 4, 2017
  */
-public class GroupUtils {
+public class EventUtils {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "GroupUtils";
+    private final static String TAG = "EventUtils";
 
     private final EntityManager entityManager;
 
     private final UserTransaction userTransaction;
 
     /**
-     * Create an instance of group utilities.
+     * Create an instance of event utilities.
      * 
      * @param entityManager    Entity manager
      * @param userTransaction  User transaction
      */
-    public GroupUtils(EntityManager entityManager, UserTransaction userTransaction) {
+    public EventUtils(EntityManager entityManager, UserTransaction userTransaction) {
         this.entityManager = entityManager;
         this.userTransaction = userTransaction;
     }
 
     /**
-     * Given an group entity filled with all its fields, create it in database.
+     * Given an event entity filled with all its fields, create it in database.
      * 
-     * @param group         Group entity
+     * @param event         Event entity
      * @throws Exception    Throws exception if any problem occurred.
      */
-    public void createGroup(GroupEntity group) throws Exception {
+    public void createEvent(EventEntity event) throws Exception {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
 
-        // photo and members are shared objects, so remove them before group creation
-        ImageEntity photo = group.getPhoto();
-        group.setPhoto(null);
-        Collection<UserEntity> members = group.getMembers();
-        group.setMembers(null);
+        // photo and members are shared objects, so remove them before event creation
+        ImageEntity photo = event.getPhoto();
+        event.setPhoto(null);
+        Collection<UserEntity> members = event.getMembers();
+        event.setMembers(null);
 
-        eutils.createEntity(group);
+        eutils.createEntity(event);
 
-        // now re-add photo and members to group entity and update it
-        group.setPhoto(photo);
-        group.setMembers(members);
+        // now re-add photo and members to event entity and update it
+        event.setPhoto(photo);
+        event.setMembers(members);
 
-        eutils.updateEntity(group);
+        eutils.updateEntity(event);
     }
 
     /**
-     * Update group.
+     * Update event.
      * 
-     * @param group Group entity to update
+     * @param event Event entity to update
      */
-    public void updateGroup(GroupEntity group) {
+    public void updateEvent(EventEntity event) {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         try {
-            eutils.updateEntity(group);
+            eutils.updateEntity(event);
         }
         catch (Exception ex) {
-            Log.error(TAG, "*** Could not update group '" + group.getName() + "', id: " + group.getId());
+            Log.error(TAG, "*** Could not update event '" + event.getName() + "', id: " + event.getId());
         }
     }
 
     /**
-     * Mark a group as deleted by setting its status deletion time stamp. This
+     * Mark an event as deleted by setting its status deletion time stamp. This
      * method also updates the system app info entity.
      * 
-     * @param group         Group entity
+     * @param event         Event entity
      * @throws Exception    Throws exception if any problem occurred.
      */
-    public void markGroupAsDeleted(GroupEntity group) throws Exception {
+    public void markEventAsDeleted(EventEntity event) throws Exception {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
-        StatusEntity status = group.getStatus();
+        StatusEntity status = event.getStatus();
         if (Objects.isNull(status)) {
-            throw new Exception("Group has no status field!");
+            throw new Exception("Event has no status field!");
         }
         status.setDateDeletion((new Date().getTime()));
-        eutils.updateEntity(group);
+        eutils.updateEntity(event);
 
         // update the app stats
         AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
@@ -115,35 +116,36 @@ public class GroupUtils {
         if (Objects.isNull(appinfo)) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
-        appinfo.incrementGroupCountPurge(1L);
+        appinfo.incrementEventCountPurge(1L);
         eutils.updateEntity(appinfo);
     }
 
     /**
-     * Delete the given group entity in database.
+     * Delete the given event entity in database.
      * 
-     * @param group         Group entity
+     * @param event         Event entity
      * @throws Exception    Throws exception if any problem occurred.
      */
-    public void deleteGroup(GroupEntity group) throws Exception {
+    public void deleteEvent(EventEntity event) throws Exception {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
-        eutils.deleteEntity(group);
+        eutils.deleteEntity(event);
     }
 
     /**
-     * Give a group entity export the necessary fields into a JSON object.
+     * Given an event entity, export the necessary fields into a JSON object.
      * 
-     * @param entity    Group entity to export
+     * @param entity    Event entity to export
      * @return          A JSON object containing builder the proper entity fields
      */
-    public JsonObjectBuilder exportGroupJSON(GroupEntity entity) {
+    public JsonObjectBuilder exportEventJSON(EventEntity entity) {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", Objects.nonNull(entity.getId()) ? entity.getId() : 0);
         json.add("name", Objects.nonNull(entity.getName()) ? entity.getName() : "");
         json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
         json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId(): 0);
         json.add("eventStart", Objects.nonNull(entity.getEventStart()) ? entity.getEventStart(): 0);
-        json.add("eventInterval", "" + (Objects.nonNull(entity.getEventInterval()) ? entity.getEventInterval(): 0));
+        json.add("repeatWeekDays", (Objects.nonNull(entity.getRepeatWeekDays()) ? entity.getRepeatWeekDays(): 0));
+        json.add("repeatDayTime", (Objects.nonNull(entity.getRepeatDayTime()) ? entity.getRepeatDayTime(): 0));
 
         JsonObjectBuilder members = Json.createObjectBuilder();
         if (Objects.nonNull(entity.getMembers())) {
@@ -156,7 +158,7 @@ public class GroupUtils {
 
         JsonObjectBuilder locations = Json.createObjectBuilder();
         if (Objects.nonNull(entity.getLocations())) {
-            for (GroupLocationEntity l: entity.getLocations()) {
+            for (EventLocationEntity l: entity.getLocations()) {
                 locations.add("id", l.getId());
                 locations.add("name", Objects.nonNull(l.getName()) ? l.getName() : "");
             }
@@ -167,48 +169,49 @@ public class GroupUtils {
     }
 
     /**
-     * Give a JSON string import the necessary fields and create a group entity.
+     * Given a JSON string, import the necessary fields and create an event entity.
      * 
-     * NOTE: Group members and locations are not imported by this method.
+     * NOTE: Event members and locations are not imported by this method.
      * 
-     * @param jsonString JSON string representing a group entity
-     * @return           Group entity or null if the JSON string was not appropriate
+     * @param jsonString  JSON string representing an event entity
+     * @return            Event entity or null if the JSON string was not appropriate
      */
-    public GroupEntity importGroupJSON(String jsonString) {
+    public EventEntity importEventJSON(String jsonString) {
         if (Objects.isNull(jsonString)) {
             return null;
         }
 
         String name, description;
-        Long eventstart, eventinterval, photoid;
+        Long eventstart, repeatweekdays, repeatdaytime, photoid;
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
             JsonObject jobject = jreader.readObject();
 
-            name          = jobject.getString("name", null);
-            description   = jobject.getString("description", null);
-            photoid       = Long.parseLong(jobject.getString("photoId", "0"));
-            eventstart    = Long.parseLong(jobject.getString("eventStart", "0"));
-            eventinterval = Long.parseLong(jobject.getString("eventInterval", "0"));
+            name           = jobject.getString("name", null);
+            description    = jobject.getString("description", null);
+            photoid        = new Long(jobject.getInt("photoId", 0));
+            eventstart     = new Long(jobject.getInt("eventStart", 0));
+            repeatweekdays = new Long(jobject.getInt("repeatWeekDays", 0));
+            repeatdaytime  = new Long(jobject.getInt("repeatDayTime", 0));
         }
         catch(Exception ex) {
             Log.warning(TAG, "Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
             return null;
         }
 
-        GroupEntity entity = new GroupEntity();
+        EventEntity entity = new EventEntity();
         if (Objects.nonNull(name)) {
-            entity.setName(name);
+            entity.setName(StringUtils.limitStringLen(name, 32));
         }
         if (Objects.nonNull(description)) {
-            entity.setDescription(description);
+            entity.setDescription(StringUtils.limitStringLen(description, 1000));
         }
         if (eventstart > 0L) {
             entity.setEventStart(eventstart);
         }
-        if (eventinterval > 0L) {
-            entity.setEventInterval(eventinterval);
-        }
+        entity.setRepeatWeekDays(repeatweekdays);
+        entity.setRepeatDayTime(repeatdaytime);
+
         if (photoid > 0L) {
             EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
             ImageEntity image = eutils.findEntity(ImageEntity.class, photoid);

@@ -39,6 +39,7 @@ import javax.ws.rs.core.MediaType;
 import net.m4e.auth.AuthRole;
 import net.m4e.auth.AuthorityConfig;
 import net.m4e.auth.RoleEntity;
+import net.m4e.common.EntityUtils;
 import net.m4e.common.ResponseResults;
 import net.m4e.common.StatusEntity;
 import net.m4e.core.AppInfoEntity;
@@ -146,7 +147,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
         // validate the requested roles, check for roles, e.g. only admins can define admin role for other users
         user.setRoles(adaptRequestedRoles(sessionuser, reqentity.getRoles()));
-        
+
         // take over non-empty fields
         if (Objects.nonNull(reqentity.getName()) && !reqentity.getName().isEmpty()) {
             user.setName(reqentity.getName());
@@ -202,6 +203,27 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User successfully deleted", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    @GET
+    @Path("/search/{keyword}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    public String search(@PathParam("keyword") String keyword) {
+        JsonArrayBuilder results = Json.createArrayBuilder();
+        if (Objects.isNull(keyword)) {
+           return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());        
+        }
+
+        EntityUtils utils = new EntityUtils(entityManager, userTransaction);
+        List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
+        for (UserEntity hit: hits) {
+            JsonObjectBuilder json = Json.createObjectBuilder();
+            json.add("id", hit.getId());
+            json.add("name", Objects.nonNull(hit.getName()) ? hit.getName() : "???");
+            results.add(json);
+        }
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());
     }
 
     @GET
@@ -280,10 +302,15 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             throw new Exception("Failed to created user, invalid input.");
         }
 
-        // perform user name and passwd checks
-        if (Objects.isNull(reqentity.getLogin()) || reqentity.getLogin().isEmpty() ||
-            Objects.isNull(reqentity.getPassword()) || reqentity.getPassword().isEmpty()) {
-            throw new Exception("Missing login name or password.");
+        // perform user name, login and passwd checks
+        if (Objects.isNull(reqentity.getName()) || reqentity.getName().isEmpty()) {
+            throw new Exception("Missing name.");
+        }
+        if (Objects.isNull(reqentity.getLogin()) || reqentity.getLogin().isEmpty()) {
+            throw new Exception("Missing login.");
+        }
+        if (Objects.isNull(reqentity.getPassword()) || reqentity.getPassword().isEmpty()) {
+            throw new Exception("Missing password.");
         }
 
         if (Objects.nonNull(userutils.findUser(reqentity.getLogin()))) {
@@ -291,7 +318,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         // validate the roles
-        List<String> allowedroles = userutils.getAvailableUserRoles();
+        List<String> allowedroles = UserUtils.getAvailableUserRoles();
         List<String> reqentityroles = reqentity.getRolesAsString();
         for (int i = 0; i < reqentityroles.size(); i++) {
             if (!allowedroles.contains(reqentityroles.get(i))) {

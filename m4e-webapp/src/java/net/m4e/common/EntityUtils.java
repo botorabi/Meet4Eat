@@ -7,14 +7,19 @@
  */
 package net.m4e.common;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+import net.m4e.core.Log;
 
 /**
  * A collection of usual entity related utilities.
@@ -24,7 +29,13 @@ import javax.transaction.UserTransaction;
  */
 public class EntityUtils {
 
+    /**
+     * Used for logging
+     */
+    private final static String TAG = "EntityUtils";
+
     private final EntityManager entityManager;
+
     private final UserTransaction userTransaction;
 
     /**
@@ -152,6 +163,55 @@ public class EntityUtils {
         cq.select(rt).where(entityManager.getCriteriaBuilder().equal(rt.get(fieldName), fieldValue));
         javax.persistence.Query q = entityManager.createQuery(cq);
         List<T> res = q.getResultList();
+        return res;
+    }
+
+    /**
+     * Search the database for an entity type and given keyword in fields. The keyword is
+     * used to search for similarities in fields.
+     * 
+     * @param <T>           Entity class type
+     * @param entityClass   Pass the entity class
+     * @param keyword       Keyword for similarity check, it must be at least 3 characters.
+     * @param searchFields  Given fields of entity are searched for similarity
+     * @param maxResults    Maximal count of results.
+     * @return              A List of search hits.
+     */
+    public <T> List<T> search(Class<T> entityClass, String keyword, List<String> searchFields, int maxResults) {
+        List<T> results = new ArrayList<>();
+        if (searchFields.size() < 1) {
+            Log.warning(TAG, "Cannot search for keyword '" + keyword + "', no search fields defined!");
+            return results;
+        }
+        if (keyword.length() < 3) {
+            Log.warning(TAG, "Cannot search for keyword '" + keyword + "', need at least 3 characters!");
+            return results;
+        }
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        javax.persistence.criteria.CriteriaQuery cq = cb.createQuery();
+        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
+
+        Predicate predtotal;
+        List<Predicate> predicates = new ArrayList<>();
+        for (int i = 0; i < searchFields.size(); i++) {
+            predicates.add(cb.like(rt.get(searchFields.get(i)), "%" + keyword + "%"));
+        }
+        // is predicate chaining necessary?
+        if (predicates.size() > 1) {
+            predtotal = cb.or(predicates.get(0), predicates.get(1));
+            for (int i = 2; i < predicates.size(); i++) {
+                predtotal = cb.or(predtotal, predicates.get(i));
+            }
+        }
+        else {
+            predtotal = predicates.get(0);
+        }
+
+        cq.select(rt).where(predtotal);
+        javax.persistence.Query q = entityManager.createQuery(cq);
+        List<T> res = q.setMaxResults(maxResults).getResultList();
+
         return res;
     }
 }

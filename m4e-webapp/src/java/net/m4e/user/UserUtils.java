@@ -27,6 +27,7 @@ import net.m4e.auth.AuthRole;
 import net.m4e.auth.RoleEntity;
 import net.m4e.common.EntityUtils;
 import net.m4e.common.StatusEntity;
+import net.m4e.common.StringUtils;
 import net.m4e.core.AppInfoEntity;
 import net.m4e.core.AppInfoUtils;
 import net.m4e.core.Log;
@@ -287,11 +288,12 @@ public class UserUtils {
 
         UserEntity entity = new UserEntity();
         addUserRoles(entity, userroles);
-        entity.setName(name);
-        entity.setPassword(passwd);
-        entity.setEmail(email);
+        entity.setName(StringUtils.limitStringLen(name, 32));
+        entity.setPassword(StringUtils.limitStringLen(passwd, 64));
+        entity.setEmail(StringUtils.limitStringLen(email, 128));
+        entity.setLogin(StringUtils.limitStringLen(login, 32));
         entity.setDateLastLogin(0L);
-        entity.setLogin(login);
+
         return entity;
     }
 }

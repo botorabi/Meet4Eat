@@ -45,13 +45,13 @@ public class DefaultPermissions {
          */
         MODIFY_ROLES,
         /**
-         * Read groups
+         * Read events
          */
-        READ_GROUP,
+        READ_EVENT,
         /**
-         * Modify groups
+         * Modify events
          */
-        MODIFY_GROUP,
+        MODIFY_EVENT,
         /**
          * Read user
          */

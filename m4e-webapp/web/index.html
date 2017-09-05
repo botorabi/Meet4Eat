@@ -78,12 +78,12 @@
 							<i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
 						</a>
 						<ul class="dropdown-menu dropdown-user">
-							<li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+							<li><a onclick="getMeet4EatUI().onEditUserProfile()"><i class="fa fa-user fa-fw"></i> User Profile</a>
 							</li>
 							<li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
 							</li>
 							<li class="divider"></li>
-							<li><a onclick="getMeet4EatUI().logout()"><i class="fa fa-sign-out fa-fw"></i> Logout '<span id="user_name"></span>'</a>
+							<li><a onclick="getMeet4EatUI().onBtnLogoutClicked()"><i class="fa fa-sign-out fa-fw"></i> Logout '<span id="user_name"></span>'</a>
 							</li>
 						</ul>
 						<!-- /.dropdown-user -->
@@ -95,17 +95,6 @@
 				<div class="navbar-default sidebar" role="navigation">
 					<div class="sidebar-nav navbar-collapse">
 						<ul class="nav" id="side-menu">
-							<li class="sidebar-search">
-								<div class="input-group">
-									<input type="text" class="form-control" placeholder="Search...">
-									<span class="input-group-btn">
-									<button class="btn btn-default" type="button">
-										<i class="fa fa-search"></i>
-									</button>
-								</span>
-								</div>
-								<!-- /input-group -->
-							</li>
 							<li>
 								<a onclick="getMeet4EatUI().onMenu('dashboard');"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
 							</li>
@@ -113,7 +102,7 @@
 								<a onclick="getMeet4EatUI().onMenu('users');"><i class="fa fa-user fa-fw"></i> Users</a>
 							</li>
 							<li>
-								<a onclick="getMeet4EatUI().onMenu('groups');"><i class="fa fa-group fa-fw"></i> Groups</a>
+								<a onclick="getMeet4EatUI().onMenu('events');"><i class="fa fa-group fa-fw"></i> Events</a>
 							</li>
 							<li>
 								<a onclick="getMeet4EatUI().onMenu('system');"><i class="fa fa-laptop fa-fw"></i> System<span class="fa arrow"></span></a>
@@ -173,15 +162,15 @@
 						</div>
 
 						<div class="col-lg-3 col-md-6">
-							<div class="panel panel-primary" role="button" onclick="getMeet4EatUI().onMenu('groups')">
+							<div class="panel panel-primary" role="button" onclick="getMeet4EatUI().onMenu('events')">
 								<div class="panel-heading">
 									<div class="row">
 										<div class="col-xs-3">
 											<i class="fa fa-group fa-5x"></i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="huge" id="count_groups">?</div>
-											<div>Groups</div>
+											<div class="huge" id="count_events">?</div>
+											<div>Events</div>
 										</div>
 									</div>
 								</div>
@@ -246,7 +235,7 @@
 						<!-- /.col-lg-12 -->
 					</div>
 					<div class="row">
-						<div class="col-sm-6 col-sm-offset-3">
+						<div class="col-sm-8 col-sm-offset-2">
 							<div class="panel panel-default">
 								<div class="panel-heading">
 									<strong><span id="page_users_edit_title"></span></strong>
@@ -257,26 +246,26 @@
 										<input name="id" hidden>
 										<div class="form-group">
 											<label>Login</label>
-											<input id="page_users_edit_form_login" class="form-control" name="login" placeholder="Login name">
+											<input id="page_users_edit_form_login" maxlength="32" class="form-control" name="login" placeholder="Login name">
 											<p class="help-block">This name is used for authentication (At least 8 characters).</p>
 										</div>
 										<div class="form-group">
 											<label>Name</label>
-											<input class="form-control" name="name" placeholder="Enter text">
+											<input class="form-control" maxlength="32" name="name" placeholder="Enter text">
 											<p class="help-block">Real user name</p>
 										</div>
 										<div class="form-group">
 											<label>E-Mail</label>
-											<input class="form-control" name="email" placeholder="E-Mail">
+											<input class="form-control" maxlength="64" name="email" placeholder="E-Mail">
 											<p class="help-block">Contact e-mail address</p>
 										</div>
 										<div id="page_users_edit_form_grp_passwd" class="form-group">
 											<label>Password</label>
-											<input class="form-control" type="password" name="password" placeholder="Password">
+											<input class="form-control" maxlength="128" type="password" name="password" placeholder="Password">
 										</div>
 										<div id="page_users_edit_form_grp_passwd_repeat" class="form-group">
 											<label>Password Repeat</label>
-											<input class="form-control" type="password" name="password-repeat" placeholder="Password">
+											<input class="form-control" maxlength="128" type="password" name="password-repeat" placeholder="Password">
 										</div>
 										<div id="page_users_edit_roles" class="form-group">
 											<label>Roles</label>
@@ -306,10 +295,10 @@
 				</div>
 				<!-- page_users_edit -->
 
-				<div id="menu_groups" class="hide">
+				<div id="menu_events" class="hide">
 					<div class="row">
 						<div class="col-lg-12">
-							<h1 class="page-header">Groups <a id="page_groups_new" class="btn btn-sm btn-primary pull-right" onclick="getMeet4EatUI().onBtnGroupNew()">New Group</a></h1>
+							<h1 class="page-header">Events <a id="page_events_new" class="btn btn-sm btn-primary pull-right" onclick="getMeet4EatUI().onBtnEventNew()">New Event</a></h1>
 						</div>
 						<!-- /.col-lg-12 -->
 					</div>
@@ -317,17 +306,17 @@
 						<div class="col-lg-12">
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<strong>List of all groups</strong>
+									<strong>List of all events</strong>
 								</div>
 								<!-- /.panel-heading -->
 								<div class="panel-body">
-									<table id="table_groups" width="100%" class="table table-striped table-bordered table-hover">
+									<table id="table_events" width="100%" class="table table-striped table-bordered table-hover">
 										<thead>
 											<tr>
 												<th>Name</th>
 												<th>Description</th>
 												<th>Event Start</th>
-												<th>Event Interval</th>
+												<th>Event Repeat</th>
 												<th></th>
 											</tr>
 										</thead>
@@ -343,13 +332,13 @@
 					</div>
 					<!-- /.row -->
 				</div>
-				<!-- menu_groups -->
+				<!-- menu_events -->
 
-				<!-- menu_groups_edit -->
-				<div id="page_groups_edit" class="hide">
+				<!-- menu_events_edit -->
+				<div id="page_events_edit" class="hide">
 					<div class="row">
 						<div class="col-sm-12">
-							<h1 class="page-header text-center">Edit Group</h1>
+							<h1 class="page-header text-center">Edit Event</h1>
 						</div>
 						<!-- /.col-lg-12 -->
 					</div>
@@ -357,87 +346,139 @@
 						<div class="col-lg-8 col-lg-offset-2 col-sm-12">
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<strong><span id="page_groups_edit_title"></span></strong>
+									<strong><span id="page_events_edit_title"></span></strong>
 								</div>
 								<!-- /.panel-heading -->
 								<div class="panel-body">
-									<form role="form" id="page_groups_edit_form">
-										<input name="id" hidden>
-										<div class="form-group col-sm-12">
-											<label>Name</label>
-											<input class="form-control" name="name" placeholder="Enter text">
-											<p class="help-block">Group name</p>
-										</div>
-										<div class="form-group col-sm-12">
-											<label>Description</label>
-											<input class="form-control" name="description" placeholder="Short description">
-											<p class="help-block">Optional short group description</p>
-										</div>
-										<div class="form-group col-sm-12">
-											<label>Event Start</label>
-											<div id="page_groups_edit_form_eventstart" class='input-group date'>
-												<input type='text' class="form-control" />
-												<span class="input-group-addon">
-													<span class="glyphicon glyphicon-calendar"></span>
-												</span>
-											</div>
-											<p class="help-block">Start of event</p>
-										</div>
-										<div class="row form-group">
-											<div class="col-sm-6">
-												<label>Event Repeat: Week Days</label>
-												<div class="weekday">
-													<input type="checkbox" id="page_groups_edit_form_weekday0"/>
-													<label for="page_groups_edit_form_weekday0">Mon</label>
-													<input type="checkbox" id="page_groups_edit_form_weekday1"/>
-													<label for="page_groups_edit_form_weekday1">Tue</label>
-													<input type="checkbox" id="page_groups_edit_form_weekday2"/>
-													<label for="page_groups_edit_form_weekday2">Wed</label>
-													<input type="checkbox" id="page_groups_edit_form_weekday3"/>
-													<label for="page_groups_edit_form_weekday3">Thu</label>
-													<input type="checkbox" id="page_groups_edit_form_weekday4"/>
-													<label for="page_groups_edit_form_weekday4">Fri</label>
-													<input type="checkbox" id="page_groups_edit_form_weekday5"/>
-													<label for="page_groups_edit_form_weekday5">Sat</label>
-													<input type="checkbox" id="page_groups_edit_form_weekday6"/>
-													<label for="page_groups_edit_form_weekday6">Sun</label>
+									<!-- nav tabs -->
+									<ul class="nav nav-tabs" style="margin-bottom: 30px;">
+										<li class="active"><a href="#page_events_edit_pane_event" data-toggle="tab">Event</a>
+										</li>
+										<li><a href="#page_events_edit_pane_members" data-toggle="tab">Members</a>
+										</li>
+										<li><a href="#page_events_edit_pane_icon" data-toggle="tab">Icon</a>
+										</li>
+									</ul>
+									<!-- Tab panes -->
+									<div class="tab-content">
+										<div class="tab-pane fade in active" id="page_events_edit_pane_event">
+											<form role="form" id="page_events_edit_form">
+												<input name="id" hidden>
+												<div class="row form-group">
+													<div class="col-sm-12">
+														<label>Name</label>
+														<input class="form-control" maxlength="64" name="name" placeholder="Enter text">
+														<p class="help-block">Event name</p>
+													</div>
 												</div>
-												<p class="help-block">Define days of week for a repeating event.</p>
-											</div>
-											<div class="col-sm-6">
-												<label>Event Repeat: Day Time</label>
-												<div id="page_groups_edit_form_daytime" class='input-group date'>
-													<input type='text' class="form-control" />
-													<span class="input-group-addon">
-														<span class="glyphicon glyphicon-time"></span>
-													</span>
+												<div class="row form-group">
+													<div class="col-sm-12">
+														<label>Description</label>
+														<textarea class="form-control" maxlength="1000" rows="3" name="description" placeholder="Short description"></textarea>
+														<p class="help-block">Event description (max 1000 characters).</p>
+													</div>
 												</div>
-												<p class="help-block">Define a day time for a repeating event.</p>
+												<div class="row form-group">
+													<div class="col-sm-12">
+														<label>Event Start</label>
+														<div id="page_events_edit_form_eventstart" class='input-group date'>
+															<input type='text' class="form-control" />
+															<span class="input-group-addon">
+																<span class="glyphicon glyphicon-calendar"></span>
+															</span>
+														</div>
+														<p class="help-block">Start of event</p>
+													</div>
+												</div>
+												<div class="row form-group">
+													<div class="col-sm-12">
+														<div class="panel panel-default">
+															<div class="panel-heading">
+																<strong>Repeating Events</strong>
+															</div>
+															<div class="panel-body">
+
+																<div class="col-sm-12">
+																	<label>Week Days</label>
+																	<div class="weekday">
+																		<input type="checkbox" id="page_events_edit_form_weekday0"/>
+																		<label for="page_events_edit_form_weekday0">Mon</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday1"/>
+																		<label for="page_events_edit_form_weekday1">Tue</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday2"/>
+																		<label for="page_events_edit_form_weekday2">Wed</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday3"/>
+																		<label for="page_events_edit_form_weekday3">Thu</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday4"/>
+																		<label for="page_events_edit_form_weekday4">Fri</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday5"/>
+																		<label for="page_events_edit_form_weekday5">Sat</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday6"/>
+																		<label for="page_events_edit_form_weekday6">Sun</label>
+																	</div>
+																	<p class="help-block">Define days of week for a repeating event.</p>
+																</div>
+																<div class="col-sm-12">
+																	<label>Day Time</label>
+																	<div id="page_events_edit_form_daytime" class='input-group date'>
+																		<input type='text' class="form-control" />
+																		<span class="input-group-addon">
+																			<span class="glyphicon glyphicon-time"></span>
+																		</span>
+																	</div>
+																	<p class="help-block">Define a day time for a repeating event.</p>
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</form>
+										</div>
+										<div class="tab-pane fade" id="page_events_edit_pane_members">									
+											<div class="row">
+												<div class="form-group col-sm-12">
+													<div class="form-group">
+														<label>Members</label>
+														<ul class="list-group" id="page_events_edit_members" style="max-height:200px; overflow-y:auto;">
+															<li class="list-group-item">Member 1</li>
+															<li class="list-group-item">Member 2</li>
+															<li class="list-group-item">Member 3</li>
+														</ul>
+													</div>
+													<div class="form-group">
+														<label>Add new member</label>
+														<div class="input-group">
+															<input type="text" class="form-control" placeholder="Search..." onkeydown="if (event.keyCode===13) {getMeet4EatUI().onBtnSearchMemberClicked();}" id="page_events_edit_form_mem_search">
+															<span class="input-group-btn">
+																<button class="btn btn-default" type="button" onclick="getMeet4EatUI().onBtnSearchMemberClicked();"><i class="fa fa-search"></i></button>
+															</span>
+														</div>
+														<div class="input-group" style="margin-top: 20px;">
+															<select class="form-control" id="page_events_edit_form_mem_search_hits"></select>
+															<span class="input-group-btn">
+																<button class="btn btn-default" type="button" onclick="getMeet4EatUI().onBtnAddMemberClicked();"><i class="fa fa-arrow-right"></i></button>
+															</span>
+														</div>
+													</div>
+												</div>
 											</div>
 										</div>
-										<div class="row">
-											<div class="form-group col-sm-6">
-												<label>Group Members</label>
-												<ul class="list-group" id="page_groups_edit_members" style="max-height:200px; overflow-y:auto;">
-													<li class="list-group-item">Member 1</li>
-													<li class="list-group-item">Member 2</li>
-													<li class="list-group-item">Member 3</li>
-												</ul>
-												<a class="btn btn-default">Add Member...</a>
-											</div>
-											<div class="form-group col-sm-6">
-												<input hidden name="photo">
-												<label>Group Image</label>
-												<a class="form-control btn btn-lg btn-info" onclick="alert('TODO');">IMG</a>
+										<div class="tab-pane fade" id="page_events_edit_pane_icon">
+											<div class="row">
+												<div class="form-group col-sm-6 col-sm-offset-3">
+													<input hidden name="photo">
+													<a class="form-control btn btn-lg btn-warning" style="min-height: 300px;" onclick="alert('TODO');">IMG</a>
+													<p class="help-block text-center">Set an icon.</p>
+												</div>
 											</div>
 										</div>
-									</form>
+									</div>
 								</div>
 								<!-- /.panel-body -->
 								<div class="panel-footer">
 									<div class="btn-toolbar text-right">
-										<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="getMeet4EatUI().onBtnGroupEditApply()">Apply</a>
-										<a class="btn btn-lg btn-primary col-lg-3 pull-right" onclick="getMeet4EatUI().onBtnGroupEditCancel()">Cancel</a>
+										<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="getMeet4EatUI().onBtnEventEditApply()">Apply</a>
+										<a class="btn btn-lg btn-primary col-lg-3 pull-right" onclick="getMeet4EatUI().onBtnEventEditCancel()">Cancel</a>
 									</div>
 								</div>
 								<!-- /.panel-footer -->
@@ -476,8 +517,8 @@
 									<td><span id="sys_countuserspurge"></span></td>
 								</tr>
 								<tr>
-									<td>Count groups to purge</td>
-									<td><span id="sys_countgroupspurge"></span></td>
+									<td>Count events to purge</td>
+									<td><span id="sys_counteventspurge"></span></td>
 								</tr>
 							</table>
 						</div>
