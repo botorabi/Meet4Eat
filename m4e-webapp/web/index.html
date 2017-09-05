@@ -7,664 +7,23 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script src="public/libs/js/jquery.js"></script>
 		<script src="public/libs/js/bootstrap.js"></script>
+		<script src="public/libs/js/moment.js"></script>
 		<script src="public/libs/js/metisMenu.js"></script>
 		<script src="public/libs/js/jquery.dataTables.js"></script>
 		<script src="public/libs/js/dataTables.bootstrap.js"></script>
 		<script src="public/libs/js/dataTables.responsive.js"></script>
+		<script src="public/libs/js/bootstrap-datetimepicker.min.js"></script>
 		<script src="public/libs/js/sb-admin-2.js"></script>
-		<script src="public/libs/js/m4e.js"></script>
+		<script src="public/libs/js/Meet4Eat-REST.js"></script>
+		<script src="public/libs/js/Meet4Eat-UI.js"></script>
 		<link rel="stylesheet" href="public/libs/css/bootstrap.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/dataTables.bootstrap.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/dataTables.responsive.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/bootstrap-datetimepicker.min.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/metisMenu.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/sb-admin-2.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/font-awesome.css" type="text/css">
-		<link rel="stylesheet" href="public/libs/css/m4e.css" type="text/css">
-
-		<script>
-			var VIEW_VERSION = "2";
-			var m4e = null;
-			var m4eAuth = null;
-			var m4eAuthUser = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
-			var m4eUsers = null;
-			var m4eGroups = null;
-			var m4eAppInfo = {'clientVersion' : '0.0.0', 'serverVersion' : '0.0.0', 'viewVersion' : '0'};
-			var m4eUserTable = null;
-
-			/**
-			 * Init the page
-			 */
-			function init() {
-				m4e = new Meet4EatREST();
-				m4eAppInfo.clientVersion = m4e.getVersion();
-				m4eAppInfo.viewVersion = VIEW_VERSION;
-				m4eAuth = m4e.buildUserAuthREST();
-				m4eUsers = m4e.buildUserREST();
-				m4eGroups = m4e.buildGroupREST();
-				setupUi();
-			}
-
-			/**
-			 * Show a modal dialog with given content text, title and button texts.
-			 * If a callback object is given then it is used for propagating the 
-			 * button click event.
-			 * 
-			 * The callback object has the following form:
-			 * 
-			 *   {
-			 *		onClickBtn1: function(btnText) {
-			 *		    // handle button click 1
-			 *		},
-			 *		onClickBtn2: function(btnText) {
-			 *		    // handle button click 2
-			 *		}
-			 *   }
-			 *   
-			 * @param {type} text		    Messagebox text
-			 * @param {type} title		    Title
-			 * @param {type} textBtn1	    Text of button 1, pass null to hide button 1
-			 * @param {type} textBtn2       Text of button 2, pass null to hide button 2
-			 * @param {type} btnCallbacks	Optional callback object used on button clicks.
-			 */
-			function showModalBox(text, title, textBtn1, textBtn2, btnCallbacks) {
-
-				$('#msg_box_text').text(text);
-				$('#msg_box_title').text(title);
-				if (textBtn1) {
-					$('#msg_box_btn1').text(textBtn1);
-					$('#msg_box_btn1').removeClass("hide");
-					$("#msg_box_btn1").click(function() {
-						if (btnCallbacks && btnCallbacks.onClickBtn1) {
-							btnCallbacks.onClickBtn1(textBtn1);
-						}
-					});
-				}
-				else {
-					$('#msg_box_btn1').addClass("hide");
-				}
-				if (textBtn2) {
-					$('#msg_box_btn2').text(textBtn2);
-					$('#msg_box_btn2').removeClass("hide");
-					$("#msg_box_btn2").click(function() {
-						if (btnCallbacks && btnCallbacks.onClickBtn2) {
-							btnCallbacks.onClickBtn2(textBtn2);
-						}
-					});
-				}
-				else {
-					$('#msg_box_btn2').addClass("hide");				
-				}
-				$('#msg_box').modal("show");
-			}
-
-			/**
-			 * Show/hide an element given its ID.
-			 * 
-			 * @param {string} elemId   Element ID
-			 * @param {bool} show  Pass true for showing and false for hiding element
-			 */
-			function showElement(elemId, show) {
-				var elem = $('#' + elemId);
-				if (show) {
-					elem.removeClass("hide");
-				}
-				else {
-					elem.addClass("hide");					
-				}
-			}
-
-
-			/**
-			 * Parse a JSON string and convert it to an object.
-			 * 
-			 * @param  {string} jsonString JSON string to parse
-			 * @returns {Object} Object representing the JSON string, null if invalid format found.
-			 */
-			function parseJSON(jsonString) {
-				var obj = null;
-				try {
-					obj = $.parseJSON(jsonString);
-				}
-				catch(e) {
-				}
-				return obj;
-			}
-
-			/**
-			 * Deferr the execution of given function by 'delay' milliseconds.
-			 * 
-			 * @param {function} fcn   Function to execute
-			 * @param {int} delay      Execution delay in millisecond
-			 */
-			function deferExecution(fcn, delay) {
-				setTimeout(fcn, delay);
-			}
-
-			/**
-			 * Given a time stamp format it to a string.
-			 * 
-			 * @param {Date} timeStamp Time stamp to be formatted
-			 * @returns {string} Formatted time string
-			 */
-			function formatTime(timeStamp) {
-				var minutes = "" + timeStamp.getMinutes();
-				minutes = minutes < 10 ? ("0" + minutes) : minutes;
-				var text = timeStamp.getFullYear() + "-" + (timeStamp.getMonth()+1) + "-" + timeStamp.getDate()  
-							 + " " + timeStamp.getHours() + ":" + minutes;
-				return text;
-			}
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-			/*                ui init related stuff                   */
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-			function setupAboutPage() {
-				$('#info_clientversion').text(m4eAppInfo.clientVersion);
-				$('#info_viewversion').text(m4eAppInfo.viewVersion);
-				m4e.getServerInfo({
-					success: function(results, response) {
-						if (results.status === "ok") {
-							m4eAppInfo.serverVersion = results.data.version;
-							$('#info_serverversion').text(m4eAppInfo.serverVersion);
-						}
-					}
-				});
-			}
-
-			function setupDashboardPage() {
-				m4eGroups.getCount({
-					success: function(results, response) {
-						$('#count_groups').text(results.data.count);
-					}
-				});
-				m4eUsers.getCount({
-					success: function(results, response) {
-						$('#count_users').text(results.data.count);
-					}
-				});
-				m4eUserTable = $('#table_users').DataTable({
-					responsive: true,
-					"columns": [
-						{ "data": "name" },
-						{ "data": "login" },
-						{ "data": "creation" },
-						{ "data": "lastlogin" },
-						{ "data": "roles" },
-						{ "data": "ops" }
-					]});
-
-				$('#table_groups').DataTable({
-					responsive: true
-				});
-			}
-
-			function getUserTable() {
-				return m4eUserTable;
-			}
-
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-			/*                   auth related stuff                   */
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-			function setupUi() {
-				m4eAuth.getAuthState({
-					success: function(results, response) {
-						if (results.status === "ok") {
-							if (results.data.auth === "yes") {
-								showElement('main_content', true);
-								showElement('main_login', false);
-								// get some info on logged-in user
-								deferExecution(function () {
-									m4eUsers.find({
-										success: function(res, resp) {
-											if (res.status === "ok") {
-												m4eAuthUser.auth = 'yes';
-												m4eAuthUser.login = res.data.login;
-												m4eAuthUser.name = res.data.name;
-												m4eAuthUser.id = res.data.id;
-												m4eAuthUser.roles = res.data.roles;
-												onAuthenticated();
-											}
-											else {
-												showModalBox(res.description, "Connection Problem", "Dismiss");
-											}
-										},
-										error: function(err) {
-											showModalBox(err, "Connection Problem", "Dismiss");
-										}
-									}, results.data.id);
-								}, 0);
-							}
-							else {
-								showElement('main_login', true);
-								showElement('main_content', false);
-								$("#form_login input[name='login']").focus();
-							}
-						}
-						else {
-							showModalBox(response, "Connection Problem", "Dismiss");
-						}
-					},
-					error: function(text, response) {
-						$('#display_error').html(response);
-						showModalBox(text, "Connection Problem", "Dismiss");
-					}
-				});
-			}
-
-			function login(loginName, pasword) {
-				$("#form_login").removeClass("has-error");
-				m4eAuth.login({
-					success: function(results, response) {
-						if (results.status === "ok") {
-							window.location.href = "index.html";
-						}
-						else {
-							$("#form_login input[name='login']").focus();
-							$("#form_login").addClass("has-error");
-						}
-					},
-					error: function(text, response) {
-						$('#display_error').html(response);
-						showModalBox(text, "Login Problem", "Dismiss");
-					}
-				}, loginName, pasword);
-			}
-
-			function logout() {
-				m4eAuth.logout({
-					success: function(results, response) {
-						window.location.href = "index.html";
-					},
-					error: function(text, response) {
-						$('#display_error').html(response);
-						showModalBox(text, "Logout Problem", "Dismiss");
-					}
-				});
-			}
-
-			function getAuthUser() {
-				return m4eAuthUser;
-			}
-
-			/**
-			 * Check if at least one of the given roles is contained in roles of
-			 * authenticated user.
-			 * 
-			 * @param  roles    Roles to check, a string array
-			 * @returns {bool}  Return true if at least one matching role was found, otherwise false.
-			 */
-			function authUserRolesContain(roles) {
-				for (var i= 0; i < roles.length; i++) {
-					if ($.inArray(roles[i], m4eAuthUser.roles) > -1) {
-						return true;
-					}
-				}
-				return false;
-			}
-
-			//--------------------------------------------
-			function onAuthenticated() {
-				if (authUserRolesContain(["ADMIN"])) {
-					setupUiAdmin();
-				}
-				$('#user_name').text(getAuthUser().name);
-				setupDashboardPage();
-				setupAboutPage();
-				setupUiTableUser();
-			}
-
-			function onBtnLoginClicked() {
-				var fields = $('#form_login').serializeArray().reduce(function(obj, item) {
-					obj[item.name] = item.value;
-					return obj;
-				}, {});
-				login(fields.login, fields.password);
-				$("#form_login :input").val("");
-			}
-
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-			/*                   admin related stuff                  */
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-			function setupUiAdmin() {
-				m4e.getServerStats({
-					success: function(results, reponse) {
-						if (results.status !== "ok") {
-							showModalBox("Cannot retrieve server stats!", "Communication Problem", "Dismiss");
-							return;
-						}
-						var stats = results.data;
-						var maintenance = "-";
-						if (stats.dateLastMaintenance) {
-							maintenance = formatTime(new Date(parseInt(stats.dateLastMaintenance)));
-						}
-						var update = "-";
-						if (stats.dateLastUpdate) {
-							update = formatTime(new Date(parseInt(stats.dateLastUpdate)));
-						}
-						$('#sys_serverversion').text(stats.version);
-						$('#sys_lastmaintenance').text(maintenance);
-						$('#sys_lastupdate').text(update);
-						$('#sys_countuserspurge').text(stats.userCountPurge);
-						$('#sys_countgroupspurge').text(stats.groupCountPurge);
-					},
-					error: function(err) {
-						showModalBox("Cannot retrieve server stats! Reason: " + err, "Connection Problem", "Dismiss");
-					}
-				});
-			}
-
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-			/*                   user related stuff                   */
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-			function setupUiTableUser() {
-				getUserTable().clear();
-				m4eUsers.getAll({
-					success: function(results, response) {
-						if (results.status !== "ok") {
-							return;
-						}
-						for (var i = 0; i < results.data.length; i++) {
-							updateUiUserTableAdd(results.data[i]);
-						}
-						getUserTable().draw("full-reset");
-					},
-					error: function(err) {
-						showModalBox(err, "Cannot retrieve users", "Dismiss");
-					}
-				});
-			}
-
-			function setupUiUserNew() {
-				$('#page_users_edit_title').text("Create a new user");
-				$("#page_users_edit_form :input").val("");
-				$('#page_users_edit_form_login').prop("disabled", false);
-			}
-
-			function updateUiUserTableAdd(userFields) {
-				if (userFields.id === "") {
-					showModalBox("updateUiUserTableNew: Cannot add user, invalid user id!", "Internal Error", "Dismiss");
-					return;
-				}
-				var lastlogin = "-";
-				var datecreation = "-";
-				if (userFields.dateLastLogin && userFields.dateLastLogin > 0) {
-					var timestamp = new Date(parseInt(userFields.dateLastLogin));
-					lastlogin = formatTime(timestamp);
-				}
-				if (userFields.dateCreation && userFields.dateCreation > 0) {
-					var timestamp = new Date(parseInt(userFields.dateCreation));
-					datecreation = formatTime(timestamp);
-				}
-				var roles = userFields.roles ? userFields.roles.join("<br>") : "";
-				var me = (""+userFields.id === ""+getAuthUser().id);
-				var candelete = authUserRolesContain(["ADMIN", "MODERATOR"]) && !me;
-				var canedit = authUserRolesContain(["ADMIN", "MODERATOR"]) || me;
-				getUserTable().row.add({
-						"DT_RowId" : userFields.id,
-						// make 'me' bold
-						"name" : (me ? "<strong>" : "") + userFields.name + (me ? "</strong>" : ""),
-						"login" : userFields.login,
-						"creation" : datecreation,
-						"lastlogin" : lastlogin,
-						"roles": roles,
-						"ops" :	(candelete ? "<a role='button' onclick='onBtnDeleteUser(\"" + userFields.id + "\")'>DELETE</a> | " : "") +
-								(canedit ? "<a role='button' onclick='onBtnEditUser(\"" + userFields.id + "\")'>EDIT</a>" : "")
-					});
-			}
-
-			function updateUiUserTableUpdate(userFields) {
-				if (userFields.id === "") {
-					showModalBox("updateUiUserTableUpdate Cannot update user, invalid user id!", "Internal Error", "Dismiss");
-					return;
-				}
-				var user = getUserTable().row('#' + userFields.id);
-				if (user) {
-					var cols = user.data();
-					if (userFields.name) {
-						cols.name = userFields.name;
-					}
-					if (userFields.login) {
-						cols.login = userFields.login;
-					}
-					if (userFields.email) {
-						cols.email = userFields.email;
-					}
-					if (userFields.roles) {
-						cols.roles = userFields.roles.join("<br>");
-					}
-					user.data(cols);
-					user.draw("page");
-				}
-			}
-
-			function updateUiUserTableRemove(id) {
-				var user = getUserTable().row('#' + id);
-				if (user) {
-					user.remove().draw(true);
-				}
-			}
-
-			function setupUiUserEdit(userId) {
-				$('#page_users_edit_title').text("Edit existing user");
-				$('#page_users_edit_form_login').prop("disabled", true);
-				$("#page_users_edit_form input[name='password']").val("");
-				$("#page_users_edit_form input[name='password-repeat']").val("");
-
-				var showpasswdinput = (authUserRolesContain(["ADMIN"]) || ((""+getAuthUser().id) === (""+userId)));
-				showElement('page_users_edit_form_grp_passwd', showpasswdinput);
-				showElement('page_users_edit_form_grp_passwd_repeat', showpasswdinput);
-
-				$('#page_users_edit_roles_sel').empty();
-
-				// fetch user details from server
-				m4eUsers.find({
-					success: function(results, response) {
-						if (results.status !== "ok") {
-							showModalBox("User was not found for edit!", "Error", "Dismiss");
-							return;
-						}
-						var user = results.data;
-						$("#page_users_edit_form input[name='id']").val(user.id);
-						$("#page_users_edit_form input[name='login']").val(user.login);
-						$("#page_users_edit_form input[name='name']").val(user.name);
-						$("#page_users_edit_form input[name='email']").val(user.email);
-
-						// setup the available roles
-						var elemrolesel = $('#page_users_edit_roles_sel');
-						elemrolesel.append(new Option("ADMIN", "ADMIN"));
-						elemrolesel.append(new Option("MODERATOR", "MODERATOR"));
-						elemrolesel.append(new Option("", ""));
-						elemrolesel.prop("disabled", !authUserRolesContain(["ADMIN", "MODERATOR"]));
-						// select user roles in list
-						elemrolesel.val(user.roles);
-					},
-					error: function(err) {
-						showModalBox(err, "Connection Error", "Dismiss");
-					}
-				}, userId);
-			}
-
-			function createOrUpdateUser(fields, resultsCallback) {
-				m4eUsers.createOrUpdate({
-					success: function(results) {
-						if (resultsCallback) {
-							resultsCallback(results);
-						}
-					},
-					error: function(text, response) {
-						$('#display_error').html(response);
-						showModalBox("Could not create or update user! Reason: " + text, "Connection Error", "Dismiss");
-					}					
-				}, fields.id, fields);
-			}
-
-			function deleteUser(id) {
-				m4eUsers.delete({
-					success: function(results) {
-						if (results.status !== "ok") {
-							showModalBox("Could not delete user! Reason: " + results.description, "Problem Deleting User", "Dismiss");
-							return;
-						}
-						showModalBox("User was successfully removed", "Delete User", "Dismiss");
-						updateUiUserTableRemove(id);
-						showElement('page_users_edit', false);
-						showElement('menu_users', true);
-					},
-					error: function(text, response) {
-						showModalBox(text, "Problem Deleting User", "Dismiss");
-						$('#display_error').html(response);
-					}
-				}, id);
-			}
-
-			function onBtnDeleteUser(id) {
-				showModalBox("Are you really sure, delete the user?", "Delete User", "No", "Yes", {
-					onClickBtn1: function() {
-						// nothing to do
-					},
-					onClickBtn2: function() {
-						// sure to delete
-						// NOTE as deleteUser opens also a modal messagebox we have to defer the call!
-						deferExecution(function() {
-							deleteUser(id);
-						}, 500);
-					}
-				});
-			}
-
-			function onBtnUserNew() {
-				showElement('menu_users', false);
-				showElement('page_users_edit', true);
-				setupUiUserNew();
-			}
-
-			function onBtnEditUser(id) {
-				showElement('menu_users', false);
-				showElement('page_users_edit', true);
-				setupUiUserEdit(id);
-			}
-
-			function onBtnUserEditApply() {
-				var inputfields = $('#page_users_edit_form').serializeArray().reduce(function(obj, item) {
-					obj[item.name] = item.value;
-					return obj;
-				}, {});
-				var fields = {};
-				var newuser = (inputfields.id === null) || (inputfields.id === "");
-
-				//! TODO validate the inputs
-				fields['id'] = inputfields.id;
-				fields['name'] = inputfields.name;
-				fields['login'] = inputfields.login;
-				fields['email'] = inputfields.email;
-				var passwd = inputfields['password'];
-				var passwdr = inputfields['password-repeat'];
-				if (passwd !== "" || passwdr !== "") {
-					if (passwd !== passwdr) {
-						showModalBox("Password fields do not match!", "Invalid Input", "Dismiss");
-						return;
-					}
-					fields['password'] = m4eAuth.createHash(passwd);
-				}
-				var roles = [];
-				var selroles = $('#page_users_edit_roles_sel option:selected');
-				selroles.each(function(index, item){
-					var r = $(item);
-					roles.push(r.text());
-				});
-				fields['roles'] = roles;
-
-				createOrUpdateUser(fields, function(results) {
-					if (results.status === "ok") {
-						showModalBox("Changes were successfully applied to user.", "User Update", "Dismiss");
-						if (newuser) {
-							// on successful creation the new user id is in results.data
-							fields.id = results.data.id;
-							updateUiUserTableAdd(fields);
-							getUserTable().draw("full-hold");
-						}
-						else {
-							updateUiUserTableUpdate(fields);
-						}
-						showElement('menu_users', true);
-						showElement('page_users_edit', false);
-						// are we editting our own settings?
-						if ((""+getAuthUser().id) === (""+fields.id)) {
-							getAuthUser().name = inputfields.name;
-							$('#user_name').text(inputfields.name);
-						}
-					}
-					else {
-						showModalBox("Could not apply changes to user! Reason: " + results.description, "User Update", "Dismiss");
-					}
-				});
-			}
-
-			function onBtnUserEditCancel() {
-				onBtnClearFormUser();
-				showElement('page_users_edit', false);
-				showElement('menu_users', true);
-			}
-
-			function onBtnClearFormUser() {
-				$("#page_users_edit_form :input").val("");
-			}
-
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-			/*                   menu related stuff                   */
-			/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-			function onMenu(item) {
-				// main menu element IDs are expected to begin with menu_
-				var allitems = $("[id*='menu_'");
-				if (allitems) {
-					allitems.addClass("hide");
-				}
-				var wrapper = $('#menu_' + item);
-				if (wrapper) {
-					wrapper.removeClass("hide");
-				}
-				switch(item) {
-					case "dashboard":
-						onInitPageDashboard();
-						break;
-					case "users":
-						onInitPageUsers();
-						break;
-					case "groups":
-						onInitPageGroups();
-						break;
-					case "system":
-						onInitPageSystem();
-						break;
-					case "about":
-						onInitPageAbout();
-						break;
-				}
-			}
-
-			function onInitPageDashboard() {			
-			}
-
-			function onInitPageUsers() {
-				showElement("page_users_new", authUserRolesContain(["ADMIN"]));
-			}
-
-			function onInitPageGroups() {
-			}
-
-			function onInitPageSystem() {
-			}
-
-			function onInitPageAbout() {	
-			}
-
-			/* initialize UI */
-			$(function() {
-				init();
-			});
-		</script>
+		<link rel="stylesheet" href="public/libs/css/Meet4Eat-UI.css" type="text/css">
 	</head>
 	<body>
 		<div class="container hide" id="main_login">
@@ -689,8 +48,8 @@
 											<input name="remember" type="checkbox" value="Remember Me">Remember Me
 										</label>
 									</div-->
-									<input type="submit" hidden onclick="onBtnLoginClicked(); event.preventDefault();">
-									<a class="btn btn-lg btn-success btn-block" onclick="onBtnLoginClicked()">Login</a>
+									<input type="submit" hidden onclick="getMeet4EatUI().onBtnLoginClicked(); event.preventDefault();">
+									<a class="btn btn-lg btn-success btn-block" onclick="getMeet4EatUI().onBtnLoginClicked()">Login</a>
 								</fieldset>
 							</form>
 						</div>
@@ -719,12 +78,12 @@
 							<i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
 						</a>
 						<ul class="dropdown-menu dropdown-user">
-							<li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+							<li><a onclick="getMeet4EatUI().onEditUserProfile()"><i class="fa fa-user fa-fw"></i> User Profile</a>
 							</li>
 							<li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
 							</li>
 							<li class="divider"></li>
-							<li><a onclick="logout()"><i class="fa fa-sign-out fa-fw"></i> Logout '<span id="user_name"></span>'</a>
+							<li><a onclick="getMeet4EatUI().onBtnLogoutClicked()"><i class="fa fa-sign-out fa-fw"></i> Logout '<span id="user_name"></span>'</a>
 							</li>
 						</ul>
 						<!-- /.dropdown-user -->
@@ -736,40 +95,29 @@
 				<div class="navbar-default sidebar" role="navigation">
 					<div class="sidebar-nav navbar-collapse">
 						<ul class="nav" id="side-menu">
-							<li class="sidebar-search">
-								<div class="input-group">
-									<input type="text" class="form-control" placeholder="Search...">
-									<span class="input-group-btn">
-									<button class="btn btn-default" type="button">
-										<i class="fa fa-search"></i>
-									</button>
-								</span>
-								</div>
-								<!-- /input-group -->
+							<li>
+								<a onclick="getMeet4EatUI().onMenu('dashboard');"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
 							</li>
 							<li>
-								<a onclick="onMenu('dashboard');"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+								<a onclick="getMeet4EatUI().onMenu('users');"><i class="fa fa-user fa-fw"></i> Users</a>
 							</li>
 							<li>
-								<a onclick="onMenu('users');"><i class="fa fa-user fa-fw"></i> Users</a>
+								<a onclick="getMeet4EatUI().onMenu('events');"><i class="fa fa-group fa-fw"></i> Events</a>
 							</li>
 							<li>
-								<a onclick="onMenu('groups');"><i class="fa fa-group fa-fw"></i> Groups</a>
-							</li>
-							<li>
-								<a onclick="onMenu('system');"><i class="fa fa-laptop fa-fw"></i> System<span class="fa arrow"></span></a>
+								<a onclick="getMeet4EatUI().onMenu('system');"><i class="fa fa-laptop fa-fw"></i> System<span class="fa arrow"></span></a>
 								<ul class="nav nav-second-level">
 									<li>
-										<a onclick="showModalBox('!!!TODO - System Alert!!!')">Alerts</a>
+										<a onclick="getMeet4EatUI().showModalBox('!!!TODO - System Alert!!!')">Alerts</a>
 									</li>
 									<li>
-										<a onclick="showModalBox('!!!TODO - System Logs!!!')">Logs</a>
+										<a onclick="getMeet4EatUI().showModalBox('!!!TODO - System Logs!!!')">Logs</a>
 									</li>
 								</ul>
 								<!-- /.nav-second-level -->
 							</li>
 							<li>
-								<a onclick="onMenu('about');"><i class="fa fa-question-circle-o fa-fw"></i> About</a>
+								<a onclick="getMeet4EatUI().onMenu('about');"><i class="fa fa-question-circle-o fa-fw"></i> About</a>
 							</li>
 						</ul>
 					</div>
@@ -791,7 +139,7 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-3 col-md-6">
-							<div class="panel panel-primary" role="button" onclick="onMenu('users')">
+							<div class="panel panel-primary" role="button" onclick="getMeet4EatUI().onMenu('users')">
 								<div class="panel-heading">
 									<div class="row">
 										<div class="col-xs-3">
@@ -814,15 +162,15 @@
 						</div>
 
 						<div class="col-lg-3 col-md-6">
-							<div class="panel panel-primary" role="button" onclick="onMenu('groups')">
+							<div class="panel panel-primary" role="button" onclick="getMeet4EatUI().onMenu('events')">
 								<div class="panel-heading">
 									<div class="row">
 										<div class="col-xs-3">
 											<i class="fa fa-group fa-5x"></i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="huge" id="count_groups">?</div>
-											<div>Groups</div>
+											<div class="huge" id="count_events">?</div>
+											<div>Events</div>
 										</div>
 									</div>
 								</div>
@@ -843,9 +191,8 @@
 				<div id="menu_users" class="hide">
 					<div class="row">
 						<div class="col-lg-12">
-							<h1 class="page-header">Users <a id="page_users_new" class="hide btn btn-sm btn-primary pull-right" onclick="onBtnUserNew()">New User</a></h1>
+							<h1 class="page-header">Users <a id="page_users_new" class="hide btn btn-sm btn-primary pull-right" onclick="getMeet4EatUI().onBtnUserNew()">New User</a></h1>
 						</div>
-						<!-- /.col-lg-12 -->
 					</div>
 					<div class="row">
 						<div class="col-lg-12">
@@ -888,7 +235,7 @@
 						<!-- /.col-lg-12 -->
 					</div>
 					<div class="row">
-						<div class="col-sm-6 col-sm-offset-3">
+						<div class="col-sm-8 col-sm-offset-2">
 							<div class="panel panel-default">
 								<div class="panel-heading">
 									<strong><span id="page_users_edit_title"></span></strong>
@@ -899,32 +246,32 @@
 										<input name="id" hidden>
 										<div class="form-group">
 											<label>Login</label>
-											<input id="page_users_edit_form_login" class="form-control" name="login" placeholder="Login name">
+											<input id="page_users_edit_form_login" maxlength="32" class="form-control" name="login" placeholder="Login name">
 											<p class="help-block">This name is used for authentication (At least 8 characters).</p>
 										</div>
 										<div class="form-group">
 											<label>Name</label>
-											<input class="form-control" name="name" placeholder="Enter text">
+											<input class="form-control" maxlength="32" name="name" placeholder="Enter text">
 											<p class="help-block">Real user name</p>
 										</div>
 										<div class="form-group">
 											<label>E-Mail</label>
-											<input class="form-control" name="email" placeholder="E-Mail">
+											<input class="form-control" maxlength="64" name="email" placeholder="E-Mail">
 											<p class="help-block">Contact e-mail address</p>
 										</div>
 										<div id="page_users_edit_form_grp_passwd" class="form-group">
 											<label>Password</label>
-											<input class="form-control" type="password" name="password" placeholder="Password">
+											<input class="form-control" maxlength="128" type="password" name="password" placeholder="Password">
 										</div>
 										<div id="page_users_edit_form_grp_passwd_repeat" class="form-group">
 											<label>Password Repeat</label>
-											<input class="form-control" type="password" name="password-repeat" placeholder="Password">
+											<input class="form-control" maxlength="128" type="password" name="password-repeat" placeholder="Password">
 										</div>
 										<div id="page_users_edit_roles" class="form-group">
 											<label>Roles</label>
 											<select id="page_users_edit_roles_sel" multiple class="form-control">
+												<option>ADMIN</option>
 												<option>MODERATOR</option>
-												<option>USER</option>
 												<option></option>
 											</select>
 											<p class="help-block">Assign special roles. Select multiple roles by holding down Ctrl key.</p>
@@ -934,8 +281,8 @@
 								<!-- /.panel-body -->
 								<div class="panel-footer">
 									<div class="btn-toolbar text-right">
-										<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="onBtnUserEditApply()">Apply</a>
-										<a class="btn btn-lg btn-primary col-lg-3 pull-right" onclick="onBtnUserEditCancel()">Cancel</a>
+										<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="getMeet4EatUI().onBtnUserEditApply()">Apply</a>
+										<a class="btn btn-lg btn-primary col-lg-3 pull-right" onclick="getMeet4EatUI().onBtnUserEditCancel()">Cancel</a>
 									</div>
 								</div>
 								<!-- /.panel-footer -->
@@ -948,11 +295,10 @@
 				</div>
 				<!-- page_users_edit -->
 
-
-				<div id="menu_groups" class="hide">
+				<div id="menu_events" class="hide">
 					<div class="row">
 						<div class="col-lg-12">
-							<h1 class="page-header">Groups</h1>
+							<h1 class="page-header">Events <a id="page_events_new" class="btn btn-sm btn-primary pull-right" onclick="getMeet4EatUI().onBtnEventNew()">New Event</a></h1>
 						</div>
 						<!-- /.col-lg-12 -->
 					</div>
@@ -960,42 +306,21 @@
 						<div class="col-lg-12">
 							<div class="panel panel-default">
 								<div class="panel-heading">
-									<strong>List of all groups</strong>
+									<strong>List of all events</strong>
 								</div>
 								<!-- /.panel-heading -->
 								<div class="panel-body">
-									<table width="100%" class="table table-striped table-bordered table-hover" id="table_groups">
+									<table id="table_events" width="100%" class="table table-striped table-bordered table-hover">
 										<thead>
 											<tr>
-												<th>Rendering engine</th>
-												<th>Browser</th>
-												<th>Platform(s)</th>
-												<th>Engine version</th>
-												<th>CSS grade</th>
+												<th>Name</th>
+												<th>Description</th>
+												<th>Event Start</th>
+												<th>Event Repeat</th>
+												<th></th>
 											</tr>
 										</thead>
 										<tbody>
-											<tr>
-												<td>Trident</td>
-												<td>Internet Explorer 4.0</td>
-												<td>Win 95+</td>
-												<td class="center">4</td>
-												<td class="center">X</td>
-											</tr>
-											<tr>
-												<td>Trident</td>
-												<td>Internet Explorer 5.0</td>
-												<td>Win 95+</td>
-												<td class="center">5</td>
-												<td class="center">C</td>
-											</tr>
-											<tr>
-												<td>Trident</td>
-												<td>Internet Explorer 5.5</td>
-												<td>Win 95+</td>
-												<td class="center">5.5</td>
-												<td class="center">A</td>
-											</tr>
 										</tbody>
 									</table>
 								</div>
@@ -1007,7 +332,164 @@
 					</div>
 					<!-- /.row -->
 				</div>
-				<!-- menu_groups -->
+				<!-- menu_events -->
+
+				<!-- menu_events_edit -->
+				<div id="page_events_edit" class="hide">
+					<div class="row">
+						<div class="col-sm-12">
+							<h1 class="page-header text-center">Edit Event</h1>
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<div class="row">
+						<div class="col-lg-8 col-lg-offset-2 col-sm-12">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<strong><span id="page_events_edit_title"></span></strong>
+								</div>
+								<!-- /.panel-heading -->
+								<div class="panel-body">
+									<!-- nav tabs -->
+									<ul class="nav nav-tabs" style="margin-bottom: 30px;">
+										<li class="active"><a href="#page_events_edit_pane_event" data-toggle="tab">Event</a>
+										</li>
+										<li><a href="#page_events_edit_pane_members" data-toggle="tab">Members</a>
+										</li>
+										<li><a href="#page_events_edit_pane_icon" data-toggle="tab">Icon</a>
+										</li>
+									</ul>
+									<!-- Tab panes -->
+									<div class="tab-content">
+										<div class="tab-pane fade in active" id="page_events_edit_pane_event">
+											<form role="form" id="page_events_edit_form">
+												<input name="id" hidden>
+												<div class="row form-group">
+													<div class="col-sm-12">
+														<label>Name</label>
+														<input class="form-control" maxlength="64" name="name" placeholder="Enter text">
+														<p class="help-block">Event name</p>
+													</div>
+												</div>
+												<div class="row form-group">
+													<div class="col-sm-12">
+														<label>Description</label>
+														<textarea class="form-control" maxlength="1000" rows="3" name="description" placeholder="Short description"></textarea>
+														<p class="help-block">Event description (max 1000 characters).</p>
+													</div>
+												</div>
+												<div class="row form-group">
+													<div class="col-sm-12">
+														<label>Event Start</label>
+														<div id="page_events_edit_form_eventstart" class='input-group date'>
+															<input type='text' class="form-control" />
+															<span class="input-group-addon">
+																<span class="glyphicon glyphicon-calendar"></span>
+															</span>
+														</div>
+														<p class="help-block">Start of event</p>
+													</div>
+												</div>
+												<div class="row form-group">
+													<div class="col-sm-12">
+														<div class="panel panel-default">
+															<div class="panel-heading">
+																<strong>Repeating Events</strong>
+															</div>
+															<div class="panel-body">
+
+																<div class="col-sm-12">
+																	<label>Week Days</label>
+																	<div class="weekday">
+																		<input type="checkbox" id="page_events_edit_form_weekday0"/>
+																		<label for="page_events_edit_form_weekday0">Mon</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday1"/>
+																		<label for="page_events_edit_form_weekday1">Tue</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday2"/>
+																		<label for="page_events_edit_form_weekday2">Wed</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday3"/>
+																		<label for="page_events_edit_form_weekday3">Thu</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday4"/>
+																		<label for="page_events_edit_form_weekday4">Fri</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday5"/>
+																		<label for="page_events_edit_form_weekday5">Sat</label>
+																		<input type="checkbox" id="page_events_edit_form_weekday6"/>
+																		<label for="page_events_edit_form_weekday6">Sun</label>
+																	</div>
+																	<p class="help-block">Define days of week for a repeating event.</p>
+																</div>
+																<div class="col-sm-12">
+																	<label>Day Time</label>
+																	<div id="page_events_edit_form_daytime" class='input-group date'>
+																		<input type='text' class="form-control" />
+																		<span class="input-group-addon">
+																			<span class="glyphicon glyphicon-time"></span>
+																		</span>
+																	</div>
+																	<p class="help-block">Define a day time for a repeating event.</p>
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</form>
+										</div>
+										<div class="tab-pane fade" id="page_events_edit_pane_members">									
+											<div class="row">
+												<div class="form-group col-sm-12">
+													<div class="form-group">
+														<label>Members</label>
+														<ul class="list-group" id="page_events_edit_members" style="max-height:200px; overflow-y:auto;">
+															<li class="list-group-item">Member 1</li>
+															<li class="list-group-item">Member 2</li>
+															<li class="list-group-item">Member 3</li>
+														</ul>
+													</div>
+													<div class="form-group">
+														<label>Add new member</label>
+														<div class="input-group">
+															<input type="text" class="form-control" placeholder="Search..." onkeydown="if (event.keyCode===13) {getMeet4EatUI().onBtnSearchMemberClicked();}" id="page_events_edit_form_mem_search">
+															<span class="input-group-btn">
+																<button class="btn btn-default" type="button" onclick="getMeet4EatUI().onBtnSearchMemberClicked();"><i class="fa fa-search"></i></button>
+															</span>
+														</div>
+														<div class="input-group" style="margin-top: 20px;">
+															<select class="form-control" id="page_events_edit_form_mem_search_hits"></select>
+															<span class="input-group-btn">
+																<button class="btn btn-default" type="button" onclick="getMeet4EatUI().onBtnAddMemberClicked();"><i class="fa fa-arrow-right"></i></button>
+															</span>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="tab-pane fade" id="page_events_edit_pane_icon">
+											<div class="row">
+												<div class="form-group col-sm-6 col-sm-offset-3">
+													<input hidden name="photo">
+													<a class="form-control btn btn-lg btn-warning" style="min-height: 300px;" onclick="alert('TODO');">IMG</a>
+													<p class="help-block text-center">Set an icon.</p>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- /.panel-body -->
+								<div class="panel-footer">
+									<div class="btn-toolbar text-right">
+										<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="getMeet4EatUI().onBtnEventEditApply()">Apply</a>
+										<a class="btn btn-lg btn-primary col-lg-3 pull-right" onclick="getMeet4EatUI().onBtnEventEditCancel()">Cancel</a>
+									</div>
+								</div>
+								<!-- /.panel-footer -->
+							</div>
+							<!-- /.panel -->
+						</div>
+						<!-- /.col-lg-12 -->
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- page_users_edit -->
 
 				<div id="menu_system" class="hide">
 					<div class="row">
@@ -1035,8 +517,8 @@
 									<td><span id="sys_countuserspurge"></span></td>
 								</tr>
 								<tr>
-									<td>Count groups to purge</td>
-									<td><span id="sys_countgroupspurge"></span></td>
+									<td>Count events to purge</td>
+									<td><span id="sys_counteventspurge"></span></td>
 								</tr>
 							</table>
 						</div>
@@ -1094,5 +576,22 @@
 		<!-- /.modal -->
 
 		<div id="display_error"></div>
+		<script>
+			var m4eUI = null;
+
+			/**
+			 * Get the UI controller.
+			 * @returns {Meet4EatUI}  UI controller
+			 */
+			function getMeet4EatUI() {
+				return m4eUI;
+			}
+
+			/* initialize UI */
+			$(function() {
+				m4eUI = new Meet4EatUI();
+				m4eUI.inititialize();
+			});
+		</script>
 	</body>
 </html>

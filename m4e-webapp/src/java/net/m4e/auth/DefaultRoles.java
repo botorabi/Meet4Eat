@@ -87,20 +87,20 @@ public class DefaultRoles {
             DefaultPermissions.Perm.MODIFY_PERMS.name(),
             DefaultPermissions.Perm.MODIFY_ROLES.name(),
             DefaultPermissions.Perm.MODIFY_USER.name(),
-            DefaultPermissions.Perm.MODIFY_GROUP.name(),
+            DefaultPermissions.Perm.MODIFY_EVENT.name(),
             DefaultPermissions.Perm.MODIFY_USER_ROLES.name()));
 
         roles.put(Roles.MODERATOR.name(), Arrays.asList(
             DefaultPermissions.Perm.READ_SERVER_STATUS.name(),
-            DefaultPermissions.Perm.READ_GROUP.name(),
-            DefaultPermissions.Perm.MODIFY_GROUP.name(),
+            DefaultPermissions.Perm.READ_EVENT.name(),
+            DefaultPermissions.Perm.MODIFY_EVENT.name(),
             DefaultPermissions.Perm.READ_USER.name(),
             DefaultPermissions.Perm.READ_USER_ROLES.name(),
             DefaultPermissions.Perm.MODIFY_USER_ROLES.name()));
 
         roles.put(Roles.USER.name(), Arrays.asList(
             DefaultPermissions.Perm.READ_SERVER_STATUS.name(),
-            DefaultPermissions.Perm.READ_GROUP.name(),
+            DefaultPermissions.Perm.READ_EVENT.name(),
             DefaultPermissions.Perm.READ_USER.name(),
             DefaultPermissions.Perm.READ_USER_ROLES.name()));
 

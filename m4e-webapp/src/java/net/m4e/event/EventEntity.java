@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.groups;
+package net.m4e.event;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -22,13 +22,13 @@ import net.m4e.common.StatusEntity;
 import net.m4e.user.UserEntity;
 
 /**
- * A class describing a group of users
+ * A class describing an event
  * 
  * @author boto
  * Date of creation Aug 18, 2017
  */
 @Entity
-public class GroupEntity implements Serializable {
+public class EventEntity implements Serializable {
 
     /**
      * Serialization version
@@ -49,23 +49,23 @@ public class GroupEntity implements Serializable {
     private StatusEntity status;       
 
     /**
-     * Group name
+     * Event name
      */
     private String name;
 
     /**
-     * Group description
+     * Event description
      */
     private String description;
 
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = CascadeType.ALL)
+    @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private ImageEntity photo;
 
     /**
-     * Group members
+     * Event members
      */
     @OneToMany(targetEntity=UserEntity.class, cascade = {CascadeType.REFRESH, CascadeType.DETACH})
     private Collection<UserEntity> members;
@@ -73,38 +73,45 @@ public class GroupEntity implements Serializable {
     /**
      * A list of locations which represent possible meeting points
      */
-    @OneToMany(targetEntity=GroupLocationEntity.class, cascade = CascadeType.ALL)
-    private Collection<GroupLocationEntity> locations;
+    @OneToMany(targetEntity=EventLocationEntity.class, cascade = CascadeType.ALL)
+    private Collection<EventLocationEntity> locations;
 
     /**
-     * User alarm start time in millisecond.
+     * Event start time in seconds.
      */
-    private Long alarmStart;
+    private Long eventStart = 0L;
 
     /**
-     * User alarm interval in millisecond.
+     * A bit field defining which week days the event should be repeated.
+     * Monday to Sunday are represented by bits 0 to 6.
      */
-    private Long alarmInterval;
+    private Long repeatWeekDays = 0L;
 
     /**
-     * Create a group entity.
+     * For repeating events this defines the day time in seconds.
      */
-    public GroupEntity() {
+    private Long repeatDayTime = 0L;
+
+
+    /**
+     * Create an event entity.
+     */
+    public EventEntity() {
     }
 
     /**
-     * Get group ID.
+     * Get event ID.
      * 
-     * @return Group ID
+     * @return Event ID
      */
     public Long getId() {
         return id;
     }
 
     /**
-     * Set Group ID.
+     * Set Event ID.
      * 
-     * @param id Group ID
+     * @param id Event ID
      */
     public void setId(Long id) {
         this.id = id;
@@ -130,43 +137,43 @@ public class GroupEntity implements Serializable {
     }
 
     /**
-     * Get group name.
+     * Get event name.
      * 
-     * @return Group name
+     * @return Event name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Set group name.
+     * Set event name.
      * 
-     * @param name Group name
+     * @param name Event name
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * Get group description.
+     * Get event description.
      * 
-     * @return Group description
+     * @return Event description
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * Set group description.
+     * Set event description.
      * 
-     * @param description Group description 
+     * @param description Event description 
      */
     public void setDescription(String description) {
         this.description = description;
     }
 
     /**
-     * Get group photo.
+     * Get event photo.
      * 
      * @return ImageEntity containing the photo
      */
@@ -175,7 +182,7 @@ public class GroupEntity implements Serializable {
     }
 
     /**
-     * Set the group photo.
+     * Set the event photo.
      * 
      * @param photo ImageEntity containing the photo
      */
@@ -184,77 +191,94 @@ public class GroupEntity implements Serializable {
     }
 
     /**
-     * Get alarm start time.
+     * Get the event start time.
      * 
-     * @return Alarm start in millisecond
+     * @return Event start in seconds since epoch
      */
-    public Long getAlarmStart() {
-        return alarmStart;
+    public Long getEventStart() {
+        return eventStart;
     }
 
     /**
-     * Set alarm start time.
+     * Set the event start time.
      * 
-     * @param alarmStart Alarm start in millisecond
+     * @param eventStart Event start in seconds since epoch
      */
-    public void setAlarmStart(Long alarmStart) {
-        this.alarmStart = alarmStart;
+    public void setEventStart(Long eventStart) {
+        this.eventStart = eventStart;
     }
 
     /**
-     * Get group members.
+     * Get week days for a repeating event.
      * 
-     * @return Group members
+     * @return Week days
+     */
+    public Long getRepeatWeekDays() {
+        return repeatWeekDays;
+    }
+
+    /**
+     * Set week days for a repeating event.
+     * 
+     * @param repeatWeekDays Week days
+     */
+    public void setRepeatWeekDays(Long repeatWeekDays) {
+        this.repeatWeekDays = repeatWeekDays;
+    }
+
+    /**
+     * Get day time for a repeating event.
+     * 
+     * @return Day time in seconds
+     */
+    public Long getRepeatDayTime() {
+        return repeatDayTime;
+    }
+
+    /**
+     * Set day time for a repeating event.
+     * 
+     * @param repeatDayTime Day time in seconds
+     */
+    public void setRepeatDayTime(Long repeatDayTime) {
+        this.repeatDayTime = repeatDayTime;
+    }
+
+    /**
+     * Get event members.
+     * 
+     * @return Event members
      */
     public Collection<UserEntity> getMembers() {
         return members;
     }
 
     /**
-     * Set group members.
+     * Set event members.
      * 
-     * @param members Group members
+     * @param members Event members
      */
     public void setMembers(Collection<UserEntity> members) {
         this.members = members;
     }
 
     /**
-     * Get group locations.
+     * Get event locations.
      * 
-     * @return Group locations
+     * @return Event locations
      */
-    public Collection<GroupLocationEntity> getLocations() {
+    public Collection<EventLocationEntity> getLocations() {
         return locations;
     }
 
     /**
-     * Set group locations.
+     * Set event locations.
      * 
-     * @param locations Group locations
+     * @param locations event locations
      */
-    public void setLocations(Collection<GroupLocationEntity> locations) {
+    public void setLocations(Collection<EventLocationEntity> locations) {
         this.locations = locations;
     }
-
-    /**
-     * Get alarm interval. A value 0 means no periodic alarm.
-     * 
-     * @return Alarm interval in millisecond.
-     */
-    public Long getAlarmInterval() {
-        return alarmInterval;
-    }
-
-    /**
-     * Set alarm interval. Let it be 0 in order to disable periodic alarm.
-     * 
-     * @param alarmInterval Alarm interval in millisecond.
-     */
-    public void setAlarmInterval(Long alarmInterval) {
-        this.alarmInterval = alarmInterval;
-    }
-
 
     @Override
     public int hashCode() {
@@ -265,10 +289,10 @@ public class GroupEntity implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof GroupEntity)) {
+        if (!(object instanceof EventEntity)) {
             return false;
         }
-        GroupEntity other = (GroupEntity) object;
+        EventEntity other = (EventEntity) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -277,6 +301,6 @@ public class GroupEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.groups.GroupEntity[ id=" + id + " ]";
+        return "net.m4e.events.EventEntity[ id=" + id + " ]";
     }
 }

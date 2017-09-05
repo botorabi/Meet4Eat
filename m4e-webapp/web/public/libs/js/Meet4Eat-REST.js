@@ -23,8 +23,8 @@ function Meet4EatREST() {
 	/* URL for accessing users */
 	this._urlUsers  = this._webRoot + '/webresources/rest/users';
 
-	/* URL for accessing groups */
-	this._urlGroups = this._webRoot + '/webresources/rest/groups';
+	/* URL for accessing events */
+	this._urlEvents = this._webRoot + '/webresources/rest/events';
 
 	/**
 	 * Get the web interface version.
@@ -75,13 +75,13 @@ function Meet4EatREST() {
 	};
 
 	/**
-	 * Build a REST api for group operations.
+	 * Build a REST api for event operations.
 	 * 
-	 * @returns {Meet4EatBaseREST}			REST API for group operations
+	 * @returns {Meet4EatBaseREST}			REST API for event operations
 	 */
-	this.buildGroupREST = function() {
+	this.buildEventREST = function() {
 		var inst = new Meet4EatBaseREST();
-		inst.initialize(this._urlGroups, this._requestJSON);
+		inst.initialize(this._urlEvents, this._requestJSON);
 		return inst;
 	};
 
@@ -195,6 +195,18 @@ function Meet4EatBaseREST() {
 	 */
 	this.find = function(resultsCallback, id) {
 		this._fcnRequestJson(this._rootPath + "/" + id, null, 'GET', resultsCallback);
+	};
+
+	/**
+	 * Search for a keyword in all entities and return a limited count of hits.
+	 * 
+	 * NOTE: Some entity types may not support the search service interface!
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 * @param {string} keyword	The keyword to search for
+	 */
+	this.search = function(resultsCallback, keyword) {
+		this._fcnRequestJson(this._rootPath + "/search/" + keyword, null, 'GET', resultsCallback);		
 	};
 
 	/**

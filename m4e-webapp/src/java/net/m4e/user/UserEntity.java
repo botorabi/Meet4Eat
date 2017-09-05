@@ -21,7 +21,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import net.m4e.auth.RoleEntity;
 import net.m4e.common.StatusEntity;
@@ -69,17 +68,19 @@ public class UserEntity implements Serializable {
     /**
      * User login
      */
-    @Column(unique=true)
+    @Column(unique=true, nullable=false)
     private String login;
 
     /**
      * User name
      */
+    @Column(nullable=false)
     private String name;
 
     /**
      * Password
      */
+    @Column(nullable=false)
     private String password;
 
     /**
@@ -90,7 +91,7 @@ public class UserEntity implements Serializable {
     /**
      * Timestamp of last login (time in milliseconds)
      */
-    private Long dateLastLogin;
+    private Long dateLastLogin = 0L;
 
     /**
      * Get ID.

@@ -35,7 +35,7 @@ public class AppStart extends Application {
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(net.m4e.core.AppInfoEntityFacadeREST.class);
-        resources.add(net.m4e.groups.GroupEntityFacadeREST.class);
+        resources.add(net.m4e.event.EventEntityFacadeREST.class);
         resources.add(net.m4e.user.UserAuthenticationFacadeREST.class);
         resources.add(net.m4e.user.UserEntityFacadeREST.class);
     }

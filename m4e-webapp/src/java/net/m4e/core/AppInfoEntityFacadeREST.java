@@ -101,7 +101,7 @@ public class AppInfoEntityFacadeREST extends net.m4e.common.AbstractFacade<AppIn
         json.add("dateLastMaintenance", entity.getDateLastMaintenance());
         json.add("dateLastUpdate", entity.getDateLastUpdate());
         json.add("userCountPurge", entity.getUserCountPurge());
-        json.add("groupCountPurge", entity.getGroupCountPurge());
+        json.add("eventCountPurge", entity.getEventCountPurge());
         return json;
     }
 }

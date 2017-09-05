@@ -60,9 +60,9 @@ public class AppInfoEntity implements Serializable {
     private Long userCountPurge = 0L;
 
     /**
-     * Count of group entities which are marked as deleted and can be purged.
+     * Count of event entities which are marked as deleted and can be purged.
      */
-    private Long groupCountPurge = 0L;
+    private Long eventCountPurge = 0L;
 
     /**
      * Get the entity ID.
@@ -162,30 +162,30 @@ public class AppInfoEntity implements Serializable {
     }
 
     /**
-     * Get the count of GroupEntity entries which are marked as deleted.
+     * Get the count of EventEntity entries which are marked as deleted.
      * 
-     * @return Count of group entities which can be purged
+     * @return Count of event entities which can be purged
      */
-    public Long getGroupCountPurge() {
-        return groupCountPurge;
+    public Long getEventCountPurge() {
+        return eventCountPurge;
     }
 
     /**
-     * Set the count of GroupEntity entries which are marked as deleted.
+     * Set the count of EventEntity entries which are marked as deleted.
      * 
-     * @param groupCountPurge of group entities which can be purged
+     * @param eventCountPurge Count of event entities which can be purged
      */
-    public void setGroupCountPurge(Long groupCountPurge) {
-        this.groupCountPurge = groupCountPurge;
+    public void setEventCountPurge(Long eventCountPurge) {
+        this.eventCountPurge = eventCountPurge;
     }
 
     /**
-     * Increment the group purge counter by given 'count'.
+     * Increment the event purge counter by given 'count'.
      * 
      * @param count Count of incrementation.
      */
-    public void incrementGroupCountPurge(Long count) {
-        groupCountPurge += count;
+    public void incrementEventCountPurge(Long count) {
+        eventCountPurge += count;
     }
 
     @Override
