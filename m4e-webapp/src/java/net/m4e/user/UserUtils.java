@@ -81,6 +81,9 @@ public class UserUtils {
      *                           is the owner of a resource, otherwise return false.
      */
     public boolean userIsOwnerOrAdmin(UserEntity user, StatusEntity resourceStatus) {
+        if (Objects.isNull(user) || Objects.isNull(resourceStatus)) {
+            return false;
+        }
         return user.getId().equals(resourceStatus.getIdOwner()) ||
                checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
     }
@@ -170,6 +173,18 @@ public class UserUtils {
     public void deleteUser(UserEntity user) throws Exception {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         eutils.deleteEntity(user);
+    }
+
+    /**
+     * Try to find a user with given user ID.
+     * 
+     * @param id User ID
+     * @return Return user entity if found, otherwise return null.
+     */
+    public UserEntity findUser(Long id) {
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        UserEntity user = eutils.findEntity(UserEntity.class, id);
+        return user;
     }
 
     /**
@@ -289,7 +304,7 @@ public class UserUtils {
         UserEntity entity = new UserEntity();
         addUserRoles(entity, userroles);
         entity.setName(StringUtils.limitStringLen(name, 32));
-        entity.setPassword(StringUtils.limitStringLen(passwd, 64));
+        entity.setPassword(StringUtils.limitStringLen(passwd, 255));
         entity.setEmail(StringUtils.limitStringLen(email, 128));
         entity.setLogin(StringUtils.limitStringLen(login, 32));
         entity.setDateLastLogin(0L);

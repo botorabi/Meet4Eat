@@ -8,8 +8,11 @@
 "use strict";
 
 function Meet4EatREST() {
+	/* self ref */
+	var self = this;
+
 	/* API version */
-	this._version = "0.3.0";
+	this._version = "0.4.0";
 
 	/* Root path of web service */
 	this._webRoot = "/m4e-webapp";
@@ -25,6 +28,9 @@ function Meet4EatREST() {
 
 	/* URL for accessing events */
 	this._urlEvents = this._webRoot + '/webresources/rest/events';
+
+	/* Last time the server was accessed */
+	this._lastAccessTime = 0;
 
 	/**
 	 * Get the web interface version.
@@ -50,6 +56,27 @@ function Meet4EatREST() {
 	 */
 	this.getServerStats = function(resultsCallback) {
 		this._requestJSON(this._urlAppInfo + "/stats", null, 'POST', resultsCallback);
+	};
+
+	/**
+	 * Get the time of last server access.
+	 * 
+	 * @returns {integer}	Last access time in seconds
+	 */
+	this.getLastAccessTime = function() {
+		return Math.floor(this._lastAccessTime / 1000);
+	};
+
+	/**
+	 * Get past time since last server access.
+	 * 
+	 * @returns {integer}	Past time since last server access in seconds
+	 */
+	this.getPastAccessTime = function() {
+		if (this._lastAccessTime === 0) {
+			return 0;
+		}
+		return Math.floor(((new Date()).getTime() - this._lastAccessTime) / 1000);
 	};
 
 	/**
@@ -80,9 +107,12 @@ function Meet4EatREST() {
 	 * @returns {Meet4EatBaseREST}			REST API for event operations
 	 */
 	this.buildEventREST = function() {
-		var inst = new Meet4EatBaseREST();
-		inst.initialize(this._urlEvents, this._requestJSON);
-		return inst;
+		var base = new Meet4EatBaseREST();
+		base.initialize(this._urlEvents, this._requestJSON);
+		// extend the base REST module by Meet4EatEventREST
+		var events = new Meet4EatEventREST(base);
+		events.initialize();
+		return base;
 	};
 
 	/**
@@ -117,6 +147,7 @@ function Meet4EatREST() {
 			dataType: "text",
 			cache: false,
             success: function(response) {
+				self._lastAccessTime = (new Date()).getTime();
                 if (responseCallback !== null) {
                     var results = null;
                     try {
@@ -150,7 +181,7 @@ function Meet4EatREST() {
  */
 function Meet4EatBaseREST() {
 	/* API version */
-	this._version = "1.0.0";
+	this._version = "1.1.0";
 
 	/* Root URL for REST requests */
 	this._rootPath = "";
@@ -233,6 +264,46 @@ function Meet4EatBaseREST() {
 	 */
 	this.delete = function(resultsCallback, id) {
 		this._fcnRequestJson(this._rootPath + "/" + id, null, 'DELETE', resultsCallback);
+	};
+}
+
+/**
+ * REST services for events
+ * 
+ * @param {Meet4EatBaseREST}  base Base REST module
+ */
+function Meet4EatEventREST(base) {
+	/* API version */
+	this._version = "0.1.0";
+
+	/* Base module */
+	var _base = base;
+
+	/**
+	 * Initialize the instance.
+	 */
+	this.initialize = function () {};
+
+	/**
+	 * Request for adding a member to an event.
+	 * 
+	 * @param {function} resultsCallback   Callback which is used when the results arrive.
+	 * @param {integer}  eventId           Event ID
+	 * @param {integer}  memberId          Member ID
+	 */
+	_base.addEventMember = function(resultsCallback, eventId, memberId) {
+		_base._fcnRequestJson(_base._rootPath + '/addmember/' + eventId + "/" + memberId, null, 'GET', resultsCallback);
+	};
+
+	/**
+	 * Request for removing a member from an event.
+	 * 
+	 * @param {function} resultsCallback   Callback which is used when the results arrive.
+	 * @param {integer}  eventId           Event ID
+	 * @param {integer}  memberId          Member ID
+	 */
+	_base.removeEventMember = function(resultsCallback, eventId, memberId) {
+		_base._fcnRequestJson(_base._rootPath + '/removemember/' + eventId + "/" + memberId, null, 'GET', resultsCallback);
 	};
 }
 

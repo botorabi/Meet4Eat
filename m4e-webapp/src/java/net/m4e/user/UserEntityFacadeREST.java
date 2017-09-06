@@ -135,7 +135,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity user = super.find(id);
-        if (Objects.isNull(user)) {
+        if (Objects.isNull(user) || user.getStatus().getIsDeleted()) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for updating.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
@@ -188,7 +188,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity user = super.find(id);
-        if (user == null) {
+        if (Objects.isNull(user) || user.getStatus().getIsDeleted()) {
             Log.warning(TAG, "*** User was attempting to delete non-existing user!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -218,6 +218,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         EntityUtils utils = new EntityUtils(entityManager, userTransaction);
         List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
         for (UserEntity hit: hits) {
+            if (hit.getStatus().getIsDeleted()) {
+                continue;
+            }
             JsonObjectBuilder json = Json.createObjectBuilder();
             json.add("id", hit.getId());
             json.add("name", Objects.nonNull(hit.getName()) ? hit.getName() : "???");

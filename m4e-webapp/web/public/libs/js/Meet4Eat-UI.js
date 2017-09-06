@@ -25,7 +25,7 @@ function Meet4EatUI() {
 	var self = this;
 
 	/* UI version */
-	self._version              = "0.4.0";
+	self._version              = "0.5.0";
 
 	self._m4e                  = null;
 	self._m4eAuth              = null;
@@ -59,9 +59,94 @@ function Meet4EatUI() {
 	};
 
 	/**
+	 * Get past time since last server access.
+	 * 
+	 * @returns {integer}	Past time since last server access in seconds
+	 */
+	this.getPastAccessTime = function() {
+		return self._m4e.getPastAccessTime();
+	};
+
+	/**
+	 * Show a modal dialog with given content text, title and button texts.
+	 * If a callback object is given then it is used for propagating the 
+	 * button click event.
+	 * 
+	 * The callback object has the following form:
+	 * 
+	 *   {
+	 *		onClickBtn1: function(btnText) {
+	 *		    // handle button click 1
+	 *		},
+	 *		onClickBtn2: function(btnText) {
+	 *		    // handle button click 2
+	 *		}
+	 *   }
+	 *   
+	 * @param {string}   text		    Messagebox text
+	 * @param {string}   title		    Title
+	 * @param {string}   textBtn1	    Text of button 1, pass null to hide button 1
+	 * @param {string}   textBtn2       Text of button 2, pass null to hide button 2
+	 * @param {function} btnCallbacks	Optional callback object used on button clicks.
+	 */
+	self.showModalBox = function(text, title, textBtn1, textBtn2, btnCallbacks) {
+		$('#msg_box_text').text(text);
+		$('#msg_box_title').text(title);
+		if (textBtn1) {
+			$('#msg_box_btn1').text(textBtn1);
+			$('#msg_box_btn1').removeClass("hide");
+			$("#msg_box_btn1").click(function() {
+				if (btnCallbacks && btnCallbacks.onClickBtn1) {
+					btnCallbacks.onClickBtn1(textBtn1);
+				}
+			});
+		}
+		else {
+			$('#msg_box_btn1').addClass("hide");
+		}
+		if (textBtn2) {
+			$('#msg_box_btn2').text(textBtn2);
+			$('#msg_box_btn2').removeClass("hide");
+			$("#msg_box_btn2").click(function() {
+				if (btnCallbacks && btnCallbacks.onClickBtn2) {
+					btnCallbacks.onClickBtn2(textBtn2);
+				}
+			});
+		}
+		else {
+			$('#msg_box_btn2').addClass("hide");
+		}
+		$('#msg_box').modal("show");
+	};
+
+	/**
+	 * Show a modal dialog with given html code in body.
+	 * 
+	 * @param {string}   html        HTML code to display
+	 * @param {string}   title       Title
+	 * @param {string}   textBtn     Button text
+	 * @param {function} btnCallback Optional callback object used on button click.
+	 */
+	self.showModalInfoBox = function(html, title, textBtn, btnCallback) {
+		$('#msg_box_text').html(html);
+		$('#msg_box_title').text(title);
+		$('#msg_box_btn2').addClass("hide");
+		if (textBtn) {
+			$('#msg_box_btn1').removeClass("hide");
+			$('#msg_box_btn1').text(textBtn);
+			$("#msg_box_btn1").click(function() {
+				if (btnCallback) {
+					btnCallback();
+				}
+			});
+		}
+		$('#msg_box').modal("show");
+	};
+
+	/**
 	 * Handle login button click.
 	 */
-	self.onBtnLoginClicked = function() {
+	self.onBtnLogin = function() {
 		var fields = $('#form_login').serializeArray().reduce(function(obj, item) {
 			obj[item.name] = item.value;
 			return obj;
@@ -73,7 +158,7 @@ function Meet4EatUI() {
 	/**
 	 * Handle logout button click.
 	 */
-	self.onBtnLogoutClicked = function() {
+	self.onBtnLogout = function() {
 		self._logout();
 	};
 
@@ -83,7 +168,7 @@ function Meet4EatUI() {
 	 * @param {integer} id	User ID
 	 */
 	self.onBtnUserDelete = function(id) {
-		self._showModalBox("Are you really sure you want to delete the user?", "Delete User", "No", "Yes", {
+		self.showModalBox("Are you really sure you want to delete the user?", "Delete User", "No", "Yes", {
 			onClickBtn1: function() {
 				// nothing to do
 			},
@@ -135,7 +220,7 @@ function Meet4EatUI() {
 		var passwdr = inputfields['password-repeat'];
 		if (passwd !== "" || passwdr !== "") {
 			if (passwd !== passwdr) {
-				self._showModalBox("Password fields do not match!", "Invalid Input", "Dismiss");
+				self.showModalBox("Password fields do not match!", "Invalid Input", "Dismiss");
 				return;
 			}
 			fields['password'] = self._m4eAuth.createHash(passwd);
@@ -150,7 +235,7 @@ function Meet4EatUI() {
 
 		self._createOrUpdateUser(fields, function(results) {
 			if (results.status === "ok") {
-				self._showModalBox("Changes were successfully applied to user.", "User Update", "Dismiss");
+				self.showModalBox("Changes were successfully applied to user.", "User Update", "Dismiss");
 				if (newuser) {
 					// on successful creation the new user id is in results.data
 					fields.id = results.data.id;
@@ -169,7 +254,7 @@ function Meet4EatUI() {
 				}
 			}
 			else {
-				self._showModalBox("Could not apply changes to user! Reason: " + results.description, "User Update", "Dismiss");
+				self.showModalBox("Could not apply changes to user! Reason: " + results.description, "User Update", "Dismiss");
 			}
 		});
 	};
@@ -196,7 +281,7 @@ function Meet4EatUI() {
 	 * @param {interger} id Event ID
 	 */
 	self.onBtnEventDelete = function(id) {
-		self._showModalBox("Are you really sure you want to delete the event?", "Delete Event", "No", "Yes", {
+		self.showModalBox("Are you really sure you want to delete the event?", "Delete Event", "No", "Yes", {
 			onClickBtn1: function() {
 				// nothing to do
 			},
@@ -255,7 +340,7 @@ function Meet4EatUI() {
 
 		self._createOrUpdateEvent(fields, function(results) {
 			if (results.status === "ok") {
-				self._showModalBox("Changes were successfully applied to event.", "Event Update", "Dismiss");
+				self.showModalBox("Changes were successfully applied to event.", "Event Update", "Dismiss");
 				if (newevent) {
 					// on successful creation the new user id is in results.data
 					fields.id = results.data.id;
@@ -269,7 +354,7 @@ function Meet4EatUI() {
 				self._showElement('page_events_edit', false);
 			}
 			else {
-				self._showModalBox("Could not apply changes to event! Reason: " + results.description, "Event Update", "Dismiss");
+				self.showModalBox("Could not apply changes to event! Reason: " + results.description, "Event Update", "Dismiss");
 			}
 		});
 	};
@@ -294,7 +379,7 @@ function Meet4EatUI() {
 	 * Search for a member. The keyword is expected to be in an input
 	 * element with ID 'page_events_edit_form_mem_search'.
 	 */
-	self.onBtnSearchMemberClicked = function() {
+	self.onBtnSearchMember = function() {
 		var keyword = $('#page_events_edit_form_mem_search').val();
 		var sel = $('#page_events_edit_form_mem_search_hits');
 		sel.empty();
@@ -310,80 +395,122 @@ function Meet4EatUI() {
 					}
 				}
 				else {
-					self._showModalBox(res.description, "Connection Problem", "Dismiss");
+					self.showModalBox(res.description, "Connection Problem", "Dismiss");
 				}
 			},
 			error: function(err) {
-				self._showModalBox(err, "Connection Problem", "Dismiss");
+				self.showModalBox(err, "Connection Problem", "Dismiss");
 			}
 		}, keyword);
+	};
+
+	/**
+	 * Show information of the user with given ID in a modal dialog.
+	 * 
+	 * @param {integer} memberId  User ID
+	 */
+	self.onBtnEventMemberInfo = function(memberId) {
+		self._m4eUsers.find({
+			success: function(res, resp) {
+				if (res.status === "ok") {
+					var user = res.data;
+					var lastlogin = "-";
+					if (user.dateLastLogin && user.dateLastLogin > 0) {
+						var timestamp = new Date(parseInt(user.dateLastLogin));
+						lastlogin = self._formatTime(timestamp);
+					}
+					var html = "<table class='table table-striped table-bordered'>";
+					html += "<tr><td>User Name</td><td>" + user.name + "</td></tr>";
+					html += "<tr><td>E-Mail</td><td>" + user.email + "</td></tr>";
+					html += "<tr><td>Last Online</td><td>" + lastlogin + "</td></tr>";
+					html += "</table>";
+					self.showModalInfoBox(html, "User Info", "Dismiss");
+				}
+				else {
+					self.showModalBox(res.description, "Problem Getting User Info", "Dismiss");
+				}
+			},
+			error: function(err) {
+				self.showModalBox(err, "Connection Problem", "Dismiss");
+			}
+		}, memberId);
+	};
+
+	/**
+	 * Remove a member from an event.
+	 * 
+	 * @param {type} eventId  Event ID
+	 * @param {type} memberId ID of the user to be removed
+	 */
+	self.onBtnEventMemberRemove = function(eventId, memberId) {
+		self.showModalBox("Are you really sure you want to remove the member?", "Remove member", "No", "Yes", {
+			onClickBtn1: function() {
+				// nothing to do
+			},
+			onClickBtn2: function() {
+				// sure to delete
+				// NOTE as deleteUser opens also a modal messagebox we have to defer the call!
+				self._deferExecution(function() {
+					self._m4eEvents.removeEventMember({
+						success: function(res, resp) {
+							if (res.status === "ok") {
+								self.showModalBox("Member was successfully removed from Event.", "Remove Event Member", "Dismiss");
+								self._updateUiEventMemberRemove(eventId, memberId);
+							}
+							else {
+								self.showModalBox(res.description, "Problem Removing Member", "Dismiss");
+							}
+						},
+						error: function(err) {
+							self.showModalBox(err, "Connection Problem", "Dismiss");
+						}
+					}, eventId, memberId);
+				}, 500);
+			}
+		});
+	};
+
+	/**
+	 * Make a member new owner of an event.
+	 * 
+	 * @param {type} eventId  Event ID
+	 * @param {type} memberId ID of the user to get new owner
+	 */
+	self.onBtnEventMemberMakeOwner = function(eventId, memberId) {
+		alert("TODO: onBtnEventMemberMakeOwner");
 	};
 
 	/**
 	 * Add the member which is selected in selection element with
 	 * ID 'page_events_edit_form_mem_search_hits'.
 	 */
-	self.onBtnAddMemberClicked = function() {
+	self.onBtnEventMemberAdd = function() {
 		var sel = $('#page_events_edit_form_mem_search_hits option:selected');
-		alert("TODO: Adding member '" + sel.text() + "' (" + sel.val() + ")");
+		var userid = sel.val();
+		var eventid = $("#page_events_edit_form input[name='id']").val();
+		if (!eventid || !userid) {
+			self.showModalBox("onBtnEventMemberAdd: Cannot add user to event, invalid user or event id!", "Internal Error", "Dismiss");
+		}
+
+		self._m4eEvents.addEventMember({
+			success: function(res, resp) {
+				if (res.status === "ok") {
+					self.showModalBox("Member was successfully added to Event.", "Add Event Member", "Dismiss");
+					self._updateUiEventMemberAdd(true, eventid, res.data.memberId, res.data.memberName);
+				}
+				else {
+					self.showModalBox(res.description, "Problem Adding Member", "Dismiss");
+				}
+			},
+			error: function(err) {
+				self.showModalBox(err, "Connection Problem", "Dismiss");
+			}
+		}, eventid, userid);
 	};
 
 	/**********************************************************************/
 	/*                        Private functions                           */
 	/**********************************************************************/
-	
-	/**
-	 * Show a modal dialog with given content text, title and button texts.
-	 * If a callback object is given then it is used for propagating the 
-	 * button click event.
-	 * 
-	 * The callback object has the following form:
-	 * 
-	 *   {
-	 *		onClickBtn1: function(btnText) {
-	 *		    // handle button click 1
-	 *		},
-	 *		onClickBtn2: function(btnText) {
-	 *		    // handle button click 2
-	 *		}
-	 *   }
-	 *   
-	 * @param {type} text		    Messagebox text
-	 * @param {type} title		    Title
-	 * @param {type} textBtn1	    Text of button 1, pass null to hide button 1
-	 * @param {type} textBtn2       Text of button 2, pass null to hide button 2
-	 * @param {type} btnCallbacks	Optional callback object used on button clicks.
-	 */
-	self._showModalBox = function(text, title, textBtn1, textBtn2, btnCallbacks) {
-
-		$('#msg_box_text').text(text);
-		$('#msg_box_title').text(title);
-		if (textBtn1) {
-			$('#msg_box_btn1').text(textBtn1);
-			$('#msg_box_btn1').removeClass("hide");
-			$("#msg_box_btn1").click(function() {
-				if (btnCallbacks && btnCallbacks.onClickBtn1) {
-					btnCallbacks.onClickBtn1(textBtn1);
-				}
-			});
-		}
-		else {
-			$('#msg_box_btn1').addClass("hide");
-		}
-		if (textBtn2) {
-			$('#msg_box_btn2').text(textBtn2);
-			$('#msg_box_btn2').removeClass("hide");
-			$("#msg_box_btn2").click(function() {
-				if (btnCallbacks && btnCallbacks.onClickBtn2) {
-					btnCallbacks.onClickBtn2(textBtn2);
-				}
-			});
-		}
-		else {
-			$('#msg_box_btn2').addClass("hide");				
-		}
-		$('#msg_box').modal("show");
-	};
 
 	/**
 	 * Show/hide an element given its ID.
@@ -453,33 +580,36 @@ function Meet4EatUI() {
 				$('#count_users').text(results.data.count);
 			}
 		});
-		self._m4eUserTable = $('#table_users').DataTable({
-			responsive: true,
-			"columns": [
-				{ "data": "name" },
-				{ "data": "login" },
-				{ "data": "creation" },
-				{ "data": "lastlogin" },
-				{ "data": "roles" },
-				{ "data": "ops" }
-			]});
-
-		self.m4eEventTable = $('#table_events').DataTable({
-			responsive: true,
-			"columns": [
-				{ "data": "name" },
-				{ "data": "description" },
-				{ "data": "eventStart" },
-				{ "data": "eventRepeat" },
-				{ "data": "ops" }
-			]});
 	};
 
 	self._getUserTable = function() {
+		if (!self._m4eUserTable) {
+			self._m4eUserTable = $('#table_users').DataTable({
+				responsive: true,
+				"columns": [
+					{ "data": "name" },
+					{ "data": "login" },
+					{ "data": "creation" },
+					{ "data": "lastlogin" },
+					{ "data": "roles" },
+					{ "data": "ops" }
+				]});
+		}
 		return self._m4eUserTable;
 	};
 
 	self._getEventTable = function() {
+		if (!self.m4eEventTable) {
+			self.m4eEventTable = $('#table_events').DataTable({
+				responsive: true,
+				"columns": [
+					{ "data": "name" },
+					{ "data": "description" },
+					{ "data": "eventStart" },
+					{ "data": "eventRepeat" },
+					{ "data": "ops" }
+				]});
+		}
 		return self.m4eEventTable;
 	};
 
@@ -507,11 +637,11 @@ function Meet4EatUI() {
 										self._onAuthenticated();
 									}
 									else {
-										self._showModalBox(res.description, "Connection Problem", "Dismiss");
+										self.showModalBox(res.description, "Connection Problem", "Dismiss");
 									}
 								},
 								error: function(err) {
-									self._showModalBox(err, "Connection Problem", "Dismiss");
+									self.showModalBox(err, "Connection Problem", "Dismiss");
 								}
 							}, results.data.id);
 						}, 0);
@@ -523,12 +653,12 @@ function Meet4EatUI() {
 					}
 				}
 				else {
-					self._showModalBox(response, "Connection Problem", "Dismiss");
+					self.showModalBox(response, "Connection Problem", "Dismiss");
 				}
 			},
 			error: function(text, response) {
 				$('#display_error').html(response);
-				self._showModalBox(text, "Connection Problem", "Dismiss");
+				self.showModalBox(text, "Connection Problem", "Dismiss");
 			}
 		});
 	};
@@ -547,7 +677,7 @@ function Meet4EatUI() {
 			},
 			error: function(text, response) {
 				$('#display_error').html(response);
-				self._showModalBox(text, "Login Problem", "Dismiss");
+				self.showModalBox(text, "Login Problem", "Dismiss");
 			}
 		}, loginName, pasword);
 	};
@@ -559,7 +689,7 @@ function Meet4EatUI() {
 			},
 			error: function(text, response) {
 				$('#display_error').html(response);
-				self._showModalBox(text, "Logout Problem", "Dismiss");
+				self.showModalBox(text, "Logout Problem", "Dismiss");
 			}
 		});
 	};
@@ -591,14 +721,11 @@ function Meet4EatUI() {
 
 	//--------------------------------------------
 	self._onAuthenticated = function() {
-		if (self._authUserRolesContain(["ADMIN"])) {
-			self._setupUiAdmin();
-		}
 		$('#user_name').text(self._getAuthUser().name);
 		self._setupDashboardPage();
-		self._setupAboutPage();
-		self._setupUiTableUser();
-		self._setupUiTableEvent();
+		// this initialized the tables
+		self._getUserTable();
+		self._getEventTable();
 	};
 
 	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -609,7 +736,7 @@ function Meet4EatUI() {
 		self._m4e.getServerStats({
 			success: function(results, reponse) {
 				if (results.status !== "ok") {
-					self._showModalBox("Cannot retrieve server stats!", "Communication Problem", "Dismiss");
+					self.showModalBox("Cannot retrieve server stats!", "Communication Problem", "Dismiss");
 					return;
 				}
 				var stats = results.data;
@@ -628,7 +755,7 @@ function Meet4EatUI() {
 				$('#sys_counteventspurge').text(stats.eventCountPurge);
 			},
 			error: function(err) {
-				self._showModalBox("Cannot retrieve server stats! Reason: " + err, "Connection Problem", "Dismiss");
+				self.showModalBox("Cannot retrieve server stats! Reason: " + err, "Connection Problem", "Dismiss");
 			}
 		});
 	};
@@ -650,7 +777,7 @@ function Meet4EatUI() {
 				self._getUserTable().draw("full-reset");
 			},
 			error: function(err) {
-				self._showModalBox(err, "Cannot retrieve users", "Dismiss");
+				self.showModalBox(err, "Cannot retrieve users", "Dismiss");
 			}
 		});
 	};
@@ -663,7 +790,7 @@ function Meet4EatUI() {
 
 	self._updateUiUserTableAdd = function(userFields) {
 		if (userFields.id === "") {
-			self._showModalBox("updateUiUserTableNew: Cannot add user, invalid user id!", "Internal Error", "Dismiss");
+			self.showModalBox("updateUiUserTableNew: Cannot add user, invalid user id!", "Internal Error", "Dismiss");
 			return;
 		}
 		var lastlogin = "-";
@@ -678,8 +805,8 @@ function Meet4EatUI() {
 		}
 		var roles = userFields.roles ? userFields.roles.join("<br>") : "";
 		var me = (""+userFields.id === ""+self._getAuthUser().id);
-		var candelete = self._authUserRolesContain(["ADMIN", "MODERATOR"]) && !me;
-		var canedit = self._authUserRolesContain(["ADMIN", "MODERATOR"]) || me;
+		var candelete = self._authUserRolesContain(["ADMIN"]) && !me;
+		var canedit = self._authUserRolesContain(["ADMIN"]) || me;
 		self._getUserTable().row.add({
 				"DT_RowId" : userFields.id,
 				// make 'me' bold
@@ -695,7 +822,7 @@ function Meet4EatUI() {
 
 	self._updateUiUserTableUpdate = function(userFields) {
 		if (userFields.id === "") {
-			self._showModalBox("updateUiUserTableUpdate Cannot update user, invalid user id!", "Internal Error", "Dismiss");
+			self.showModalBox("updateUiUserTableUpdate Cannot update user, invalid user id!", "Internal Error", "Dismiss");
 			return;
 		}
 		var user = self._getUserTable().row('#' + userFields.id);
@@ -741,7 +868,7 @@ function Meet4EatUI() {
 		self._m4eUsers.find({
 			success: function(results, response) {
 				if (results.status !== "ok") {
-					self._showModalBox("User was not found for edit!", "Error", "Dismiss");
+					self.showModalBox("User was not found for edit!", "Error", "Dismiss");
 					return;
 				}
 				var user = results.data;
@@ -755,12 +882,12 @@ function Meet4EatUI() {
 				elemrolesel.append(new Option("ADMIN", "ADMIN"));
 				elemrolesel.append(new Option("MODERATOR", "MODERATOR"));
 				elemrolesel.append(new Option("", ""));
-				elemrolesel.prop("disabled", !self._authUserRolesContain(["ADMIN", "MODERATOR"]));
+				elemrolesel.prop("disabled", !self._authUserRolesContain(["ADMIN"]));
 				// select user roles in list
 				elemrolesel.val(user.roles);
 			},
 			error: function(err) {
-				self._showModalBox(err, "Connection Error", "Dismiss");
+				self.showModalBox(err, "Connection Error", "Dismiss");
 			}
 		}, userId);
 	};
@@ -774,7 +901,7 @@ function Meet4EatUI() {
 			},
 			error: function(text, response) {
 				$('#display_error').html(response);
-				self._showModalBox("Could not create or update user! Reason: " + text, "Connection Error", "Dismiss");
+				self.showModalBox("Could not create or update user! Reason: " + text, "Connection Error", "Dismiss");
 			}					
 		}, fields.id, fields);
 	};
@@ -783,16 +910,16 @@ function Meet4EatUI() {
 		self._m4eUsers.delete({
 			success: function(results) {
 				if (results.status !== "ok") {
-					self._showModalBox("Could not delete user! Reason: " + results.description, "Problem Deleting User", "Dismiss");
+					self.showModalBox("Could not delete user! Reason: " + results.description, "Problem Deleting User", "Dismiss");
 					return;
 				}
-				self._showModalBox("User was successfully removed", "Delete User", "Dismiss");
+				self.showModalBox("User was successfully removed", "Delete User", "Dismiss");
 				self._updateUiUserTableRemove(id);
 				self._showElement('page_users_edit', false);
 				self._showElement('menu_users', true);
 			},
 			error: function(text, response) {
-				self._showModalBox(text, "Problem Deleting User", "Dismiss");
+				self.showModalBox(text, "Problem Deleting User", "Dismiss");
 				$('#display_error').html(response);
 			}
 		}, id);
@@ -815,7 +942,7 @@ function Meet4EatUI() {
 				self._getEventTable().draw("full-reset");
 			},
 			error: function(err) {
-				self._showModalBox(err, "Cannot retrieve events", "Dismiss");
+				self.showModalBox(err, "Cannot retrieve events", "Dismiss");
 			}
 		});
 	};
@@ -862,7 +989,7 @@ function Meet4EatUI() {
 
 	self._updateUiEventTableAdd = function(eventFields) {
 		if (eventFields.id === "") {
-			self._showModalBox("updateUiEventTableAdd: Cannot add event, invalid user id!", "Internal Error", "Dismiss");
+			self.showModalBox("updateUiEventTableAdd: Cannot add event, invalid user id!", "Internal Error", "Dismiss");
 			return;
 		}
 		var eventstart = "-";
@@ -880,8 +1007,8 @@ function Meet4EatUI() {
 			desc += "...";
 		}
 		var me = (""+eventFields.ownerId === ""+self._getAuthUser().id);
-		var candelete = self._authUserRolesContain(["ADMIN", "MODERATOR"]) && !me;
-		var canedit = self._authUserRolesContain(["ADMIN", "MODERATOR"]) || me;
+		var candelete = self._authUserRolesContain(["ADMIN"]) || me;
+		var canedit = self._authUserRolesContain(["ADMIN"]) || me;
 		self._getEventTable().row.add({
 				"DT_RowId" : eventFields.id,
 				// make 'me' bold
@@ -894,17 +1021,45 @@ function Meet4EatUI() {
 			});
 	};
 
+	self._updateUiEventMembersClear = function() {
+		$('#page_events_edit_members').empty();
+		$('#page_events_edit_form_mem_search').val('');
+		$('#page_events_edit_form_mem_search_hits').empty();
+	};
+
+	self._updateUiEventMemberAdd = function(allowModification, eventId, memberId, memberName) {
+		var members = $('#page_events_edit_members');
+		var liid = "page_events_edit_members-" + eventId + "-" + memberId;
+		var argsinfo = "(" + memberId + ")";
+		var argsremove = "(" + eventId + "," + memberId + ")";
+		var argsmakeowner = argsremove;
+		var ops = "";
+		if (allowModification) {
+			ops = "<a onclick='getMeet4EatUI().onBtnEventMemberRemove" + argsremove + ";'>" +
+				"<span class='btn fa fa-remove fa-2x text-danger pull-right' title='Remove member'> </span></a>"+
+				"<a onclick='getMeet4EatUI().onBtnEventMemberMakeOwner" + argsmakeowner + ";'>" +
+				"<span class='btn fa fa-graduation-cap fa-2x text-primary pull-right' title='Make event owner'> </span></a>";
+		}
+		var li = "<li id='"+ liid + "' class='list-group-item'>" +
+				 "<a class='btn' onclick='getMeet4EatUI().onBtnEventMemberInfo" + argsinfo + ";'>" + memberName + "</a>" + ops + "</li>";
+		members.append(li);
+	};
+
+	self._updateUiEventMemberRemove = function(eventId, memberId) {
+		var liid = "page_events_edit_members-" + eventId + "-" + memberId;
+		$('#' + liid).remove();
+	};
+
 	self._setupUiEventNew = function() {
 		$('#page_events_edit_title').text("Create a new event");
 		$("#page_events_edit_form :input").val("");
-		$('#page_events_edit_form_photo').prop("disabled", true);
-		$('#page_events_edit_form_members').prop("disabled", true);
+		self._showElement('page_nav_events_edit', false);
 		self._setupEventTimeInputs();
 	};
 
 	self._updateUiEventTableUpdate = function(eventFields) {
 		if (eventFields.id === "") {
-			self._showModalBox("updateUiEventTableUpdate Cannot update event, invalid event id!", "Internal Error", "Dismiss");
+			self.showModalBox("updateUiEventTableUpdate Cannot update event, invalid event id!", "Internal Error", "Dismiss");
 			return;
 		}
 		var event = self._getEventTable().row('#' + eventFields.id);
@@ -941,12 +1096,14 @@ function Meet4EatUI() {
 
 	self._setupUiEventEdit = function(id) {
 		$('#page_events_edit_title').text("Edit existing event");
+		self._showElement('page_nav_events_edit', true);
 		self._setupEventTimeInputs();
+		self._updateUiEventMembersClear();
 		// fetch event details from server
 		self._m4eEvents.find({
 			success: function(results, response) {
 				if (results.status !== "ok") {
-					self._showModalBox("Event was not found for edit!", "Error", "Dismiss");
+					self.showModalBox("Event was not found for edit!", "Error", "Dismiss");
 					return;
 				}
 				var ev = results.data;
@@ -966,13 +1123,23 @@ function Meet4EatUI() {
 					self._eventEventDayTimePicker.date(date);
 				}
 				self._setEventWeekDays(ev.repeatWeekDays);
-
-				//! TODO list the event members, setup the photo
+				var modperms = (""+ev.ownerId === ""+self._getAuthUser().id) ||
+						        self._authUserRolesContain(["ADMIN"]);
+				for (var i = 0; i < ev.members.length; i++) {
+					self._updateUiEventMemberAdd(modperms, ev.id, ev.members[i].id, ev.members[i].name);
+				}
+				self._setupUiEventOwner(ev.ownerId, ev.ownerName);
 			},
 			error: function(err) {
-				self._showModalBox(err, "Connection Error", "Dismiss");
+				self.showModalBox(err, "Connection Error", "Dismiss");
 			}
 		}, id);
+	};
+
+	self._setupUiEventOwner = function(ownerId, ownerName) {
+		var argsinfo = "(" + ownerId + ")";
+		var html = "<a class='btn' onclick='getMeet4EatUI().onBtnEventMemberInfo" + argsinfo + ";'>" + ownerName + "</a>";
+		$('#page_events_edit_owner').html(html);
 	};
 
 	self._createOrUpdateEvent = function(fields, resultsCallback) {
@@ -984,7 +1151,7 @@ function Meet4EatUI() {
 			},
 			error: function(text, response) {
 				$('#display_error').html(response);
-				self._showModalBox("Could not create or update event! Reason: " + text, "Connection Error", "Dismiss");
+				self.showModalBox("Could not create or update event! Reason: " + text, "Connection Error", "Dismiss");
 			}					
 		}, fields.id, fields);
 	};
@@ -993,16 +1160,16 @@ function Meet4EatUI() {
 		self._m4eEvents.delete({
 			success: function(results) {
 				if (results.status !== "ok") {
-					self._showModalBox("Could not delete event! Reason: " + results.description, "Problem Deleting Event", "Dismiss");
+					self.showModalBox("Could not delete event! Reason: " + results.description, "Problem Deleting Event", "Dismiss");
 					return;
 				}
-				self._showModalBox("Event was successfully removed", "Delete Event", "Dismiss");
+				self.showModalBox("Event was successfully removed", "Delete Event", "Dismiss");
 				self._updateUiEventTableRemove(id);
 				self._showElement('page_events_edit', false);
 				self._showElement('menu_events', true);
 			},
 			error: function(text, response) {
-				self._showModalBox(text, "Problem Deleting Event", "Dismiss");
+				self.showModalBox(text, "Problem Deleting Event", "Dismiss");
 				$('#display_error').html(response);
 			}
 		}, id);
@@ -1061,7 +1228,10 @@ function Meet4EatUI() {
 		self._lastMenuItem = item;
 	};
 
+	/****************  menu change callbacks ****************/
+
 	self.onEnterPageDashboard = function() {			
+		self._setupDashboardPage();
 	};
 
 	self.onLeavePageDashboard = function() {			
@@ -1069,6 +1239,8 @@ function Meet4EatUI() {
 
 	self.onEnterPageUsers = function() {
 		self._showElement("page_users_new", self._authUserRolesContain(["ADMIN"]));
+		self._setupUiTableUser();
+
 	};
 
 	self.onLeavePageUsers = function() {
@@ -1076,6 +1248,7 @@ function Meet4EatUI() {
 	};
 
 	self.onEnterPageEvents = function() {
+		self._setupUiTableEvent();
 	};
 
 	self.onLeavePageEvents = function() {
@@ -1083,12 +1256,16 @@ function Meet4EatUI() {
 	};
 
 	self.onEnterPageSystem = function() {
+		if (self._authUserRolesContain(["ADMIN"])) {
+			self._setupUiAdmin();
+		}
 	};
 
 	self.onLeavePageSystem = function() {
 	};
 
-	self.onEnterPageAbout = function() {	
+	self.onEnterPageAbout = function() {
+		self._setupAboutPage();
 	};
 
 	self.onLeavePageAbout = function() {	

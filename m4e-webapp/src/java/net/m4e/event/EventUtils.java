@@ -9,10 +9,12 @@
 package net.m4e.event;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -26,6 +28,7 @@ import net.m4e.core.AppInfoEntity;
 import net.m4e.core.AppInfoUtils;
 import net.m4e.core.Log;
 import net.m4e.user.UserEntity;
+import net.m4e.user.UserUtils;
 
 /**
  * A collection of event related utilities
@@ -82,16 +85,59 @@ public class EventUtils {
     /**
      * Update event.
      * 
-     * @param event Event entity to update
+     * @param event       Event entity to update
+     * @throws Exception  Throws exception if any problem occurred.
      */
-    public void updateEvent(EventEntity event) {
+    public void updateEvent(EventEntity event) throws Exception {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         try {
             eutils.updateEntity(event);
         }
         catch (Exception ex) {
             Log.error(TAG, "*** Could not update event '" + event.getName() + "', id: " + event.getId());
+            throw ex;
         }
+    }
+
+    /**
+     * Add an user to given event.
+     * 
+     * @param event       Event
+     * @param userToAdd   User to add
+     * @throws Exception  Throws exception if any problem occurred.
+     */
+    public void addMember(EventEntity event, UserEntity userToAdd) throws Exception {
+        Collection<UserEntity> members = event.getMembers();
+        if (Objects.isNull(members)) {
+            members = new ArrayList<>();
+            event.setMembers(members);
+        }
+        if (members.contains(userToAdd)) {
+            throw new Exception("User is already an event member.");
+        }
+        if (Objects.equals(userToAdd.getId(), event.getStatus().getIdOwner())) {
+            throw new Exception("User is event owner.");            
+        }
+        members.add(userToAdd);
+        updateEvent(event);
+    }
+
+    /**
+     * Add an user to given event.
+     * 
+     * @param event        Event
+     * @param userToRemove User to remove
+     * @throws Exception   Throws exception if any problem occurred.
+     */
+    public void removeMember(EventEntity event, UserEntity userToRemove) throws Exception {
+        Collection<UserEntity> members = event.getMembers();
+        if (Objects.isNull(members)) {
+            throw new Exception("User is not member of event.");
+        }
+        if (!members.remove(userToRemove)) {
+            throw new Exception("User is not member of event.");            
+        }
+        updateEvent(event);
     }
 
     /**
@@ -147,11 +193,16 @@ public class EventUtils {
         json.add("repeatWeekDays", (Objects.nonNull(entity.getRepeatWeekDays()) ? entity.getRepeatWeekDays(): 0));
         json.add("repeatDayTime", (Objects.nonNull(entity.getRepeatDayTime()) ? entity.getRepeatDayTime(): 0));
 
-        JsonObjectBuilder members = Json.createObjectBuilder();
+        JsonArrayBuilder members = Json.createArrayBuilder();
         if (Objects.nonNull(entity.getMembers())) {
             for (UserEntity m: entity.getMembers()) {
-                members.add("id", m.getId());
-                members.add("name", Objects.nonNull(m.getName()) ? m.getName() : "");
+                if (m.getStatus().getIsDeleted()) {
+                    continue;
+                }
+                JsonObjectBuilder member = Json.createObjectBuilder();
+                member.add("id", m.getId());
+                member.add("name", Objects.nonNull(m.getName()) ? m.getName() : "");
+                members.add(member);
             }
         }
         json.add("members", members);
@@ -164,6 +215,20 @@ public class EventUtils {
             }
         }
         json.add("locations", locations);
+
+        String     ownername;
+        Long       ownerid   = entity.getStatus().getIdOwner();
+        UserUtils  userutils = new UserUtils(entityManager, userTransaction);
+        UserEntity owner     = userutils.findUser(ownerid);
+        if (Objects.isNull(owner) || owner.getStatus().getIsDeleted()) {
+            ownerid = 0L;
+            ownername = "";
+        }
+        else {
+            ownername = owner.getName();
+        }
+        json.add("ownerId", ownerid);
+        json.add("ownerName", ownername);
 
         return json;
     }

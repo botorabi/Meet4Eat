@@ -127,7 +127,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         // try to find the user in database
         UserUtils userutils = new UserUtils(entityManager, userTransaction);
         UserEntity existinguser = userutils.findUser(login);
-        if (Objects.isNull(existinguser)) {
+        if (Objects.isNull(existinguser) || existinguser.getStatus().getIsDeleted()) {
             Log.debug(TAG, "  User login attempt failed, no user with this login found, user (" + login+ ")");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_FOUND, null);
         }

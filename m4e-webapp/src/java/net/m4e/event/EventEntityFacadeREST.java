@@ -258,6 +258,113 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Count of events", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
+    @GET
+    @Path("addmember/{eventId}/{memberId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ENDPOINT_CHECK})
+    public String addMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        if (Objects.isNull(eventId) || Objects.isNull(memberId)) {
+            Log.error(TAG, "*** Cannot add member to event, no valid inputs!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, invalid input.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+        }
+
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (Objects.isNull(sessionuser)) {
+            Log.error(TAG, "*** Cannot add member to event, no user in session found!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+        }
+
+        jsonresponse.add("eventId", eventId);
+        jsonresponse.add("memberId", memberId);
+
+        // check if both, member and event exist
+        UserUtils   userutils = new UserUtils(entityManager, userTransaction);
+        UserEntity  user2add  = userutils.findUser(memberId);
+        EventEntity event     = super.find(eventId);
+        if (user2add.getStatus().getIsDeleted()) {
+            user2add = null;
+        }
+        if (event.getStatus().getIsDeleted()) {
+            event = null;
+        }
+        if (Objects.isNull(event) || Objects.isNull(user2add)) {
+            Log.warning(TAG, "*** Cannot add member to event: non-existing member or event!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        // check if the event owner or a user with higher privilege is trying to modify the event
+        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+            Log.warning(TAG, "*** User was attempting to modify (add member) an event without proper privilege!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+        }
+
+        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
+        try {
+            eventutils.addMember(event, user2add);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not add member to event, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        }
+
+        jsonresponse.add("memberName", user2add.getName());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Member was added to event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    @GET
+    @Path("removemember/{eventId}/{memberId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.auth.AuthRole(grantRoles={AuthRole.VIRT_ENDPOINT_CHECK})
+    public String removeMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        if (Objects.isNull(eventId) || Objects.isNull(memberId)) {
+            Log.error(TAG, "*** Cannot remove member from event, no valid inputs!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, invalid input.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+        }
+
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (Objects.isNull(sessionuser)) {
+            Log.error(TAG, "*** Cannot remove member from event, no user in session found!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+        }
+
+        jsonresponse.add("eventId", eventId);
+        jsonresponse.add("memberId", memberId);
+
+        // check if both, member and event exist
+        UserUtils   userutils    = new UserUtils(entityManager, userTransaction);
+        UserEntity  user2remove  = userutils.findUser(memberId);
+        EventEntity event        = super.find(eventId);
+        if (user2remove.getStatus().getIsDeleted()) {
+            user2remove = null;
+        }
+        if (event.getStatus().getIsDeleted()) {
+            event = null;
+        }
+        if (Objects.isNull(event) || Objects.isNull(user2remove)) {
+            Log.warning(TAG, "*** Cannot remove member from event: non-existing member or event!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        // check if the event owner or a user with higher privilege is trying to modify the event
+        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+            Log.warning(TAG, "*** User was attempting to modify (remove member) an event without proper privilege!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+        }
+
+        EventUtils utils = new EventUtils(entityManager, userTransaction);
+        try {
+            utils.removeMember(event, user2remove);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not remove member from event, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        }
+
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Member was removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
