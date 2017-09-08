@@ -29,9 +29,10 @@ function Meet4EatUI() {
 
 	self._m4e                  = null;
 	self._m4eAuth              = null;
-	self._m4eAuthUser          = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
 	self._m4eUsers             = null;
 	self._m4eEvents            = null;
+	self._m4eMaintenance       = null;
+	self._m4eAuthUser          = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
 	self._m4eAppInfo           = {'clientVersion' : '0.0.0', 'serverVersion' : '0.0.0', 'viewVersion' : '0'};
 	self._m4eUserTable         = null;
 	self._eventEventDatePicker = null;
@@ -47,6 +48,7 @@ function Meet4EatUI() {
 		self._m4eAuth = self._m4e.buildUserAuthREST();
 		self._m4eUsers = self._m4e.buildUserREST();
 		self._m4eEvents = self._m4e.buildEventREST();
+		self._m4eMaintenance = self._m4e.buildMaintenanceREST();
 		self._setupUi();
 	};
 
@@ -163,6 +165,33 @@ function Meet4EatUI() {
 	};
 
 	/**
+	 * Request the server for purging dead resources.
+	 * This can be used only by an authorized admin.
+	 */
+	self.onBtnMaintenancePurge = function() {
+		if (!self._userIsAdmin()) {
+			return;
+		}
+		self._m4eMaintenance.maintenancePurge({
+			success: function(res, resp) {
+				if (res.status === "ok") {
+					self.showModalBox("Purging was successful. Results: " + res.description, "Maintenance: Purge Results", "Dismiss");
+					// update the maintenance stats
+					self._deferExecution(function() {
+						self._setupUiAdmin();
+					}, 1000);
+				}
+				else {
+					self.showModalBox("A problem occurred during pruging. Results: " + res.description, "Maintenance: Purge Results", "Dismiss");
+				}
+			},
+			error: function(err) {
+				self.showModalBox(err, "Connection Problem", "Dismiss");
+			}
+		});
+	};
+
+	/**
 	 * Delete user with given ID.
 	 * 
 	 * @param {integer} id	User ID
@@ -254,7 +283,7 @@ function Meet4EatUI() {
 				}
 			}
 			else {
-				self.showModalBox("Could not apply changes to user! Reason: " + results.description, "User Update", "Dismiss");
+				self.showModalBox(results.description, "Failed to Update User", "Dismiss");
 			}
 		});
 	};
@@ -323,11 +352,14 @@ function Meet4EatUI() {
 			obj[item.name] = item.value;
 			return obj;
 		}, {});
+		inputfields['public'] = $("#page_events_edit_form input[name='public']").prop('checked');
+
 		var fields = {};
 		var newevent = (inputfields.id === null) || (inputfields.id === "");
 		fields['id'] = inputfields.id;
 		fields['name'] = inputfields.name;
 		fields['description'] = inputfields.description;
+		fields['public'] = inputfields.public;
 		if (self._eventEventDatePicker.date()) {
 			var msec = self._eventEventDatePicker.date().toDate().getTime();
 			fields['eventStart'] = msec / 1000;
@@ -341,6 +373,7 @@ function Meet4EatUI() {
 		self._createOrUpdateEvent(fields, function(results) {
 			if (results.status === "ok") {
 				self.showModalBox("Changes were successfully applied to event.", "Event Update", "Dismiss");
+				fields.ownerId = self._getAuthUser().id;
 				if (newevent) {
 					// on successful creation the new user id is in results.data
 					fields.id = results.data.id;
@@ -607,6 +640,7 @@ function Meet4EatUI() {
 					{ "data": "description" },
 					{ "data": "eventStart" },
 					{ "data": "eventRepeat" },
+					{ "data": "public" },
 					{ "data": "ops" }
 				]});
 		}
@@ -719,6 +753,15 @@ function Meet4EatUI() {
 		return false;
 	};
 
+	/**
+	 * Check if the authorized user is an admin.
+	 * 
+	 * @returns {bool} Return true if the user is admin.
+	 */
+	self._userIsAdmin = function() {
+		return self._authUserRolesContain(["ADMIN"]);
+	};
+
 	//--------------------------------------------
 	self._onAuthenticated = function() {
 		$('#user_name').text(self._getAuthUser().name);
@@ -726,6 +769,8 @@ function Meet4EatUI() {
 		// this initialized the tables
 		self._getUserTable();
 		self._getEventTable();
+		// setup the admin menu if the authenticated user is an admin
+		self._showElement('admin_nav_system', self._userIsAdmin());
 	};
 
 	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -733,10 +778,10 @@ function Meet4EatUI() {
 	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 	self._setupUiAdmin = function() {
-		self._m4e.getServerStats({
+		self._m4eMaintenance.getMaintenanceStats({
 			success: function(results, reponse) {
 				if (results.status !== "ok") {
-					self.showModalBox("Cannot retrieve server stats!", "Communication Problem", "Dismiss");
+					self.showModalBox("Cannot retrieve system stats! Reason: " + results.description, "Problem Getting System Stats.", "Dismiss");
 					return;
 				}
 				var stats = results.data;
@@ -805,8 +850,8 @@ function Meet4EatUI() {
 		}
 		var roles = userFields.roles ? userFields.roles.join("<br>") : "";
 		var me = (""+userFields.id === ""+self._getAuthUser().id);
-		var candelete = self._authUserRolesContain(["ADMIN"]) && !me;
-		var canedit = self._authUserRolesContain(["ADMIN"]) || me;
+		var candelete = self._userIsAdmin() && !me;
+		var canedit = self._userIsAdmin() || me;
 		self._getUserTable().row.add({
 				"DT_RowId" : userFields.id,
 				// make 'me' bold
@@ -858,7 +903,7 @@ function Meet4EatUI() {
 		$("#page_users_edit_form input[name='password']").val("");
 		$("#page_users_edit_form input[name='password-repeat']").val("");
 
-		var showpasswdinput = (self._authUserRolesContain(["ADMIN"]) || ((""+self._getAuthUser().id) === (""+userId)));
+		var showpasswdinput = (self._userIsAdmin() || ((""+self._getAuthUser().id) === (""+userId)));
 		self._showElement('page_users_edit_form_grp_passwd', showpasswdinput);
 		self._showElement('page_users_edit_form_grp_passwd_repeat', showpasswdinput);
 
@@ -882,7 +927,7 @@ function Meet4EatUI() {
 				elemrolesel.append(new Option("ADMIN", "ADMIN"));
 				elemrolesel.append(new Option("MODERATOR", "MODERATOR"));
 				elemrolesel.append(new Option("", ""));
-				elemrolesel.prop("disabled", !self._authUserRolesContain(["ADMIN"]));
+				elemrolesel.prop("disabled", !self._userIsAdmin());
 				// select user roles in list
 				elemrolesel.val(user.roles);
 			},
@@ -994,6 +1039,7 @@ function Meet4EatUI() {
 		}
 		var eventstart = "-";
 		var eventrepeat = "No";
+		var ispublic = eventFields.public ? "Yes" : "No";
 		if (eventFields.eventStart && parseInt(eventFields.eventStart) > 0) {
 			var timestamp = new Date(parseInt(eventFields.eventStart * 1000));
 			eventstart = self._formatTime(timestamp);
@@ -1007,8 +1053,8 @@ function Meet4EatUI() {
 			desc += "...";
 		}
 		var me = (""+eventFields.ownerId === ""+self._getAuthUser().id);
-		var candelete = self._authUserRolesContain(["ADMIN"]) || me;
-		var canedit = self._authUserRolesContain(["ADMIN"]) || me;
+		var candelete = self._userIsAdmin() || me;
+		var canedit = self._userIsAdmin() || me;
 		self._getEventTable().row.add({
 				"DT_RowId" : eventFields.id,
 				// make 'me' bold
@@ -1016,6 +1062,7 @@ function Meet4EatUI() {
 				"description" : desc,
 				"eventStart" : eventstart,
 				"eventRepeat" : eventrepeat,
+				"public" : ispublic,
 				"ops" :	(candelete ? "<a role='button' onclick='getMeet4EatUI().onBtnEventDelete(\"" + eventFields.id + "\")'>DELETE</a> | " : "") +
 						(canedit ? "<a role='button' onclick='getMeet4EatUI().onBtnEventEdit(\"" + eventFields.id + "\")'>EDIT</a>" : "")
 			});
@@ -1053,8 +1100,10 @@ function Meet4EatUI() {
 	self._setupUiEventNew = function() {
 		$('#page_events_edit_title').text("Create a new event");
 		$("#page_events_edit_form :input").val("");
+		$("#page_events_edit_form input[name='public']").prop('checked', false);
 		self._showElement('page_nav_events_edit', false);
 		self._setupEventTimeInputs();
+		self._setEventWeekDays(0);
 	};
 
 	self._updateUiEventTableUpdate = function(eventFields) {
@@ -1062,11 +1111,12 @@ function Meet4EatUI() {
 			self.showModalBox("updateUiEventTableUpdate Cannot update event, invalid event id!", "Internal Error", "Dismiss");
 			return;
 		}
+		var me = (""+eventFields.ownerId === ""+self._getAuthUser().id);
 		var event = self._getEventTable().row('#' + eventFields.id);
 		if (event) {
 			var cols = event.data();
 			if (eventFields.name) {
-				cols.name = eventFields.name;
+				cols.name = (me ? "<strong>" : "") + eventFields.name + (me ? "</strong>" : "");
 			}
 			if (eventFields.description) {
 				var desc = eventFields.description;
@@ -1081,7 +1131,7 @@ function Meet4EatUI() {
 				cols.eventStart = self._formatTime(timestamp);
 			}
 			cols.eventRepeat = (eventFields.repeatWeekDays > 0) ? "Yes" : "No";
-
+			cols.public = (eventFields.public) ? "Yes" : "No";
 			event.data(cols);
 			event.draw("page");
 		}
@@ -1109,6 +1159,7 @@ function Meet4EatUI() {
 				var ev = results.data;
 				$("#page_events_edit_form input[name='id']").val(ev.id);
 				$("#page_events_edit_form input[name='name']").val(ev.name);
+				$("#page_events_edit_form input[name='public']").prop('checked', ev.public);
 				$("#page_events_edit_form textarea[name='description']").val(ev.description);
 				//! NOTE eventStart is in seconds!
 				if (ev.eventStart && ev.eventStart > 0) {
@@ -1123,8 +1174,7 @@ function Meet4EatUI() {
 					self._eventEventDayTimePicker.date(date);
 				}
 				self._setEventWeekDays(ev.repeatWeekDays);
-				var modperms = (""+ev.ownerId === ""+self._getAuthUser().id) ||
-						        self._authUserRolesContain(["ADMIN"]);
+				var modperms = (""+ev.ownerId === ""+self._getAuthUser().id) || self._userIsAdmin();
 				for (var i = 0; i < ev.members.length; i++) {
 					self._updateUiEventMemberAdd(modperms, ev.id, ev.members[i].id, ev.members[i].name);
 				}
@@ -1238,7 +1288,7 @@ function Meet4EatUI() {
 	};
 
 	self.onEnterPageUsers = function() {
-		self._showElement("page_users_new", self._authUserRolesContain(["ADMIN"]));
+		self._showElement("page_users_new", self._userIsAdmin());
 		self._setupUiTableUser();
 
 	};
@@ -1256,9 +1306,7 @@ function Meet4EatUI() {
 	};
 
 	self.onEnterPageSystem = function() {
-		if (self._authUserRolesContain(["ADMIN"])) {
-			self._setupUiAdmin();
-		}
+		self._setupUiAdmin();
 	};
 
 	self.onLeavePageSystem = function() {

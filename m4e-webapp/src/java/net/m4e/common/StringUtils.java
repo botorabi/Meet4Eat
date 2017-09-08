@@ -33,4 +33,20 @@ public class StringUtils {
         }
         return input;
     }
+
+    /**
+     * Check if the input string length is in given min/max range.
+     * 
+     * @param input    Input string
+     * @param minLen   Min length
+     * @param maxLen   Max length 
+     * @return         Return true if the string has a length in given range, otherwise return false.
+     */
+    public static boolean checkMinMaxLength(String input, int minLen, int maxLen) {
+        if (Objects.isNull(input)) {
+            return false;
+        }
+        int len = input.length();
+        return (len >= minLen) && (len <= maxLen);
+    }
 }

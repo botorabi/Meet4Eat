@@ -11,12 +11,12 @@
     <!-- A listener for setting up the application on startup -->
     <listener>
         <description>ServletContextListener</description>
-        <listener-class>net.m4e.core.ContextListener</listener-class>
+        <listener-class>net.m4e.system.core.ContextListener</listener-class>
     </listener>
     <!-- Setup app's auth filter -->
     <filter>
         <filter-name>AuthFilter</filter-name>
-        <filter-class>net.m4e.auth.AuthFilter</filter-class>
+        <filter-class>net.m4e.app.auth.AuthFilter</filter-class>
         <init-param>
             <param-name>basePath</param-name>
             <param-value>m4e-webapp</param-value>

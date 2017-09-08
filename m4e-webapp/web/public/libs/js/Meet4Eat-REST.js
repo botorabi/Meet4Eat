@@ -20,6 +20,9 @@ function Meet4EatREST() {
 	/* URL for accessing app information */
 	this._urlAppInfo  = this._webRoot + '/webresources/rest/appinfo';
 
+	/* URL for accessing maintenance information */
+	this._urlMaintenance  = this._webRoot + '/webresources/rest/maintenance';
+
 	/* URL for accessing user authentication */
 	this._urlUserAuth  = this._webRoot + '/webresources/rest/authentication';
 
@@ -47,15 +50,6 @@ function Meet4EatREST() {
 	 */
 	this.getServerInfo = function(resultsCallback) {
 		this._requestJSON(this._urlAppInfo, null, 'GET', resultsCallback);
-	};
-
-	/**
-	 * Get server stats
-	 * 
-	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 */
-	this.getServerStats = function(resultsCallback) {
-		this._requestJSON(this._urlAppInfo + "/stats", null, 'POST', resultsCallback);
 	};
 
 	/**
@@ -113,6 +107,17 @@ function Meet4EatREST() {
 		var events = new Meet4EatEventREST(base);
 		events.initialize();
 		return base;
+	};
+
+	/**
+	 * Build a REST api for maintenance operations.
+	 * 
+	 * @returns {Meet4EatMaintenanceREST}    REST API for maintenance operations
+	 */
+	this.buildMaintenanceREST = function() {
+		var maintenance = new Meet4EatMaintenanceREST();
+		maintenance.initialize(this._urlMaintenance, this._requestJSON);
+		return maintenance;
 	};
 
 	/**
@@ -304,6 +309,49 @@ function Meet4EatEventREST(base) {
 	 */
 	_base.removeEventMember = function(resultsCallback, eventId, memberId) {
 		_base._fcnRequestJson(_base._rootPath + '/removemember/' + eventId + "/" + memberId, null, 'GET', resultsCallback);
+	};
+}
+
+/**
+ * Maintenance REST services
+ */
+function Meet4EatMaintenanceREST() {
+	/* API version */
+	this._version = "1.0.0";
+
+	/* Root URL for REST requests */
+	this._rootPath = "";
+
+	/* Function for contacting the server via JSON */
+	this._fcnRequestJson = null;
+
+	/**
+	 * Initialize the instance.
+	 * 
+	 * @param {string} rootPath			Root URL
+	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
+	 */
+	this.initialize = function (rootPath, fcnRequestJson) {
+		this._rootPath = rootPath;
+		this._fcnRequestJson = fcnRequestJson;
+	};
+
+	/**
+	 * Get maintenance stats
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 */
+	this.getMaintenanceStats = function(resultsCallback) {
+		this._fcnRequestJson(this._rootPath + "/stats", null, 'GET', resultsCallback);
+	};
+
+	/**
+	 * Purge all resources which are no longer needed.
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 */
+	this.maintenancePurge = function(resultsCallback) {
+		this._fcnRequestJson(this._rootPath + "/purge", null, 'GET', resultsCallback);
 	};
 }
 

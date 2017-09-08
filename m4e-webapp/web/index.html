@@ -104,7 +104,7 @@
 							<li>
 								<a onclick="getMeet4EatUI().onMenu('events');"><i class="fa fa-group fa-fw"></i> Events</a>
 							</li>
-							<li>
+							<li id="admin_nav_system" class="hide">
 								<a onclick="getMeet4EatUI().onMenu('system');"><i class="fa fa-laptop fa-fw"></i> System</a>
 							</li>
 							<li>
@@ -307,6 +307,7 @@
 												<th>Description</th>
 												<th>Event Start</th>
 												<th>Event Repeat</th>
+												<th>Public</th>
 												<th></th>
 											</tr>
 										</thead>
@@ -346,6 +347,8 @@
 										</li>
 										<li><a href="#page_events_edit_pane_members" data-toggle="tab">Members</a>
 										</li>
+										<li><a href="#page_events_edit_pane_locations" data-toggle="tab">Locations</a>
+										</li>
 										<li><a href="#page_events_edit_pane_icon" data-toggle="tab">Icon</a>
 										</li>
 									</ul>
@@ -366,6 +369,12 @@
 														<label>Description</label>
 														<textarea class="form-control" maxlength="1000" rows="3" name="description" placeholder="Short description"></textarea>
 														<p class="help-block">Event description (max 1000 characters).</p>
+													</div>
+												</div>
+												<div class="row form-group">
+													<div class="col-sm-12 checkbox">
+														<label><input type="checkbox" name="public">Event is public</label>
+														<p class="help-block">Is the event public? If not, only event members and owner have access.</p>
 													</div>
 												</div>
 												<div class="row form-group">
@@ -439,7 +448,7 @@
 													<div class="form-group">
 														<label>Add new member</label>
 														<div class="input-group">
-															<input id="page_events_edit_form_mem_search" type="text" class="form-control" placeholder="Search..." onkeydown="if (event.keyCode===13) {getMeet4EatUI().onBtnSearchMember();}">
+															<input id="page_events_edit_form_mem_search" type="text" class="form-control" placeholder="Search (at least 3 chars)" onkeydown="if (event.keyCode===13) {getMeet4EatUI().onBtnSearchMember();}">
 															<span class="input-group-btn">
 																<button class="btn btn-default" type="button" onclick="getMeet4EatUI().onBtnSearchMember();"><i class="fa fa-search"></i></button>
 															</span>
@@ -450,6 +459,21 @@
 																<button class="btn btn-default" type="button" onclick="getMeet4EatUI().onBtnEventMemberAdd();"><i class="fa fa-arrow-right"></i></button>
 															</span>
 														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="tab-pane fade" id="page_events_edit_pane_locations">
+											<div class="row">
+												<div class="form-group col-sm-12">
+													<div class="form-group">
+														<label>Locations</label>
+														<button class="btn btn-default btn-primary" type="button" title="New location"><i class="fa fa-group"></i></button>
+														<ul id="page_events_edit_locations" class="panel list-group" style="min-height: 100px; max-height:300px; overflow-y:auto;">
+															<li class='list-group-item'>Pizza</li>
+															<li class='list-group-item'>Greek</li>
+															<li class='list-group-item'>Hamburger</li>
+														</ul>
 													</div>
 												</div>
 											</div>
@@ -515,6 +539,15 @@
 						</div>
 					</div>
 					<!-- /.row -->
+					<div class="row">
+						<div class="col-sm-12">
+							<h2 class="page-header">Maintenance</h2>
+							<div class="">
+								<button class="btn btn-default btn-primary" onclick="getMeet4EatUI().onBtnMaintenancePurge()">Purge Resources</button>
+								<p class="help-block">Perform system purge. All unnecessary resrouces are removed.</p>
+							</div>
+						</div>
+					</div>
 				</div>
 				<!-- menu_system -->
 
