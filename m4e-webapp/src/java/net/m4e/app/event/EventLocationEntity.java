@@ -16,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.StatusEntity;
 
 /**
  * This entity describes an event location.
@@ -37,6 +38,12 @@ public class EventLocationEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    /**
+     * Entity status
+     */
+    @OneToOne(optional=false, cascade = CascadeType.ALL)
+    private StatusEntity status;       
 
     /**
      * Event name
@@ -76,6 +83,25 @@ public class EventLocationEntity implements Serializable {
      */
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /**
+     * Get entity status. It contains information about entity's life-cycle,
+     * ownership, etc.
+     * 
+     * @return Entity status
+     */
+    public StatusEntity getStatus() {
+        return status;
+    }
+
+    /**
+     * Set entity status.
+     * 
+     * @param status Entity status
+     */
+    public void setStatus(StatusEntity status) {
+        this.status = status;
     }
 
     /**
