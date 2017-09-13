@@ -39,6 +39,7 @@ import net.m4e.system.core.AppInfoUtils;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.UserUtils;
+import net.m4e.common.EntityUtils;
 
 /**
  * REST services for Event entity operations
@@ -313,7 +314,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * @param request      HTTP request
      * @return             JSON response
      */
-    @GET
+    @PUT
     @Path("addmember/{eventId}/{memberId}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
@@ -321,7 +322,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if (Objects.isNull(eventId) || Objects.isNull(memberId)) {
             Log.error(TAG, "*** Cannot add member to event, no valid inputs!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, invalid input.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
@@ -371,7 +372,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * @param request      HTTP request
      * @return             JSON response
      */
-    @GET
+    @PUT
     @Path("removemember/{eventId}/{memberId}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
@@ -379,7 +380,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if (Objects.isNull(eventId) || Objects.isNull(memberId)) {
             Log.error(TAG, "*** Cannot remove member from event, no valid inputs!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, invalid input.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
@@ -418,5 +419,71 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Member was removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Add a new or update an existing location. If the input has an id field, then
+     * an update attempt for that location entity with given ID is performed. If no id
+     * field exists, then a new location entity is created and added to given event.
+     * 
+     * @param eventId      Event ID
+     * @param locationJson Location to add in JSON format
+     * @param request      HTTP request
+     * @return             JSON response
+     */
+    @PUT
+    @Path("putlocation/{eventId}/{locationJson}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    public String addLocation(@PathParam("eventId") Long eventId, @PathParam("locationJson") String locationJson, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        if (Objects.isNull(eventId) || Objects.isNull(locationJson)) {
+            Log.error(TAG, "*** Cannot add location to event, no valid inputs!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add location to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
+        EventEntity event = eventutils.findEvent(eventId);
+        if (Objects.isNull(event)) {
+            Log.warning(TAG, "*** Cannot add location to event: non-existing event!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        // check if the event owner or a user with higher privilege is trying to modify the event locations
+        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+            Log.warning(TAG, "*** User was attempting to update an event without proper privilege!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add location to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+        }
+
+        EventLocationEntity inputlocation;
+        EventLocationUtils elutils = new EventLocationUtils(entityManager, userTransaction);
+        try {
+            inputlocation = elutils.validateLocationInput(locationJson);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not add location, validation failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+        }
+
+        EventLocationEntity location;
+        try {
+            if (Objects.nonNull(inputlocation.getId()) && (inputlocation.getId() > 0)) {
+                location = elutils.updateLocation(inputlocation);                
+            }
+            else {
+                location = elutils.createNewLocation(event, inputlocation, sessionuser.getId());
+            }
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not create new location, reaon: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new location.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        }
+
+        //! NOTE on successful entity location creation the new ID is sent back by results.data field.
+        jsonresponse.add("eventId", event.getId());
+        jsonresponse.add("locationId", location.getId());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Location was successfully added to event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 }

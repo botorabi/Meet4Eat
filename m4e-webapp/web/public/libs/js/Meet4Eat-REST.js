@@ -12,7 +12,7 @@ function Meet4EatREST() {
 	var self = this;
 
 	/* API version */
-	this._version = "0.4.0";
+	this._version = "0.5.0";
 
 	/* Root path of web service */
 	this._webRoot = "/m4e-webapp";
@@ -279,7 +279,7 @@ function Meet4EatBaseREST() {
  */
 function Meet4EatEventREST(base) {
 	/* API version */
-	this._version = "0.1.0";
+	this._version = "1.0.0";
 
 	/* Base module */
 	var _base = base;
@@ -297,7 +297,7 @@ function Meet4EatEventREST(base) {
 	 * @param {integer}  memberId          Member ID
 	 */
 	_base.addEventMember = function(resultsCallback, eventId, memberId) {
-		_base._fcnRequestJson(_base._rootPath + '/addmember/' + eventId + "/" + memberId, null, 'GET', resultsCallback);
+		_base._fcnRequestJson(_base._rootPath + '/addmember/' + eventId + "/" + memberId, null, 'PUT', resultsCallback);
 	};
 
 	/**
@@ -308,7 +308,7 @@ function Meet4EatEventREST(base) {
 	 * @param {integer}  memberId          Member ID
 	 */
 	_base.removeEventMember = function(resultsCallback, eventId, memberId) {
-		_base._fcnRequestJson(_base._rootPath + '/removemember/' + eventId + "/" + memberId, null, 'GET', resultsCallback);
+		_base._fcnRequestJson(_base._rootPath + '/removemember/' + eventId + "/" + memberId, null, 'PUT', resultsCallback);
 	};
 }
 

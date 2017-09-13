@@ -143,6 +143,17 @@ public class EventUtils {
     }
 
     /**
+     * Delete the given event entity permanently from database.
+     * 
+     * @param event         Event entity
+     * @throws Exception    Throws exception if any problem occurred.
+     */
+    public void deleteEvent(EventEntity event) throws Exception {
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        eutils.deleteEntity(event);
+    }
+
+    /**
      * Update event.
      * 
      * @param event       Event entity to update
@@ -157,6 +168,18 @@ public class EventUtils {
             Log.error(TAG, "*** Could not update event '" + event.getName() + "', id: " + event.getId());
             throw ex;
         }
+    }
+
+    /**
+     * Try to find an event with given user ID.
+     * 
+     * @param id Event ID
+     * @return Return enent entity if found, otherwise return null.
+     */
+    public EventEntity findEvent(Long id) {
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        EventEntity event = eutils.findEntity(EventEntity.class, id);
+        return event;
     }
 
     /**
@@ -262,17 +285,6 @@ public class EventUtils {
     }
 
     /**
-     * Delete the given event entity in database.
-     * 
-     * @param event         Event entity
-     * @throws Exception    Throws exception if any problem occurred.
-     */
-    public void deleteEvent(EventEntity event) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
-        eutils.deleteEntity(event);
-    }
-
-    /**
      * Given an event entity, export the necessary fields into a JSON object.
      * 
      * @param entity    Event entity to export
@@ -303,11 +315,13 @@ public class EventUtils {
         }
         json.add("members", members);
 
-        JsonObjectBuilder locations = Json.createObjectBuilder();
+        JsonArrayBuilder locations = Json.createArrayBuilder();
         if (Objects.nonNull(entity.getLocations())) {
             for (EventLocationEntity l: entity.getLocations()) {
-                locations.add("id", l.getId());
-                locations.add("name", Objects.nonNull(l.getName()) ? l.getName() : "");
+                JsonObjectBuilder loc = Json.createObjectBuilder();
+                loc.add("id", l.getId());
+                loc.add("name", Objects.nonNull(l.getName()) ? l.getName() : "");
+                locations.add( loc );
             }
         }
         json.add("locations", locations);

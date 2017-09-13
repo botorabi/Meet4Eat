@@ -25,7 +25,7 @@ function Meet4EatUI() {
 	var self = this;
 
 	/* UI version */
-	self._version              = "0.5.0";
+	self._version              = "0.5.1";
 
 	self._m4e                  = null;
 	self._m4eAuth              = null;
@@ -365,8 +365,9 @@ function Meet4EatUI() {
 			fields['eventStart'] = msec / 1000;
 		}
 		if (self._eventEventDayTimePicker.date()) {
-			var msec = self._eventEventDayTimePicker.date().toDate().getTime();
-			fields['repeatDayTime'] = msec / 1000;
+			var mom = self._eventEventDayTimePicker.date();
+			var sec = mom.hours() * 60 + mom.minutes();
+			fields['repeatDayTime'] = sec;
 		}
 		fields['repeatWeekDays'] = self._getEventWeekDays();
 
@@ -1169,8 +1170,11 @@ function Meet4EatUI() {
 				}
 				//! NOTE repeatDayTime is in seconds!
 				if (ev.repeatDayTime && ev.repeatDayTime > 0) {
-					var date = new Date(ev.repeatDayTime * 1000);
-					date = moment(date);
+					date = moment();
+					var hour = Math.floor(ev.repeatDayTime / 60);
+					var min = ev.repeatDayTime - hour * 60;
+					date.hours(hour);
+					date.minutes(min);
 					self._eventEventDayTimePicker.date(date);
 				}
 				self._setEventWeekDays(ev.repeatWeekDays);
