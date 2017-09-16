@@ -100,6 +100,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String createUser(String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        //! NOTE Acutally, this check should not be needed (see AuthFilter), but just to be on the safe side!
         if (Objects.isNull(sessionuser)) {
             Log.error(TAG, "*** Internal error, cannot create user, no user in session found!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
@@ -192,6 +193,14 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
         if (Objects.nonNull(reqentity.getPassword()) && !reqentity.getPassword().isEmpty()) {
             user.setPassword(reqentity.getPassword());
+        }
+        if (Objects.nonNull(reqentity.getPhoto())) {
+            try {
+                userutils.updateUserImage(user, reqentity.getPhoto());
+            }
+            catch (Exception ex) {
+                Log.warning(TAG, "*** Event image could not be updated, reason: " + ex.getLocalizedMessage());
+            }
         }
 
         try {

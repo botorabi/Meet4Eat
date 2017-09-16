@@ -9,10 +9,18 @@
 package net.m4e.app.resources;
 
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+import net.m4e.system.core.Log;
 
 /**
  * Class entity for an image. An image entity contains image information and data.
@@ -21,7 +29,13 @@ import javax.persistence.Id;
  * Date of creation 30.08.2017
  */
 @Entity
+@XmlRootElement
 public class ImageEntity implements Serializable {
+
+    /**
+     * Used for logging
+     */
+    private final static String TAG = "ImageEntity";
 
     /**
      * Serialization version
@@ -34,6 +48,12 @@ public class ImageEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    /**
+     * Entity status
+     */
+    @OneToOne(optional=false, cascade = CascadeType.ALL)
+    private StatusEntity status;       
 
     /**
      * Content encoding type Base64
@@ -66,6 +86,11 @@ public class ImageEntity implements Serializable {
     private byte[] content;
 
     /**
+     * Hash code of the image content.
+     */
+    private String imageHash = "";
+
+    /**
      * Get ID.
      * @return ID
      */
@@ -79,6 +104,25 @@ public class ImageEntity implements Serializable {
      */
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /**
+     * Get entity status. It contains information about entity's life-cycle,
+     * ownership, etc.
+     * 
+     * @return Entity status
+     */
+    public StatusEntity getStatus() {
+        return status;
+    }
+
+    /**
+     * Set entity status.
+     * 
+     * @param status Entity status
+     */
+    public void setStatus(StatusEntity status) {
+        this.status = status;
     }
 
     /**
@@ -150,6 +194,57 @@ public class ImageEntity implements Serializable {
      */
     public void setContent(byte[] content) {
         this.content = content;
+    }
+
+    /**
+     * Get image content hash code.
+     * 
+     * @return Image content hash code
+     */
+    public String getImageHash() {
+        return imageHash;
+    }
+
+    /**
+     * Set image content hash code.
+     * @param imageHash Hash code
+     */
+    public void setImageHash(String imageHash) {
+        this.imageHash = imageHash;
+    }
+
+    /**
+     * Update the hash string out of the image content. If the content is empty 
+     * then the hash will set to an empty string.
+     * 
+     * NOTE: Call this method whenever the content was changed.
+     */
+    @Transient
+    public void updateImageHash() {
+        if (Objects.isNull(content)) {
+            imageHash = "";
+            return;
+        }
+
+        try {
+            String hash;
+            MessageDigest diggest = MessageDigest.getInstance("SHA-256");
+            diggest.update(content);
+            byte data[] = diggest.digest();
+            StringBuilder hexstring = new StringBuilder();
+            for (int i=0; i < data.length; i++) {
+                String hex = Integer.toHexString(0xff & data[i]);
+                if (hex.length() == 1) {
+                    hexstring.append('0');
+                }
+                hexstring.append(hex);
+            }
+            hash = hexstring.toString();
+            imageHash = hash;
+        }
+        catch (NoSuchAlgorithmException ex) {
+            Log.error(TAG, "Problem occurred while hashing an image content, reason: " + ex.getLocalizedMessage());
+        }
     }
 
     @Override

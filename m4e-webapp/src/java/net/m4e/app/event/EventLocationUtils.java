@@ -15,16 +15,19 @@ import java.util.Date;
 import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 import net.m4e.common.EntityUtils;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.StringUtils;
+import net.m4e.system.core.AppInfoEntity;
+import net.m4e.system.core.AppInfoUtils;
 import net.m4e.system.core.Log;
 
 /**
- * A collection of event related utilities
+ * A collection of event location related utilities
  *
  * @author boto
  * Date of creation Sep 13, 2017
@@ -51,40 +54,20 @@ public class EventLocationUtils {
         this.userTransaction = userTransaction;
     }
 
-   /**
-     * Given a JSON string as input containing event location data, validate 
-     * all fields and return an EventLocationEntity, or throw an exception if the validation failed.
-     * 
-     * @param locationJson   Event location data in JSON format
-     * @return               An EventLocationEntity created out of given input
-     * @throws Exception     Throws an exception if the validation fails.
-     */
-    public EventLocationEntity validateLocationInput(String locationJson) throws Exception {
-        EventLocationEntity entity = importLocationJSON(locationJson);
-        if (Objects.isNull(entity)) {
-            throw new Exception("Failed to validate location input.");
-        }
-         // perform some checks
-        if (Objects.isNull(entity.getName()) || entity.getName().isEmpty()) {
-            throw new Exception("Missing location name.");
-        }
-
-        return entity;
-    }
-
     /**
      * Create a new event location in database.
      * 
-     * @param event
-     * @param inputEntity
-     * @param creatorID
-     * @return 
+     * @param event        The event getting the new location
+     * @param inputEntity  Entity containing the new location data
+     * @param creatorID    Creator ID
+     * @return             A new created event location entity if successfully, otherwise null.
      */
     public EventLocationEntity createNewLocation(EventEntity event, EventLocationEntity inputEntity, Long creatorID) {
         // setup the new entity
         EventLocationEntity newlocation = new EventLocationEntity();
         newlocation.setName(inputEntity.getName());
         newlocation.setDescription(inputEntity.getDescription());
+        //! TODO photo
 
         // setup the status
         StatusEntity status = new StatusEntity();
@@ -123,20 +106,62 @@ public class EventLocationUtils {
     EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
         EntityUtils entityutils = new EntityUtils(entityManager, userTransaction);
         EventLocationEntity location = entityutils.findEntity(EventLocationEntity.class, inputLocation.getId());
-        if (Objects.isNull(location)) {
+        if (Objects.isNull(location) || location.getStatus().getIsDeleted()) {
             throw new Exception("Entity location does not exist.");
         }
-        
-        if (Objects.isNull(inputLocation.getName())) {
+
+        if (Objects.nonNull(inputLocation.getName())) {
             location.setName(inputLocation.getName());
         }
-        if (Objects.isNull(inputLocation.getDescription())) {
+        if (Objects.nonNull(inputLocation.getDescription())) {
             location.setDescription(inputLocation.getDescription());
         }
         //! TODO photo
 
         entityutils.updateEntity(location);
         return location;
+    }
+
+    /**
+     * Try to find an event location with given user ID.
+     * 
+     * @param id Event location ID
+     * @return Return an entity if found, otherwise return null.
+     */
+    public EventLocationEntity findLocation(Long id) {
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        EventLocationEntity event = eutils.findEntity(EventLocationEntity.class, id);
+        return event;
+    }
+
+    /**
+     * Mark the given location as deleted.
+     * 
+     * @param event             Event location to mark
+     * @param locationToRemove  Location to mark as deleted
+     * @throws Exception        Throws an exception if something went wrong.
+     */
+    public void markLocationAsDeleted(EventEntity event, EventLocationEntity locationToRemove) throws Exception {
+        if (locationToRemove.getStatus().getIsDeleted()) {
+            throw new Exception("Location is already deleted.");            
+        }
+        Collection<EventLocationEntity> locations = event.getLocations();
+        if (Objects.isNull(locations) || !locations.contains(locationToRemove)) {
+            throw new Exception("Location is not part of event.");
+        }
+        // mark the location entity as deleted
+        locationToRemove.getStatus().setDateDeletion((new Date()).getTime());
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        eutils.updateEntity(locationToRemove);
+
+        // update the app stats
+        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfoEntity appinfo = autils.getAppInfoEntity();
+        if (Objects.isNull(appinfo)) {
+            throw new Exception("Problem occured while retrieving AppInfo entity!");
+        }
+        appinfo.incrementEventLocationCountPurge(1L);
+        eutils.updateEntity(appinfo);
     }
 
     /**
@@ -150,14 +175,13 @@ public class EventLocationUtils {
             return null;
         }
 
-        String name, description;
-        int id;
+        String name, idstring, description;
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
             JsonObject jobject = jreader.readObject();
-            id             = jobject.getInt("id", 0);
-            name           = jobject.getString("name", null);
-            description    = jobject.getString("description", null);
+            idstring    = jobject.getString("id", "0");
+            name        = jobject.getString("name", null);
+            description = jobject.getString("description", null);
             //! TODO import photo, maybe in base64
         }
         catch(Exception ex) {
@@ -165,9 +189,15 @@ public class EventLocationUtils {
             return null;
         }
 
+        long id = 0;
+        try {
+            id = Long.parseLong(idstring);
+        }
+        catch(NumberFormatException ex) {}
+
         EventLocationEntity entity = new EventLocationEntity();
         if (id != 0) {
-            entity.setId(new Long(id));
+            entity.setId(id);
         }
         if (Objects.nonNull(name)) {
             entity.setName(StringUtils.limitStringLen(name, 32));
@@ -176,5 +206,19 @@ public class EventLocationUtils {
             entity.setDescription(StringUtils.limitStringLen(description, 1000));
         }
         return entity;
+    }
+
+    /**
+     * Given an event location entity, export the necessary fields into a JSON object.
+     * 
+     * @param entity    Event location entity to export
+     * @return          A JSON object containing builder the proper entity fields
+     */
+    public JsonObjectBuilder exportEventLocationJSON(EventLocationEntity entity) {
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("id", Objects.nonNull(entity.getId()) ? entity.getId() : 0);
+        json.add("name", Objects.nonNull(entity.getName()) ? entity.getName() : "");
+        json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
+        return json;
     }
 }

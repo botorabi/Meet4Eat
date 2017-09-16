@@ -7,10 +7,8 @@
  */
 package net.m4e.system.maintenance;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 import javax.annotation.Resource;
-import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -22,8 +20,6 @@ import javax.transaction.UserTransaction;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.ResponseResults;

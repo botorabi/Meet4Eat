@@ -59,7 +59,7 @@ public class UserEntityInputValidator {
         UserUtils userutils = new UserUtils(entityManager, userTransaction);
         UserEntity reqentity = userutils.importUserJSON(userJson);
         if (reqentity == null) {
-            throw new Exception("Failed to created user, invalid input.");
+            throw new Exception("Failed to create user, invalid input.");
         }
 
         // perform user name, login and passwd checks

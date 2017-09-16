@@ -7,40 +7,47 @@
  */
 "use strict";
 
+/**
+ * Main Meet4Eat REST service API
+ */
 function Meet4EatREST() {
+
 	/* self ref */
 	var self = this;
 
 	/* API version */
-	this._version = "0.5.0";
+	self._version = "0.6.1";
 
 	/* Root path of web service */
-	this._webRoot = "/m4e-webapp";
+	self._webRoot = "/m4e-webapp";
 	
 	/* URL for accessing app information */
-	this._urlAppInfo  = this._webRoot + '/webresources/rest/appinfo';
+	self._urlAppInfo  = self._webRoot + '/webresources/rest/appinfo';
 
 	/* URL for accessing maintenance information */
-	this._urlMaintenance  = this._webRoot + '/webresources/rest/maintenance';
+	self._urlMaintenance  = self._webRoot + '/webresources/rest/maintenance';
 
 	/* URL for accessing user authentication */
-	this._urlUserAuth  = this._webRoot + '/webresources/rest/authentication';
+	self._urlUserAuth  = self._webRoot + '/webresources/rest/authentication';
 
 	/* URL for accessing users */
-	this._urlUsers  = this._webRoot + '/webresources/rest/users';
+	self._urlUsers  = self._webRoot + '/webresources/rest/users';
 
 	/* URL for accessing events */
-	this._urlEvents = this._webRoot + '/webresources/rest/events';
+	self._urlEvents = self._webRoot + '/webresources/rest/events';
+
+	/* URL for accessing images */
+	self._urlImages = self._webRoot + '/webresources/rest/images';
 
 	/* Last time the server was accessed */
-	this._lastAccessTime = 0;
+	self._lastAccessTime = 0;
 
 	/**
 	 * Get the web interface version.
-	 * @returns {string} Version of this web interface.
+	 * @returns {string} Version of self web interface.
 	 */
-	this.getVersion = function() {
-		return this._version;
+	self.getVersion = function() {
+		return self._version;
 	};
 
 	/**
@@ -48,8 +55,8 @@ function Meet4EatREST() {
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
-	this.getServerInfo = function(resultsCallback) {
-		this._requestJSON(this._urlAppInfo, null, 'GET', resultsCallback);
+	self.getServerInfo = function(resultsCallback) {
+		self._requestJSON(self._urlAppInfo, null, 'GET', resultsCallback);
 	};
 
 	/**
@@ -57,8 +64,8 @@ function Meet4EatREST() {
 	 * 
 	 * @returns {integer}	Last access time in seconds
 	 */
-	this.getLastAccessTime = function() {
-		return Math.floor(this._lastAccessTime / 1000);
+	self.getLastAccessTime = function() {
+		return Math.floor(self._lastAccessTime / 1000);
 	};
 
 	/**
@@ -66,11 +73,11 @@ function Meet4EatREST() {
 	 * 
 	 * @returns {integer}	Past time since last server access in seconds
 	 */
-	this.getPastAccessTime = function() {
-		if (this._lastAccessTime === 0) {
+	self.getPastAccessTime = function() {
+		if (self._lastAccessTime === 0) {
 			return 0;
 		}
-		return Math.floor(((new Date()).getTime() - this._lastAccessTime) / 1000);
+		return Math.floor(((new Date()).getTime() - self._lastAccessTime) / 1000);
 	};
 
 	/**
@@ -78,9 +85,9 @@ function Meet4EatREST() {
 	 * 
 	 * @returns {Meet4EatBaseREST}			REST API for user authentication
 	 */
-	this.buildUserAuthREST = function() {
+	self.buildUserAuthREST = function() {
 		var inst = new Meet4EatAuth();
-		inst.initialize(this._urlUserAuth, this._requestJSON);
+		inst.initialize(self._urlUserAuth, self._requestJSON);
 		return inst;
 	};
 
@@ -89,9 +96,9 @@ function Meet4EatREST() {
 	 * 
 	 * @returns {Meet4EatBaseREST}			REST API for user operations
 	 */
-	this.buildUserREST = function() {
+	self.buildUserREST = function() {
 		var inst = new Meet4EatBaseREST();
-		inst.initialize(this._urlUsers, this._requestJSON);
+		inst.initialize(self._urlUsers, self._requestJSON);
 		return inst;
 	};
 
@@ -100,9 +107,9 @@ function Meet4EatREST() {
 	 * 
 	 * @returns {Meet4EatBaseREST}			REST API for event operations
 	 */
-	this.buildEventREST = function() {
+	self.buildEventREST = function() {
 		var base = new Meet4EatBaseREST();
-		base.initialize(this._urlEvents, this._requestJSON);
+		base.initialize(self._urlEvents, self._requestJSON);
 		// extend the base REST module by Meet4EatEventREST
 		var events = new Meet4EatEventREST(base);
 		events.initialize();
@@ -110,13 +117,24 @@ function Meet4EatREST() {
 	};
 
 	/**
+	 * Build a REST api for image operations.
+	 * 
+	 * @returns {Meet4EatBaseREST}			REST API for image operations
+	 */
+	self.buildImageREST = function() {
+		var images = new Meet4EatImageREST();
+		images.initialize(self._urlImages, self._requestJSON);
+		return images;
+	};
+
+	/**
 	 * Build a REST api for maintenance operations.
 	 * 
 	 * @returns {Meet4EatMaintenanceREST}    REST API for maintenance operations
 	 */
-	this.buildMaintenanceREST = function() {
+	self.buildMaintenanceREST = function() {
 		var maintenance = new Meet4EatMaintenanceREST();
-		maintenance.initialize(this._urlMaintenance, this._requestJSON);
+		maintenance.initialize(self._urlMaintenance, self._requestJSON);
 		return maintenance;
 	};
 
@@ -142,7 +160,7 @@ function Meet4EatREST() {
 	 *                             error: function(text, response) {}
 	 *                           }
      */
-    this._requestJSON = function(requestUrl, requestData, method, responseCallback) {
+    self._requestJSON = function(requestUrl, requestData, method, responseCallback) {
 		var json = requestData ? JSON.stringify(requestData) : null;
         $.ajax({
             type: method,
@@ -185,14 +203,18 @@ function Meet4EatREST() {
  * Base REST services
  */
 function Meet4EatBaseREST() {
+
+	/* self ref */
+	var self = this;
+
 	/* API version */
-	this._version = "1.1.0";
+	self._version = "1.1.0";
 
 	/* Root URL for REST requests */
-	this._rootPath = "";
+	self._rootPath = "";
 
 	/* Function for contacting the server via JSON */
-	this._fcnRequestJson = null;
+	self._fcnRequestJson = null;
 
 	/**
 	 * Initialize the instance.
@@ -200,9 +222,9 @@ function Meet4EatBaseREST() {
 	 * @param {string} rootPath			Root URL
 	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
-	this.initialize = function (rootPath, fcnRequestJson) {
-		this._rootPath = rootPath;
-		this._fcnRequestJson = fcnRequestJson;
+	self.initialize = function (rootPath, fcnRequestJson) {
+		self._rootPath = rootPath;
+		self._fcnRequestJson = fcnRequestJson;
 	};
 
 	/**
@@ -210,8 +232,8 @@ function Meet4EatBaseREST() {
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
-	this.getCount = function(resultsCallback) {
-		this._fcnRequestJson(this._rootPath + '/count', null, 'GET', resultsCallback);
+	self.getCount = function(resultsCallback) {
+		self._fcnRequestJson(self._rootPath + '/count', null, 'GET', resultsCallback);
 	};
 
 	/**
@@ -219,8 +241,8 @@ function Meet4EatBaseREST() {
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
-	this.getAll = function(resultsCallback) {
-		this._fcnRequestJson(this._rootPath, null, 'GET', resultsCallback);
+	self.getAll = function(resultsCallback) {
+		self._fcnRequestJson(self._rootPath, null, 'GET', resultsCallback);
 	};
 
 	/**
@@ -229,8 +251,8 @@ function Meet4EatBaseREST() {
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {integer}  id               Entity ID
 	 */
-	this.find = function(resultsCallback, id) {
-		this._fcnRequestJson(this._rootPath + "/" + id, null, 'GET', resultsCallback);
+	self.find = function(resultsCallback, id) {
+		self._fcnRequestJson(self._rootPath + "/" + id, null, 'GET', resultsCallback);
 	};
 
 	/**
@@ -241,8 +263,8 @@ function Meet4EatBaseREST() {
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {string} keyword	The keyword to search for
 	 */
-	this.search = function(resultsCallback, keyword) {
-		this._fcnRequestJson(this._rootPath + "/search/" + keyword, null, 'GET', resultsCallback);		
+	self.search = function(resultsCallback, keyword) {
+		self._fcnRequestJson(self._rootPath + "/search/" + keyword, null, 'GET', resultsCallback);		
 	};
 
 	/**
@@ -252,12 +274,12 @@ function Meet4EatBaseREST() {
 	 * @param {string}   id                Pass an empty string or null to create a new entity.
 	 * @param {array}    fields            Entity fields
 	 */
-	this.createOrUpdate = function(resultsCallback, id, fields) {
+	self.createOrUpdate = function(resultsCallback, id, fields) {
 		if (!id || id === "") {
-			this._fcnRequestJson(this._rootPath + '/create', fields, 'POST', resultsCallback);
+			self._fcnRequestJson(self._rootPath + '/create', fields, 'POST', resultsCallback);
 		}
 		else {
-			this._fcnRequestJson(this._rootPath + "/" + id, fields, 'PUT', resultsCallback);
+			self._fcnRequestJson(self._rootPath + "/" + id, fields, 'PUT', resultsCallback);
 		}
 	};
 
@@ -267,27 +289,31 @@ function Meet4EatBaseREST() {
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {integer}  id                Entity ID
 	 */
-	this.delete = function(resultsCallback, id) {
-		this._fcnRequestJson(this._rootPath + "/" + id, null, 'DELETE', resultsCallback);
+	self.delete = function(resultsCallback, id) {
+		self._fcnRequestJson(self._rootPath + "/" + id, null, 'DELETE', resultsCallback);
 	};
 }
 
 /**
  * REST services for events
  * 
- * @param {Meet4EatBaseREST}  base Base REST module
+ * @param {Meet4EatBaseREST}  baseModule Base REST module
  */
-function Meet4EatEventREST(base) {
-	/* API version */
-	this._version = "1.0.0";
+function Meet4EatEventREST(baseModule) {
+
+	/* self ref */
+	var self = this;
 
 	/* Base module */
-	var _base = base;
+	var base = baseModule;
+
+	/* API version */
+	self._version = "1.1.0";
 
 	/**
 	 * Initialize the instance.
 	 */
-	this.initialize = function () {};
+	self.initialize = function () {};
 
 	/**
 	 * Request for adding a member to an event.
@@ -296,8 +322,8 @@ function Meet4EatEventREST(base) {
 	 * @param {integer}  eventId           Event ID
 	 * @param {integer}  memberId          Member ID
 	 */
-	_base.addEventMember = function(resultsCallback, eventId, memberId) {
-		_base._fcnRequestJson(_base._rootPath + '/addmember/' + eventId + "/" + memberId, null, 'PUT', resultsCallback);
+	base.addEventMember = function(resultsCallback, eventId, memberId) {
+		base._fcnRequestJson(base._rootPath + '/addmember/' + eventId + "/" + memberId, null, 'PUT', resultsCallback);
 	};
 
 	/**
@@ -307,23 +333,61 @@ function Meet4EatEventREST(base) {
 	 * @param {integer}  eventId           Event ID
 	 * @param {integer}  memberId          Member ID
 	 */
-	_base.removeEventMember = function(resultsCallback, eventId, memberId) {
-		_base._fcnRequestJson(_base._rootPath + '/removemember/' + eventId + "/" + memberId, null, 'PUT', resultsCallback);
+	base.removeEventMember = function(resultsCallback, eventId, memberId) {
+		base._fcnRequestJson(base._rootPath + '/removemember/' + eventId + "/" + memberId, null, 'PUT', resultsCallback);
+	};
+
+	/**
+	 * Request for getting a location from an event.
+	 * 
+	 * @param {function} resultsCallback   Callback which is used when the results arrive.
+	 * @param {integer}  eventId           Event ID
+	 * @param {integer}  locationId        Location ID
+	 */
+	base.getEventLocation = function(resultsCallback, eventId, locationId) {
+		base._fcnRequestJson(base._rootPath + '/location/' + eventId + "/" + locationId, null, 'GET', resultsCallback);
+	};
+
+	/**
+	 * Add a new location or update an exiting one for given event.
+	 * If the location contains an 'id' field then an update attempt is perfomed, otherwise
+	 * a new location is created and added to the event.
+	 * 
+	 * @param {function} resultsCallback   Callback which is used when the results arrive.
+	 * @param {integer}  eventId           Event ID
+	 * @param {array}    fields            Location fields
+	 */
+	base.addOrUpdateLocation = function(resultsCallback, eventId, fields) {
+		base._fcnRequestJson(base._rootPath + '/putlocation/' + eventId, fields, 'PUT', resultsCallback);
+	};
+
+	/**
+	 * Request for removing a location from an event.
+	 * 
+	 * @param {function} resultsCallback   Callback which is used when the results arrive.
+	 * @param {integer}  eventId           Event ID
+	 * @param {integer}  locationId        Location ID
+	 */
+	base.removeEventLocation = function(resultsCallback, eventId, locationId) {
+		base._fcnRequestJson(base._rootPath + '/removelocation/' + eventId + "/" + locationId, null, 'PUT', resultsCallback);
 	};
 }
 
 /**
- * Maintenance REST services
+ * Image functions
  */
-function Meet4EatMaintenanceREST() {
-	/* API version */
-	this._version = "1.0.0";
+function Meet4EatImageREST() {
+
+	/* self ref */
+	var self = this;
+
+	self._version = "1.0.0";
 
 	/* Root URL for REST requests */
-	this._rootPath = "";
+	self._rootPath = "";
 
 	/* Function for contacting the server via JSON */
-	this._fcnRequestJson = null;
+	self._fcnRequestJson = null;
 
 	/**
 	 * Initialize the instance.
@@ -331,9 +395,48 @@ function Meet4EatMaintenanceREST() {
 	 * @param {string} rootPath			Root URL
 	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
-	this.initialize = function (rootPath, fcnRequestJson) {
-		this._rootPath = rootPath;
-		this._fcnRequestJson = fcnRequestJson;
+	self.initialize = function (rootPath, fcnRequestJson) {
+		self._rootPath = rootPath;
+		self._fcnRequestJson = fcnRequestJson;
+	};
+
+	/**
+	 * Get an image given its ID.
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 * @param {integer}  imageId          Image ID
+	 */
+	self.getImage = function(resultsCallback, imageId) {
+		self._fcnRequestJson(self._rootPath + '/' + imageId, null, 'GET', resultsCallback);
+	};
+}
+
+/**
+ * Maintenance REST services
+ */
+function Meet4EatMaintenanceREST() {
+
+	/* self ref */
+	var self = this;
+
+	/* API version */
+	self._version = "1.0.0";
+
+	/* Root URL for REST requests */
+	self._rootPath = "";
+
+	/* Function for contacting the server via JSON */
+	self._fcnRequestJson = null;
+
+	/**
+	 * Initialize the instance.
+	 * 
+	 * @param {string} rootPath			Root URL
+	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
+	 */
+	self.initialize = function (rootPath, fcnRequestJson) {
+		self._rootPath = rootPath;
+		self._fcnRequestJson = fcnRequestJson;
 	};
 
 	/**
@@ -341,8 +444,8 @@ function Meet4EatMaintenanceREST() {
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
-	this.getMaintenanceStats = function(resultsCallback) {
-		this._fcnRequestJson(this._rootPath + "/stats", null, 'GET', resultsCallback);
+	self.getMaintenanceStats = function(resultsCallback) {
+		self._fcnRequestJson(self._rootPath + "/stats", null, 'GET', resultsCallback);
 	};
 
 	/**
@@ -350,8 +453,8 @@ function Meet4EatMaintenanceREST() {
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
-	this.maintenancePurge = function(resultsCallback) {
-		this._fcnRequestJson(this._rootPath + "/purge", null, 'GET', resultsCallback);
+	self.maintenancePurge = function(resultsCallback) {
+		self._fcnRequestJson(self._rootPath + "/purge", null, 'GET', resultsCallback);
 	};
 }
 
@@ -360,19 +463,19 @@ function Meet4EatMaintenanceREST() {
  */
 function Meet4EatAuth() {
 
-	this._version = "1.0.0";
-
-	/* Root URL for REST requests */
-	this._rootPath = "";
-
-	/* Function for contacting the server via JSON */
-	this._fcnRequestJson = null;
-
-	/* Number of iterarions for creating a hash. */
-	this._numHashIteration = 10;
-
 	/* self ref */
 	var self = this;
+
+	self._version = "1.0.0";
+
+	/* Root URL for REST requests */
+	self._rootPath = "";
+
+	/* Function for contacting the server via JSON */
+	self._fcnRequestJson = null;
+
+	/* Number of iterarions for creating a hash. */
+	self._numHashIteration = 10;
 
 	/**
 	 * Initialize the instance.
@@ -380,9 +483,9 @@ function Meet4EatAuth() {
 	 * @param {string} rootPath			Root URL
 	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
-	this.initialize = function (rootPath, fcnRequestJson) {
-		this._rootPath = rootPath;
-		this._fcnRequestJson = fcnRequestJson;
+	self.initialize = function (rootPath, fcnRequestJson) {
+		self._rootPath = rootPath;
+		self._fcnRequestJson = fcnRequestJson;
 	};
 
 	/**
@@ -392,8 +495,8 @@ function Meet4EatAuth() {
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
-	this.getAuthState = function(resultsCallback) {
-		this._fcnRequestJson(this._rootPath + '/state', null, 'GET', resultsCallback);
+	self.getAuthState = function(resultsCallback) {
+		self._fcnRequestJson(self._rootPath + '/state', null, 'GET', resultsCallback);
 	};
 
 	/**
@@ -403,8 +506,8 @@ function Meet4EatAuth() {
 	 * @param {string} userPassword       Plain user password, it will be hashed before transmission.
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
-	this.login = function(resultsCallback, userName, userPassword) {
-		this._fcnRequestJson(this._rootPath + '/state', null, 'GET', {
+	self.login = function(resultsCallback, userName, userPassword) {
+		self._fcnRequestJson(self._rootPath + '/state', null, 'GET', {
 			success: function(results, response) {
 				var sid = "";
 				// already authenticated?
@@ -440,8 +543,8 @@ function Meet4EatAuth() {
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
-	this.logout = function(resultsCallback) {
-		this._fcnRequestJson(this._rootPath + '/logout', null, 'POST', resultsCallback);
+	self.logout = function(resultsCallback) {
+		self._fcnRequestJson(self._rootPath + '/logout', null, 'POST', resultsCallback);
 	};
 
 	/**
@@ -451,9 +554,9 @@ function Meet4EatAuth() {
 	 *  @param {string} str   String which will be used for creating hash
 	 *  @return {string}      SHA512 hash of given string
 	 */
-	this.createHash = function(str) {
+	self.createHash = function(str) {
 		var hash = "" + str;
-		for (var i = 0; i < this._numHashIteration; i++) {
+		for (var i = 0; i < self._numHashIteration; i++) {
 			hash = this._SHA512(hash);
 		}
 		return hash;
@@ -473,7 +576,7 @@ function Meet4EatAuth() {
 	*  @param {string} str   String which will be used for creating a SHA512 hash
 	*  @return {string}      SHA512 hash of given string
 	*/
-	this._SHA512 = function(str) {
+	self._SHA512 = function(str) {
 	  function int64(msint_32, lsint_32) {
 		this.highOrder = msint_32;
 		this.lowOrder = lsint_32;

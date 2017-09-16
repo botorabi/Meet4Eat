@@ -10,6 +10,8 @@ package net.m4e.app.event;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -33,13 +35,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.ImagePool;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfoUtils;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.UserUtils;
-import net.m4e.common.EntityUtils;
 
 /**
  * REST services for Event entity operations
@@ -102,10 +105,10 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     public String createEvent(String eventJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
         EventEntity reqentity;
         try {
-            reqentity = eventutils.validateNewEntityInput(eventJson);
+            EventEntityInputValidator validator = new EventEntityInputValidator(entityManager, userTransaction);
+            reqentity = validator.validateNewEntityInput(eventJson);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not create new event, validation failed, reason: " + ex.getLocalizedMessage());
@@ -114,6 +117,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
 
         EventEntity newevent;
         try {
+            EventUtils eventutils = new EventUtils(entityManager, userTransaction);
             newevent = eventutils.createNewEvent(reqentity, sessionuser.getId());
         }
         catch (Exception ex) {
@@ -160,13 +164,21 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
             Log.warning(TAG, "*** User was attempting to update an event without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
-        
+
         // take over non-empty fields
         if (Objects.nonNull(reqentity.getName()) && !reqentity.getName().isEmpty()) {
             event.setName(reqentity.getName());
         }
         if (Objects.nonNull(reqentity.getDescription()) && !reqentity.getDescription().isEmpty()) {
             event.setDescription(reqentity.getDescription());
+        }
+        if (Objects.nonNull(reqentity.getPhoto())) {
+            try {
+                eventutils.updateEventImage(event, reqentity.getPhoto());
+            }
+            catch (Exception ex) {
+                Log.warning(TAG, "*** Event image could not be updated, reason: " + ex.getLocalizedMessage());
+            }
         }
         if (reqentity.getEventStart() > 0L) {
             event.setEventStart(reqentity.getEventStart());
@@ -422,6 +434,50 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     }
 
     /**
+     * Get the location with given ID.
+     * 
+     * @param eventId      Event ID
+     * @param locationId   Location ID
+     * @param request      HTTP request
+     * @return             JSON response
+     */
+    @GET
+    @Path("location/{eventId}/{locationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    public String putLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        if (Objects.isNull(eventId) || Objects.isNull(locationId)) {
+            Log.error(TAG, "*** Cannot get event location, no valid inputs!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
+        EventEntity event = eventutils.findEvent(eventId);
+        if (Objects.isNull(event)) {
+            Log.warning(TAG, "*** Cannot get location: non-existing event!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event information.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        // check if the event owner or a user with higher privilege is trying to modify the event locations
+        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        if (!event.getIsPublic() && !userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+            Log.warning(TAG, "*** User was attempting to get event information without proper privilege!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+        }
+        EventLocationUtils elutils = new EventLocationUtils(entityManager, userTransaction);
+        EventLocationEntity location = elutils.findLocation(locationId);
+        if (Objects.isNull(location)) {
+            Log.warning(TAG, "*** Failed to get event location, it does not exist!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        JsonObjectBuilder exportedlocation = elutils.exportEventLocationJSON(location);
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Location was successfully added/update.", ResponseResults.CODE_OK, exportedlocation.build().toString());
+    }
+
+    /**
      * Add a new or update an existing location. If the input has an id field, then
      * an update attempt for that location entity with given ID is performed. If no id
      * field exists, then a new location entity is created and added to given event.
@@ -432,21 +488,22 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * @return             JSON response
      */
     @PUT
-    @Path("putlocation/{eventId}/{locationJson}")
+    @Path("putlocation/{eventId}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String addLocation(@PathParam("eventId") Long eventId, @PathParam("locationJson") String locationJson, @Context HttpServletRequest request) {
+    public String putLocation(@PathParam("eventId") Long eventId, String locationJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if (Objects.isNull(eventId) || Objects.isNull(locationJson)) {
             Log.error(TAG, "*** Cannot add location to event, no valid inputs!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add location to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         EventUtils eventutils = new EventUtils(entityManager, userTransaction);
         EventEntity event = eventutils.findEvent(eventId);
         if (Objects.isNull(event)) {
             Log.warning(TAG, "*** Cannot add location to event: non-existing event!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
@@ -454,13 +511,13 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         UserUtils userutils = new UserUtils(entityManager, userTransaction);
         if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to update an event without proper privilege!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add location to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
+        EventEntityInputValidator validator = new EventEntityInputValidator(entityManager, userTransaction);
         EventLocationEntity inputlocation;
-        EventLocationUtils elutils = new EventLocationUtils(entityManager, userTransaction);
         try {
-            inputlocation = elutils.validateLocationInput(locationJson);
+            inputlocation = validator.validateLocationInput(locationJson, event);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not add location, validation failed, reason: " + ex.getLocalizedMessage());
@@ -468,22 +525,84 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         EventLocationEntity location;
+        EventLocationUtils elutils = new EventLocationUtils(entityManager, userTransaction);
         try {
+            // add new location or update an existing one?
             if (Objects.nonNull(inputlocation.getId()) && (inputlocation.getId() > 0)) {
                 location = elutils.updateLocation(inputlocation);                
             }
             else {
+                if (!validator.validateUniqueLocationName(event, inputlocation.getName())) {
+                    throw new Exception("There is already a location with this name.");
+                }
                 location = elutils.createNewLocation(event, inputlocation, sessionuser.getId());
             }
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not create new location, reaon: " + ex.getLocalizedMessage());
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new location.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            Log.warning(TAG, "*** Could not add/update location, reaon: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
         //! NOTE on successful entity location creation the new ID is sent back by results.data field.
         jsonresponse.add("eventId", event.getId());
         jsonresponse.add("locationId", location.getId());
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Location was successfully added to event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Location was successfully added/update.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Remove a location from given event.
+     * 
+     * @param eventId      Event ID
+     * @param locationId   Location ID
+     * @param request      HTTP request
+     * @return             JSON response
+     */
+    @PUT
+    @Path("removelocation/{eventId}/{locationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    public String removeLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        if (Objects.isNull(eventId) || Objects.isNull(locationId)) {
+            Log.error(TAG, "*** Cannot remove location from event, no valid inputs!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+
+        jsonresponse.add("eventId", eventId);
+        jsonresponse.add("locationId", locationId);
+
+        // check if both, member and event exist
+        EventLocationUtils   locutils   = new EventLocationUtils(entityManager, userTransaction);
+        EventLocationEntity  loc2remove = locutils.findLocation(locationId);
+        EventEntity          event      = super.find(eventId);
+        if (loc2remove.getStatus().getIsDeleted()) {
+            loc2remove = null;
+        }
+        if (event.getStatus().getIsDeleted()) {
+            event = null;
+        }
+        if (Objects.isNull(event) || Objects.isNull(loc2remove)) {
+            Log.warning(TAG, "*** Cannot remove location from event: non-existing location or event!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        // check if the event owner or a user with higher privilege is trying to modify the event
+        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+            Log.warning(TAG, "*** User was attempting to modify (remove location) an event without proper privilege!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+        }
+
+        try {
+            locutils.markLocationAsDeleted(event, loc2remove);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not remove location from event, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        }
+
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Location was succssfully removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 }

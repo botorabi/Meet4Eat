@@ -7,7 +7,6 @@
  */
 package net.m4e.system.core;
 
-import java.util.List;
 import java.util.Objects;
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -15,7 +14,6 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;

@@ -13,6 +13,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * StatusEntity contains status information used for internal house keeping,
@@ -28,6 +29,7 @@ import javax.persistence.Id;
  * Date of creation Aug 30, 2017
  */
 @Entity
+@XmlRootElement
 public class StatusEntity implements Serializable {
 
     /**
@@ -66,6 +68,11 @@ public class StatusEntity implements Serializable {
      * ID of current owner.
      */
     private Long idOwner = 0L;
+
+    /**
+     * Entity reference count. It can be used for managing shared resources.
+     */
+    private Long referenceCount = 0L;
 
     /**
      * Get the entity ID.
@@ -186,6 +193,44 @@ public class StatusEntity implements Serializable {
      */
     public void setIdOwner(Long idOwner) {
         this.idOwner = idOwner;
+    }
+
+    /**
+     * Set the reference count. This can be used for managing shared resources.
+     * 
+     * @param referenceCount Entity reference count
+     */
+    public void setReferenceCount(Long referenceCount) {
+        this.referenceCount = referenceCount;
+    }
+
+    /**
+     * Get the reference count. This can be used for managing shared resources.
+     * 
+     * @return Entity reference count
+     */
+    public Long getReferenceCount() {
+        return this.referenceCount;
+    }
+
+    /**
+     * Increase the reference coung.
+     * 
+     * @return Current reference count
+     */
+    public Long increaseRefCount() {
+        referenceCount++;
+        return referenceCount;
+    }
+
+    /**
+     * Decrease the reference coung.
+     * 
+     * @return Current reference count
+     */
+    public Long decreaseRefCount() {
+        referenceCount--;
+        return referenceCount;
     }
 
     @Override

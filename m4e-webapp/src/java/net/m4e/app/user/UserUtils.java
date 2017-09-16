@@ -27,6 +27,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
+import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.ImagePool;
 import net.m4e.common.EntityUtils;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.system.core.AppInfoEntity;
@@ -209,6 +211,26 @@ public class UserUtils {
     }
 
     /**
+     * Update the user image with the content of given image.
+     * 
+     * @param user          User entity
+     * @param image         Image to set to given event
+     * @throws Exception    Throws exception if any problem occurred.
+     */
+    void updateUserImage(UserEntity user, ImageEntity image) throws Exception {
+        ImagePool imagepool = new ImagePool(entityManager,userTransaction);
+        ImageEntity img = imagepool.getOrCreatePoolImage(image.getImageHash());
+        if (!imagepool.compareImageHash(user.getPhoto(), img.getImageHash())) {
+            imagepool.releasePoolImage(user.getPhoto());
+        }
+        img.setContent(image.getContent());
+        img.updateImageHash();
+        img.setEncoding(image.getEncoding());
+        img.setResourceURL("/User/Image");
+        user.setPhoto(img);
+    }
+
+    /**
      * Mark a user as deleted by setting its status deletion time stamp. This
      * method also updates the system app info entity.
      * 
@@ -352,6 +374,7 @@ public class UserUtils {
             roles.add(r.getName());
         }
         json.add("roles", roles);
+        json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId() : 0);
         return json;
     }
 
@@ -367,7 +390,7 @@ public class UserUtils {
         }
 
         // try to get login and password
-        String login, passwd, email, name;
+        String login, passwd, email, name, photo;
         List<String> userroles = new ArrayList<>();
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
@@ -376,6 +399,7 @@ public class UserUtils {
             passwd = jobject.getString("password", null);
             name   = jobject.getString("name", null);
             email  = jobject.getString("email", null);
+            photo  = jobject.getString("photo", null);
             
             JsonArray r = jobject.getJsonArray("roles");
             List<JsonString> roles = r.getValuesAs(JsonString.class);
@@ -394,6 +418,15 @@ public class UserUtils {
         entity.setName(name);
         entity.setPassword(passwd);
         entity.setEmail(email);
+
+        if (Objects.nonNull(photo)) {
+            ImageEntity image = new ImageEntity();
+            // currently we expect only base64 encoded images here
+            image.setEncoding(ImageEntity.ENCODING_BASE64);
+            image.setContent(photo.getBytes());
+            image.updateImageHash();
+            entity.setPhoto(image);
+        }
 
         return entity;
     }

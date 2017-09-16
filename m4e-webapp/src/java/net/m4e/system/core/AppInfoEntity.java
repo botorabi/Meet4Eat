@@ -64,6 +64,11 @@ public class AppInfoEntity implements Serializable {
     private Long eventCountPurge = 0L;
 
     /**
+     * Count of event location entities which are marked as deleted and can be purged.
+     */
+    private Long eventLocationCountPurge = 0L;
+
+    /**
      * Get the entity ID.
      * 
      * @return Entity ID
@@ -185,6 +190,33 @@ public class AppInfoEntity implements Serializable {
      */
     public void incrementEventCountPurge(Long count) {
         eventCountPurge += count;
+    }
+
+    /**
+     * Get the count of EventLocationEntity entries which are marked as deleted.
+     * 
+     * @return Count of event entities which can be purged
+     */
+    public Long getEventLocationCountPurge() {
+        return eventLocationCountPurge;
+    }
+
+    /**
+     * Set the count of EventLocationEntity entries which are marked as deleted.
+     * 
+     * @param eventLocationCountPurge Count of event entities which can be purged
+     */
+    public void setEventLocationCountPurge(Long eventLocationCountPurge) {
+        this.eventLocationCountPurge = eventLocationCountPurge;
+    }
+
+    /**
+     * Increment the event location purge counter by given 'count'.
+     * 
+     * @param count Count of incrementation.
+     */
+    public void incrementEventLocationCountPurge(Long count) {
+        eventLocationCountPurge += count;
     }
 
     @Override

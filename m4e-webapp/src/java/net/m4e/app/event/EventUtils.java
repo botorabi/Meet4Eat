@@ -25,6 +25,7 @@ import javax.transaction.UserTransaction;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.EntityUtils;
 import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.ImagePool;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.StringUtils;
 import net.m4e.system.core.AppInfoEntity;
@@ -59,28 +60,6 @@ public class EventUtils {
     public EventUtils(EntityManager entityManager, UserTransaction userTransaction) {
         this.entityManager = entityManager;
         this.userTransaction = userTransaction;
-    }
-
-   /**
-     * Given a JSON string as input containing data for creating a new event, validate 
-     * all fields and return an EventEntity, or throw an exception if the validation failed.
-     * 
-     * @param eventJson      Data for creating a new event in JSON format
-     * @return               A EventEntity created out of given input
-     * @throws Exception     Throws an exception if the validation fails.
-     */
-    public EventEntity validateNewEntityInput(String eventJson) throws Exception {
-        EventEntity reqentity = importEventJSON(eventJson);
-        if (reqentity == null) {
-            throw new Exception("Failed to created event, invalid input.");
-        }
-
-        // perform some checks
-        if (Objects.isNull(reqentity.getName()) || reqentity.getName().isEmpty()) {
-            throw new Exception("Missing event name.");
-        }
-
-        return reqentity;
     }
 
     /**
@@ -174,12 +153,32 @@ public class EventUtils {
      * Try to find an event with given user ID.
      * 
      * @param id Event ID
-     * @return Return enent entity if found, otherwise return null.
+     * @return Return an entity if found, otherwise return null.
      */
     public EventEntity findEvent(Long id) {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         EventEntity event = eutils.findEntity(EventEntity.class, id);
         return event;
+    }
+
+    /**
+     * Update the event image with the content of given image.
+     * 
+     * @param event         Event entity
+     * @param image         Image to set to given event
+     * @throws Exception    Throws exception if any problem occurred.
+     */
+    void updateEventImage(EventEntity event, ImageEntity image) throws Exception {
+        ImagePool imagepool = new ImagePool(entityManager,userTransaction);
+        ImageEntity img = imagepool.getOrCreatePoolImage(image.getImageHash());
+        if (!imagepool.compareImageHash(event.getPhoto(), img.getImageHash())) {
+            imagepool.releasePoolImage(event.getPhoto());
+        }
+        img.setContent(image.getContent());
+        img.updateImageHash();
+        img.setEncoding(image.getEncoding());
+        img.setResourceURL("/Event/Image");
+        event.setPhoto(img);
     }
 
     /**
@@ -285,6 +284,23 @@ public class EventUtils {
     }
 
     /**
+     * Get all event locations which are marked as deleted.
+     * 
+     * @return List of event locations which are marked as deleted.
+     */
+    public List<EventLocationEntity> getMarkedAsDeletedEventLocations() {
+        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        List<EventLocationEntity> eventlocs = eutils.findAllEntities(EventLocationEntity.class);
+        List<EventLocationEntity> deletedeventlocs = new ArrayList<>();
+        for (EventLocationEntity loc: eventlocs) {
+            if (loc.getStatus().getIsDeleted()) {
+                deletedeventlocs.add(loc);
+            }
+        }
+        return deletedeventlocs;
+    }
+
+    /**
      * Given an event entity, export the necessary fields into a JSON object.
      * 
      * @param entity    Event entity to export
@@ -321,6 +337,7 @@ public class EventUtils {
                 JsonObjectBuilder loc = Json.createObjectBuilder();
                 loc.add("id", l.getId());
                 loc.add("name", Objects.nonNull(l.getName()) ? l.getName() : "");
+                loc.add("description", Objects.nonNull(l.getDescription()) ? l.getDescription() : "");
                 locations.add( loc );
             }
         }
@@ -356,8 +373,8 @@ public class EventUtils {
             return null;
         }
 
-        String name, description;
-        Long eventstart, repeatweekdays, repeatdaytime, photoid;
+        String name, description, photo;
+        Long eventstart, repeatweekdays, repeatdaytime;
         boolean ispublic;
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
@@ -366,7 +383,7 @@ public class EventUtils {
             name           = jobject.getString("name", null);
             description    = jobject.getString("description", null);
             ispublic       = jobject.getBoolean("public", false);
-            photoid        = new Long(jobject.getInt("photoId", 0));
+            photo          = jobject.getString("photo", null);
             eventstart     = new Long(jobject.getInt("eventStart", 0));
             repeatweekdays = new Long(jobject.getInt("repeatWeekDays", 0));
             repeatdaytime  = new Long(jobject.getInt("repeatDayTime", 0));
@@ -390,9 +407,12 @@ public class EventUtils {
         entity.setRepeatWeekDays(repeatweekdays);
         entity.setRepeatDayTime(repeatdaytime);
 
-        if (photoid > 0L) {
-            EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
-            ImageEntity image = eutils.findEntity(ImageEntity.class, photoid);
+        if (Objects.nonNull(photo)) {
+            ImageEntity image = new ImageEntity();
+            // currently we expect only base64 encoded images here
+            image.setEncoding(ImageEntity.ENCODING_BASE64);
+            image.setContent(photo.getBytes());
+            image.updateImageHash();
             entity.setPhoto(image);
         }
 
