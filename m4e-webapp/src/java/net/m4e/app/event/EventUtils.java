@@ -313,6 +313,7 @@ public class EventUtils {
         json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
         json.add("public", entity.getIsPublic());
         json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId(): 0);
+        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getImageHash(): "");
         json.add("eventStart", Objects.nonNull(entity.getEventStart()) ? entity.getEventStart(): 0);
         json.add("repeatWeekDays", (Objects.nonNull(entity.getRepeatWeekDays()) ? entity.getRepeatWeekDays(): 0));
         json.add("repeatDayTime", (Objects.nonNull(entity.getRepeatDayTime()) ? entity.getRepeatDayTime(): 0));
@@ -338,6 +339,8 @@ public class EventUtils {
                 loc.add("id", l.getId());
                 loc.add("name", Objects.nonNull(l.getName()) ? l.getName() : "");
                 loc.add("description", Objects.nonNull(l.getDescription()) ? l.getDescription() : "");
+                loc.add("photoId", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getId(): 0);
+                loc.add("photoETag", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getImageHash(): "");
                 locations.add( loc );
             }
         }

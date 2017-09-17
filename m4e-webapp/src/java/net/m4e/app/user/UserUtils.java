@@ -375,6 +375,8 @@ public class UserUtils {
         }
         json.add("roles", roles);
         json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId() : 0);
+        // the ETag can be used on a client for caching purpose
+        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getImageHash(): "");
         return json;
     }
 

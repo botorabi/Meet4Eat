@@ -537,6 +537,11 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
                 }
                 location = elutils.createNewLocation(event, inputlocation, sessionuser.getId());
             }
+            // is a photo given? if so update it, too
+            if (Objects.nonNull(inputlocation.getPhoto())) {
+                elutils.updateEventLocationImage(location, inputlocation.getPhoto());
+                elutils.updateLocation(location);
+            }
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not add/update location, reaon: " + ex.getLocalizedMessage());

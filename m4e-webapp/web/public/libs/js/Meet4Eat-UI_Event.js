@@ -38,6 +38,12 @@ function Meet4EatUI_Event(baseModule) {
 	/* Default event photo used when the event has no photo */
 	self._eventPhotoDefault = "public/images/event-default.png";
 
+	/* Event location photo data */
+	self._eventLocationPhotoData = null;
+
+	/* Default event location photo used when the event has no photo */
+	self._eventLocationPhotoDefault = "public/images/eventlocation-default.png";
+
 	/**
 	 * Initialize the Meet4Eat UI Event module.
 	 */
@@ -52,6 +58,7 @@ function Meet4EatUI_Event(baseModule) {
 	base.setupUiModuleEvent = function() {
 		self._getEventTable().clear();
 		self._eventPhotoData = null;
+		self._eventLocationPhotoData = null;
 		base._m4eRESTEvents.getAll({
 			success: function(results, response) {
 				if (results.status !== "ok") {
@@ -320,6 +327,11 @@ function Meet4EatUI_Event(baseModule) {
 			return obj;
 		}, {});
 		var eventid = $("#page_events_edit_form input[name='id']").val();
+
+		if (self._eventLocationPhotoData) {
+			inputfields['photo'] = self._eventLocationPhotoData;
+		}
+
 		base._m4eRESTEvents.addOrUpdateLocation({
 			success: function(res, resp) {
 				if (res.status === "ok") {
@@ -330,6 +342,7 @@ function Meet4EatUI_Event(baseModule) {
 						base.showModalBox("Location was successfully added to Event.", "Add Event Location", "Dismiss");
 					}
 					var elemid = self._updateUiEventLocationAddOrUpdate(true, res.data.eventId, res.data.locationId, inputfields.name, inputfields.description);
+					self._eventLocationPhotoData = null;
 					self._updateUiEventLocationFormClear();
 					base._scrollToElement(elemid, 'slow');
 				}
@@ -384,6 +397,7 @@ function Meet4EatUI_Event(baseModule) {
 	 * @param locationId  Location ID
 	 */
 	base.onBtnEventLocationEdit = function(eventId, locationId) {
+		self._eventLocationPhotoData = null;
 		base._m4eRESTEvents.getEventLocation({
 			success: function(res, resp) {
 				if (res.status === "ok") {
@@ -392,6 +406,12 @@ function Meet4EatUI_Event(baseModule) {
 					$("#page_events_edit_location_form input[name='id']").val(location.id);
 					$("#page_events_edit_location_form input[name='name']").val(location.name);
 					$("#page_events_edit_location_form textarea[name='description']").val(location.description);
+					if (location.photoId) {
+						self._loadPhoto('page_events_edit_location_icon_img', location.photoId);
+					}
+					else {
+						$('#page_events_edit_location_icon_img').prop('src', self._eventLocationPhotoDefault);
+					}
 					base._scrollToElement('page_events_edit_location_form', 'slow');
 				}
 				else {
@@ -407,18 +427,23 @@ function Meet4EatUI_Event(baseModule) {
 	/**
 	 * Show event location information.
 	 * 
-	 * @param eventId     Event ID
-	 * @param locationId  Location ID
+	 * @param eventId         Event ID
+	 * @param locationId      Location ID
+	 * @param locationPhotoId Location photo ID
 	 */
-	base.onBtnEventLocationInfo = function(eventId, locationId) {
+	base.onBtnEventLocationInfo = function(eventId, locationId, locationPhotoId) {
 		base._m4eRESTEvents.getEventLocation({
 			success: function(res, resp) {
 				if (res.status === "ok") {
 					var location = res.data;
-					var html = "<table class='table table-striped table-bordered'>";
+					var html = "<div class='text-center'>" + "<img id='event_location_info_img' src='" + self._eventLocationPhotoDefault + "'></div>";
+					html += "<table style='margin-top: 20px;' class='table table-striped table-bordered'>";
 					html += "<tr><td>Name</td><td>" + location.name + "</td></tr>";
 					html += "<tr><td>Description</td><td>" + location.description + "</td></tr>";
 					html += "</table>";
+					if (locationPhotoId) {
+						self._loadPhoto('event_location_info_img', locationPhotoId);
+					}
 					base.showModalInfoBox(html, "Event Location Info", "Dismiss");
 				}
 				else {
@@ -449,6 +474,24 @@ function Meet4EatUI_Event(baseModule) {
 				$('#page_events_edit_pane_icon_img').prop('src', image.src);
 				// update _eventPhotoData so on next apply the new icon data will be transmitted, too
 				self._eventPhotoData = image.src;
+			},
+			error: function(errorString) {
+				base.showModalBox(errorString, "Problem Loading Image File", "Dismiss");
+			}	
+		});
+	};
+
+	/**
+	 * Load and create a new image for an event location.
+	 * 
+	 * @param event The event which was created on an file input button.
+	 */
+	base.onBtnEventLocationIcon = function(event) {
+		base.getImageModule().loadImageFile(event, {
+			success: function(image) {
+				$('#page_events_edit_location_icon_img').prop('src', image.src);
+				// update _eventLocationPhotoData so on next apply the new icon data will be transmitted, too
+				self._eventLocationPhotoData = image.src;
 			},
 			error: function(errorString) {
 				base.showModalBox(errorString, "Problem Loading Image File", "Dismiss");
@@ -582,7 +625,8 @@ function Meet4EatUI_Event(baseModule) {
 	};
 
 	self._updateUiEventLocationFormClear = function() {
-		$('#page_events_edit_location_form :input').val("");
+		$('#page_events_edit_location_form :input').val('');
+		$('#page_events_edit_location_icon_img').prop('src', self._eventLocationPhotoDefault);
 	};
 
 	self._updateUiEventLocationsClear = function() {
@@ -593,11 +637,11 @@ function Meet4EatUI_Event(baseModule) {
 	/**
 	 * Add or update a location entry in list and return its element ID.
 	 */
-	self._updateUiEventLocationAddOrUpdate = function(allowModification, eventId, locationId, locationName, locationDescription) {
+	self._updateUiEventLocationAddOrUpdate = function(allowModification, eventId, locationId, locationName, locationDescription, locationPhotoId) {
 		var locations = $('#page_events_edit_locations');
 		var liid = "page_events_edit_locations-" + eventId + "-" + locationId;
-		var argsinfo = "(" + eventId + "," + locationId + ")";
-		var argsremove = argsinfo;
+		var argsinfo = "(" + eventId + "," + locationId + "," + locationPhotoId + ")";
+		var argsremove = "(" + eventId + "," + locationId + ")";
 		var ops = "";
 		if (allowModification) {
 			ops = "<a onclick='getMeet4EatUI().onBtnEventLocationRemove" + argsremove + ";'>" +
@@ -717,10 +761,10 @@ function Meet4EatUI_Event(baseModule) {
 				self._setupUiEventOwner(ev.ownerId, ev.ownerName);
 				
 				for (var i = 0; i < ev.locations.length; i++) {
-					self._updateUiEventLocationAddOrUpdate(modperms, ev.id, ev.locations[i].id, ev.locations[i].name, ev.locations[i].description);
+					self._updateUiEventLocationAddOrUpdate(modperms, ev.id, ev.locations[i].id, ev.locations[i].name, ev.locations[i].description, ev.locations[i].photoId);
 				}
 				if (ev.photoId) {
-					self._loadEventPhoto(ev.photoId);
+					self._loadPhoto('page_events_edit_pane_icon_img', ev.photoId);
 				}
 				else {
 					$("#page_events_edit_pane_icon_img").prop('src', self._eventPhotoDefault);
@@ -771,7 +815,7 @@ function Meet4EatUI_Event(baseModule) {
 		}, id);
 	};
 
-	self._loadEventPhoto = function(photoId) {
-		base.getImageModule().loadImageFromServer('page_events_edit_pane_icon_img', photoId);
+	self._loadPhoto = function(elemId, photoId) {
+		base.getImageModule().loadImageFromServer(elemId, photoId);
 	};
 }

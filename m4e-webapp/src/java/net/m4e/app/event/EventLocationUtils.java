@@ -19,6 +19,8 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
+import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.ImagePool;
 import net.m4e.common.EntityUtils;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.StringUtils;
@@ -62,12 +64,11 @@ public class EventLocationUtils {
      * @param creatorID    Creator ID
      * @return             A new created event location entity if successfully, otherwise null.
      */
-    public EventLocationEntity createNewLocation(EventEntity event, EventLocationEntity inputEntity, Long creatorID) {
+    public EventLocationEntity createNewLocation(EventEntity event, EventLocationEntity inputEntity, Long creatorID) throws Exception {
         // setup the new entity
         EventLocationEntity newlocation = new EventLocationEntity();
         newlocation.setName(inputEntity.getName());
         newlocation.setDescription(inputEntity.getDescription());
-        //! TODO photo
 
         // setup the status
         StatusEntity status = new StatusEntity();
@@ -116,10 +117,32 @@ public class EventLocationUtils {
         if (Objects.nonNull(inputLocation.getDescription())) {
             location.setDescription(inputLocation.getDescription());
         }
-        //! TODO photo
+        if (Objects.nonNull(inputLocation.getPhoto())) {
+            updateEventLocationImage(location, inputLocation.getPhoto());
+        }
 
         entityutils.updateEntity(location);
         return location;
+    }
+
+    /**
+     * Update the event location image with the content of given image.
+     * 
+     * @param location      Event location entity
+     * @param image         Image to set to given event
+     * @throws Exception    Throws exception if any problem occurred.
+     */
+    void updateEventLocationImage(EventLocationEntity location, ImageEntity image) throws Exception {
+        ImagePool imagepool = new ImagePool(entityManager,userTransaction);
+        ImageEntity img = imagepool.getOrCreatePoolImage(image.getImageHash());
+        if (!imagepool.compareImageHash(location.getPhoto(), img.getImageHash())) {
+            imagepool.releasePoolImage(location.getPhoto());
+        }
+        img.setContent(image.getContent());
+        img.updateImageHash();
+        img.setEncoding(image.getEncoding());
+        img.setResourceURL("/EventLoction/Image");
+        location.setPhoto(img);
     }
 
     /**
@@ -175,14 +198,14 @@ public class EventLocationUtils {
             return null;
         }
 
-        String name, idstring, description;
+        String name, idstring, description, photo;
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
             JsonObject jobject = jreader.readObject();
             idstring    = jobject.getString("id", "0");
             name        = jobject.getString("name", null);
             description = jobject.getString("description", null);
-            //! TODO import photo, maybe in base64
+            photo       = jobject.getString("photo", null);
         }
         catch(Exception ex) {
             Log.warning(TAG, "Could not setup an event loaction given JSON string, reason: " + ex.getLocalizedMessage());
@@ -205,6 +228,16 @@ public class EventLocationUtils {
         if (Objects.nonNull(description)) {
             entity.setDescription(StringUtils.limitStringLen(description, 1000));
         }
+
+        if (Objects.nonNull(photo)) {
+            ImageEntity image = new ImageEntity();
+            // currently we expect only base64 encoded images here
+            image.setEncoding(ImageEntity.ENCODING_BASE64);
+            image.setContent(photo.getBytes());
+            image.updateImageHash();
+            entity.setPhoto(image);
+        }
+
         return entity;
     }
 
@@ -219,6 +252,8 @@ public class EventLocationUtils {
         json.add("id", Objects.nonNull(entity.getId()) ? entity.getId() : 0);
         json.add("name", Objects.nonNull(entity.getName()) ? entity.getName() : "");
         json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
+        json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId(): 0);
+        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getImageHash(): "");
         return json;
     }
 }

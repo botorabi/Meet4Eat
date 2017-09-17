@@ -271,12 +271,12 @@
 										</div>
 										<div class="form-group">
 											<div><label>Photo</label></div>
-											<div class="col-sm-6 col-sm-offset-3">
-												<div class="">
-													<img id="page_users_edit_photo_img" style="max-width: 256px;" src="public/images/user-default.png" alt="User Photo">
-													<input type="file" onchange="getMeet4EatUI().onBtnUserPhoto(event);">
+											<div class="col-sm-8 col-sm-offset-2 text-center">
+												<div>
+													<img id="page_users_edit_photo_img" style="max-width: 256px; cursor: pointer;" src="public/images/user-default.png" alt="User Photo" onclick="$('#page_users_edit_photo_img_input').trigger('click');">
+													<input id ="page_users_edit_photo_img_input" class="hide" type="file" onchange="getMeet4EatUI().onBtnUserPhoto(event);">
 												</div>
-												<p class="help-block">User Photo (max dimensions 256 x 256 pixel).</p>
+												<p class="help-block">Click on photo to change (max dimensions 256 x 256 pixel).</p>
 											</div>
 										</div>
 									</form>
@@ -506,12 +506,13 @@
 																				<p class="help-block">Location description (max 1000 characters).</p>
 																			</div>
 																		</div>
-																		<div class="form-group col-sm-6">
-																			<div class="">
-																				<label>Icon</label>
-																				<a class="form-control btn btn-lg btn-warning" style="min-height: 150px;" onclick="alert('TODO');">IMG</a>
-																				<p class="help-block">Set an icon.</p>
+																		<div class="col-sm-6 text-center">
+																			<label>Icon</label>
+																			<div>
+																				<img id="page_events_edit_location_icon_img" style="max-width: 128px; cursor: pointer;" src="public/images/eventlocation-default.png" alt="User Photo" onclick="$('#page_events_edit_location_icon_img_input').trigger('click');">
+																				<input id ="page_events_edit_location_icon_img_input" class="hide" type="file" onchange="getMeet4EatUI().onBtnEventLocationIcon(event);">
 																			</div>
+																			<p class="help-block">Click on photo to change (max dimensions 256 x 256 pixel).</p>
 																		</div>
 																	</form>
 																</div>
@@ -531,13 +532,13 @@
 										<!-- pane location -->
 										<div class="tab-pane fade" id="page_events_edit_pane_icon">
 											<div class="row">
-												<div class="form-group col-sm-6 col-sm-offset-3">
+												<div class="form-group col-sm-8 col-sm-offset-2 text-center">
 													<input hidden name="id">
 													<div>
-														<img id="page_events_edit_pane_icon_img" src="" alt="Event Icon">
-														<!--a class="form-control btn btn-primary text-center" onclick="">Change Icon</a-->
-														<input type="file" onchange="getMeet4EatUI().onBtnEventIcon(event);"  class="filestyle">
+														<img id="page_events_edit_pane_icon_img" style="max-width: 256px; cursor: pointer;" src="public/images/event-default.png" alt="Event Icon" onclick="$('#page_events_edit_pane_icon_img_input').trigger('click');">
+														<input id="page_events_edit_pane_icon_img_input" class="hide" type="file" onchange="getMeet4EatUI().onBtnEventIcon(event);">
 													</div>
+													<p class="help-block">Click on photo to change (max dimensions 256 x 256 pixel).</p>
 												</div>
 											</div>
 										</div>
