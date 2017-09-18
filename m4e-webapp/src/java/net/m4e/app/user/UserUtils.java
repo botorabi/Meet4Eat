@@ -450,7 +450,7 @@ public class UserUtils {
         }
         else {
             for (UserEntity user: users) {
-                if (!user.getStatus().getIsDeleted()) {
+                if (user.getStatus().getIsActive()) {
                     allusers.add(exportUserJSON(user));
                 }
             }

@@ -84,7 +84,7 @@ public class ImageEntityFacadeREST extends AbstractFacade<ImageEntity> {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
         ImageEntity image = super.find(id);
-        if (Objects.isNull(image) || image.getStatus().getIsDeleted()) {
+        if (Objects.isNull(image) || !image.getStatus().getIsActive()) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Image was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 

@@ -48,7 +48,7 @@ public class ResponseResults implements Serializable {
     /**
      * Code for not authorized
      */
-    public final static int CODE_NOT_UNAUTHORIZED = 401;
+    public final static int CODE_UNAUTHORIZED = 401;
 
     /**
      * Code for forbidden

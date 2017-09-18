@@ -168,7 +168,7 @@ public class AuthFilter implements Filter {
                 else {
                     Log.warning(TAG, "*** Access denied to protected resource: " + path);
                     response.getWriter().print(ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK,
-                                                "Denied access to: " + path, 401, null));
+                                                "Denied access to: " + path, ResponseResults.CODE_FORBIDDEN, null));
                 }
             }
             else {

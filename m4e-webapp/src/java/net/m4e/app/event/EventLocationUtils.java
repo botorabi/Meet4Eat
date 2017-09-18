@@ -107,7 +107,7 @@ public class EventLocationUtils {
     EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
         EntityUtils entityutils = new EntityUtils(entityManager, userTransaction);
         EventLocationEntity location = entityutils.findEntity(EventLocationEntity.class, inputLocation.getId());
-        if (Objects.isNull(location) || location.getStatus().getIsDeleted()) {
+        if (Objects.isNull(location) || !location.getStatus().getIsActive()) {
             throw new Exception("Entity location does not exist.");
         }
 

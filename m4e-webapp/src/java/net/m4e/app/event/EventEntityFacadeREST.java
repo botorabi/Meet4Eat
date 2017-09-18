@@ -250,7 +250,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         EventEntity event = super.find(id);
-        if (Objects.isNull(event) || event.getStatus().getIsDeleted()) {
+        if (Objects.isNull(event) || !event.getStatus().getIsActive()) {
             JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
             jsonresponse.add("id", id);
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Event was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
@@ -346,10 +346,10 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         UserUtils   userutils = new UserUtils(entityManager, userTransaction);
         UserEntity  user2add  = userutils.findUser(memberId);
         EventEntity event     = super.find(eventId);
-        if (user2add.getStatus().getIsDeleted()) {
+        if (!user2add.getStatus().getIsActive()) {
             user2add = null;
         }
-        if (event.getStatus().getIsDeleted()) {
+        if (!event.getStatus().getIsActive()) {
             event = null;
         }
         if (Objects.isNull(event) || Objects.isNull(user2add)) {
@@ -404,10 +404,10 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         UserUtils   userutils    = new UserUtils(entityManager, userTransaction);
         UserEntity  user2remove  = userutils.findUser(memberId);
         EventEntity event        = super.find(eventId);
-        if (user2remove.getStatus().getIsDeleted()) {
+        if (!user2remove.getStatus().getIsActive()) {
             user2remove = null;
         }
-        if (event.getStatus().getIsDeleted()) {
+        if (!event.getStatus().getIsActive()) {
             event = null;
         }
         if (Objects.isNull(event) || Objects.isNull(user2remove)) {
@@ -582,10 +582,10 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         EventLocationUtils   locutils   = new EventLocationUtils(entityManager, userTransaction);
         EventLocationEntity  loc2remove = locutils.findLocation(locationId);
         EventEntity          event      = super.find(eventId);
-        if (loc2remove.getStatus().getIsDeleted()) {
+        if (!loc2remove.getStatus().getIsActive()) {
             loc2remove = null;
         }
-        if (event.getStatus().getIsDeleted()) {
+        if (!event.getStatus().getIsActive()) {
             event = null;
         }
         if (Objects.isNull(event) || Objects.isNull(loc2remove)) {

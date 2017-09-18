@@ -182,6 +182,23 @@ public class EventUtils {
     }
 
     /**
+     * Check if the given user is owner or member of an event.
+     * 
+     * @param user      User to check
+     * @param event     Event
+     * @return          Return true if the user is owner or member of given event, otherwise return false.
+     */
+    public boolean getUserIsEventOwnerOrMember(UserEntity user, EventEntity event) {
+        boolean owner = Objects.equals(user.getId(), event.getStatus().getIdOwner());
+        if (!owner && Objects.nonNull(event.getMembers())) {
+            if (event.getMembers().stream().anyMatch((u) -> (Objects.equals(u.getId(), user.getId())))) {
+                return true;
+            } 
+        }
+        return owner;
+    }
+
+    /**
      * Add an user to given event.
      * 
      * @param event       Event
@@ -321,12 +338,14 @@ public class EventUtils {
         JsonArrayBuilder members = Json.createArrayBuilder();
         if (Objects.nonNull(entity.getMembers())) {
             for (UserEntity m: entity.getMembers()) {
-                if (m.getStatus().getIsDeleted()) {
+                if (!m.getStatus().getIsActive()) {
                     continue;
                 }
                 JsonObjectBuilder member = Json.createObjectBuilder();
                 member.add("id", m.getId());
                 member.add("name", Objects.nonNull(m.getName()) ? m.getName() : "");
+                member.add("photoId", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getId(): 0);
+                member.add("photoETag", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getImageHash() : "");
                 members.add(member);
             }
         }
@@ -346,19 +365,26 @@ public class EventUtils {
         }
         json.add("locations", locations);
 
-        String     ownername;
+        String     ownername, ownerphotoetag;
+        Long       ownerphotoid;
         Long       ownerid   = entity.getStatus().getIdOwner();
         UserUtils  userutils = new UserUtils(entityManager, userTransaction);
         UserEntity owner     = userutils.findUser(ownerid);
-        if (Objects.isNull(owner) || owner.getStatus().getIsDeleted()) {
+        if (Objects.isNull(owner) || !owner.getStatus().getIsActive()) {
             ownerid = 0L;
             ownername = "";
+            ownerphotoid = 0L;
+            ownerphotoetag = "";
         }
         else {
             ownername = owner.getName();
+            ownerphotoid = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getId() : 0L;
+            ownerphotoetag = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getImageHash(): "";
         }
         json.add("ownerId", ownerid);
         json.add("ownerName", ownername);
+        json.add("ownerPhotoId", ownerphotoid);
+        json.add("ownerPhotoETag", ownerphotoetag);
 
         return json;
     }
@@ -423,10 +449,11 @@ public class EventUtils {
     }
 
     /**
-     * Export the given event if it is public of it belongs to given user.
-     * If the user has admin role then events is exported.
+     * Export the given event if it is public, or it belongs to given user, or
+     * the user is a member of event.
+     * If the user has admin role then the event is exported.
      * 
-     * @param event   Events used for filtering the user relevant events from
+     * @param event    Events used for filtering the user relevant events from
      * @param user     User     
      * @return         All user relevant events in JSON format
      */
@@ -434,10 +461,9 @@ public class EventUtils {
         UserUtils         userutils = new UserUtils(entityManager, userTransaction);
         boolean           privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonObjectBuilder json      = Json.createObjectBuilder();
-        boolean           doexp     = !event.getStatus().getIsDeleted() && 
-                                      (privuser || event.getIsPublic() ||
-                                       Objects.equals(user.getId(), event.getStatus().getIdOwner()) );
-        
+        boolean           doexp     = event.getStatus().getIsActive()&& 
+                                      (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event));
+
         if (!doexp) {
             return json;
         }
@@ -445,7 +471,7 @@ public class EventUtils {
     }
 
     /**
-     * Export all public events and those belonging to given user to JSON.
+     * Export all public events and those accociated (owner or member) to given user to JSON.
      * If the user has admin role then all events are exported.
      * 
      * @param events   Events used for filtering the user relevant events from
@@ -457,15 +483,12 @@ public class EventUtils {
         UserUtils        userutils = new UserUtils(entityManager, userTransaction);
         boolean          privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonArrayBuilder allevents = Json.createArrayBuilder();
-        for (EventEntity event: events) {
-            // events which are marked as deleted are excluded from export
-            if (event.getStatus().getIsDeleted()) {
-                continue;
-            }
-            if (privuser || event.getIsPublic() || Objects.equals(user.getId(), event.getStatus().getIdOwner())) {
+        events.stream()
+            .filter((event) -> (event.getStatus().getIsActive() && (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event))))
+            .forEach((event) -> {
                 allevents.add(exportEventJSON(event));
-            }
-        }
+            });
+
         return allevents;
     }
 }

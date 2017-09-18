@@ -103,7 +103,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         //! NOTE Acutally, this check should not be needed (see AuthFilter), but just to be on the safe side!
         if (Objects.isNull(sessionuser)) {
             Log.error(TAG, "*** Internal error, cannot create user, no user in session found!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
 
         UserUtils userutils = new UserUtils(entityManager, userTransaction);
@@ -146,7 +146,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_MODERATOR, AuthRole.VIRT_ROLE_USER})
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String edit(@PathParam("id") Long id, String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
@@ -154,7 +154,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         if (Objects.isNull(sessionuser)) {
             Log.error(TAG, "*** Cannot update user, no user in session found!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.",
-                                             ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+                                             ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
 
         UserUtils  userutils = new UserUtils(entityManager, userTransaction);
@@ -169,7 +169,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity user = super.find(id);
-        if (Objects.isNull(user) || user.getStatus().getIsDeleted()) {
+        if (Objects.isNull(user) || !user.getStatus().getIsActive()) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for updating.",
                                              ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -233,7 +233,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (Objects.isNull(sessionuser)) {
             Log.error(TAG, "*** Cannot delete user, no user in session found!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_NOT_UNAUTHORIZED, jsonresponse.build().toString());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
 
         if (sessionuser.getId().equals(id)) {
@@ -242,7 +242,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity user = super.find(id);
-        if (Objects.isNull(user) || user.getStatus().getIsDeleted()) {
+        if (Objects.isNull(user) || !user.getStatus().getIsActive()) {
             Log.warning(TAG, "*** User was attempting to delete non-existing user!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -278,7 +278,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         EntityUtils utils = new EntityUtils(entityManager, userTransaction);
         List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
         for (UserEntity hit: hits) {
-            if (hit.getStatus().getIsDeleted()) {
+            if (!hit.getStatus().getIsActive()) {
                 continue;
             }
             JsonObjectBuilder json = Json.createObjectBuilder();
@@ -304,7 +304,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
         UserEntity user = super.find(id);
-        if (Objects.isNull(user) || user.getStatus().getIsDeleted()) {
+        if (Objects.isNull(user) || !user.getStatus().getIsActive()) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "User was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 

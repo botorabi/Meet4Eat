@@ -76,7 +76,7 @@ public class ImagePool {
      * @throws Exception Throws an exception if the image is not valid.
      */
     public boolean releasePoolImage(ImageEntity image) throws Exception {
-        if (Objects.isNull(image) || image.getStatus().getIsDeleted()) {
+        if (Objects.isNull(image) || !image.getStatus().getIsActive()) {
             return false;
         }
         if (image.getStatus().getReferenceCount() < 1L) {
@@ -100,7 +100,7 @@ public class ImagePool {
         if (Objects.isNull(image1) || Objects.isNull(image2)) {
             return false;
         }
-        if (image1.getStatus().getIsDeleted() || image2.getStatus().getIsDeleted()) {
+        if (!image1.getStatus().getIsActive() || !image2.getStatus().getIsActive()) {
             return false;
         }
         return Objects.equals(image1.getImageHash(), image2.getImageHash());
@@ -114,7 +114,7 @@ public class ImagePool {
      * @return           Return true if image is valid (not marked as deleted) and has the given content hash, otherwise return false.
      */
     public boolean compareImageHash(ImageEntity image, String imageHash) {
-        if (Objects.isNull(image) || image.getStatus().getIsDeleted() || Objects.isNull(imageHash)) {
+        if (Objects.isNull(image) || !image.getStatus().getIsActive() || Objects.isNull(imageHash)) {
             return false;
         }
         return Objects.equals(image.getImageHash(), imageHash);
@@ -157,7 +157,7 @@ public class ImagePool {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
         List<ImageEntity> images = eutils.findEntityByField(ImageEntity.class, "imageHash", contentHash);
         for (ImageEntity img: images) {
-            if (!img.getStatus().getIsDeleted() && Objects.equals(img.getImageHash(), contentHash)) {
+            if (img.getStatus().getIsActive() && Objects.equals(img.getImageHash(), contentHash)) {
                 // update the image reference count
                 img.getStatus().increaseRefCount();
                 img.getStatus().setDateLastUpdate((new Date()).getTime());
