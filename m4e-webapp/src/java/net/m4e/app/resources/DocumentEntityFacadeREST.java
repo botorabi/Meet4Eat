@@ -30,15 +30,15 @@ import net.m4e.common.AbstractFacade;
 import net.m4e.common.ResponseResults;
 
 /**
- * REST services for Image entity operations
+ * REST services for Document entity operations
  * 
  * @author boto
  * Date of creation Sep 16, 2017
  */
 @Stateless
-@Path("/rest/images")
+@Path("/rest/docs")
 @TransactionManagement(TransactionManagementType.BEAN)
-public class ImageEntityFacadeREST extends AbstractFacade<ImageEntity> {
+public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
 
     /**
      * Entity manager needed for entity retrieval and modifications.
@@ -53,10 +53,10 @@ public class ImageEntityFacadeREST extends AbstractFacade<ImageEntity> {
     private UserTransaction userTransaction;
 
     /**
-     * Create the image entity REST facade.
+     * Create the Document entity REST facade.
      */
-    public ImageEntityFacadeREST() {
-        super(ImageEntity.class);
+    public DocumentEntityFacadeREST() {
+        super(DocumentEntity.class);
     }
 
     /**
@@ -70,9 +70,9 @@ public class ImageEntityFacadeREST extends AbstractFacade<ImageEntity> {
     }
 
     /**
-     * Get the image with given ID.
+     * Get the document with given ID.
      * 
-     * @param id         Image entity ID
+     * @param id         Document entity ID
      * @param request    HTTP request
      * @return           JSON response
      */
@@ -83,12 +83,12 @@ public class ImageEntityFacadeREST extends AbstractFacade<ImageEntity> {
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
-        ImageEntity image = super.find(id);
-        if (Objects.isNull(image) || !image.getStatus().getIsActive()) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Image was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        DocumentEntity document = super.find(id);
+        if (Objects.isNull(document) || !document.getStatus().getIsActive()) {
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
-        ImageUtils utils = new ImageUtils(entityManager, userTransaction);
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Image was found.", ResponseResults.CODE_OK, utils.exportImageJSON(image).build().toString());
+        DocumentUtils utils = new DocumentUtils(entityManager, userTransaction);
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Document was found.", ResponseResults.CODE_OK, utils.exportDocumentJSON(document).build().toString());
     }
 }

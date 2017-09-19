@@ -23,7 +23,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.xml.bind.annotation.XmlTransient;
 import net.m4e.app.auth.RoleEntity;
-import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
 
 
@@ -58,7 +58,7 @@ public class UserEntity implements Serializable {
      * Photo
      */
     @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
-    private ImageEntity photo;
+    private DocumentEntity photo;
 
     /**
      * Entity profile
@@ -138,18 +138,18 @@ public class UserEntity implements Serializable {
     /**
      * Get user photo.
      * 
-     * @return ImageEntity containing the photo
+     * @return DocumentEntity containing the photo
      */
-    public ImageEntity getPhoto() {
+    public DocumentEntity getPhoto() {
         return photo;
     }
 
     /**
      * Set the user photo.
      * 
-     * @param photo ImageEntity containing the photo
+     * @param photo DocumentEntity containing the photo
      */
-    public void setPhoto(ImageEntity photo) {
+    public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }
 

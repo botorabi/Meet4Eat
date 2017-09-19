@@ -24,8 +24,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.EntityUtils;
-import net.m4e.app.resources.ImageEntity;
-import net.m4e.app.resources.ImagePool;
+import net.m4e.app.resources.DocumentEntity;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.StringUtils;
 import net.m4e.system.core.AppInfoEntity;
@@ -107,7 +107,7 @@ public class EventUtils {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
 
         // photo and members are shared objects, so remove them before event creation
-        ImageEntity photo = event.getPhoto();
+        DocumentEntity photo = event.getPhoto();
         event.setPhoto(null);
         Collection<UserEntity> members = event.getMembers();
         event.setMembers(null);
@@ -168,14 +168,15 @@ public class EventUtils {
      * @param image         Image to set to given event
      * @throws Exception    Throws exception if any problem occurred.
      */
-    void updateEventImage(EventEntity event, ImageEntity image) throws Exception {
-        ImagePool imagepool = new ImagePool(entityManager,userTransaction);
-        ImageEntity img = imagepool.getOrCreatePoolImage(image.getImageHash());
-        if (!imagepool.compareImageHash(event.getPhoto(), img.getImageHash())) {
-            imagepool.releasePoolImage(event.getPhoto());
+    void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
+        DocumentPool imagepool = new DocumentPool(entityManager,userTransaction);
+        DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
+        if (!imagepool.compareETag(event.getPhoto(), img.getETag())) {
+            imagepool.releasePoolDocument(event.getPhoto());
         }
         img.setContent(image.getContent());
-        img.updateImageHash();
+        img.updateETag();
+        img.setType(DocumentEntity.TYPE_IMAGE);
         img.setEncoding(image.getEncoding());
         img.setResourceURL("/Event/Image");
         event.setPhoto(img);
@@ -330,7 +331,7 @@ public class EventUtils {
         json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
         json.add("public", entity.getIsPublic());
         json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getImageHash(): "");
+        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getETag(): "");
         json.add("eventStart", Objects.nonNull(entity.getEventStart()) ? entity.getEventStart(): 0);
         json.add("repeatWeekDays", (Objects.nonNull(entity.getRepeatWeekDays()) ? entity.getRepeatWeekDays(): 0));
         json.add("repeatDayTime", (Objects.nonNull(entity.getRepeatDayTime()) ? entity.getRepeatDayTime(): 0));
@@ -345,7 +346,7 @@ public class EventUtils {
                 member.add("id", m.getId());
                 member.add("name", Objects.nonNull(m.getName()) ? m.getName() : "");
                 member.add("photoId", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getId(): 0);
-                member.add("photoETag", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getImageHash() : "");
+                member.add("photoETag", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getETag() : "");
                 members.add(member);
             }
         }
@@ -359,7 +360,7 @@ public class EventUtils {
                 loc.add("name", Objects.nonNull(l.getName()) ? l.getName() : "");
                 loc.add("description", Objects.nonNull(l.getDescription()) ? l.getDescription() : "");
                 loc.add("photoId", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getId(): 0);
-                loc.add("photoETag", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getImageHash(): "");
+                loc.add("photoETag", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getETag(): "");
                 locations.add( loc );
             }
         }
@@ -379,7 +380,7 @@ public class EventUtils {
         else {
             ownername = owner.getName();
             ownerphotoid = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getId() : 0L;
-            ownerphotoetag = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getImageHash(): "";
+            ownerphotoetag = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getETag(): "";
         }
         json.add("ownerId", ownerid);
         json.add("ownerName", ownername);
@@ -437,11 +438,12 @@ public class EventUtils {
         entity.setRepeatDayTime(repeatdaytime);
 
         if (Objects.nonNull(photo)) {
-            ImageEntity image = new ImageEntity();
+            DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
-            image.setEncoding(ImageEntity.ENCODING_BASE64);
+            image.setEncoding(DocumentEntity.ENCODING_BASE64);
             image.setContent(photo.getBytes());
-            image.updateImageHash();
+            image.updateETag();
+            image.setType(DocumentEntity.TYPE_IMAGE);
             entity.setPhoto(image);
         }
 

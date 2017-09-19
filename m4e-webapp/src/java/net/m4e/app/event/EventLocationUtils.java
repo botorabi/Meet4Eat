@@ -19,8 +19,8 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
-import net.m4e.app.resources.ImageEntity;
-import net.m4e.app.resources.ImagePool;
+import net.m4e.app.resources.DocumentEntity;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.EntityUtils;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.StringUtils;
@@ -132,14 +132,15 @@ public class EventLocationUtils {
      * @param image         Image to set to given event
      * @throws Exception    Throws exception if any problem occurred.
      */
-    void updateEventLocationImage(EventLocationEntity location, ImageEntity image) throws Exception {
-        ImagePool imagepool = new ImagePool(entityManager,userTransaction);
-        ImageEntity img = imagepool.getOrCreatePoolImage(image.getImageHash());
-        if (!imagepool.compareImageHash(location.getPhoto(), img.getImageHash())) {
-            imagepool.releasePoolImage(location.getPhoto());
+    void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) throws Exception {
+        DocumentPool imagepool = new DocumentPool(entityManager,userTransaction);
+        DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
+        if (!imagepool.compareETag(location.getPhoto(), img.getETag())) {
+            imagepool.releasePoolDocument(location.getPhoto());
         }
         img.setContent(image.getContent());
-        img.updateImageHash();
+        img.updateETag();
+        img.setType(DocumentEntity.TYPE_IMAGE);
         img.setEncoding(image.getEncoding());
         img.setResourceURL("/EventLoction/Image");
         location.setPhoto(img);
@@ -230,11 +231,12 @@ public class EventLocationUtils {
         }
 
         if (Objects.nonNull(photo)) {
-            ImageEntity image = new ImageEntity();
+            DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
-            image.setEncoding(ImageEntity.ENCODING_BASE64);
+            image.setEncoding(DocumentEntity.ENCODING_BASE64);
             image.setContent(photo.getBytes());
-            image.updateImageHash();
+            image.updateETag();
+            image.setType(DocumentEntity.TYPE_IMAGE);
             entity.setPhoto(image);
         }
 
@@ -253,7 +255,7 @@ public class EventLocationUtils {
         json.add("name", Objects.nonNull(entity.getName()) ? entity.getName() : "");
         json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
         json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getImageHash(): "");
+        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getETag() : "");
         return json;
     }
 }

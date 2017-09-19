@@ -199,7 +199,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
                 userutils.updateUserImage(user, reqentity.getPhoto());
             }
             catch (Exception ex) {
-                Log.warning(TAG, "*** Event image could not be updated, reason: " + ex.getLocalizedMessage());
+                Log.warning(TAG, "*** User image could not be updated, reason: " + ex.getLocalizedMessage());
             }
         }
 
@@ -215,7 +215,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     }
 
     /**
-     * Delete an user with given ID. The event will be marked as deleted, so it can be
+     * Delete an user with given ID. The user will be marked as deleted, so it can be
      * purged later.
      * 
      * @param id        User ID

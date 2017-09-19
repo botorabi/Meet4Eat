@@ -15,7 +15,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
 
 /**
@@ -59,7 +59,7 @@ public class EventLocationEntity implements Serializable {
      * Photo
      */
     @OneToOne(optional=true, cascade = CascadeType.ALL)
-    private ImageEntity photo;
+    private DocumentEntity photo;
 
     /**
      * Create an event location instance.
@@ -143,18 +143,18 @@ public class EventLocationEntity implements Serializable {
     /**
      * Get event location photo.
      * 
-     * @return ImageEntity containing the photo
+     * @return DocumentEntity containing the photo
      */
-    public ImageEntity getPhoto() {
+    public DocumentEntity getPhoto() {
         return photo;
     }
 
     /**
      * Set event location photo.
      * 
-     * @param photo ImageEntity containing the photo
+     * @param photo DocumentEntity containing the photo
      */
-    public void setPhoto(ImageEntity photo) {
+    public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }
 
