@@ -54,6 +54,7 @@ public class DocumentUtils {
         json.add("name", Objects.nonNull(document.getName()) ? document.getName() : "");
         json.add("type", Objects.nonNull(document.getType()) ? document.getType() : "");
         json.add("content", Objects.nonNull(document.getContent()) ? new String(document.getContent()) : "");
+        json.add("eTag", Objects.nonNull(document.getETag()) ? document.getETag() : "");
         json.add("encoding", Objects.nonNull(document.getEncoding()) ? document.getEncoding() : "");
         return json;
     }
