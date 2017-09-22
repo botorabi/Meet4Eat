@@ -7,13 +7,14 @@
  */
 
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include <core/log.h>
+#include <data/appsettings.h>
 #include "dialogsettings.h"
 #include "widgeteventlist.h"
 #include "widgetevent.h"
-#include <core/log.h>
-#include <data/appsettings.h>
-#include "ui_dlgabout.h"
+#include "basedialog.h"
+#include "ui_mainwindow.h"
+#include "ui_widgetabout.h"
 #include <QLayout>
 
 
@@ -107,6 +108,15 @@ void MainWindow::onBtnCloseClicked()
     QApplication::quit();
 }
 
+void MainWindow::mouseDoubleClickEvent( QMouseEvent* p_event )
+{
+    // drag the window only by the means of head-bar
+    if ( !_p_ui->widgetHead->geometry().contains( p_event->pos() ) )
+        return;
+
+    onBtnMaximizeClicked();
+}
+
 void MainWindow::mousePressEvent( QMouseEvent* p_event )
 {
     // drag the window only by the means of head-bar
@@ -135,6 +145,18 @@ void MainWindow::onBtnMinimizeClicked()
     setWindowState( Qt::WindowMinimized );
 }
 
+void MainWindow::onBtnMaximizeClicked()
+{
+    if ( windowState() & Qt::WindowMaximized )
+    {
+        setWindowState( windowState() & ~Qt::WindowMaximized );
+    }
+    else
+    {
+        setWindowState( Qt::WindowMaximized );
+    }
+}
+
 void MainWindow::onBtnEventsClicked()
 {
     clearClientWidget();
@@ -151,15 +173,21 @@ void MainWindow::onBtnSettingsClicked()
 
 void MainWindow::onBtnAboutClicked()
 {
-    Ui::DlgAbout about;
-    QDialog* p_dlg = new QDialog( this );
-    about.setupUi( p_dlg );
+    Ui::WidgetAbout about;
+    BaseDialog* p_dlg = new BaseDialog( this );
+    p_dlg->decorate( about );
+
     QString text = about.labelText->text();
     text.replace( "@APP_NAME@", M4E_APP_NAME );
     text.replace( "@APP_VERSION@", M4E_APP_VERSION );
     text.replace( "@COPYRIGHT@", M4E_APP_COPYRIGHT );
     text.replace( "@URL@", M4E_APP_URL );
     about.labelText->setText( text );
+
+    p_dlg->setTitle( "About " + QString( M4E_APP_NAME ) );
+    QString btnok( "Ok" );
+    p_dlg->setupButtons( &btnok, nullptr, nullptr );
+    p_dlg->setResizable( false );
     p_dlg->exec();
     delete p_dlg;
 }

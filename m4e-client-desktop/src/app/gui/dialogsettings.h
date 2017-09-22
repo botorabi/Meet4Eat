@@ -11,11 +11,11 @@
 
 #include <configuration.h>
 #include <user/userauth.h>
-#include <QDialog>
+#include <gui/basedialog.h>
 
 
 namespace Ui {
-  class DlgSettings;
+  class WidgetSettings;
 }
 
 namespace m4e
@@ -29,14 +29,22 @@ namespace ui
  * @author boto
  * @date Sep 12, 2017
  */
-class DialogSettings : public QDialog
+class DialogSettings : public BaseDialog
 {
     Q_OBJECT
 
     public:
 
+        /**
+         * @brief Create a settings dialog instance.
+         *
+         * @param p_parent          Parent widget
+         */
         explicit                    DialogSettings( QWidget* p_parent );
 
+        /**
+         * @brief Destroy the instance.
+         */
         virtual                     ~DialogSettings();
 
         void                        accept();
@@ -59,7 +67,7 @@ class DialogSettings : public QDialog
 
         user::UserAuthentication*   getOrCreateUserAuth();
 
-        Ui::DlgSettings*            _p_ui = nullptr;
+        Ui::WidgetSettings*         _p_ui = nullptr;
 
         user::UserAuthentication*   _p_userAuth = nullptr;
 };

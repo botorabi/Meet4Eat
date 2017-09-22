@@ -51,7 +51,9 @@ SOURCES += \
     ../../src/app/webapp/resultshandler/resp-authentication.cpp \
     ../../src/app/webapp/resultshandler/resp-document.cpp \
     ../../src/app/webapp/resultshandler/resp-event.cpp \
-    ../../src/app/webapp/resultshandler/resp-user.cpp
+    ../../src/app/webapp/resultshandler/resp-user.cpp \
+    ../../src/app/gui/basedialog.cpp \
+    ../../src/app/gui/dialoglocationdetails.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -88,15 +90,19 @@ HEADERS += \
     ../../src/app/webapp/rest-authentication.h \
     ../../src/app/webapp/rest-document.h \
     ../../src/app/webapp/rest-event.h \
-    ../../src/app/webapp/rest-user.h
+    ../../src/app/webapp/rest-user.h \
+    ../../src/app/gui/basedialog.h \
+    ../../src/app/gui/dialoglocationdetails.h
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
     ../../src/app/gui/forms/widgetevent.ui \
-    ../../src/app/gui/forms/dlgsettings.ui \
     ../../src/app/gui/forms/widgetlocation.ui \
     ../../src/app/gui/forms/widgeteventitem.ui \
-    ../../src/app/gui/forms/dlgabout.ui
+    ../../src/app/gui/forms/basedialog.ui \
+    ../../src/app/gui/forms/widgetabout.ui \
+    ../../src/app/gui/forms/widgetsettings.ui \
+    ../../src/app/gui/forms/widgetlocationdetails.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

@@ -79,6 +79,8 @@ class WidgetLocation : public QWidget
 
         void                        onBtnSettingsClicked();
 
+        void                        onBtnInfoClicked();
+
         void                        onBtnVoteUpClicked();
 
         void                        onBtnVoteDownClicked();
@@ -92,7 +94,7 @@ class WidgetLocation : public QWidget
 
     protected:
 
-        void                        setupImage( m4e::data::ModelDocumentPtr image );
+        bool                        eventFilter( QObject* p_obj, QEvent* p_event );
 
         m4e::data::WebApp*          _p_webApp = nullptr;
 

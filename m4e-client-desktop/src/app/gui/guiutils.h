@@ -10,7 +10,9 @@
 #define GUIUTILS_H
 
 #include <configuration.h>
+#include <data/modeldocument.h>
 #include <QPixmap>
+
 
 namespace m4e
 {
@@ -29,10 +31,20 @@ class GuiUtils
 
         /**
          * @brief Given an input image, create a round icon out of it.
+         *
          * @param input Input image
          * @return      Round icon
          */
         static QPixmap      createRoundIcon( const QPixmap& input );
+
+        /**
+         * @brief createRoundIcon
+         * @brief Given an image document, create a round icon out of it.
+         *
+         * @param input Input image document
+         * @return      Round icon
+         */
+        static QPixmap      createRoundIcon( data::ModelDocumentPtr input );
 };
 
 } // namespace ui

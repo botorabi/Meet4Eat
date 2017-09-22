@@ -34,5 +34,20 @@ QPixmap GuiUtils::createRoundIcon( const QPixmap& input )
     return target;
 }
 
+QPixmap GuiUtils::createRoundIcon( data::ModelDocumentPtr input )
+{
+    QString    format;
+    QByteArray data;
+    if ( input->extractImageData( data, format ) )
+    {
+        QPixmap img;
+        if ( img.loadFromData( data, format.toStdString().c_str() ) )
+        {
+            return createRoundIcon( img );
+        }
+    }
+    return QPixmap();
+}
+
 } // namespace ui
 } // namespace m4e

@@ -44,6 +44,6 @@
 #define M4E_LOCAL_CACHE_DIR          "cache"
 
 /* Cache document expiration in days */
-#define M4E_LOCAL_CAHCE_EXPIRE_DAYS  14
+#define M4E_LOCAL_CAHCE_EXPIRE_DAYS  60
 
 #endif // CONFIGURATION_H

@@ -6,19 +6,47 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>250</width>
-    <height>165</height>
+    <width>300</width>
+    <height>200</height>
    </rect>
   </property>
-  <property name="cursor">
-   <cursorShape>PointingHandCursor</cursorShape>
+  <property name="minimumSize">
+   <size>
+    <width>300</width>
+    <height>150</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>300</width>
+    <height>200</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Event</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#WidgetLocation {
+   <string notr="true">QWidget {
+  color: white;
+}
+QGroupBox {
+  border-radius: 0px;
+  border: 3px solid rgb(131, 147, 167);
+  background-color: rgb(80,112,125);
+}
+QLineEdit {
+  background-color: rgb(101,117, 137);  
+}
+QPushButton {
   background: transparent;
+}
+QPushButton:hover {
+  background-color: white;
+  border: 1px solid rgb(115, 210, 22);
+  border-radius:  4px;
+}
+QPushButton[enabled=&quot;false&quot;] {
+  background-color: rgb(31,47,67);
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -40,17 +68,13 @@
    <item>
     <widget class="QGroupBox" name="groupBoxMain">
      <property name="styleSheet">
-      <string notr="true">#groupBoxMain {
-  border-radius: 0px;
-  border: 3px solid rgb(131, 147, 167);
-  background-color: rgb(80,112,125);
-}</string>
+      <string notr="true"/>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0">
           <item>
            <widget class="QLabel" name="labelHead">
             <property name="minimumSize">
@@ -73,8 +97,8 @@
               <bold>true</bold>
              </font>
             </property>
-            <property name="styleSheet">
-             <string notr="true">color: white;</string>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
             </property>
             <property name="text">
              <string>Location Name</string>
@@ -108,49 +132,51 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
-          <item>
-           <widget class="QLabel" name="labelDescription">
-            <property name="font">
-             <font>
-              <family>Roboto</family>
-              <pointsize>9</pointsize>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">color: white;</string>
-            </property>
-            <property name="text">
-             <string>Description</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelPhoto">
-            <property name="minimumSize">
-             <size>
-              <width>64</width>
-              <height>64</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>64</width>
-              <height>64</height>
-             </size>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QWidget" name="widgetContent" native="true">
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
+           <item>
+            <widget class="QLabel" name="labelDescription">
+             <property name="font">
+              <font>
+               <family>Roboto</family>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Description</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelPhoto">
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="labelLineFooter">
@@ -180,6 +206,9 @@
           </property>
           <item>
            <widget class="QWidget" name="widgetVotes" native="true">
+            <property name="cursor">
+             <cursorShape>WhatsThisCursor</cursorShape>
+            </property>
             <property name="toolTip">
              <string>No votes</string>
             </property>
@@ -239,19 +268,6 @@
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
            <widget class="QPushButton" name="pushButtonVoteDown">
             <property name="minimumSize">
              <size>
@@ -265,6 +281,9 @@
               <height>20</height>
              </size>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
@@ -273,13 +292,7 @@
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-  background: transparent;
   border-image: url(:/icon-thumbdown.png);
-}
-QPushButton:hover {
-  background-color: white;
-  border: 1px solid rgb(115, 210, 22);
-  border-radius:  4px;
 }</string>
             </property>
            </widget>
@@ -298,6 +311,9 @@ QPushButton:hover {
               <height>20</height>
              </size>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
@@ -306,28 +322,19 @@ QPushButton:hover {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-  background: transparent;
   border-image: url(:/icon-thumbup.png);
-}
-QPushButton:hover {
-  background-color: white;
-  border: 1px solid rgb(115, 210, 22);
-  border-radius:  4px;
 }</string>
             </property>
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer_2">
+           <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>12</width>
+              <width>40</width>
               <height>20</height>
              </size>
             </property>
@@ -347,6 +354,9 @@ QPushButton:hover {
               <height>20</height>
              </size>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
@@ -355,14 +365,9 @@ QPushButton:hover {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-  background: transparent;
   border-image: url(:/icon-info.png);
 }
-QPushButton:hover {
-  background-color: white;
-  border: 1px solid rgb(115, 210, 22);
-  border-radius:  4px;
-}</string>
+</string>
             </property>
            </widget>
           </item>
@@ -380,6 +385,9 @@ QPushButton:hover {
               <height>20</height>
              </size>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
@@ -388,14 +396,9 @@ QPushButton:hover {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-  background: transparent;
   border-image: url(:/icon-settings.png);
 }
-QPushButton:hover {
-  background-color: white;
-  border: 1px solid rgb(115, 210, 22);
-  border-radius:  4px;
-}</string>
+</string>
             </property>
            </widget>
           </item>
@@ -417,8 +420,8 @@ QPushButton:hover {
    <slot>onBtnVoteDownClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>113</x>
-     <y>135</y>
+     <x>103</x>
+     <y>173</y>
     </hint>
     <hint type="destinationlabel">
      <x>245</x>
@@ -433,8 +436,8 @@ QPushButton:hover {
    <slot>onBtnVoteUpClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>145</x>
-     <y>131</y>
+     <x>131</x>
+     <y>173</y>
     </hint>
     <hint type="destinationlabel">
      <x>249</x>
@@ -449,12 +452,28 @@ QPushButton:hover {
    <slot>onBtnSettingsClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>223</x>
-     <y>134</y>
+     <x>279</x>
+     <y>173</y>
     </hint>
     <hint type="destinationlabel">
      <x>250</x>
      <y>86</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonInfo</sender>
+   <signal>clicked()</signal>
+   <receiver>WidgetLocation</receiver>
+   <slot>onBtnInfoClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>241</x>
+     <y>163</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>212</x>
+     <y>196</y>
     </hint>
    </hints>
   </connection>
@@ -463,5 +482,6 @@ QPushButton:hover {
   <slot>onBtnVoteDownClicked()</slot>
   <slot>onBtnVoteUpClicked()</slot>
   <slot>onBtnSettingsClicked()</slot>
+  <slot>onBtnInfoClicked()</slot>
  </slots>
 </ui>

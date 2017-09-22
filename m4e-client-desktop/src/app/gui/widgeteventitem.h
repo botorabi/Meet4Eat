@@ -92,8 +92,6 @@ class WidgetEventItem : public QWidget
 
         bool                        eventFilter( QObject* p_obj, QEvent* p_event );
 
-        void                        setupImage( m4e::data::ModelDocumentPtr image );
-
         m4e::data::WebApp*          _p_webApp = nullptr;
 
         Ui::WidgetEventItem*        _p_ui     = nullptr;

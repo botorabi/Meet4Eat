@@ -10,8 +10,10 @@
 #include <core/log.h>
 #include <data/modeluser.h>
 #include "guiutils.h"
-#include <QGraphicsDropShadowEffect>
+#include "basedialog.h"
+#include "dialoglocationdetails.h"
 #include <ui_widgetlocation.h>
+#include <QGraphicsDropShadowEffect>
 
 
 namespace m4e
@@ -53,12 +55,25 @@ void WidgetLocation::setupUI( data::ModelLocationPtr location )
         connect( _p_webApp, SIGNAL( onDocumentReady( m4e::data::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::data::ModelDocumentPtr ) ) );
         _p_webApp->requestDocument( photoid, _location->getPhotoETag() );
     }
+
+    // we need to handle mouse clicks manually
+    _p_ui->labelHead->installEventFilter( this );
+    _p_ui->labelDescription->installEventFilter( this );
+    _p_ui->labelPhoto->installEventFilter( this );
 }
 
 void WidgetLocation::onBtnSettingsClicked()
 {
     //! TODO
     log_verbose << TAG << "onBtnSettingsClicked TODO" << std::endl;
+}
+
+void WidgetLocation::onBtnInfoClicked()
+{
+    DialogLocationDetails* p_dlg = new DialogLocationDetails( _p_webApp, this );
+    p_dlg->setupUI( _location );
+    p_dlg->exec();
+    delete p_dlg;
 }
 
 void WidgetLocation::onBtnVoteUpClicked()
@@ -123,23 +138,19 @@ void WidgetLocation::onDocumentReady( m4e::data::ModelDocumentPtr document )
     QString photoid = _location->getPhotoId();
     if ( !photoid.isEmpty() && document.valid() && ( document->getId() == photoid ) )
     {
-         setupImage( document );
+        _p_ui->labelPhoto->setPixmap( GuiUtils::createRoundIcon( document ) );
     }
 }
 
-void WidgetLocation::setupImage( data::ModelDocumentPtr image )
+bool WidgetLocation::eventFilter( QObject* p_obj, QEvent* p_event )
 {
-    QString    format;
-    QByteArray data;
-    if ( image->extractImageData( data, format ) )
+    if ( p_event->type() == QEvent::MouseButtonPress )
     {
-        //QImage img;
-        QPixmap img;
-        if ( img.loadFromData( data, format.toStdString().c_str() ) )
-        {
-            _p_ui->labelPhoto->setPixmap( GuiUtils::createRoundIcon( img ) );
-        }
+        onBtnInfoClicked();
+        return true;
     }
+
+    return QObject::eventFilter( p_obj, p_event );
 }
 
 } // namespace ui

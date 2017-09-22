@@ -8,7 +8,7 @@
 
 #include "dialogsettings.h"
 #include <core/log.h>
-#include <ui_dlgsettings.h>
+#include <ui_widgetsettings.h>
 #include <data/appsettings.h>
 #include <webapp/rest-authentication.h>
 #include <QMessageBox>
@@ -20,19 +20,30 @@ namespace ui
 {
 
 DialogSettings::DialogSettings( QWidget* p_parent ) :
- QDialog( p_parent )
+ BaseDialog( p_parent )
 {
-    _p_ui = new Ui::DlgSettings();
-    _p_ui->setupUi( this );
+    _p_ui = new Ui::WidgetSettings();
     setupUI();
 }
 
 DialogSettings::~DialogSettings()
 {
+    if ( _p_ui )
+        delete _p_ui;
 }
 
 void DialogSettings::setupUI()
 {
+    decorate( *_p_ui );
+    setTitle( "Settings" );
+    QString btnok( "Ok" );
+    QString btncancel( "Cancel" );
+    setupButtons( &btnok, &btncancel, nullptr );
+    setResizable( false );
+
+    connect( _p_ui->pushButtonSignOut, SIGNAL( clicked() ), this, SLOT( onBtnSignOutClicked() ) );
+    connect( _p_ui->pushButtonSignIn, SIGNAL( clicked() ), this, SLOT( onBtnSignInClicked() ) );
+
     QString server   = m4e::data::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
     QString login    = m4e::data::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
     QString passwd   = m4e::data::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );

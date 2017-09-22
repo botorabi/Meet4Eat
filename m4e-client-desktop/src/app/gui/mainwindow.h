@@ -63,6 +63,8 @@ class MainWindow : public QMainWindow
 
         void                        onBtnMinimizeClicked();
 
+        void                        onBtnMaximizeClicked();
+
         void                        onBtnEventsClicked();
 
         void                        onBtnSettingsClicked();
@@ -95,6 +97,8 @@ class MainWindow : public QMainWindow
         void                        storeWindowGeometry();
 
         void                        restoreWindowGeometry();
+
+        void                        mouseDoubleClickEvent( QMouseEvent* p_event );
 
         void                        mousePressEvent( QMouseEvent* p_event );
 

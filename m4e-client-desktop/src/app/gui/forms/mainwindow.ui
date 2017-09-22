@@ -149,8 +149,14 @@
                    <widget class="QPushButton" name="pushButtonMimimize">
                     <property name="minimumSize">
                      <size>
-                      <width>20</width>
-                      <height>20</height>
+                      <width>26</width>
+                      <height>26</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>26</width>
+                      <height>26</height>
                      </size>
                     </property>
                     <property name="focusPolicy">
@@ -158,23 +164,44 @@
                     </property>
                     <property name="styleSheet">
                      <string notr="true">QPushButton {
-  background-color: rgb(52, 101, 164);
-  color: white;
-  border-radius: 10px;
-  border: 0;
+  padding: 0;
+  border: 1px solid rgb(131,147, 167);
+  border-image: url(:/icon-minimize.png);
 }
 QPushButton:hover {
-  background-color: #379dec;
-}
-QPushButton:pressed {
-  background-color: #57758c;
-}
-QPushButton:disabled {
-   background-color: #8b98a2;
+  border: 5px solid white;
+  border-radius:  4px;
 }</string>
                     </property>
-                    <property name="text">
-                     <string>-</string>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="pushButtonMaximize">
+                    <property name="minimumSize">
+                     <size>
+                      <width>26</width>
+                      <height>26</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>26</width>
+                      <height>26</height>
+                     </size>
+                    </property>
+                    <property name="focusPolicy">
+                     <enum>Qt::NoFocus</enum>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton {
+  padding: 0;
+  border: 1px solid rgb(131,147, 167);
+  border-image: url(:/icon-maximize.png);
+}
+QPushButton:hover {
+  border: 5px solid white;
+  border-radius:  4px;
+}</string>
                     </property>
                    </widget>
                   </item>
@@ -182,8 +209,14 @@ QPushButton:disabled {
                    <widget class="QPushButton" name="pushButtonClose">
                     <property name="minimumSize">
                      <size>
-                      <width>20</width>
-                      <height>20</height>
+                      <width>26</width>
+                      <height>26</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>26</width>
+                      <height>26</height>
                      </size>
                     </property>
                     <property name="focusPolicy">
@@ -191,23 +224,17 @@ QPushButton:disabled {
                     </property>
                     <property name="styleSheet">
                      <string notr="true">QPushButton {
-  background-color: rgb(52, 101, 164);
-  color: white;
-  border-radius: 10px;
-  border: 0;
+  padding: 0;
+  border: 1px solid rgb(131,147, 167);
+  border-image: url(:/icon-close.png);
 }
 QPushButton:hover {
-  background-color: #379dec;
-}
-QPushButton:pressed {
-  background-color: #57758c;
-}
-QPushButton:disabled {
-   background-color: #8b98a2;
+  border: 5px solid white;
+  border-radius:  4px;
 }</string>
                     </property>
-                    <property name="text">
-                     <string>X</string>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -625,8 +652,8 @@ QPushButton:hover {
    <slot>onBtnMinimizeClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>764</x>
-     <y>25</y>
+     <x>729</x>
+     <y>37</y>
     </hint>
     <hint type="destinationlabel">
      <x>463</x>
@@ -657,8 +684,8 @@ QPushButton:hover {
    <slot>onBtnSettingsClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>34</x>
-     <y>158</y>
+     <x>42</x>
+     <y>186</y>
     </hint>
     <hint type="destinationlabel">
      <x>13</x>
@@ -673,12 +700,28 @@ QPushButton:hover {
    <slot>onBtnAboutClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>25</x>
-     <y>200</y>
+     <x>40</x>
+     <y>236</y>
     </hint>
     <hint type="destinationlabel">
      <x>1</x>
      <y>222</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonMaximize</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onBtnMaximizeClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>754</x>
+     <y>36</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>800</x>
+     <y>114</y>
     </hint>
    </hints>
   </connection>
@@ -691,5 +734,6 @@ QPushButton:hover {
   <slot>onBtnEventMgrClicked()</slot>
   <slot>onBtnSettingsClicked()</slot>
   <slot>onBtnAboutClicked()</slot>
+  <slot>onBtnMaximizeClicked()</slot>
  </slots>
 </ui>

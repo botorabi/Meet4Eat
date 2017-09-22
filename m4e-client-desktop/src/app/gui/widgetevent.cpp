@@ -71,10 +71,7 @@ void WidgetEvent::setupUI()
     _p_clientArea = _p_ui->listWidget;
     _p_labelFooter = _p_ui->labelFoot;
 
-    _p_clientArea->setResizeMode( QListView::Adjust );
-    //_p_clientArea->setGridSize( QSize(96, 96 ) );
-    //_p_clientArea->setIconSize( QSize( 64, 64 ) );
-
+    _p_clientArea->setUniformItemSizes( true );
     _p_clientArea->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
     _p_clientArea->setAutoScroll( true );
     _p_clientArea->setViewMode( QListView::IconMode );
@@ -121,7 +118,7 @@ void WidgetEvent::addLocation( data::ModelLocationPtr location )
     p_widget->setupUI( location );
 
     QListWidgetItem* p_item = new QListWidgetItem( _p_clientArea );
-    p_item->setSizeHint( p_widget->sizeHint() );
+    p_item->setSizeHint( p_widget->size() );
 
     _p_clientArea->setItemWidget( p_item, p_widget );
     p_item->setData( Qt::UserRole, location->getId() );

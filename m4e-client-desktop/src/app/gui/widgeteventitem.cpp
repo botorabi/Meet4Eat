@@ -95,7 +95,7 @@ void WidgetEventItem::onDocumentReady( m4e::data::ModelDocumentPtr document )
     QString photoid = _event->getPhotoId();
     if ( !photoid.isEmpty() && document.valid() && ( document->getId() == photoid ) )
     {
-         setupImage( document );
+        _p_ui->labelPhoto->setPixmap( GuiUtils::createRoundIcon( document ) );
     }
 }
 
@@ -108,21 +108,6 @@ bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
     }
 
     return QObject::eventFilter( p_obj, p_event );
-}
-
-void WidgetEventItem::setupImage( data::ModelDocumentPtr image )
-{
-    QString    format;
-    QByteArray data;
-    if ( image->extractImageData( data, format ) )
-    {
-        //QImage img;
-        QPixmap img;
-        if ( img.loadFromData( data, format.toStdString().c_str() ) )
-        {
-            _p_ui->labelPhoto->setPixmap( GuiUtils::createRoundIcon( img ) );
-        }
-    }
 }
 
 } // namespace ui
