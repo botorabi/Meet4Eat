@@ -22,6 +22,10 @@
   <property name="windowTitle">
    <string>About Meet4Eat</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../resources/application.qrc">
+    <normaloff>:/icon.ico</normaloff>:/icon.ico</iconset>
+  </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
   color: white;
@@ -230,7 +234,9 @@ QPushButton:hover {
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources/application.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>pushButtonClose</sender>

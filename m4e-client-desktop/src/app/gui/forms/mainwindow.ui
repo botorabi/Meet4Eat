@@ -6,12 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>500</height>
+    <width>993</width>
+    <height>719</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Meat4Eat</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../resources/application.qrc">
+    <normaloff>:/icon.ico</normaloff>:/icon.ico</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="styleSheet">
@@ -102,8 +106,14 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>160</width>
-                  <height>60</height>
+                  <width>90</width>
+                  <height>90</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>90</width>
+                  <height>90</height>
                  </size>
                 </property>
                 <property name="font">
@@ -111,14 +121,58 @@
                   <pointsize>15</pointsize>
                  </font>
                 </property>
-                <property name="styleSheet">
-                 <string notr="true">color:white;</string>
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
                 </property>
-                <property name="text">
-                 <string>Logo</string>
+                <property name="toolTip">
+                 <string>Click to Visit the Meet4Eat Site</string>
+                </property>
+                <property name="pixmap">
+                 <pixmap resource="../resources/application.qrc">:/logo.png</pixmap>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="labelLogoText">
+                <property name="minimumSize">
+                 <size>
+                  <width>120</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Roboto Black</family>
+                  <pointsize>12</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="toolTip">
+                 <string>Click to Visit the Meet4Eat Site</string>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QLabel#labelLogoText {
+  color: rgb(231, 247, 167);
+}</string>
+                </property>
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;meet your friends&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;and have a nice time&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+                <property name="margin">
+                 <number>10</number>
                 </property>
                </widget>
               </item>
@@ -364,7 +418,7 @@ QPushButton:hover {
                      <enum>Qt::NoFocus</enum>
                     </property>
                     <property name="toolTip">
-                     <string>My Groups</string>
+                     <string>My events</string>
                     </property>
                     <property name="styleSheet">
                      <string notr="true">QPushButton {
@@ -627,7 +681,9 @@ QPushButton:hover {
   <tabstop>pushButtonClose</tabstop>
   <tabstop>pushButtonMimimize</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../resources/application.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>pushButtonClose</sender>

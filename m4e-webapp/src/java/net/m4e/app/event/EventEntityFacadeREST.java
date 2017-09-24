@@ -10,8 +10,6 @@ package net.m4e.app.event;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -35,8 +33,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfoUtils;
@@ -74,20 +70,20 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     private UserTransaction userTransaction;
 
     /**
+     * Event utilities
+     */
+    EventUtils eventUtils;
+
+    /**
+     * User utilities
+     */
+    UserUtils userUtils;
+
+    /**
      * Create the event entity REST facade.
      */
     public EventEntityFacadeREST() {
         super(EventEntity.class);
-    }
-
-    /**
-     * Get the entity manager.
-     * 
-     * @return   Entity manager
-     */
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
     }
 
     /**
@@ -117,8 +113,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
 
         EventEntity newevent;
         try {
-            EventUtils eventutils = new EventUtils(entityManager, userTransaction);
-            newevent = eventutils.createNewEvent(reqentity, sessionuser.getId());
+            newevent = getEventUtils().createNewEvent(reqentity, sessionuser.getId());
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not create new event, reaon: " + ex.getLocalizedMessage());
@@ -147,8 +142,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
-        EventEntity reqentity = eventutils.importEventJSON(eventJson);
+        EventEntity reqentity = getEventUtils().importEventJSON(eventJson);
         if (Objects.isNull(reqentity)) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event, invalid input.", ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
@@ -159,8 +153,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         // check if the event owner or a user with higher privilege is trying to modify the event
-        UserUtils userutils = new UserUtils(entityManager, userTransaction);
-        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to update an event without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -174,7 +167,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
         if (Objects.nonNull(reqentity.getPhoto())) {
             try {
-                eventutils.updateEventImage(event, reqentity.getPhoto());
+                getEventUtils().updateEventImage(event, reqentity.getPhoto());
             }
             catch (Exception ex) {
                 Log.warning(TAG, "*** Event image could not be updated, reason: " + ex.getLocalizedMessage());
@@ -188,7 +181,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         event.setRepeatDayTime(reqentity.getRepeatDayTime());
 
         try {
-            eventutils.updateEvent(event);
+            getEventUtils().updateEvent(event);
         }
         catch (Exception ex) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
@@ -219,8 +212,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         // check if the event owner or a user with higher privilege is trying to remove the event
-        UserUtils userutils = new UserUtils(entityManager, userTransaction);
-        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to remove an event without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -257,8 +249,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
-        JsonObjectBuilder exportedevent = eventutils.exportUserEventJSON(event, sessionuser);
+        JsonObjectBuilder exportedevent = getEventUtils().exportUserEventJSON(event, sessionuser);
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Event was found.", ResponseResults.CODE_OK, exportedevent.build().toString());
     }
 
@@ -274,8 +265,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     public String findAllEvents(@Context HttpServletRequest request) {
         List<EventEntity> events = super.findAll();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
-        JsonArrayBuilder exportedevents = eventutils.exportUserEventsJSON(events, sessionuser);
+        JsonArrayBuilder exportedevents = getEventUtils().exportUserEventsJSON(events, sessionuser);
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "List of events", ResponseResults.CODE_OK, exportedevents.build().toString());
     }
 
@@ -294,8 +284,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
         List<EventEntity> events = super.findRange(new int[]{from, to});
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
-        JsonArrayBuilder exportedevents = eventutils.exportUserEventsJSON(events, sessionuser);
+        JsonArrayBuilder exportedevents = getEventUtils().exportUserEventsJSON(events, sessionuser);
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "List of events", ResponseResults.CODE_OK, exportedevents.build().toString());
     }
 
@@ -343,8 +332,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         jsonresponse.add("memberId", memberId);
 
         // check if both, member and event exist
-        UserUtils   userutils = new UserUtils(entityManager, userTransaction);
-        UserEntity  user2add  = userutils.findUser(memberId);
+        UserEntity  user2add  = getUserUtils().findUser(memberId);
         EventEntity event     = super.find(eventId);
         if (!user2add.getStatus().getIsActive()) {
             user2add = null;
@@ -358,14 +346,13 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         // check if the event owner or a user with higher privilege is trying to modify the event
-        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to modify (add member) an event without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
         try {
-            eventutils.addMember(event, user2add);
+            getEventUtils().addMember(event, user2add);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not add member to event, reason: " + ex.getLocalizedMessage());
@@ -401,8 +388,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         jsonresponse.add("memberId", memberId);
 
         // check if both, member and event exist
-        UserUtils   userutils    = new UserUtils(entityManager, userTransaction);
-        UserEntity  user2remove  = userutils.findUser(memberId);
+        UserEntity  user2remove  = getUserUtils().findUser(memberId);
         EventEntity event        = super.find(eventId);
         if (!user2remove.getStatus().getIsActive()) {
             user2remove = null;
@@ -416,7 +402,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         // check if the event owner or a user with higher privilege is trying to modify the event
-        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to modify (remove member) an event without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -452,8 +438,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
-        EventEntity event = eventutils.findEvent(eventId);
+        EventEntity event = getEventUtils().findEvent(eventId);
         if (Objects.isNull(event)) {
             Log.warning(TAG, "*** Cannot get location: non-existing event!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event information.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
@@ -461,8 +446,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         // check if the event owner or a user with higher privilege is trying to modify the event locations
-        UserUtils userutils = new UserUtils(entityManager, userTransaction);
-        if (!event.getIsPublic() && !userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!event.getIsPublic() && !getUserUtils().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to get event information without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -499,8 +483,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
-        EventEntity event = eventutils.findEvent(eventId);
+        EventEntity event = getEventUtils().findEvent(eventId);
         if (Objects.isNull(event)) {
             Log.warning(TAG, "*** Cannot add location to event: non-existing event!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
@@ -508,8 +491,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         // check if the event owner or a user with higher privilege is trying to modify the event locations
-        UserUtils userutils = new UserUtils(entityManager, userTransaction);
-        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to update an event without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -594,8 +576,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         // check if the event owner or a user with higher privilege is trying to modify the event
-        UserUtils userutils = new UserUtils(entityManager, userTransaction);
-        if (!userutils.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to modify (remove location) an event without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -609,5 +590,39 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Location was succssfully removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Get the entity manager.
+     * 
+     * @return   Entity manager
+     */
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
+    }
+
+    /**
+     * Get the event utils.
+     * 
+     * @return Event utils
+     */
+    private EventUtils getEventUtils() {
+        if (Objects.isNull(eventUtils)) {
+            eventUtils = new EventUtils(entityManager, userTransaction);
+        }
+        return eventUtils;
+    }
+
+    /**
+     * Get the user utils.
+     * 
+     * @return User utils
+     */
+    private UserUtils getUserUtils() {
+        if (Objects.isNull(userUtils)) {
+            userUtils = new UserUtils(entityManager, userTransaction);
+        }
+        return userUtils;
     }
 }

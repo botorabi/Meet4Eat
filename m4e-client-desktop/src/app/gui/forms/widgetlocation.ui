@@ -288,7 +288,7 @@ QPushButton[enabled=&quot;false&quot;] {
              <enum>Qt::NoFocus</enum>
             </property>
             <property name="toolTip">
-             <string>Vote down</string>
+             <string>Remove my vote</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
@@ -318,7 +318,7 @@ QPushButton[enabled=&quot;false&quot;] {
              <enum>Qt::NoFocus</enum>
             </property>
             <property name="toolTip">
-             <string>Vote up</string>
+             <string>Vote for this location</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
