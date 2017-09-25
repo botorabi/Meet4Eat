@@ -78,6 +78,9 @@
            </property>
            <item>
             <widget class="QWidget" name="widgetHead" native="true">
+             <property name="cursor">
+              <cursorShape>SizeAllCursor</cursorShape>
+             </property>
              <property name="styleSheet">
               <string notr="true">#widgetHead {
   background-color: rgb(28,52,62);
@@ -213,6 +216,9 @@
                       <height>26</height>
                      </size>
                     </property>
+                    <property name="cursor">
+                     <cursorShape>PointingHandCursor</cursorShape>
+                    </property>
                     <property name="focusPolicy">
                      <enum>Qt::NoFocus</enum>
                     </property>
@@ -243,6 +249,9 @@ QPushButton:hover {
                       <height>26</height>
                      </size>
                     </property>
+                    <property name="cursor">
+                     <cursorShape>PointingHandCursor</cursorShape>
+                    </property>
                     <property name="focusPolicy">
                      <enum>Qt::NoFocus</enum>
                     </property>
@@ -272,6 +281,9 @@ QPushButton:hover {
                       <width>26</width>
                       <height>26</height>
                      </size>
+                    </property>
+                    <property name="cursor">
+                     <cursorShape>PointingHandCursor</cursorShape>
                     </property>
                     <property name="focusPolicy">
                      <enum>Qt::NoFocus</enum>

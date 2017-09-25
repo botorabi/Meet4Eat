@@ -12,6 +12,7 @@
 #include <configuration.h>
 #include <core/smartptr.h>
 #include <data/modelbase.h>
+#include <data/modeluserinfo.h>
 #include <data/modellocation.h>
 #include <QDateTime>
 #include <QString>
@@ -143,6 +144,38 @@ class ModelEvent : public ModelBase, public m4e::core::RefCount< ModelEvent >
         ModelLocationPtr                    getLocation( const QString &id );
 
         /**
+         * @brief Get the event owner.
+         *
+         * NOTE: the returned user model does not contain the complete user data.
+         *
+         * @return Event owner
+         */
+        ModelUserInfoPtr                    getOwner() { return _owner; }
+
+        /**
+         * @brief Set the evetn owner.
+         *
+         * @param owner Event owner
+         */
+        void                                setOwner( ModelUserInfoPtr owner ) { _owner = owner; }
+
+        /**
+         * @brief Get all event members.
+         *
+         * NOTE: the member models do not contain complete user data.
+         *
+         * @return List of event members
+         */
+        QList< ModelUserInfoPtr >           getMembers() { return _members; }
+
+        /**
+         * @brief Set the event members.
+         *
+         * @param members List of event members
+         */
+        void                                setMembers( const QList< ModelUserInfoPtr >& members ) { _members = members; }
+
+        /**
          * @brief Comparison operator which considers the event ID.
          *
          * @param right     Right hand of operation.
@@ -170,6 +203,8 @@ class ModelEvent : public ModelBase, public m4e::core::RefCount< ModelEvent >
         QTime                               _repeatDayTime;
         unsigned int                        _repeatWeekDays;
         QList< ModelLocationPtr >           _locations;
+        ModelUserInfoPtr                    _owner;
+        QList< ModelUserInfoPtr >           _members;
 };
 
 typedef m4e::core::SmartPtr< ModelEvent > ModelEventPtr;

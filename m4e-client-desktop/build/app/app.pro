@@ -53,7 +53,8 @@ SOURCES += \
     ../../src/app/webapp/resultshandler/resp-event.cpp \
     ../../src/app/webapp/resultshandler/resp-user.cpp \
     ../../src/app/gui/basedialog.cpp \
-    ../../src/app/gui/dialoglocationdetails.cpp
+    ../../src/app/gui/dialoglocationdetails.cpp \
+    ../../src/app/gui/dialogeventsettings.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -92,7 +93,9 @@ HEADERS += \
     ../../src/app/webapp/rest-event.h \
     ../../src/app/webapp/rest-user.h \
     ../../src/app/gui/basedialog.h \
-    ../../src/app/gui/dialoglocationdetails.h
+    ../../src/app/gui/dialoglocationdetails.h \
+    ../../src/app/gui/dialogeventsettings.h \
+    ../../src/app/data/modeluserinfo.h
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
@@ -102,7 +105,8 @@ FORMS += \
     ../../src/app/gui/forms/basedialog.ui \
     ../../src/app/gui/forms/widgetabout.ui \
     ../../src/app/gui/forms/widgetsettings.ui \
-    ../../src/app/gui/forms/widgetlocationdetails.ui
+    ../../src/app/gui/forms/widgetlocationdetails.ui \
+    ../../src/app/gui/forms/widgeteventsettings.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

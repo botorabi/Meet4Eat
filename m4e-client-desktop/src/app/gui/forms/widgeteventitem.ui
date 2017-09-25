@@ -224,7 +224,24 @@ QPushButton:hover {
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>WidgetEventItem</receiver>
+   <slot>onBtnOptionsClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>228</x>
+     <y>44</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
   <slot>onBtnOptionsClicked()</slot>
  </slots>

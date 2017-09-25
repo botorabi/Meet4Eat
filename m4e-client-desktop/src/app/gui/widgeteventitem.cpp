@@ -9,6 +9,7 @@
 #include "widgeteventitem.h"
 #include <core/log.h>
 #include "guiutils.h"
+#include "dialogeventsettings.h"
 #include <QGraphicsDropShadowEffect>
 #include <ui_widgeteventitem.h>
 
@@ -87,7 +88,10 @@ void WidgetEventItem::setSelectionMode( bool normal )
 
 void WidgetEventItem::onBtnOptionsClicked()
 {
-    //! TODO
+    DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, this );
+    p_dlg->setupUI( _event );
+    p_dlg->exec();
+    delete p_dlg;
 }
 
 void WidgetEventItem::onDocumentReady( m4e::data::ModelDocumentPtr document )

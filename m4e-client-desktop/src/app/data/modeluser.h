@@ -11,6 +11,7 @@
 
 #include <configuration.h>
 #include <core/smartptr.h>
+#include <data/modelbase.h>
 #include <data/modelevent.h>
 #include <QString>
 #include <QList>
@@ -26,7 +27,7 @@ namespace data
  * @author boto
  * @date Sep 8, 2017
  */
-class ModelUser : public m4e::core::RefCount< ModelUser >
+class ModelUser : public ModelBase, public m4e::core::RefCount< ModelUser >
 {
     DECLARE_SMARTPTR_ACCESS( ModelUser )
 
@@ -36,29 +37,6 @@ class ModelUser : public m4e::core::RefCount< ModelUser >
          * @brief Construct an instance.
          */
                                         ModelUser() {}
-        /**
-         * @brief Get the unique user ID.
-         * @return The user ID
-         */
-        const QString&                  getId() const { return _id; }
-
-        /**
-         * @brief Set the unique user ID.
-         * @param id    The user ID
-         */
-        void                            setId( const QString &id ) { _id = id; }
-
-        /**
-         * @brief Get the user name.
-         * @return The user name
-         */
-        const QString&                  getName() const { return _name; }
-
-        /**
-         * @brief Set the user name.
-         * @param name  The user name
-         */
-        void                            setName( const QString& name ) { _name = name; }
 
         /**
          * @brief Get user's email.

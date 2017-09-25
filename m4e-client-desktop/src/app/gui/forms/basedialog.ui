@@ -47,6 +47,9 @@ QPushButton[enabled=&quot;false&quot;] {
   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,1,0,0">
    <item>
     <widget class="QWidget" name="widgetHead" native="true">
+     <property name="cursor">
+      <cursorShape>SizeAllCursor</cursorShape>
+     </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="leftMargin">
        <number>0</number>
@@ -103,6 +106,12 @@ QPushButton[enabled=&quot;false&quot;] {
           <width>26</width>
           <height>26</height>
          </size>
+        </property>
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
         </property>
         <property name="styleSheet">
          <string notr="true">QPushButton {
@@ -195,6 +204,9 @@ QPushButton:hover {
      </item>
      <item>
       <widget class="QPushButton" name="pushButton3">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="text">
         <string>Btn3</string>
        </property>
@@ -202,6 +214,9 @@ QPushButton:hover {
      </item>
      <item>
       <widget class="QPushButton" name="pushButton2">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="text">
         <string>Btn2</string>
        </property>
@@ -209,6 +224,9 @@ QPushButton:hover {
      </item>
      <item>
       <widget class="QPushButton" name="pushButton1">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>

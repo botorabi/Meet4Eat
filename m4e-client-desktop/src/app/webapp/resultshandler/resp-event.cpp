@@ -26,22 +26,29 @@ namespace webapp
  * @param json  JSON object containing event information
  * @return      Event model
  */
-static m4e::data::ModelEventPtr createEvent( const QJsonObject& json )
+static data::ModelEventPtr createEvent( const QJsonObject& json )
 {
-    QString    id          = QString::number( json.value( "id" ).toInt() );
-    QString    name        = json.value( "name" ).toString( "" );
-    QString    desc        = json.value( "description" ).toString( "" );
-    QString    photoid     = QString::number( json.value( "photoId" ).toInt() );
-    QString    photoetag   = json.value( "photoETag" ).toString( "" );
-    int        eventstart  = json.value( "eventStart" ).toInt( 0 );
-    int        repweekdays = json.value( "repeatWeekDays" ).toInt( 0 );
-    int        repdaytime  = json.value( "repeatDayTime" ).toInt( 0 );
-    QJsonArray locations   = json.value( "locations" ).toArray();
+    QString    id             = QString::number( json.value( "id" ).toInt() );
+    QString    name           = json.value( "name" ).toString( "" );
+    QString    desc           = json.value( "description" ).toString( "" );
+    QString    photoid        = QString::number( json.value( "photoId" ).toInt() );
+    QString    photoetag      = json.value( "photoETag" ).toString( "" );
+    bool       ispublic       = json.value( "public" ).toBool();
+    int        eventstart     = json.value( "eventStart" ).toInt( 0 );
+    int        repweekdays    = json.value( "repeatWeekDays" ).toInt( 0 );
+    int        repdaytime     = json.value( "repeatDayTime" ).toInt( 0 );
+    QJsonArray locations      = json.value( "locations" ).toArray();
+    QJsonArray members        = json.value( "members" ).toArray();
+    QString    ownerid        = QString::number( json.value( "ownerId" ).toInt() );
+    QString    ownername      = json.value( "ownerName" ).toString( "" );
+    QString    ownerphotoid   = QString::number( json.value( "ownerPhotoId" ).toInt() );
+    QString    ownerphotoetag = json.value( "ownerPhotoETag" ).toString( "" );
 
-    m4e::data::ModelEventPtr event = new m4e::data::ModelEvent();
+    data::ModelEventPtr event = new data::ModelEvent();
     event->setId( id );
     event->setName( name );
     event->setDescription( desc );
+    event->setIsPublic( ispublic );
     event->setPhotoId( photoid );
     event->setPhotoETag( photoetag );
     event->setRepeatWeekDays( static_cast< uint >( repweekdays ) );
@@ -58,7 +65,7 @@ static m4e::data::ModelEventPtr createEvent( const QJsonObject& json )
     event->setRepeatDayTime( reptime );
 
     // extract the locations
-    QList< m4e::data::ModelLocationPtr > locs;
+    QList< data::ModelLocationPtr > locs;
     for ( int i = 0; i < locations.size(); i++ )
     {
         QJsonObject obj = locations.at( i ).toObject();
@@ -68,7 +75,7 @@ static m4e::data::ModelEventPtr createEvent( const QJsonObject& json )
         QString photoid   = QString::number( obj.value( "photoId" ).toInt() );
         QString photoetag = obj.value( "photoETag" ).toString( "" );
 
-        m4e::data::ModelLocationPtr l = new m4e::data::ModelLocation();
+        data::ModelLocationPtr l = new data::ModelLocation();
         l->setId( id );
         l->setName( name );
         l->setDescription( desc );
@@ -78,6 +85,32 @@ static m4e::data::ModelEventPtr createEvent( const QJsonObject& json )
         locs.append( l );
     }
     event->setLocations( locs );
+
+    // extract the members
+    QList< data::ModelUserInfoPtr > mems;
+    for ( int i = 0; i < members.size(); i++ )
+    {
+        QJsonObject obj = members.at( i ).toObject();
+        QString id        = QString::number( obj.value( "id" ).toInt() );
+        QString name      = obj.value( "name" ).toString( "" );
+        QString photoid   = QString::number( obj.value( "photoId" ).toInt() );
+        QString photoetag = obj.value( "photoETag" ).toString( "" );
+
+        data::ModelUserInfoPtr u = new data::ModelUserInfo();
+        u->setId( id );
+        u->setName( name );
+        u->setPhotoId( photoid );
+        u->setPhotoETag( photoetag );
+
+        mems.append( u );
+    }
+    event->setMembers( mems );
+
+    data::ModelUserInfoPtr owner = new data::ModelUserInfo();
+    owner->setId( ownerid );
+    owner->setName( ownername );
+    owner->setPhotoId( ownerphotoid );
+    owner->setPhotoETag( ownerphotoetag );
 
     return event;
 }
