@@ -37,7 +37,7 @@ function Meet4EatREST() {
 	self._urlEvents = self._webRoot + '/webresources/rest/events';
 
 	/* URL for accessing images */
-	self._urlImages = self._webRoot + '/webresources/rest/images';
+	self._urlImages = self._webRoot + '/webresources/rest/docs';
 
 	/* Last time the server was accessed */
 	self._lastAccessTime = 0;

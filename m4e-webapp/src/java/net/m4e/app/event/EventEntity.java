@@ -17,7 +17,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.app.user.UserEntity;
 
@@ -67,7 +67,7 @@ public class EventEntity implements Serializable {
      * Photo
      */
     @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
-    private ImageEntity photo;
+    private DocumentEntity photo;
 
     /**
      * Event members
@@ -199,18 +199,18 @@ public class EventEntity implements Serializable {
     /**
      * Get event photo.
      * 
-     * @return ImageEntity containing the photo
+     * @return DocumentEntity containing the photo
      */
-    public ImageEntity getPhoto() {
+    public DocumentEntity getPhoto() {
         return photo;
     }
 
     /**
      * Set the event photo.
      * 
-     * @param photo ImageEntity containing the photo
+     * @param photo DocumentEntity containing the photo
      */
-    public void setPhoto(ImageEntity photo) {
+    public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }
 

@@ -42,9 +42,11 @@ public class AuthorityConfig {
      */
     private final Class[] accessBeanClasses = {
         net.m4e.system.core.AppInfoEntityFacadeREST.class,
+        net.m4e.system.maintenance.MaintenanceFacadeREST.class,
         net.m4e.app.user.UserEntityFacadeREST.class,
         net.m4e.app.user.UserAuthenticationFacadeREST.class,
-        net.m4e.app.event.EventEntityFacadeREST.class
+        net.m4e.app.event.EventEntityFacadeREST.class,
+        net.m4e.app.resources.DocumentEntityFacadeREST.class
     };
 
     /**

@@ -133,7 +133,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         // try to find the user in database
         UserUtils userutils = new UserUtils(entityManager, userTransaction);
         UserEntity existinguser = userutils.findUser(login);
-        if (Objects.isNull(existinguser) || existinguser.getStatus().getIsDeleted()) {
+        if (Objects.isNull(existinguser) || !existinguser.getStatus().getIsActive()) {
             Log.debug(TAG, "  User login attempt failed, no user with this login found, user (" + login+ ")");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_FOUND, null);
         }
@@ -141,7 +141,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         String saltedpasswd = AuthorityConfig.getInstance().createPassword(existinguser.getPassword() + session.getId());
         if (!saltedpasswd.contentEquals(passwd)) {
             Log.debug(TAG, "  User login attempt failed, wrong password, user (" + login + ")");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_UNAUTHORIZED, null);
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
         Log.verbose(TAG, " User successfully logged in: " + login);

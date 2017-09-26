@@ -60,6 +60,11 @@ public class StatusEntity implements Serializable {
     private Long dateDeletion = 0L;
 
     /**
+     * Date of ban. Trolls get banned.
+     */
+    private Long dateBan = 0L;
+
+    /**
      * ID of creator.
      */
     private Long idCreator = 0L;
@@ -144,6 +149,33 @@ public class StatusEntity implements Serializable {
      */
     public void setDateDeletion(Long dateDeletion) {
         this.dateDeletion = dateDeletion;
+    }
+
+    /**
+     * Get date of ban in millisecond. The value 0 means no ban.
+     * 
+     * @return Date of ban
+     */
+    public Long getDateBan() {
+        return dateBan;
+    }
+
+    /**
+     * Set date of ban in millisecond.
+     * 
+     * @param dateBan Date of ban
+     */
+    public void setDateBan(Long dateBan) {
+        this.dateBan = dateBan;
+    }
+
+    /**
+     * Is the entity active? An entity gets inactive either if it is deleted or banned.
+     * 
+     * @return Return true if the entity is active.
+     */
+    public boolean getIsActive() {
+        return (dateDeletion == 0L) && (dateBan == 0L);
     }
 
     /**

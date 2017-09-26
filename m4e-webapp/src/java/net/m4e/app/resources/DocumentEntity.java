@@ -18,24 +18,46 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 import net.m4e.system.core.Log;
 
 /**
- * Class entity for an image. An image entity contains image information and data.
+ * Class entity for an document. A document can be e.g. an image or a PDF file.
  * 
  * @author boto
  * Date of creation 30.08.2017
  */
 @Entity
-@XmlRootElement
-public class ImageEntity implements Serializable {
+public class DocumentEntity implements Serializable {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "ImageEntity";
+    private final static String TAG = "DocumentEntity";
+
+    /**
+     * Content encoding type Base64
+     */
+    public final static String ENCODING_BASE64 = "base64";
+
+    /**
+     * Content encoding type binary
+     */
+    public final static String ENCODING_BINARY = "binary";
+
+    /**
+     * Content type unknown
+     */
+    public final static String TYPE_UNKNOWN = "unknown";
+
+    /**
+     * Content type image
+     */
+    public final static String TYPE_IMAGE = "image";
+
+    /**
+     * Content type PDF
+     */
+    public final static String TYPE_PDF = "pdf";
 
     /**
      * Serialization version
@@ -56,22 +78,17 @@ public class ImageEntity implements Serializable {
     private StatusEntity status;       
 
     /**
-     * Content encoding type Base64
-     */
-    public final static String ENCODING_BASE64 = "base64";
-
-    /**
-     * Content encoding type binary
-     */
-    public final static String ENCODING_BINARY = "binary";
-
-    /**
-     * Image name
+     * Document name
      */
     private String name;
 
     /**
-     * Image's resource URL
+     * Document type
+     */
+    private String type = TYPE_UNKNOWN;
+
+    /**
+     * Document's resource URL
      */
     private String resourceURL;
 
@@ -86,9 +103,9 @@ public class ImageEntity implements Serializable {
     private byte[] content;
 
     /**
-     * Hash code of the image content.
+     * ETag of the document content.
      */
-    private String imageHash = "";
+    private String eTag = "";
 
     /**
      * Get ID.
@@ -126,20 +143,38 @@ public class ImageEntity implements Serializable {
     }
 
     /**
-     * Set image name.
-     * @return Image name
+     * Set document name.
+     * @return Document name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Set image name.
+     * Set document name.
      * 
-     * @param name Image name
+     * @param name Document name
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Get the content type. It can be one of TYPE_xxx.
+     * 
+     * @return Content type
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Set the content type.
+     * 
+     * @param type Content type
+     */
+    public void setType(String type) {
+        this.type = type;
     }
 
     /**
@@ -179,50 +214,50 @@ public class ImageEntity implements Serializable {
     }
 
     /**
-     * Get image content.
+     * Get document content.
      * 
-     * @return The image content.
+     * @return The document content.
      */
     public byte[] getContent() {
         return content;
     }
 
     /**
-     * Set Image content.
+     * Set Document content.
      * 
-     * @param content Image content
+     * @param content Document content
      */
     public void setContent(byte[] content) {
         this.content = content;
     }
 
     /**
-     * Get image content hash code.
+     * Get document etag. It can be used on client side for caching purpose.
      * 
-     * @return Image content hash code
+     * @return Document etag
      */
-    public String getImageHash() {
-        return imageHash;
+    public String getETag() {
+        return eTag;
     }
 
     /**
-     * Set image content hash code.
-     * @param imageHash Hash code
+     * Set document etag.
+     * 
+     * @param etag The document ETag
      */
-    public void setImageHash(String imageHash) {
-        this.imageHash = imageHash;
+    public void setDocumentETag(String etag) {
+        this.eTag = etag;
     }
 
     /**
-     * Update the hash string out of the image content. If the content is empty 
+     * Update the hash (etag) string out of the document content. If the content is empty 
      * then the hash will set to an empty string.
      * 
      * NOTE: Call this method whenever the content was changed.
      */
-    @Transient
-    public void updateImageHash() {
+    public void updateETag() {
         if (Objects.isNull(content)) {
-            imageHash = "";
+            eTag = "";
             return;
         }
 
@@ -240,10 +275,10 @@ public class ImageEntity implements Serializable {
                 hexstring.append(hex);
             }
             hash = hexstring.toString();
-            imageHash = hash;
+            eTag = hash;
         }
         catch (NoSuchAlgorithmException ex) {
-            Log.error(TAG, "Problem occurred while hashing an image content, reason: " + ex.getLocalizedMessage());
+            Log.error(TAG, "Problem occurred while hashing an document content, reason: " + ex.getLocalizedMessage());
         }
     }
 
@@ -256,10 +291,10 @@ public class ImageEntity implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof ImageEntity)) {
+        if (!(object instanceof DocumentEntity)) {
             return false;
         }
-        ImageEntity other = (ImageEntity) object;
+        DocumentEntity other = (DocumentEntity) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -268,6 +303,6 @@ public class ImageEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.common.ImageEntity[ id=" + id + " ]";
+        return "net.m4e.common.DocumentEntity[ id=" + id + " ]";
     }
 }

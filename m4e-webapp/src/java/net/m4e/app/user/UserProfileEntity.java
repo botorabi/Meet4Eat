@@ -15,7 +15,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import net.m4e.app.resources.ImageEntity;
+import net.m4e.app.resources.DocumentEntity;
 
 /**
  * UserProfileEntity holds user's profile information such as bio, birthday etc.
@@ -52,7 +52,7 @@ public class UserProfileEntity implements Serializable {
      * Photo, a photo may be a sharable icon
      */
     @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
-    private ImageEntity photo;
+    private DocumentEntity photo;
 
     /**
      * Get ID.
@@ -109,18 +109,18 @@ public class UserProfileEntity implements Serializable {
     /**
      * Get photo.
      * 
-     * @return ImageEntity containing the photo
+     * @return DocumentEntity containing the photo
      */
-    public ImageEntity getPhoto() {
+    public DocumentEntity getPhoto() {
         return photo;
     }
 
     /**
      * Set the profile photo.
      * 
-     * @param photo ImageEntity containing the photo
+     * @param photo DocumentEntity containing the photo
      */
-    public void setPhoto(ImageEntity photo) {
+    public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }
 

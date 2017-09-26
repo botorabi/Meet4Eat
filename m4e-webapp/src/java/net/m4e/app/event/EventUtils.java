@@ -24,8 +24,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.EntityUtils;
-import net.m4e.app.resources.ImageEntity;
-import net.m4e.app.resources.ImagePool;
+import net.m4e.app.resources.DocumentEntity;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.StringUtils;
 import net.m4e.system.core.AppInfoEntity;
@@ -107,7 +107,7 @@ public class EventUtils {
         EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
 
         // photo and members are shared objects, so remove them before event creation
-        ImageEntity photo = event.getPhoto();
+        DocumentEntity photo = event.getPhoto();
         event.setPhoto(null);
         Collection<UserEntity> members = event.getMembers();
         event.setMembers(null);
@@ -168,17 +168,35 @@ public class EventUtils {
      * @param image         Image to set to given event
      * @throws Exception    Throws exception if any problem occurred.
      */
-    void updateEventImage(EventEntity event, ImageEntity image) throws Exception {
-        ImagePool imagepool = new ImagePool(entityManager,userTransaction);
-        ImageEntity img = imagepool.getOrCreatePoolImage(image.getImageHash());
-        if (!imagepool.compareImageHash(event.getPhoto(), img.getImageHash())) {
-            imagepool.releasePoolImage(event.getPhoto());
+    void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
+        DocumentPool imagepool = new DocumentPool(entityManager,userTransaction);
+        DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
+        if (!imagepool.compareETag(event.getPhoto(), img.getETag())) {
+            imagepool.releasePoolDocument(event.getPhoto());
         }
         img.setContent(image.getContent());
-        img.updateImageHash();
+        img.updateETag();
+        img.setType(DocumentEntity.TYPE_IMAGE);
         img.setEncoding(image.getEncoding());
         img.setResourceURL("/Event/Image");
         event.setPhoto(img);
+    }
+
+    /**
+     * Check if the given user is owner or member of an event.
+     * 
+     * @param user      User to check
+     * @param event     Event
+     * @return          Return true if the user is owner or member of given event, otherwise return false.
+     */
+    public boolean getUserIsEventOwnerOrMember(UserEntity user, EventEntity event) {
+        boolean owner = Objects.equals(user.getId(), event.getStatus().getIdOwner());
+        if (!owner && Objects.nonNull(event.getMembers())) {
+            if (event.getMembers().stream().anyMatch((u) -> (Objects.equals(u.getId(), user.getId())))) {
+                return true;
+            } 
+        }
+        return owner;
     }
 
     /**
@@ -313,7 +331,7 @@ public class EventUtils {
         json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
         json.add("public", entity.getIsPublic());
         json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getImageHash(): "");
+        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getETag(): "");
         json.add("eventStart", Objects.nonNull(entity.getEventStart()) ? entity.getEventStart(): 0);
         json.add("repeatWeekDays", (Objects.nonNull(entity.getRepeatWeekDays()) ? entity.getRepeatWeekDays(): 0));
         json.add("repeatDayTime", (Objects.nonNull(entity.getRepeatDayTime()) ? entity.getRepeatDayTime(): 0));
@@ -321,12 +339,14 @@ public class EventUtils {
         JsonArrayBuilder members = Json.createArrayBuilder();
         if (Objects.nonNull(entity.getMembers())) {
             for (UserEntity m: entity.getMembers()) {
-                if (m.getStatus().getIsDeleted()) {
+                if (!m.getStatus().getIsActive()) {
                     continue;
                 }
                 JsonObjectBuilder member = Json.createObjectBuilder();
                 member.add("id", m.getId());
                 member.add("name", Objects.nonNull(m.getName()) ? m.getName() : "");
+                member.add("photoId", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getId(): 0);
+                member.add("photoETag", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getETag() : "");
                 members.add(member);
             }
         }
@@ -340,25 +360,32 @@ public class EventUtils {
                 loc.add("name", Objects.nonNull(l.getName()) ? l.getName() : "");
                 loc.add("description", Objects.nonNull(l.getDescription()) ? l.getDescription() : "");
                 loc.add("photoId", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getId(): 0);
-                loc.add("photoETag", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getImageHash(): "");
+                loc.add("photoETag", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getETag(): "");
                 locations.add( loc );
             }
         }
         json.add("locations", locations);
 
-        String     ownername;
+        String     ownername, ownerphotoetag;
+        Long       ownerphotoid;
         Long       ownerid   = entity.getStatus().getIdOwner();
         UserUtils  userutils = new UserUtils(entityManager, userTransaction);
         UserEntity owner     = userutils.findUser(ownerid);
-        if (Objects.isNull(owner) || owner.getStatus().getIsDeleted()) {
+        if (Objects.isNull(owner) || !owner.getStatus().getIsActive()) {
             ownerid = 0L;
             ownername = "";
+            ownerphotoid = 0L;
+            ownerphotoetag = "";
         }
         else {
             ownername = owner.getName();
+            ownerphotoid = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getId() : 0L;
+            ownerphotoetag = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getETag(): "";
         }
         json.add("ownerId", ownerid);
         json.add("ownerName", ownername);
+        json.add("ownerPhotoId", ownerphotoid);
+        json.add("ownerPhotoETag", ownerphotoetag);
 
         return json;
     }
@@ -411,11 +438,12 @@ public class EventUtils {
         entity.setRepeatDayTime(repeatdaytime);
 
         if (Objects.nonNull(photo)) {
-            ImageEntity image = new ImageEntity();
+            DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
-            image.setEncoding(ImageEntity.ENCODING_BASE64);
+            image.setEncoding(DocumentEntity.ENCODING_BASE64);
             image.setContent(photo.getBytes());
-            image.updateImageHash();
+            image.updateETag();
+            image.setType(DocumentEntity.TYPE_IMAGE);
             entity.setPhoto(image);
         }
 
@@ -423,10 +451,11 @@ public class EventUtils {
     }
 
     /**
-     * Export the given event if it is public of it belongs to given user.
-     * If the user has admin role then events is exported.
+     * Export the given event if it is public, or it belongs to given user, or
+     * the user is a member of event.
+     * If the user has admin role then the event is exported.
      * 
-     * @param event   Events used for filtering the user relevant events from
+     * @param event    Events used for filtering the user relevant events from
      * @param user     User     
      * @return         All user relevant events in JSON format
      */
@@ -434,10 +463,9 @@ public class EventUtils {
         UserUtils         userutils = new UserUtils(entityManager, userTransaction);
         boolean           privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonObjectBuilder json      = Json.createObjectBuilder();
-        boolean           doexp     = !event.getStatus().getIsDeleted() && 
-                                      (privuser || event.getIsPublic() ||
-                                       Objects.equals(user.getId(), event.getStatus().getIdOwner()) );
-        
+        boolean           doexp     = event.getStatus().getIsActive()&& 
+                                      (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event));
+
         if (!doexp) {
             return json;
         }
@@ -445,7 +473,7 @@ public class EventUtils {
     }
 
     /**
-     * Export all public events and those belonging to given user to JSON.
+     * Export all public events and those accociated (owner or member) to given user to JSON.
      * If the user has admin role then all events are exported.
      * 
      * @param events   Events used for filtering the user relevant events from
@@ -457,15 +485,12 @@ public class EventUtils {
         UserUtils        userutils = new UserUtils(entityManager, userTransaction);
         boolean          privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonArrayBuilder allevents = Json.createArrayBuilder();
-        for (EventEntity event: events) {
-            // events which are marked as deleted are excluded from export
-            if (event.getStatus().getIsDeleted()) {
-                continue;
-            }
-            if (privuser || event.getIsPublic() || Objects.equals(user.getId(), event.getStatus().getIdOwner())) {
+        events.stream()
+            .filter((event) -> (event.getStatus().getIsActive() && (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event))))
+            .forEach((event) -> {
                 allevents.add(exportEventJSON(event));
-            }
-        }
+            });
+
         return allevents;
     }
 }

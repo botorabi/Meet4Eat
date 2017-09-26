@@ -132,7 +132,7 @@ function Meet4EatUI_User(baseModule) {
 				base.showModalBox("Password fields do not match!", "Invalid Input", "Dismiss");
 				return;
 			}
-			fields['password'] = base._m4eAuth.createHash(passwd);
+			fields['password'] = base._m4eRESTAuth.createHash(passwd);
 		}
 		var roles = [];
 		var selroles = $('#page_users_edit_roles_sel option:selected');

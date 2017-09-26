@@ -124,6 +124,7 @@ public class EventEntityInputValidator {
 
     /**
      * Check if the given location name is unique considering all event's location.
+     * 
      * @param event
      * @param locationName
      * @return 
@@ -132,7 +133,7 @@ public class EventEntityInputValidator {
         Collection<EventLocationEntity> locs = event.getLocations();
         if (Objects.nonNull(locs)) {
             for (EventLocationEntity loc: locs) {
-                if (!loc.getStatus().getIsDeleted() && Objects.equals(loc.getName(), locationName)) {
+                if (loc.getStatus().getIsActive() && Objects.equals(loc.getName(), locationName)) {
                     return false;
                 }
             }

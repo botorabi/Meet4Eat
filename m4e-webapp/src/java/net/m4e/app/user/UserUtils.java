@@ -27,8 +27,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
-import net.m4e.app.resources.ImageEntity;
-import net.m4e.app.resources.ImagePool;
+import net.m4e.app.resources.DocumentEntity;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.EntityUtils;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.system.core.AppInfoEntity;
@@ -217,14 +217,15 @@ public class UserUtils {
      * @param image         Image to set to given event
      * @throws Exception    Throws exception if any problem occurred.
      */
-    void updateUserImage(UserEntity user, ImageEntity image) throws Exception {
-        ImagePool imagepool = new ImagePool(entityManager,userTransaction);
-        ImageEntity img = imagepool.getOrCreatePoolImage(image.getImageHash());
-        if (!imagepool.compareImageHash(user.getPhoto(), img.getImageHash())) {
-            imagepool.releasePoolImage(user.getPhoto());
+    void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
+        DocumentPool imagepool = new DocumentPool(entityManager,userTransaction);
+        DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
+        if (!imagepool.compareETag(user.getPhoto(), img.getETag())) {
+            imagepool.releasePoolDocument(user.getPhoto());
         }
         img.setContent(image.getContent());
-        img.updateImageHash();
+        img.updateETag();
+        img.setType(DocumentEntity.TYPE_IMAGE);
         img.setEncoding(image.getEncoding());
         img.setResourceURL("/User/Image");
         user.setPhoto(img);
@@ -376,7 +377,7 @@ public class UserUtils {
         json.add("roles", roles);
         json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId() : 0);
         // the ETag can be used on a client for caching purpose
-        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getImageHash(): "");
+        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getETag(): "");
         return json;
     }
 
@@ -422,11 +423,12 @@ public class UserUtils {
         entity.setEmail(email);
 
         if (Objects.nonNull(photo)) {
-            ImageEntity image = new ImageEntity();
+            DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
-            image.setEncoding(ImageEntity.ENCODING_BASE64);
+            image.setEncoding(DocumentEntity.ENCODING_BASE64);
             image.setContent(photo.getBytes());
-            image.updateImageHash();
+            image.setType(DocumentEntity.TYPE_IMAGE);
+            image.updateETag();
             entity.setPhoto(image);
         }
 
@@ -450,7 +452,7 @@ public class UserUtils {
         }
         else {
             for (UserEntity user: users) {
-                if (!user.getStatus().getIsDeleted()) {
+                if (user.getStatus().getIsActive()) {
                     allusers.add(exportUserJSON(user));
                 }
             }
