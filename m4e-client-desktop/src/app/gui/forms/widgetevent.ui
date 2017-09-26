@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WidgetEvent</class>
+ <widget class="QWidget" name="WidgetEvent">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#WidgetEvent {
+  background-color: rgb(238, 238, 236);
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
+   </property>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
+     <item>
+      <widget class="QWidget" name="widgetHead" native="true">
+       <property name="styleSheet">
+        <string notr="true">#widgetHead {
+  border-radius: 4px;
+  border: 2px solid rgb(131, 147, 167);
+  background-color: rgb(80,112,125);
+}</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalHead">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
+          <item>
+           <widget class="QLabel" name="labelInfoHead">
+            <property name="font">
+             <font>
+              <family>Roboto</family>
+              <pointsize>11</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: white;</string>
+            </property>
+            <property name="text">
+             <string>Info Head</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelInfoBody">
+            <property name="font">
+             <font>
+              <family>Roboto</family>
+              <pointsize>9</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: white;</string>
+            </property>
+            <property name="text">
+             <string>Info Body</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonBuzz">
+          <property name="minimumSize">
+           <size>
+            <width>64</width>
+            <height>64</height>
+           </size>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="toolTip">
+           <string>Buzz all event members</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton {
+  background: transparent;
+  border-radius:  5px;
+  border-image: url(:/btn-buzz.png);
+}
+QPushButton:hover {
+  background-color: white;
+  border: 1px solid rgb(115, 210, 22);
+}</string>
+          </property>
+          <property name="text">
+           <string>Buzz</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="listWidget">
+       <property name="styleSheet">
+        <string notr="true">#listWidget {
+ border: 0px solid  rgb(170, 255, 255);
+ background: transparent;
+}</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalFoot">
+       <item>
+        <widget class="QLabel" name="labelFoot">
+         <property name="styleSheet">
+          <string notr="true">#labelFoot {
+  border-radius: 4px;
+  border: 2px solid rgb(131, 147, 167);
+  background-color: rgb(80,112,125);
+}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButtonBuzz</sender>
+   <signal>clicked()</signal>
+   <receiver>WidgetEvent</receiver>
+   <slot>onButtonBuzzClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>239</x>
+     <y>14</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>319</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onButtonBackClicked()</slot>
+  <slot>onButtonBuzzClicked()</slot>
+  <slot>onButtonVoteUpClicked()</slot>
+  <slot>onButtonVoteDownClicked()</slot>
+  <slot>onListItemClicked(QListWidgetItem*)</slot>
+ </slots>
+</ui>

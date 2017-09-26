@@ -1,3 +1,5 @@
 /m4e-webapp/nbproject/private/
 /m4e-webapp/build/
 /m4e-webapp/dist/
+/m4e-client-desktop/build/**/*.pro.user*
+/m4e-client-desktop/build/build-app-*
