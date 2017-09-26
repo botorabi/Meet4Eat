@@ -38,11 +38,6 @@ public class AppUpdateManager {
     private final EntityManager    entityManager;
 
     /**
-     * User transaction is used for accessing the database.
-     */
-    private final UserTransaction  userTransaction;
-
-    /**
      * List of all available update instances. See also class AppUpdateRegistry.
      */
     private final List<AppUdateBaseHandler> updateRegistry = new ArrayList();
@@ -51,11 +46,9 @@ public class AppUpdateManager {
      * Construct the update manager.
      * 
      * @param entityManager   Entity manager
-     * @param userTransaction User transaction
      */
-    public AppUpdateManager(EntityManager entityManager, UserTransaction userTransaction) {
+    public AppUpdateManager(EntityManager entityManager) {
         this.entityManager   = entityManager;
-        this.userTransaction = userTransaction;
     }
 
     /**
@@ -82,7 +75,7 @@ public class AppUpdateManager {
         // sort all updates considering their incremental numbers
         sortUpdateRegistry();
 
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        EntityUtils eutils = new EntityUtils(entityManager);
         List<AppInfoEntity> res = eutils.findAllEntities(AppInfoEntity.class);
         // check if there is already an app info entry in database
         if (res.size() > 0) {
@@ -133,8 +126,8 @@ public class AppUpdateManager {
         AppInfoEntity info = new AppInfoEntity();
         info.setVersion(appVersion);
         info.setDataLastUpdate((new Date().getTime()));
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        AppInfoUtils autils = new AppInfoUtils(entityManager);
+        EntityUtils eutils = new EntityUtils(entityManager);
         try {
             eutils.createEntity(info);
         }
@@ -152,7 +145,7 @@ public class AppUpdateManager {
     private void updateAppVersionEntry(AppInfoEntity info, String appVersion) {
         info.setVersion(appVersion);
         info.setDataLastUpdate((new Date().getTime()));
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfoUtils autils = new AppInfoUtils(entityManager);
         autils.updateAppInfoEntity(info);
     }
 
@@ -189,7 +182,7 @@ public class AppUpdateManager {
         for (int i = indexcurrent; i <= indexnew; i++) {
             Log.info(TAG, "  Start updating to version " + updateRegistry.get(i).getAppVersion());
             try {
-                updateRegistry.get(i).performUpdate(entityManager, userTransaction);
+                updateRegistry.get(i).performUpdate(entityManager);
                 Log.info(TAG, "  Successfully updated to version " + updateRegistry.get(i).getAppVersion());
             }
             catch (Exception ex) {
@@ -214,7 +207,7 @@ public class AppUpdateManager {
             return false;
         }
         try {
-            updater.performUpdate(entityManager, userTransaction);
+            updater.performUpdate(entityManager);
             Log.info(TAG, "  Successfully updated to initial version " + updater.getAppVersion());
         }
         catch (Exception ex) {

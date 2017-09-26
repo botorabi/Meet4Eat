@@ -11,7 +11,6 @@ package net.m4e.app.user;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 import net.m4e.common.StringUtils;
 
 /**
@@ -34,17 +33,13 @@ public class UserEntityInputValidator {
 
     private final EntityManager entityManager;
 
-    private final UserTransaction userTransaction;
-
     /**
      * Create an instance of input validator.
      * 
      * @param entityManager    Entity manager
-     * @param userTransaction  User transaction
      */
-    public UserEntityInputValidator(EntityManager entityManager, UserTransaction userTransaction) {
+    public UserEntityInputValidator(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
     /**
@@ -56,7 +51,7 @@ public class UserEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public UserEntity validateNewEntityInput(String userJson) throws Exception {
-        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        UserUtils userutils = new UserUtils(entityManager);
         UserEntity reqentity = userutils.importUserJSON(userJson);
         if (reqentity == null) {
             throw new Exception("Failed to create user, invalid input.");
@@ -103,7 +98,7 @@ public class UserEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public UserEntity validateUpdateEntityInput(String userJson) throws Exception {
-        UserUtils  userutils = new UserUtils(entityManager, userTransaction);
+        UserUtils  userutils = new UserUtils(entityManager);
         UserEntity reqentity = userutils.importUserJSON(userJson);
         if (reqentity == null) {
             throw new Exception("Failed to update user, invalid input.");

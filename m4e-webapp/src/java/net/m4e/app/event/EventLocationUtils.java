@@ -18,7 +18,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.EntityUtils;
@@ -43,17 +42,13 @@ public class EventLocationUtils {
 
     private final EntityManager entityManager;
 
-    private final UserTransaction userTransaction;
-
     /**
      * Create an instance of event utilities.
      * 
      * @param entityManager    Entity manager
-     * @param userTransaction  User transaction
      */
-    public EventLocationUtils(EntityManager entityManager, UserTransaction userTransaction) {
+    public EventLocationUtils(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
     /**
@@ -79,21 +74,15 @@ public class EventLocationUtils {
         status.setDateLastUpdate(now.getTime());
         newlocation.setStatus(status);
 
-        try {
-            EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
-            eutils.createEntity(newlocation);
-            Collection<EventLocationEntity> locs = event.getLocations();
-            if (Objects.isNull(locs)) {
-                locs = new ArrayList<>();
-                event.setLocations(locs);
-            }
-            event.getLocations().add(newlocation);
-            eutils.updateEntity(event);
+        EntityUtils eutils = new EntityUtils(entityManager);
+        eutils.createEntity(newlocation);
+        Collection<EventLocationEntity> locs = event.getLocations();
+        if (Objects.isNull(locs)) {
+            locs = new ArrayList<>();
+            event.setLocations(locs);
         }
-        catch (Exception ex) {
-            Log.warning(TAG, "could not create location entity, reason: " + ex.getLocalizedMessage());
-            return null;
-        }
+        event.getLocations().add(newlocation);
+        eutils.updateEntity(event);
         return newlocation;
     }
 
@@ -105,7 +94,7 @@ public class EventLocationUtils {
      * @throws Exception     Throws an exception if something went wrong.
      */
     EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
-        EntityUtils entityutils = new EntityUtils(entityManager, userTransaction);
+        EntityUtils entityutils = new EntityUtils(entityManager);
         EventLocationEntity location = entityutils.findEntity(EventLocationEntity.class, inputLocation.getId());
         if (Objects.isNull(location) || !location.getStatus().getIsActive()) {
             throw new Exception("Entity location does not exist.");
@@ -133,7 +122,7 @@ public class EventLocationUtils {
      * @throws Exception    Throws exception if any problem occurred.
      */
     void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) throws Exception {
-        DocumentPool imagepool = new DocumentPool(entityManager,userTransaction);
+        DocumentPool imagepool = new DocumentPool(entityManager);
         DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
         if (!imagepool.compareETag(location.getPhoto(), img.getETag())) {
             imagepool.releasePoolDocument(location.getPhoto());
@@ -153,7 +142,7 @@ public class EventLocationUtils {
      * @return Return an entity if found, otherwise return null.
      */
     public EventLocationEntity findLocation(Long id) {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        EntityUtils eutils = new EntityUtils(entityManager);
         EventLocationEntity event = eutils.findEntity(EventLocationEntity.class, id);
         return event;
     }
@@ -175,11 +164,11 @@ public class EventLocationUtils {
         }
         // mark the location entity as deleted
         locationToRemove.getStatus().setDateDeletion((new Date()).getTime());
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        EntityUtils eutils = new EntityUtils(entityManager);
         eutils.updateEntity(locationToRemove);
 
         // update the app stats
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfoUtils autils = new AppInfoUtils(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         if (Objects.isNull(appinfo)) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");

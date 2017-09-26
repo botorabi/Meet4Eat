@@ -11,17 +11,13 @@ package net.m4e.app.user;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -48,7 +44,6 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/users")
-@TransactionManagement(TransactionManagementType.BEAN)
 public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEntity> {
 
     /**
@@ -61,12 +56,6 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      */
     @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
     private EntityManager entityManager;
-
-    /**
-     * User transaction needed for entity modifications.
-     */
-    @Resource
-    private UserTransaction userTransaction;
 
     /**
      * User utilities
@@ -103,7 +92,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
         UserEntity reqentity;
         try {
-            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager, userTransaction);
+            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager);
             reqentity = validator.validateNewEntityInput(userJson);
         }
         catch (Exception ex) {
@@ -153,7 +142,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
         UserEntity reqentity;
         try {
-            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager, userTransaction);
+            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager);
             reqentity = validator.validateUpdateEntityInput(userJson);
         }
         catch(Exception ex) {
@@ -267,7 +256,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
            return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());        
         }
 
-        EntityUtils utils = new EntityUtils(entityManager, userTransaction);
+        EntityUtils utils = new EntityUtils(entityManager);
         List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
         for (UserEntity hit: hits) {
             if (!hit.getStatus().getIsActive()) {
@@ -354,7 +343,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String countREST() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         // NOTE the final user count is the count of UserEntity entries in database minus the count of users to be purged
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfoUtils autils = new AppInfoUtils(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         Long userpurges = appinfo.getUserCountPurge();
         jsonresponse.add("count", super.count() - userpurges);
@@ -378,7 +367,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      */
     private UserUtils getUserUtils() {
         if (Objects.isNull(userUtils)) {
-            userUtils = new UserUtils(entityManager, userTransaction);
+            userUtils = new UserUtils(entityManager);
         }
         return userUtils;
     }

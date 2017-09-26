@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.auth.PermissionEntity;
@@ -62,27 +61,24 @@ public class UpdateInit extends AppUdateBaseHandler {
      * Perform the update.
      * 
      * @param entityManager   For the case that any entity structure manipulation is needed
-     * @param userTransaction Used for manipulating entities in database
      * @throws Exception This exception is thrown if something went wrong.
      */
     @Override
-    public void performUpdate(EntityManager entityManager, UserTransaction userTransaction) throws Exception {
+    public void performUpdate(EntityManager entityManager) throws Exception {
         Log.debug(TAG, "Initial deployment setup, version: " + appVersion + " (" + incUpdateNumber + ")");
 
-        setupPermissions(entityManager, userTransaction);
-        setupRoles(entityManager, userTransaction);
-        setupAdminUser(entityManager, userTransaction);
+        setupPermissions(entityManager);
+        setupRoles(entityManager);
+        setupAdminUser(entityManager);
     }
 
     /**
      * Setup all permissions.
      * 
      * @param entityManager     Entity manager
-     * @param userTransaction   User transaction
-     * @throws Exception        Thrown if something went wrong.
      */
-    private void setupPermissions(EntityManager entityManager, UserTransaction userTransaction) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+    private void setupPermissions(EntityManager entityManager) {
+        EntityUtils eutils = new EntityUtils(entityManager);
         Log.debug(TAG, "  Setup permissions in database");
         for (String permname: AuthorityConfig.getInstance().getDefaultPermissions()) {
             // check if the permission already exists in database (should actually not happen)
@@ -101,11 +97,9 @@ public class UpdateInit extends AppUdateBaseHandler {
      * Setup all roles.
      * 
      * @param entityManager     Entity manager
-     * @param userTransaction   User transaction
-     * @throws Exception        Thrown if something went wrong.
      */
-    private void setupRoles(EntityManager entityManager, UserTransaction userTransaction) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+    private void setupRoles(EntityManager entityManager) {
+        EntityUtils eutils = new EntityUtils(entityManager);
         Log.debug(TAG, "  Setup roles in database");
 
         for (Map.Entry<String, List<String>> role: AuthorityConfig.getInstance().getDefaultRoles().entrySet()) {
@@ -152,11 +146,9 @@ public class UpdateInit extends AppUdateBaseHandler {
      * Setup a user with administrator rights.
      * 
      * @param entityManager     Entity manager
-     * @param userTransaction   User transaction
-     * @throws Exception        Thrown if something went wrong.
      */
-    private void setupAdminUser(EntityManager entityManager, UserTransaction userTransaction) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+    private void setupAdminUser(EntityManager entityManager) {
+        EntityUtils eutils = new EntityUtils(entityManager);
         Log.debug(TAG, "  Create user: admin");
         UserEntity user = new UserEntity();
         user.setName("Administrator");

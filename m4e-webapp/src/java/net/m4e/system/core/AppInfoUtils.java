@@ -8,10 +8,7 @@
 package net.m4e.system.core;
 
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 import net.m4e.common.EntityUtils;
 
 /**
@@ -29,17 +26,13 @@ public class AppInfoUtils {
 
     private final EntityManager entityManager;
 
-    private final UserTransaction userTransaction;
-
     /**
      * Create the utils instance for given entity manager and user transaction object.
      * 
      * @param entityManager   Entity manager
-     * @param userTransaction User transaction
      */
-    public AppInfoUtils(EntityManager entityManager, UserTransaction userTransaction) {
+    public AppInfoUtils(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
     /**
@@ -51,7 +44,7 @@ public class AppInfoUtils {
         //! TODO to speed up the access to this single entity we may consider a global scoped bean or 
         //        at least a session bean or something similar!
 
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        EntityUtils eutils = new EntityUtils(entityManager);
         List<AppInfoEntity> infos = eutils.findAllEntities(AppInfoEntity.class);
         if (infos.size() != 1) {
             Log.error(TAG, "*** Unexpected count of app info entity detected: " + infos.size());
@@ -66,7 +59,7 @@ public class AppInfoUtils {
      * @param info App info entity
      */
     public void updateAppInfoEntity(AppInfoEntity info) {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        EntityUtils eutils = new EntityUtils(entityManager);
         try {
             eutils.updateEntity(info);
         }

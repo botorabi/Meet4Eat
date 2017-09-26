@@ -11,7 +11,6 @@ package net.m4e.app.event;
 import java.util.Collection;
 import java.util.Objects;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 import net.m4e.common.StringUtils;
 
 /**
@@ -30,17 +29,13 @@ public class EventEntityInputValidator {
 
     private final EntityManager entityManager;
 
-    private final UserTransaction userTransaction;
-
     /**
      * Create an instance of input validator.
      * 
      * @param entityManager    Entity manager
-     * @param userTransaction  User transaction
      */
-    public EventEntityInputValidator(EntityManager entityManager, UserTransaction userTransaction) {
+    public EventEntityInputValidator(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
    /**
@@ -52,7 +47,7 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventEntity validateNewEntityInput(String eventJson) throws Exception {
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
+        EventUtils eventutils = new EventUtils(entityManager);
         EventEntity entity = eventutils.importEventJSON(eventJson);
         if (entity == null) {
             throw new Exception("Failed to create event, invalid input.");
@@ -78,7 +73,7 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventEntity validateUpdateEntityInput(String userJson) throws Exception {
-        EventUtils  eventutils = new EventUtils(entityManager, userTransaction);
+        EventUtils  eventutils = new EventUtils(entityManager);
         EventEntity entity = eventutils.importEventJSON(userJson);
         if (Objects.isNull(entity)) {
             throw new Exception("Failed to update event, invalid input.");
@@ -104,7 +99,7 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventLocationEntity validateLocationInput(String locationJson, EventEntity event) throws Exception {
-        EventLocationUtils  locationutils = new EventLocationUtils(entityManager, userTransaction);
+        EventLocationUtils  locationutils = new EventLocationUtils(entityManager);
         EventLocationEntity entity = locationutils.importLocationJSON(locationJson);
         if (Objects.isNull(entity)) {
             throw new Exception("Failed to validate location input.");

@@ -11,8 +11,6 @@ package net.m4e.app.resources;
 import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 
 /**
  * A collection of document related utilities
@@ -23,23 +21,9 @@ import javax.transaction.UserTransaction;
 public class DocumentUtils {
 
     /**
-     * Used for logging
-     */
-    private final static String TAG = "DocumentUtils";
-
-    private final EntityManager entityManager;
-
-    private final UserTransaction userTransaction;
-
-    /**
      * Create an instance of document utilities.
-     * 
-     * @param entityManager    Entity manager
-     * @param userTransaction  User transaction
      */
-    public DocumentUtils(EntityManager entityManager, UserTransaction userTransaction) {
-        this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
+    public DocumentUtils() {
     }
 
     /**
