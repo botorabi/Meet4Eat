@@ -38,14 +38,19 @@ void ResponseGetUserData::onRESTResponseSuccess( const QJsonDocument& results )
         return;
     }
 
-    QJsonObject data  = datadoc.object();
-    QString     id    = data.value( "id" ).toString( "" );
-    QString     name  = data.value( "name" ).toString( "" );
-    QString     email = data.value( "email" ).toString( "" );
+    QJsonObject data      = datadoc.object();
+    QString     id        = QString::number( data.value( "id" ).toInt() );
+    QString     name      = data.value( "name" ).toString( "" );
+    QString     email     = data.value( "email" ).toString( "" );
+    QString     photoid   = QString::number( data.value( "photoId" ).toInt() );
+    QString     photoetag = data.value( "photoETag" ).toString( "" );
+
     m4e::data::ModelUserPtr user = new m4e::data::ModelUser();
     user->setId( id );
     user->setName( name );
     user->setEMail( email );
+    user->setPhotoId( photoid );
+    user->setPhotoETag( photoetag );
 
     emit _p_requester->onRESTUserGetData( user );
 }

@@ -11,6 +11,7 @@
 
 #include <configuration.h>
 #include <data/modeldocument.h>
+#include <data/webapp.h>
 #include <QPixmap>
 
 
@@ -45,6 +46,15 @@ class GuiUtils
          * @return      Round icon
          */
         static QPixmap      createRoundIcon( data::ModelDocumentPtr input );
+
+        /**
+         * @brief Check if the given owner ID matches to currently authorized user's ID.
+         *
+         * @param ownerId   Owner ID to check
+         * @param p_webApp  Web app interface containing information about the authorized user
+         * @return          Return true if user is the owner, otherwise false.
+         */
+        static bool         userIsOwner( const QString& ownerId, data::WebApp* p_webApp );
 };
 
 } // namespace ui

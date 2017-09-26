@@ -85,8 +85,6 @@ class ModelUser : public ModelBase, public m4e::core::RefCount< ModelUser >
         //! Omit copy construction!
                                         ModelUser( const ModelUser& );
 
-        QString                         _id;
-        QString                         _name;
         QString                         _email;
         QList< ModelEventPtr >          _events;
 };

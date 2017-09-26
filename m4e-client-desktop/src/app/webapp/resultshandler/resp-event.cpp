@@ -111,6 +111,7 @@ static data::ModelEventPtr createEvent( const QJsonObject& json )
     owner->setName( ownername );
     owner->setPhotoId( ownerphotoid );
     owner->setPhotoETag( ownerphotoetag );
+    event->setOwner( owner );
 
     return event;
 }

@@ -11,6 +11,7 @@
 #include "guiutils.h"
 #include <ui_widgeteventsettings.h>
 #include <QTableWidgetItem>
+#include <assert.h>
 
 
 namespace m4e
@@ -81,6 +82,15 @@ void DialogEventSettings::onDocumentReady( m4e::data::ModelDocumentPtr document 
     p_item->setIcon( QIcon( pix ) );
 }
 
+void DialogEventSettings::onMemberRemoveClicked()
+{
+    QPushButton* p_btn = dynamic_cast< QPushButton* >( sender() );
+    assert ( p_btn && "unexpected event sender, a button was expected!" );
+
+    QString memberId = p_btn->property( "userId" ).toString();
+    log_verbose << TAG << "TODO remove member: " << memberId.toStdString() << std::endl;
+}
+
 void DialogEventSettings::setupWeekDays( unsigned int weekDays )
 {
     _p_ui->pushButtonWDMon->setChecked( ( weekDays & data::ModelEvent::WeekDayMonday ) != 0 );
@@ -106,19 +116,35 @@ void DialogEventSettings::setupMembers( data::ModelEventPtr event )
         p_item->setFlags( p_item->flags() ^ Qt::ItemIsEditable );
         _p_ui->tableWidgetMembers->setItem( row, 0, p_item );
 
-        QPushButton* p_btn = new QPushButton( QIcon( ":/icon-close.png" ), "", this );
-        p_btn->setMaximumSize( QSize( 26, 26 ) );
-        p_btn->setMinimumSize( QSize( 26, 26 ) );
-        _p_ui->tableWidgetMembers->setCellWidget( row, 1, p_btn );
+        if ( event->getOwner().valid() && GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp ) )
+        {
+            _p_ui->tableWidgetMembers->setCellWidget( row, 1, createRemoveMemberButton( member->getId() ) );
+        }
 
         // request the photo
-        _memberPhotos.insert( member->getPhotoId(), row );
-        _p_webApp->requestDocument( member->getPhotoId(), member->getPhotoETag() );
+        QString photoid = member->getPhotoId();
+        if ( !photoid.isEmpty() && ( photoid != "0" ) )
+        {
+            _memberPhotos.insert( photoid, row );
+            _p_webApp->requestDocument( photoid, member->getPhotoETag() );
+        }
 
         row++;
     }
 
     _p_ui->tableWidgetMembers->resizeColumnsToContents();
+}
+
+QPushButton *DialogEventSettings::createRemoveMemberButton( const QString& memberId )
+{
+    QPushButton* p_btn = new QPushButton( QIcon( ":/icon-close.png" ), "", this );
+    p_btn->setToolTip( QApplication::translate( "DialogEventSettings", "Remove member from event" ) );
+    p_btn->setProperty( "userId", memberId );
+    p_btn->setMaximumSize( QSize( 26, 26 ) );
+    p_btn->setMinimumSize( QSize( 26, 26 ) );
+    connect( p_btn, SIGNAL( clicked() ), this, SLOT( onMemberRemoveClicked() ) );
+
+    return p_btn;
 }
 
 } // namespace ui

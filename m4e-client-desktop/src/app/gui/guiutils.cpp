@@ -49,5 +49,10 @@ QPixmap GuiUtils::createRoundIcon( data::ModelDocumentPtr input )
     return QPixmap();
 }
 
+bool GuiUtils::userIsOwner( const QString& ownerId, data::WebApp* p_webApp )
+{
+    return p_webApp->getUserData().valid() &&  ( p_webApp->getUserData()->getId() == ownerId );
+}
+
 } // namespace ui
 } // namespace m4e

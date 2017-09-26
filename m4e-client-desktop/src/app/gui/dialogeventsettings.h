@@ -13,6 +13,7 @@
 #include <gui/basedialog.h>
 #include <data/modelevent.h>
 #include <data/webapp.h>
+#include <QPushButton>
 
 
 namespace Ui {
@@ -32,6 +33,11 @@ namespace ui
  */
 class DialogEventSettings : public BaseDialog
 {
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(DialogEventSettings) ";
+
     Q_OBJECT
 
     public:
@@ -64,11 +70,18 @@ class DialogEventSettings : public BaseDialog
          */
         void                        onDocumentReady( m4e::data::ModelDocumentPtr document );
 
+        /**
+         * @brief Called to remove a member from event list.
+         */
+        void                        onMemberRemoveClicked();
+
     protected:
 
         void                        setupWeekDays( unsigned int weekDays );
 
         void                        setupMembers( data::ModelEventPtr event );
+
+        QPushButton*                createRemoveMemberButton( const QString& memberId );
 
         Ui::WidgetEventSettings*    _p_ui     = nullptr;
 
