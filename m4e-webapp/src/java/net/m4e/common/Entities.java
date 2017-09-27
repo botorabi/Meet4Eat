@@ -12,40 +12,30 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 import net.m4e.system.core.Log;
 
 /**
- * A collection of usual entity related utilities.
+ * A collection of entity related utilities.
  * 
  * @author boto
  * Date of creation Aug 22, 2017
  */
-public class EntityUtils {
+public class Entities {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "EntityUtils";
+    private final static String TAG = "Entities";
 
     private final EntityManager entityManager;
 
-    private final UserTransaction userTransaction;
-
     /**
-     * Create the utils instance for given entity manager and user transaction object.
+     * Create the instance for given entity manager.
      * 
      * @param entityManager   Entity manager
-     * @param userTransaction User transaction
      */
-    public EntityUtils(EntityManager entityManager, UserTransaction userTransaction) {
+    public Entities(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
     /**
@@ -53,18 +43,9 @@ public class EntityUtils {
      * 
      * @param <T>
      * @param entity        Entity instance which is created in database
-     * @throws Exception    Throws exception if any problem occurred.
      */
-    public <T> void createEntity(T entity) throws Exception {
-        try {
-            userTransaction.begin();
-            entityManager.persist(entity);
-            userTransaction.commit();
-        }
-        catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
-            userTransaction.rollback();
-            throw ex;
-        }
+    public <T> void createEntity(T entity) {
+        entityManager.persist(entity);
     }
 
     /**
@@ -72,18 +53,9 @@ public class EntityUtils {
      * 
      * @param <T>
      * @param entity        Entity instance which is deleted in database
-     * @throws Exception    Throws exception if any problem occurs.
      */
-    public <T> void deleteEntity(T entity) throws Exception {
-        try {
-            userTransaction.begin();
-            entityManager.remove(entityManager.merge(entity));        
-            userTransaction.commit();
-        }
-        catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
-            userTransaction.rollback();
-            throw ex;
-        }
+    public <T> void deleteEntity(T entity) {
+        entityManager.remove(entityManager.merge(entity));        
     }
 
     /**
@@ -91,18 +63,9 @@ public class EntityUtils {
      * 
      * @param <T>
      * @param entity        Entity instance which is updated in database
-     * @throws Exception    Throws exception if any problem occurs.
      */
-    public <T> void updateEntity(T entity) throws Exception {
-        try {
-            userTransaction.begin();
-            entityManager.merge(entity);        
-            userTransaction.commit();
-        }
-        catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
-            userTransaction.rollback();
-            throw ex;
-        }
+    public <T> void updateEntity(T entity)  {
+        entityManager.merge(entity);        
     }
 
    /**

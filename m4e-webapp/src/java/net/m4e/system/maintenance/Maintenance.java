@@ -8,7 +8,6 @@
 
 package net.m4e.system.maintenance;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -18,43 +17,39 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
-import net.m4e.app.event.EventUtils;
+import net.m4e.app.event.Events;
 import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.UserUtils;
-import net.m4e.common.EntityUtils;
+import net.m4e.app.user.Users;
+import net.m4e.common.Entities;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfoUtils;
+import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 
+
 /**
- * A collection of maintenance utilities
+ * Maintenance contains the app maintenance related functionality.
  * 
  * @author boto
  * Date of creation Sep 8, 2017
  */
-public class MaintenanceUtils {
+public class Maintenance {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "MaintenanceUtils";
+    private final static String TAG = "Maintenance";
 
     private final EntityManager entityManager;
 
-    private final UserTransaction userTransaction;
-
     /**
-     * Create the utils instance for given entity manager and user transaction object.
+     * Create the instance for given entity manager.
      * 
      * @param entityManager   Entity manager
-     * @param userTransaction User transaction
      */
-    public MaintenanceUtils(EntityManager entityManager, UserTransaction userTransaction) {
+    public Maintenance(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
     /**
@@ -92,9 +87,9 @@ public class MaintenanceUtils {
      * @return Count of purged resources
      */
     private int purgeDeletedResources() {
-        UserUtils   userutils   = new UserUtils(entityManager, userTransaction);
-        EventUtils  eventutils  = new EventUtils(entityManager, userTransaction);
-        EntityUtils entityutils = new EntityUtils(entityManager, userTransaction);
+        Users       userutils   = new Users(entityManager);
+        Events      eventutils  = new Events(entityManager);
+        Entities    entityutils = new Entities(entityManager);
 
         int countpurges = 0;
 
@@ -105,26 +100,29 @@ public class MaintenanceUtils {
         for (EventEntity event: events) {
             try {
                 if (event.getStatus().getIsDeleted()) {
+                    // NOTE if we remove the entire event, then there is no need for selectively remove 
+                    //      event resources such as locations and members, see the else branch. they are
+                    //      are removed automatically (see the EventEntity).
                     eventutils.deleteEvent(event);
                     countpurges++;
                 }
                 else {
                     // remove dead members
                     eventutils.removeAnyMember(event, users);
-                }
-                // purge deleted event locations
-                Collection<EventLocationEntity> locs = event.getLocations();
-                if (Objects.nonNull(locs)) {
-                    Predicate<EventLocationEntity> pred = ev-> ev.getStatus().getIsDeleted();
-                    List<EventLocationEntity> deadlocs = locs.stream().filter(pred).collect(Collectors.toList());
-                    // update event's location list
-                    locs.removeAll(deadlocs);
-                    entityutils.updateEntity(event);
-                    // delete the locations
-                    for (EventLocationEntity loc: deadlocs) {
-                        entityutils.deleteEntity(loc);
+                    // purge deleted event locations
+                    Collection<EventLocationEntity> locs = event.getLocations();
+                    if (Objects.nonNull(locs)) {
+                        Predicate<EventLocationEntity> pred = ev-> ev.getStatus().getIsDeleted();
+                        List<EventLocationEntity> deadlocs = locs.stream().filter(pred).collect(Collectors.toList());
+                        // update event's location list
+                        locs.removeAll(deadlocs);
+                        entityutils.updateEntity(event);
+                        // delete the locations
+                        for (EventLocationEntity loc: deadlocs) {
+                            entityutils.deleteEntity(loc);
+                        }
+                        countpurges += deadlocs.size();
                     }
-                    countpurges += deadlocs.size();
                 }
             }
             catch(Exception ex) {
@@ -152,7 +150,7 @@ public class MaintenanceUtils {
      */
     public void updateAppInfo() {
         // upate app info
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
         if (Objects.isNull(info)) {
             Log.warning(TAG, "Could not update app info");
@@ -160,11 +158,11 @@ public class MaintenanceUtils {
         }
 
         // update the purge counters
-        UserUtils   userutils  = new UserUtils(entityManager, userTransaction);
-        EventUtils  eventutils = new EventUtils(entityManager, userTransaction);
-        int purgeusers     = userutils.getMarkedAsDeletedUsers().size();
-        int purgeevents    = eventutils.getMarkedAsDeletedEvents().size();
-        int purgeeventlocs = eventutils.getMarkedAsDeletedEventLocations().size();
+        Users   userutils      = new Users(entityManager);
+        Events  eventutils     = new Events(entityManager);
+        int     purgeusers     = userutils.getMarkedAsDeletedUsers().size();
+        int     purgeevents    = eventutils.getMarkedAsDeletedEvents().size();
+        int     purgeeventlocs = eventutils.getMarkedAsDeletedEventLocations().size();
 
         info.setEventCountPurge(new Long(purgeevents));
         info.setEventLocationCountPurge(new Long(purgeeventlocs));

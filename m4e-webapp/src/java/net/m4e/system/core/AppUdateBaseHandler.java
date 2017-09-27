@@ -8,7 +8,6 @@
 package net.m4e.system.core;
 
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 
 /**
  * Base class for all update classes. A concrete update class is automatically
@@ -63,8 +62,7 @@ public abstract class AppUdateBaseHandler {
      * Perform the update.
      * 
      * @param entityManager   For the case that any entity structure manipulation is needed
-     * @param userTransaction Used for manipulating entities in database
      * @throws Exception This exception is thrown if something went wrong.
      */
-    public abstract void performUpdate(EntityManager entityManager, UserTransaction userTransaction) throws Exception;
+    public abstract void performUpdate(EntityManager entityManager) throws Exception;
 }

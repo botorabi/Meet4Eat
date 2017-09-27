@@ -114,7 +114,7 @@ public class AuthChecker {
      */
     private <T> void setupRules(List<Class<T>> beanClasses) {
         // gather information from all bean classes about authorization relevant annotations
-        AnnotationUtils autils = new AnnotationUtils();
+        Annotations autils = new Annotations();
         beanClasses.stream().map((cls) -> {
             Log.debug(TAG, " adding rules for bean class " + cls.getName());
             return cls;
@@ -123,7 +123,7 @@ public class AuthChecker {
             String classrulepath = autils.getClassPath(cls);
 
             //! NOTE Currently we check access only againes roles, but AuthRole provides also definition of
-            //        permissions (see AnnotationUtils.getMethodsAuthPermissions), so in future it is possible
+            //        permissions (see Annotations.getMethodsAuthPermissions), so in future it is possible
             //        to provide a more fine-grained access control if needed.
             autils.getMethodsAuthRoles(cls).entrySet().stream().forEach((pathentry) -> {
                 

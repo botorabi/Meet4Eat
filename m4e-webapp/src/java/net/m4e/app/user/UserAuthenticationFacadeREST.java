@@ -10,10 +10,7 @@ package net.m4e.app.user;
 
 import java.io.StringReader;
 import java.util.Objects;
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -22,7 +19,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -43,7 +39,6 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/authentication")
-@TransactionManagement(TransactionManagementType.BEAN)
 public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<UserEntity> {
 
     /**
@@ -57,12 +52,6 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
     @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
     private EntityManager entityManager;
 
-    /**
-     * User transaction needed for entity modifications.
-     */
-    @Resource
-    private UserTransaction userTransaction;
-    
     /**
      * Construct the stateless bean.
      */
@@ -131,7 +120,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         }
 
         // try to find the user in database
-        UserUtils userutils = new UserUtils(entityManager, userTransaction);
+        Users userutils = new Users(entityManager);
         UserEntity existinguser = userutils.findUser(login);
         if (Objects.isNull(existinguser) || !existinguser.getStatus().getIsActive()) {
             Log.debug(TAG, "  User login attempt failed, no user with this login found, user (" + login+ ")");
@@ -180,13 +169,5 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
-    }
-
-    /**
-     * Get the user transaction instance.
-     * @return 
-     */
-    protected UserTransaction getUserTransaction() {
-        return userTransaction;
     }
 }

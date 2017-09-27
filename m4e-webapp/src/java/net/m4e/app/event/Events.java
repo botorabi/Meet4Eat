@@ -21,18 +21,17 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 import net.m4e.app.auth.AuthRole;
-import net.m4e.common.EntityUtils;
+import net.m4e.common.Entities;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.common.StringUtils;
+import net.m4e.common.Strings;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfoUtils;
+import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.UserUtils;
+import net.m4e.app.user.Users;
 
 /**
  * A collection of event related utilities
@@ -40,26 +39,22 @@ import net.m4e.app.user.UserUtils;
  * @author boto
  * Date of creation Sep 4, 2017
  */
-public class EventUtils {
+public class Events {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "EventUtils";
+    private final static String TAG = "Events";
 
     private final EntityManager entityManager;
-
-    private final UserTransaction userTransaction;
 
     /**
      * Create an instance of event utilities.
      * 
      * @param entityManager    Entity manager
-     * @param userTransaction  User transaction
      */
-    public EventUtils(EntityManager entityManager, UserTransaction userTransaction) {
+    public Events(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
     /**
@@ -101,10 +96,9 @@ public class EventUtils {
      * Given an event entity filled with all its fields, create it in database.
      * 
      * @param event         Event entity
-     * @throws Exception    Throws exception if any problem occurred.
      */
-    public void createEventEntity(EventEntity event) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+    public void createEventEntity(EventEntity event) {
+        Entities eutils = new Entities(entityManager);
 
         // photo and members are shared objects, so remove them before event creation
         DocumentEntity photo = event.getPhoto();
@@ -125,10 +119,9 @@ public class EventUtils {
      * Delete the given event entity permanently from database.
      * 
      * @param event         Event entity
-     * @throws Exception    Throws exception if any problem occurred.
      */
-    public void deleteEvent(EventEntity event) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+    public void deleteEvent(EventEntity event) {
+        Entities eutils = new Entities(entityManager);
         eutils.deleteEntity(event);
     }
 
@@ -136,17 +129,10 @@ public class EventUtils {
      * Update event.
      * 
      * @param event       Event entity to update
-     * @throws Exception  Throws exception if any problem occurred.
      */
-    public void updateEvent(EventEntity event) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
-        try {
-            eutils.updateEntity(event);
-        }
-        catch (Exception ex) {
-            Log.error(TAG, "*** Could not update event '" + event.getName() + "', id: " + event.getId());
-            throw ex;
-        }
+    public void updateEvent(EventEntity event) {
+        Entities eutils = new Entities(entityManager);
+        eutils.updateEntity(event);
     }
 
     /**
@@ -156,7 +142,7 @@ public class EventUtils {
      * @return Return an entity if found, otherwise return null.
      */
     public EventEntity findEvent(Long id) {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         EventEntity event = eutils.findEntity(EventEntity.class, id);
         return event;
     }
@@ -166,10 +152,10 @@ public class EventUtils {
      * 
      * @param event         Event entity
      * @param image         Image to set to given event
-     * @throws Exception    Throws exception if any problem occurred.
+     * @throws Exception  Throws an exception if something goes wrong.
      */
     void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
-        DocumentPool imagepool = new DocumentPool(entityManager,userTransaction);
+        DocumentPool imagepool = new DocumentPool(entityManager);
         DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
         if (!imagepool.compareETag(event.getPhoto(), img.getETag())) {
             imagepool.releasePoolDocument(event.getPhoto());
@@ -266,7 +252,7 @@ public class EventUtils {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void markEventAsDeleted(EventEntity event) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         StatusEntity status = event.getStatus();
         if (Objects.isNull(status)) {
             throw new Exception("Event has no status field!");
@@ -275,7 +261,7 @@ public class EventUtils {
         eutils.updateEntity(event);
 
         // update the app stats
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         if (Objects.isNull(appinfo)) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
@@ -290,7 +276,7 @@ public class EventUtils {
      * @return List of events which are marked as deleted.
      */
     public List<EventEntity> getMarkedAsDeletedEvents() {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         List<EventEntity> events = eutils.findAllEntities(EventEntity.class);
         List<EventEntity> deletedevents = new ArrayList<>();
         for (EventEntity event: events) {
@@ -307,7 +293,7 @@ public class EventUtils {
      * @return List of event locations which are marked as deleted.
      */
     public List<EventLocationEntity> getMarkedAsDeletedEventLocations() {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         List<EventLocationEntity> eventlocs = eutils.findAllEntities(EventLocationEntity.class);
         List<EventLocationEntity> deletedeventlocs = new ArrayList<>();
         for (EventLocationEntity loc: eventlocs) {
@@ -369,7 +355,7 @@ public class EventUtils {
         String     ownername, ownerphotoetag;
         Long       ownerphotoid;
         Long       ownerid   = entity.getStatus().getIdOwner();
-        UserUtils  userutils = new UserUtils(entityManager, userTransaction);
+        Users      userutils = new Users(entityManager);
         UserEntity owner     = userutils.findUser(ownerid);
         if (Objects.isNull(owner) || !owner.getStatus().getIsActive()) {
             ownerid = 0L;
@@ -425,10 +411,10 @@ public class EventUtils {
 
         EventEntity entity = new EventEntity();
         if (Objects.nonNull(name)) {
-            entity.setName(StringUtils.limitStringLen(name, 32));
+            entity.setName(Strings.limitStringLen(name, 32));
         }
         if (Objects.nonNull(description)) {
-            entity.setDescription(StringUtils.limitStringLen(description, 1000));
+            entity.setDescription(Strings.limitStringLen(description, 1000));
         }
         if (eventstart > 0L) {
             entity.setEventStart(eventstart);
@@ -460,7 +446,7 @@ public class EventUtils {
      * @return         All user relevant events in JSON format
      */
     public JsonObjectBuilder exportUserEventJSON(EventEntity event, UserEntity user) {
-        UserUtils         userutils = new UserUtils(entityManager, userTransaction);
+        Users             userutils = new Users(entityManager);
         boolean           privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonObjectBuilder json      = Json.createObjectBuilder();
         boolean           doexp     = event.getStatus().getIsActive()&& 
@@ -482,7 +468,7 @@ public class EventUtils {
      */
     public JsonArrayBuilder exportUserEventsJSON(List<EventEntity> events, UserEntity user) {
         //! NOTE: Although we could make use of method exportUserEventJSON here, we don't in the sake of performance!
-        UserUtils        userutils = new UserUtils(entityManager, userTransaction);
+        Users            userutils = new Users(entityManager);
         boolean          privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonArrayBuilder allevents = Json.createArrayBuilder();
         events.stream()

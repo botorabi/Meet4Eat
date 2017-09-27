@@ -9,16 +9,12 @@
 package net.m4e.app.resources;
 
 import java.util.Objects;
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.UserTransaction;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -38,7 +34,6 @@ import static net.m4e.common.ResponseResults.*;
  */
 @Stateless
 @Path("/rest/docs")
-@TransactionManagement(TransactionManagementType.BEAN)
 public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
 
     /**
@@ -46,12 +41,6 @@ public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
      */
     @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
     private EntityManager entityManager;
-
-    /**
-     * User transaction needed for entity modifications.
-     */
-    @Resource
-    private UserTransaction userTransaction;
 
     /**
      * Create the Document entity REST facade.

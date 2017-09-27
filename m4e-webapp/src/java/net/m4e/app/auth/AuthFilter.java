@@ -43,12 +43,14 @@ public class AuthFilter implements Filter {
     private static final String PARAM_BASE_PATH = "basePath";
 
     /**
-     * Configuration parameter name for "publicBasePath"
+     * Configuration parameter name for "publicBasePath" used for defining path
+     * which is not restricted in access.
      */
     private static final String PARAM_BASE_PATH_PUBLIC = "publicBasePath";
 
     /**
-     * Configuration parameter name for "protectedBasePath"
+     * Configuration parameter name for "protectedBasePath" used for a base path
+     * which is restricted in access.
      */
     private static final String PARAM_BASE_PATH_PROTECTED = "protectedBasePath";
 
@@ -209,26 +211,17 @@ public class AuthFilter implements Filter {
      * @throws ServletException 
      */
     protected void processRequest(ServletRequest request, ServletResponse response, FilterChain chain)
-                                    throws IOException, ServletException{
-        
-        Throwable problem = null;
+                                    throws IOException, ServletException {
+
         try {
             chain.doFilter(request, response);
         }
         catch (IOException | ServletException ex) {
             Log.error(TAG, "*** A problem occured while executing filters, reason: " + ex.getLocalizedMessage());
-            problem = ex;
-        }
-
-        if (problem != null) {
-            if (problem instanceof ServletException) {
-                throw (ServletException) problem;
-            }
-            if (problem instanceof IOException) {
-                throw (IOException) problem;
-            }
             response.getWriter().print(ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK,
-                                       "Problem occurred while processing filter chain, reason: " + problem.getLocalizedMessage(), 500, null));
+                                       "Problem occurred while processing filter chain, reason: " + ex.getLocalizedMessage(),
+                                       ResponseResults.CODE_INTERNAL_SRV_ERROR, null));
+            throw ex;
         }
     }
 
