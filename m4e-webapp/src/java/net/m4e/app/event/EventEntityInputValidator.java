@@ -11,8 +11,7 @@ package net.m4e.app.event;
 import java.util.Collection;
 import java.util.Objects;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
-import net.m4e.common.StringUtils;
+import net.m4e.common.Strings;
 
 /**
  * This class validates event entity related inputs from a client.
@@ -30,17 +29,13 @@ public class EventEntityInputValidator {
 
     private final EntityManager entityManager;
 
-    private final UserTransaction userTransaction;
-
     /**
      * Create an instance of input validator.
      * 
      * @param entityManager    Entity manager
-     * @param userTransaction  User transaction
      */
-    public EventEntityInputValidator(EntityManager entityManager, UserTransaction userTransaction) {
+    public EventEntityInputValidator(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
    /**
@@ -52,17 +47,17 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventEntity validateNewEntityInput(String eventJson) throws Exception {
-        EventUtils eventutils = new EventUtils(entityManager, userTransaction);
+        Events eventutils = new Events(entityManager);
         EventEntity entity = eventutils.importEventJSON(eventJson);
         if (entity == null) {
             throw new Exception("Failed to create event, invalid input.");
         }
 
-        if (!StringUtils.checkMinMaxLength(entity.getName(), EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME)) {
+        if (!Strings.checkMinMaxLength(entity.getName(), EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME)) {
             throw new Exception(getLenRangeText("Event name", EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME));
         }
         if (Objects.nonNull(entity.getDescription())) {
-            if (!StringUtils.checkMinMaxLength(entity.getDescription(), EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC)) {
+            if (!Strings.checkMinMaxLength(entity.getDescription(), EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC)) {
                 throw new Exception(getLenRangeText("Event description", EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC));
             }            
         }
@@ -78,17 +73,17 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventEntity validateUpdateEntityInput(String userJson) throws Exception {
-        EventUtils  eventutils = new EventUtils(entityManager, userTransaction);
+        Events  eventutils = new Events(entityManager);
         EventEntity entity = eventutils.importEventJSON(userJson);
         if (Objects.isNull(entity)) {
             throw new Exception("Failed to update event, invalid input.");
         }
 
         // NOTE: for updating an entity, the some fields may not exist. those fields do not get changed, it is.
-        if (Objects.nonNull(entity.getName()) && !StringUtils.checkMinMaxLength(entity.getName(), EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME)) {
+        if (Objects.nonNull(entity.getName()) && !Strings.checkMinMaxLength(entity.getName(), EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME)) {
             throw new Exception(getLenRangeText("Event name", EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME));
         }
-        if (Objects.nonNull(entity.getDescription()) && !StringUtils.checkMinMaxLength(entity.getDescription(), EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC)) {
+        if (Objects.nonNull(entity.getDescription()) && !Strings.checkMinMaxLength(entity.getDescription(), EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC)) {
             throw new Exception(getLenRangeText("Event description", EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC));
         }
         return entity;
@@ -104,18 +99,18 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventLocationEntity validateLocationInput(String locationJson, EventEntity event) throws Exception {
-        EventLocationUtils  locationutils = new EventLocationUtils(entityManager, userTransaction);
+        EventLocations  locationutils = new EventLocations(entityManager);
         EventLocationEntity entity = locationutils.importLocationJSON(locationJson);
         if (Objects.isNull(entity)) {
             throw new Exception("Failed to validate location input.");
         }
 
-        if (!StringUtils.checkMinMaxLength(entity.getName(), EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME)) {
+        if (!Strings.checkMinMaxLength(entity.getName(), EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME)) {
             throw new Exception(getLenRangeText("Event name", EVENT_INPUT_MIN_LEN_NAME, EVENT_INPUT_MAX_LEN_NAME));
         }
 
         if (Objects.nonNull(entity.getDescription())) {
-            if (!StringUtils.checkMinMaxLength(entity.getDescription(), EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC)) {
+            if (!Strings.checkMinMaxLength(entity.getDescription(), EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC)) {
                 throw new Exception(getLenRangeText("Event description", EVENT_INPUT_MIN_LEN_DESC, EVENT_INPUT_MAX_LEN_DESC));
             }            
         }

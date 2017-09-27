@@ -24,15 +24,14 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
-import net.m4e.common.EntityUtils;
+import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfoUtils;
+import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 
 /**
@@ -41,26 +40,22 @@ import net.m4e.system.core.Log;
  * @author boto
  * Date of creation Aug 28, 2017
  */
-public class UserUtils {
+public class Users {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "UserUtils";
+    private final static String TAG = "Users";
 
     private final EntityManager entityManager;
-
-    private final UserTransaction userTransaction;
 
     /**
      * Create an instance of user utilities.
      * 
      * @param entityManager    Entity manager
-     * @param userTransaction  User transaction
      */
-    public UserUtils(EntityManager entityManager, UserTransaction userTransaction) {
+    public Users(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.userTransaction = userTransaction;
     }
 
     /**
@@ -117,7 +112,7 @@ public class UserUtils {
      */
     public Collection<RoleEntity> adaptRequestedRoles(UserEntity requestingUser, Collection<RoleEntity> requestedRoles) {
         Collection<RoleEntity> res = new HashSet<>();
-        List<String> allowedroles = UserUtils.getAvailableUserRoles();
+        List<String> allowedroles = Users.getAvailableUserRoles();
         List<String> reqroles = requestingUser.getRolesAsString();
         boolean isadmin  = reqroles.contains(AuthRole.USER_ROLE_ADMIN);
         // check if any invalid role definitions exist, e.g. a normal user is not permitted to request for an admin role.
@@ -182,7 +177,7 @@ public class UserUtils {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void createUserEntity(UserEntity user) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         // we have to remove the role collection and re-add it after entity creation,
         //   otherwise new roles are created instead of using existing ones!
         List<String> roles = user.getRolesAsString();
@@ -201,7 +196,7 @@ public class UserUtils {
      * @param user User entity to update
      */
     public void updateUser(UserEntity user) {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         try {
             eutils.updateEntity(user);
         }
@@ -218,7 +213,7 @@ public class UserUtils {
      * @throws Exception    Throws exception if any problem occurred.
      */
     void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
-        DocumentPool imagepool = new DocumentPool(entityManager,userTransaction);
+        DocumentPool imagepool = new DocumentPool(entityManager);
         DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
         if (!imagepool.compareETag(user.getPhoto(), img.getETag())) {
             imagepool.releasePoolDocument(user.getPhoto());
@@ -239,7 +234,7 @@ public class UserUtils {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void markUserAsDeleted(UserEntity user) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         StatusEntity status = user.getStatus();
         if (Objects.isNull(status)) {
             throw new Exception("User has no status field!");
@@ -248,7 +243,7 @@ public class UserUtils {
         eutils.updateEntity(user);
 
         // update the app stats
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         if (Objects.isNull(appinfo)) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
@@ -263,7 +258,7 @@ public class UserUtils {
      * @return List of users which are marked as deleted.
      */
     public List<UserEntity> getMarkedAsDeletedUsers() {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         List<UserEntity> users = eutils.findAllEntities(UserEntity.class);
         List<UserEntity> deletedusers = new ArrayList<>();
         for (UserEntity user: users) {
@@ -281,7 +276,7 @@ public class UserUtils {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void deleteUser(UserEntity user) throws Exception {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         eutils.deleteEntity(user);
     }
 
@@ -292,7 +287,7 @@ public class UserUtils {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUser(Long id) {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         UserEntity user = eutils.findEntity(UserEntity.class, id);
         return user;
     }
@@ -304,7 +299,7 @@ public class UserUtils {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUser(String login) {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         List<UserEntity> entities = eutils.findEntityByField(UserEntity.class, "login", login);
         if (entities.size() == 1) {
             return entities.get(0);
@@ -321,7 +316,7 @@ public class UserUtils {
      * @param user User entity to update
      */
     public void updateUserLastLogin(UserEntity user) {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         user.setDateLastLogin((new Date().getTime()));
         try {
             eutils.updateEntity(user);
@@ -338,7 +333,7 @@ public class UserUtils {
      * @param roles     User roles
      */
     public void addUserRoles(UserEntity user, List<String> roles) {
-        EntityUtils eutils = new EntityUtils(entityManager, userTransaction);
+        Entities eutils = new Entities(entityManager);
         for (String role: roles) {
             // ignore empty strings
             if (role.isEmpty()) {

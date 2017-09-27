@@ -9,16 +9,12 @@
 package net.m4e.app.resources;
 
 import java.util.Objects;
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.UserTransaction;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -37,7 +33,6 @@ import net.m4e.common.ResponseResults;
  */
 @Stateless
 @Path("/rest/docs")
-@TransactionManagement(TransactionManagementType.BEAN)
 public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
 
     /**
@@ -45,12 +40,6 @@ public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
      */
     @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
     private EntityManager entityManager;
-
-    /**
-     * User transaction needed for entity modifications.
-     */
-    @Resource
-    private UserTransaction userTransaction;
 
     /**
      * Create the Document entity REST facade.
@@ -88,7 +77,7 @@ public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
-        DocumentUtils utils = new DocumentUtils(entityManager, userTransaction);
+        Documents utils = new Documents();
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Document was found.", ResponseResults.CODE_OK, utils.exportDocumentJSON(document).build().toString());
     }
 }

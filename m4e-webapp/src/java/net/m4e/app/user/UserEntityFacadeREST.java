@@ -11,17 +11,13 @@ package net.m4e.app.user;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -34,10 +30,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.common.EntityUtils;
+import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfoUtils;
+import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 
 /**
@@ -48,7 +44,6 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/users")
-@TransactionManagement(TransactionManagementType.BEAN)
 public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEntity> {
 
     /**
@@ -63,15 +58,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     private EntityManager entityManager;
 
     /**
-     * User transaction needed for entity modifications.
-     */
-    @Resource
-    private UserTransaction userTransaction;
-
-    /**
      * User utilities
      */
-    UserUtils userUtils;
+    Users userUtils;
 
     /**
      * Create the user entity REST facade.
@@ -103,7 +92,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
         UserEntity reqentity;
         try {
-            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager, userTransaction);
+            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager);
             reqentity = validator.validateNewEntityInput(userJson);
         }
         catch (Exception ex) {
@@ -112,11 +101,11 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         // validate and adapt requested user roles
-        reqentity.setRoles(getUserUtils().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
+        reqentity.setRoles(getUsers().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
 
         UserEntity newuser;
         try {
-            newuser = getUserUtils().createNewUser(reqentity, sessionuser.getId());
+            newuser = getUsers().createNewUser(reqentity, sessionuser.getId());
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not create new user, reaon: " + ex.getLocalizedMessage());
@@ -153,7 +142,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
         UserEntity reqentity;
         try {
-            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager, userTransaction);
+            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager);
             reqentity = validator.validateUpdateEntityInput(userJson);
         }
         catch(Exception ex) {
@@ -168,14 +157,14 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         // check if a user is updating itself or a user with higher privilege is trying to modify a user
-        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
+        if (!getUsers().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
             Log.warning(TAG, "*** User was attempting to update another user without proper privilege!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, insufficient privilege.",
                                              ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
         // validate the requested roles, check for roles, e.g. only admins can define admin role for other users
-        user.setRoles(getUserUtils().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
+        user.setRoles(getUsers().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
 
         // take over non-empty fields
         if (Objects.nonNull(reqentity.getName()) && !reqentity.getName().isEmpty()) {
@@ -189,7 +178,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
         if (Objects.nonNull(reqentity.getPhoto())) {
             try {
-                getUserUtils().updateUserImage(user, reqentity.getPhoto());
+                getUsers().updateUserImage(user, reqentity.getPhoto());
             }
             catch (Exception ex) {
                 Log.warning(TAG, "*** User image could not be updated, reason: " + ex.getLocalizedMessage());
@@ -197,7 +186,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         try {
-            getUserUtils().updateUser(user);
+            getUsers().updateUser(user);
         }
         catch (Exception ex) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user.",
@@ -241,7 +230,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         try {
-            getUserUtils().markUserAsDeleted(user);
+            getUsers().markUserAsDeleted(user);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not mark user as deleted, reason: " + ex.getLocalizedMessage());
@@ -267,7 +256,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
            return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());        
         }
 
-        EntityUtils utils = new EntityUtils(entityManager, userTransaction);
+        Entities utils = new Entities(entityManager);
         List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
         for (UserEntity hit: hits) {
             if (!hit.getStatus().getIsActive()) {
@@ -275,7 +264,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             }
             JsonObjectBuilder json = Json.createObjectBuilder();
             json.add("id", hit.getId());
-            json.add("name", Objects.nonNull(hit.getName()) ? hit.getName() : "???");
+            json.add("name", Objects.nonNull(hit.getName()) ? hit.getName() : "");
+            json.add("photoId", Objects.nonNull(hit.getPhoto()) ? hit.getPhoto().getId() : 0);
+            json.add("photoETag", Objects.nonNull(hit.getPhoto()) ? hit.getPhoto().getETag() : "");
             results.add(json);
         }
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());
@@ -301,10 +292,10 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
+        if (!getUsers().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Insufficient privilege", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());            
         }
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was found.", ResponseResults.CODE_OK, getUserUtils().exportUserJSON(user).build().toString());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was found.", ResponseResults.CODE_OK, getUsers().exportUserJSON(user).build().toString());
     }
 
     /**
@@ -319,7 +310,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String findAllUsers(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         List<UserEntity> users = super.findAll();
-        JsonArrayBuilder allusers = getUserUtils().exportUsersJSON(users, sessionuser);
+        JsonArrayBuilder allusers = getUsers().exportUsersJSON(users, sessionuser);
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
     }
 
@@ -338,7 +329,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         List<UserEntity> users = super.findRange(new int[]{from, to});
-        JsonArrayBuilder allusers = getUserUtils().exportUsersJSON(users, sessionuser);
+        JsonArrayBuilder allusers = getUsers().exportUsersJSON(users, sessionuser);
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
     }
 
@@ -354,7 +345,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String countREST() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         // NOTE the final user count is the count of UserEntity entries in database minus the count of users to be purged
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         Long userpurges = appinfo.getUserCountPurge();
         jsonresponse.add("count", super.count() - userpurges);
@@ -376,9 +367,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      * 
      * @return User utils
      */
-    private UserUtils getUserUtils() {
+    private Users getUsers() {
         if (Objects.isNull(userUtils)) {
-            userUtils = new UserUtils(entityManager, userTransaction);
+            userUtils = new Users(entityManager);
         }
         return userUtils;
     }
