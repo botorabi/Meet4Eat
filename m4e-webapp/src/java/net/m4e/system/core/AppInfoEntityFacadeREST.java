@@ -56,7 +56,7 @@ public class AppInfoEntityFacadeREST extends net.m4e.common.AbstractFacade<AppIn
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
     public String getInfo() {
-        AppInfoUtils autils = new AppInfoUtils(entityManager);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
         if (Objects.isNull(info)) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);

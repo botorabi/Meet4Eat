@@ -19,7 +19,7 @@ import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.auth.PermissionEntity;
 import net.m4e.app.auth.RoleEntity;
-import net.m4e.common.EntityUtils;
+import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
@@ -78,7 +78,7 @@ public class UpdateInit extends AppUdateBaseHandler {
      * @param entityManager     Entity manager
      */
     private void setupPermissions(EntityManager entityManager) {
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         Log.debug(TAG, "  Setup permissions in database");
         for (String permname: AuthorityConfig.getInstance().getDefaultPermissions()) {
             // check if the permission already exists in database (should actually not happen)
@@ -99,7 +99,7 @@ public class UpdateInit extends AppUdateBaseHandler {
      * @param entityManager     Entity manager
      */
     private void setupRoles(EntityManager entityManager) {
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         Log.debug(TAG, "  Setup roles in database");
 
         for (Map.Entry<String, List<String>> role: AuthorityConfig.getInstance().getDefaultRoles().entrySet()) {
@@ -148,7 +148,7 @@ public class UpdateInit extends AppUdateBaseHandler {
      * @param entityManager     Entity manager
      */
     private void setupAdminUser(EntityManager entityManager) {
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         Log.debug(TAG, "  Create user: admin");
         UserEntity user = new UserEntity();
         user.setName("Administrator");

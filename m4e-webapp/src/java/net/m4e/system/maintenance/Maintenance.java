@@ -19,35 +19,36 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
-import net.m4e.app.event.EventUtils;
+import net.m4e.app.event.Events;
 import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.UserUtils;
-import net.m4e.common.EntityUtils;
+import net.m4e.app.user.Users;
+import net.m4e.common.Entities;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfoUtils;
+import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 
+
 /**
- * A collection of maintenance utilities
+ * Maintenance contains the app maintenance related functionality.
  * 
  * @author boto
  * Date of creation Sep 8, 2017
  */
-public class MaintenanceUtils {
+public class Maintenance {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "MaintenanceUtils";
+    private final static String TAG = "Maintenance";
 
     private final EntityManager entityManager;
 
     /**
-     * Create the utils instance for given entity manager and user transaction object.
+     * Create the instance for given entity manager.
      * 
      * @param entityManager   Entity manager
      */
-    public MaintenanceUtils(EntityManager entityManager) {
+    public Maintenance(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -86,9 +87,9 @@ public class MaintenanceUtils {
      * @return Count of purged resources
      */
     private int purgeDeletedResources() {
-        UserUtils   userutils   = new UserUtils(entityManager);
-        EventUtils  eventutils  = new EventUtils(entityManager);
-        EntityUtils entityutils = new EntityUtils(entityManager);
+        Users       userutils   = new Users(entityManager);
+        Events      eventutils  = new Events(entityManager);
+        Entities    entityutils = new Entities(entityManager);
 
         int countpurges = 0;
 
@@ -149,7 +150,7 @@ public class MaintenanceUtils {
      */
     public void updateAppInfo() {
         // upate app info
-        AppInfoUtils autils = new AppInfoUtils(entityManager);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
         if (Objects.isNull(info)) {
             Log.warning(TAG, "Could not update app info");
@@ -157,11 +158,11 @@ public class MaintenanceUtils {
         }
 
         // update the purge counters
-        UserUtils   userutils  = new UserUtils(entityManager);
-        EventUtils  eventutils = new EventUtils(entityManager);
-        int purgeusers     = userutils.getMarkedAsDeletedUsers().size();
-        int purgeevents    = eventutils.getMarkedAsDeletedEvents().size();
-        int purgeeventlocs = eventutils.getMarkedAsDeletedEventLocations().size();
+        Users   userutils      = new Users(entityManager);
+        Events  eventutils     = new Events(entityManager);
+        int     purgeusers     = userutils.getMarkedAsDeletedUsers().size();
+        int     purgeevents    = eventutils.getMarkedAsDeletedEvents().size();
+        int     purgeeventlocs = eventutils.getMarkedAsDeletedEventLocations().size();
 
         info.setEventCountPurge(new Long(purgeevents));
         info.setEventLocationCountPurge(new Long(purgeeventlocs));

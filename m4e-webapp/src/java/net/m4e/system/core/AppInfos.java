@@ -9,7 +9,7 @@ package net.m4e.system.core;
 
 import java.util.List;
 import javax.persistence.EntityManager;
-import net.m4e.common.EntityUtils;
+import net.m4e.common.Entities;
 
 /**
  * A collection of app info related utilities.
@@ -17,21 +17,21 @@ import net.m4e.common.EntityUtils;
  * @author boto
  * Date of creation Aug 22, 2017
  */
-public class AppInfoUtils {
+public class AppInfos {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "AppInfoUtils";
+    private final static String TAG = "AppInfos";
 
     private final EntityManager entityManager;
 
     /**
-     * Create the utils instance for given entity manager and user transaction object.
+     * Create the instance for given entity manager.
      * 
      * @param entityManager   Entity manager
      */
-    public AppInfoUtils(EntityManager entityManager) {
+    public AppInfos(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -44,7 +44,7 @@ public class AppInfoUtils {
         //! TODO to speed up the access to this single entity we may consider a global scoped bean or 
         //        at least a session bean or something similar!
 
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         List<AppInfoEntity> infos = eutils.findAllEntities(AppInfoEntity.class);
         if (infos.size() != 1) {
             Log.error(TAG, "*** Unexpected count of app info entity detected: " + infos.size());
@@ -59,12 +59,12 @@ public class AppInfoUtils {
      * @param info App info entity
      */
     public void updateAppInfoEntity(AppInfoEntity info) {
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         try {
             eutils.updateEntity(info);
         }
         catch (Exception ex) {
-            Log.error(TAG, "*** Problem occured while updating app information in database, reason: " + ex.getLocalizedMessage());
+            Log.error(TAG, "*** Problem occured while updating app information in database, reason: " + ex.getMessage());
         }
     }
 }

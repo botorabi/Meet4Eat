@@ -77,7 +77,7 @@ public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
-        DocumentUtils utils = new DocumentUtils();
+        Documents utils = new Documents();
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Document was found.", ResponseResults.CODE_OK, utils.exportDocumentJSON(document).build().toString());
     }
 }

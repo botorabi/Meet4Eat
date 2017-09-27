@@ -23,7 +23,7 @@ import java.util.Objects;
  * @author boto
  * Date of creation Aug 23, 2017
  */
-public class AnnotationUtils {
+public class Annotations {
 
     /**
      * Get the path out of a class annotation javax.ws.rs.Path.

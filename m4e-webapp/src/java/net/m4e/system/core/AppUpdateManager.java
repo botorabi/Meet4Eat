@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
-import net.m4e.common.EntityUtils;
+import net.m4e.common.Entities;
 
 /**
  * This class cares about application updates. Whenever a new app version
@@ -75,7 +74,7 @@ public class AppUpdateManager {
         // sort all updates considering their incremental numbers
         sortUpdateRegistry();
 
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         List<AppInfoEntity> res = eutils.findAllEntities(AppInfoEntity.class);
         // check if there is already an app info entry in database
         if (res.size() > 0) {
@@ -126,8 +125,8 @@ public class AppUpdateManager {
         AppInfoEntity info = new AppInfoEntity();
         info.setVersion(appVersion);
         info.setDataLastUpdate((new Date().getTime()));
-        AppInfoUtils autils = new AppInfoUtils(entityManager);
-        EntityUtils eutils = new EntityUtils(entityManager);
+        AppInfos autils = new AppInfos(entityManager);
+        Entities eutils = new Entities(entityManager);
         try {
             eutils.createEntity(info);
         }
@@ -145,7 +144,7 @@ public class AppUpdateManager {
     private void updateAppVersionEntry(AppInfoEntity info, String appVersion) {
         info.setVersion(appVersion);
         info.setDataLastUpdate((new Date().getTime()));
-        AppInfoUtils autils = new AppInfoUtils(entityManager);
+        AppInfos autils = new AppInfos(entityManager);
         autils.updateAppInfoEntity(info);
     }
 

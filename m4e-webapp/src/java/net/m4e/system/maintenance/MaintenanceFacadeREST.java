@@ -20,7 +20,7 @@ import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfoUtils;
+import net.m4e.system.core.AppInfos;
 
 /**
  * REST Web Service for maintenance tasks
@@ -59,12 +59,12 @@ public class MaintenanceFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String stats() {
-        AppInfoUtils autils = new AppInfoUtils(entityManager);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
         if (Objects.isNull(info)) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
-        MaintenanceUtils mutils = new MaintenanceUtils(entityManager);
+        Maintenance mutils = new Maintenance(entityManager);
         String appstats = mutils.exportInfoJSON(info).build().toString();
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "System stats", ResponseResults.CODE_OK, appstats);
     }
@@ -80,7 +80,7 @@ public class MaintenanceFacadeREST {
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String purgeResources() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        MaintenanceUtils mutils = new MaintenanceUtils(entityManager);
+        Maintenance mutils = new Maintenance(entityManager);
         int countpurges = mutils.purgeResources();
         jsonresponse.add("countPurges", countpurges);
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "" +  countpurges + " resources were purged.", ResponseResults.CODE_OK, jsonresponse.build().toString());

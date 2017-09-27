@@ -15,26 +15,26 @@ import javax.persistence.criteria.Predicate;
 import net.m4e.system.core.Log;
 
 /**
- * A collection of usual entity related utilities.
+ * A collection of entity related utilities.
  * 
  * @author boto
  * Date of creation Aug 22, 2017
  */
-public class EntityUtils {
+public class Entities {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "EntityUtils";
+    private final static String TAG = "Entities";
 
     private final EntityManager entityManager;
 
     /**
-     * Create the utils instance for given entity manager and user transaction object.
+     * Create the instance for given entity manager.
      * 
      * @param entityManager   Entity manager
      */
-    public EntityUtils(EntityManager entityManager) {
+    public Entities(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 

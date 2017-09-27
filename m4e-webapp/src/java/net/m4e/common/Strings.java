@@ -16,7 +16,7 @@ import java.util.Objects;
  * @author boto
  * Date of creation Sep 5, 2017
  */
-public class StringUtils {
+public class Strings {
 
     /**
      * Given an input string, limit its length. The method also handles null as input.

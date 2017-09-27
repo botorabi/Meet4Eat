@@ -20,11 +20,11 @@ import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
-import net.m4e.common.EntityUtils;
+import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.common.StringUtils;
+import net.m4e.common.Strings;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfoUtils;
+import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 
 /**
@@ -33,7 +33,7 @@ import net.m4e.system.core.Log;
  * @author boto
  * Date of creation Sep 13, 2017
  */
-public class EventLocationUtils {
+public class EventLocations {
 
     /**
      * Used for logging
@@ -47,7 +47,7 @@ public class EventLocationUtils {
      * 
      * @param entityManager    Entity manager
      */
-    public EventLocationUtils(EntityManager entityManager) {
+    public EventLocations(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -74,7 +74,7 @@ public class EventLocationUtils {
         status.setDateLastUpdate(now.getTime());
         newlocation.setStatus(status);
 
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         eutils.createEntity(newlocation);
         Collection<EventLocationEntity> locs = event.getLocations();
         if (Objects.isNull(locs)) {
@@ -94,7 +94,7 @@ public class EventLocationUtils {
      * @throws Exception     Throws an exception if something went wrong.
      */
     EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
-        EntityUtils entityutils = new EntityUtils(entityManager);
+        Entities entityutils = new Entities(entityManager);
         EventLocationEntity location = entityutils.findEntity(EventLocationEntity.class, inputLocation.getId());
         if (Objects.isNull(location) || !location.getStatus().getIsActive()) {
             throw new Exception("Entity location does not exist.");
@@ -142,7 +142,7 @@ public class EventLocationUtils {
      * @return Return an entity if found, otherwise return null.
      */
     public EventLocationEntity findLocation(Long id) {
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         EventLocationEntity event = eutils.findEntity(EventLocationEntity.class, id);
         return event;
     }
@@ -164,11 +164,11 @@ public class EventLocationUtils {
         }
         // mark the location entity as deleted
         locationToRemove.getStatus().setDateDeletion((new Date()).getTime());
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         eutils.updateEntity(locationToRemove);
 
         // update the app stats
-        AppInfoUtils autils = new AppInfoUtils(entityManager);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         if (Objects.isNull(appinfo)) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
@@ -213,10 +213,10 @@ public class EventLocationUtils {
             entity.setId(id);
         }
         if (Objects.nonNull(name)) {
-            entity.setName(StringUtils.limitStringLen(name, 32));
+            entity.setName(Strings.limitStringLen(name, 32));
         }
         if (Objects.nonNull(description)) {
-            entity.setDescription(StringUtils.limitStringLen(description, 1000));
+            entity.setDescription(Strings.limitStringLen(description, 1000));
         }
 
         if (Objects.nonNull(photo)) {

@@ -18,12 +18,12 @@ import javax.json.JsonObjectBuilder;
  * @author boto
  * Date of creation Sep 16, 2017
  */
-public class DocumentUtils {
+public class Documents {
 
     /**
      * Create an instance of document utilities.
      */
-    public DocumentUtils() {
+    public Documents() {
     }
 
     /**

@@ -12,12 +12,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.EntityManager;
-import net.m4e.common.EntityUtils;
+import net.m4e.common.Entities;
 import net.m4e.system.core.Log;
 
 /**
  * This class manages a pool of documents. Documents are handled as sharable entities which
- * can be referenced by other entities. Documents entity's etag is used to detect documents
+ * can be referenced by many entities. Documents entity's etag is used to detect documents
  * with same content.
  * 
  * NOTE: The Status field ReferenceCount of a document can be used for purging purpose.
@@ -79,7 +79,7 @@ public class DocumentPool {
             return false;
         }
         document.getStatus().decreaseRefCount();
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         eutils.updateEntity(document);
         return true;
     }
@@ -122,7 +122,7 @@ public class DocumentPool {
      * @return          The document instance, or null if it could not be created in database.
      */
     private DocumentEntity createDocument() {
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         DocumentEntity document = new DocumentEntity();
         document.updateETag();
         StatusEntity status = new StatusEntity();
@@ -137,12 +137,14 @@ public class DocumentPool {
     /**
      * Go through all document entities and try to find a document with given etag. If a document
      * was found then increase its reference count, update its 'last update date' and return it.
+     * The 'last update date may serve as a tool to detect and purge resources which were not used
+     * for a long time.
      * 
      * @param etag          Document etag to find
      * @return              A document entity or null if no document with given etag was found.
      */
     private DocumentEntity findPoolDocument(String etag) {
-        EntityUtils eutils = new EntityUtils(entityManager);
+        Entities eutils = new Entities(entityManager);
         List<DocumentEntity> documents = eutils.findEntityByField(DocumentEntity.class, "eTag", etag);
         for (DocumentEntity doc: documents) {
             if (doc.getStatus().getIsActive() && Objects.equals(doc.getETag(), etag)) {
