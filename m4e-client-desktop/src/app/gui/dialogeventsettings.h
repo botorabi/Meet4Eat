@@ -94,6 +94,16 @@ class DialogEventSettings : public BaseDialog
 
     protected:
 
+        /**
+         * @brief Overridden method for handling Apply button click
+         */
+        virtual bool                onButton1Clicked();
+
+        /**
+         * @brief Overridden method for handling Cancel button click
+         */
+        virtual bool                onButton2Clicked();
+
         void                        setupWeekDays( unsigned int weekDays );
 
         void                        setupMembers( data::ModelEventPtr event );

@@ -83,17 +83,20 @@ void BaseDialog::onBtnCloseClicked()
 
 void BaseDialog::onBtn1Clicked()
 {
-    done( Btn1 );
+    if ( onButton1Clicked() )
+        done( Btn1 );
 }
 
 void BaseDialog::onBtn2Clicked()
 {
-    done( Btn2 );
+    if ( onButton2Clicked() )
+        done( Btn2 );
 }
 
 void BaseDialog::onBtn3Clicked()
 {
-    done( Btn3 );
+    if ( onButton3Clicked() )
+        done( Btn3 );
 }
 
 void BaseDialog::mousePressEvent( QMouseEvent* p_event )

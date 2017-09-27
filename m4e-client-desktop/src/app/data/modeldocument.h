@@ -12,10 +12,7 @@
 #include <configuration.h>
 #include <core/smartptr.h>
 #include <data/modellocation.h>
-#include <QDateTime>
 #include <QString>
-#include <QList>
-#include <QTime>
 
 
 namespace m4e
@@ -180,5 +177,7 @@ typedef m4e::core::SmartPtr< ModelDocument > ModelDocumentPtr;
 
 } // namespace data
 } // namespace m4e
+
+Q_DECLARE_METATYPE( m4e::data::ModelDocumentPtr )
 
 #endif // MODELDOCUMENT_H

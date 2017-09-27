@@ -12,7 +12,7 @@
 #include <configuration.h>
 #include <core/smartptr.h>
 #include <data/modelbase.h>
-
+#include <QMetaType>
 
 namespace m4e
 {
@@ -48,5 +48,7 @@ typedef m4e::core::SmartPtr< ModelUserInfo > ModelUserInfoPtr;
 
 } // namespace data
 } // namespace m4e
+
+Q_DECLARE_METATYPE( m4e::data::ModelUserInfoPtr )
 
 #endif // MODELUSERINFO_H

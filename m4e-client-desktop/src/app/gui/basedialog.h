@@ -105,6 +105,27 @@ class BaseDialog : public QDialog
          */
         virtual bool                onClose() { return true; }
 
+        /**
+         * @brief Called when button 1 was clicked. Override and implement proper handling if needed.
+         *
+         * @return Return false in order to ignore the button click.
+         */
+        virtual bool                onButton1Clicked() { return true; }
+
+        /**
+         * @brief Called when button 2 was clicked. Override and implement proper handling if needed.
+         *
+         * @return Return false in order to ignore the button click.
+         */
+        virtual bool                onButton2Clicked() { return true; }
+
+        /**
+         * @brief Called when button 3 was clicked. Override and implement proper handling if needed.
+         *
+         * @return Return false in order to ignore the button click.
+         */
+        virtual bool                onButton3Clicked() { return true; }
+
     protected slots:
 
         void                        onBtnCloseClicked();

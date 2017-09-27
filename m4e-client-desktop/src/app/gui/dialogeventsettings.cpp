@@ -90,7 +90,9 @@ void DialogEventSettings::onUserSearch( QList< data::ModelUserInfoPtr > users )
     _p_ui->comboBoxSearchMember->clear();
     for ( auto user: users )
     {
-        _p_ui->comboBoxSearchMember->addItem( user->getName(), user->getId() );
+        QVariant data;
+        data.setValue( user );
+        _p_ui->comboBoxSearchMember->addItem( user->getName(), data );
     }
 }
 
@@ -109,25 +111,21 @@ void DialogEventSettings::onBtnAddMemberClicked()
     if ( index < 0 )
         return;
 
-    QString id = _p_ui->comboBoxSearchMember->itemData( index ).toString();
+    QVariant d = _p_ui->comboBoxSearchMember->itemData( index );
+    data::ModelUserInfoPtr user = d.value< data::ModelUserInfoPtr >();
 
-    log_verbose << TAG << "TODO onBtnAddMemberClicked, adding member: " << id.toStdString() << std::endl;
+    log_verbose << TAG << "TODO onBtnAddMemberClicked, adding member: " << user->getId().toStdString() << std::endl;
 
-#if 0
     QList< data::ModelUserInfoPtr > members = _event->getMembers();
     data::ModelUserInfoPtr newmember = new data::ModelUserInfo();
-    newmember->setId( id );
-    newmember->setName( _p_ui->comboBoxSearchMember->itemText( index ) );
-//    newmember->setPhotoId( ??? );
-//    newmember->setPhotoETag( ??? );
+    newmember->setId( user->getId() );
+    newmember->setName( user->getName() );
+    newmember->setPhotoId( user->getPhotoId() );
+    newmember->setPhotoETag( user->getPhotoETag() );
     members.append( newmember );
-
-    //! TODO - check if the member is already part of the event
-    //!      - request the server for adding the member
 
     _event->setMembers( members );
     setupMembers( _event );
-#endif
 }
 
 void DialogEventSettings::onLineEditSeachtReturnPressed()
@@ -144,6 +142,18 @@ void DialogEventSettings::onLineEditSeachtReturnPressed()
         keyword = keyword.mid( 0, 32 );
 
     _p_webApp->requestUserSearch( keyword );
+}
+
+bool DialogEventSettings::onButton1Clicked()
+{
+    log_verbose << TAG << "handle apply" << std::endl;
+    return true;
+}
+
+bool DialogEventSettings::onButton2Clicked()
+{
+    log_verbose << TAG << "handle cancel" << std::endl;
+    return true;
 }
 
 void DialogEventSettings::setupWeekDays( unsigned int weekDays )

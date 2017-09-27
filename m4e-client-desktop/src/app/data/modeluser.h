@@ -94,4 +94,6 @@ typedef m4e::core::SmartPtr< ModelUser > ModelUserPtr;
 } // namespace data
 } // namespace m4e
 
+Q_DECLARE_METATYPE( m4e::data::ModelUserPtr )
+
 #endif // MODELUSER_H

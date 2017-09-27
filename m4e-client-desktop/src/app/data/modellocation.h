@@ -78,4 +78,6 @@ typedef m4e::core::SmartPtr< ModelLocation > ModelLocationPtr;
 } // namespace data
 } // namespace m4e
 
+Q_DECLARE_METATYPE( m4e::data::ModelLocationPtr )
+
 #endif // MODELLOCATION_H

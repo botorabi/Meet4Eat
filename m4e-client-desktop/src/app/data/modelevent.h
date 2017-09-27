@@ -212,4 +212,6 @@ typedef m4e::core::SmartPtr< ModelEvent > ModelEventPtr;
 } // namespace data
 } // namespace m4e
 
+Q_DECLARE_METATYPE( m4e::data::ModelEventPtr )
+
 #endif // MODELEVENT_H
