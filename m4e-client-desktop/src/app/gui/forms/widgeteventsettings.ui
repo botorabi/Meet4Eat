@@ -52,14 +52,6 @@ QDateTimeEdit {
 QPushButton {
   background: rgb(101,117, 137);
 }
-QPushButton:hover {
-  background-color: white;
-  border: 1px solid rgb(115, 210, 22);
-  border-radius:  4px;
-}
-QPushButton[enabled=&quot;false&quot;] {
-  background-color: rgb(31,47,67);
-}
 QPushButton::checked {
   border: 2px solid white;
   font-weight: bold;
@@ -427,21 +419,47 @@ QPushButton::checked {
                <item>
                 <widget class="QLabel" name="label_10">
                  <property name="text">
-                  <string>Enter a member name (at least 3 characters)</string>
+                  <string>Add new member</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
+                <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,1,0,1,0">
                  <item>
-                  <widget class="QComboBox" name="comboBoxSearchMember">
-                   <property name="editable">
-                    <bool>true</bool>
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>Search</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton">
+                  <widget class="QLineEdit" name="lineEditSearchMember">
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
+                   </property>
+                   <property name="maxLength">
+                    <number>32</number>
+                   </property>
+                   <property name="placeholderText">
+                    <string>At least 3 characters</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_11">
+                   <property name="text">
+                    <string>Found members:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxSearchMember"/>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButtonAddMember">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="text">
                     <string>Add</string>
                    </property>
@@ -468,8 +486,7 @@ QPushButton::checked {
  </resources>
  <connections/>
  <slots>
-  <slot>onBtnVoteDownClicked()</slot>
-  <slot>onBtnVoteUpClicked()</slot>
-  <slot>onBtnSettingsClicked()</slot>
+  <slot>onBtnAddMemberClicked()</slot>
+  <slot>onLineEditSeachtReturnPressed()</slot>
  </slots>
 </ui>

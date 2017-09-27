@@ -34,5 +34,12 @@ void RESTUser::getUserData( const QString& userId )
     getRESTOps()->GET( url, createResultsCallback( p_callback ) );
 }
 
+void RESTUser::searchForUser( const QString& keyword )
+{
+    QUrl url( getResourcePath() + "/rest/users/search/" + keyword );
+    auto p_callback = new ResponseGetUserSearch( this );
+    getRESTOps()->GET( url, createResultsCallback( p_callback ) );
+}
+
 } // namespace webapp
 } // namespace m4e

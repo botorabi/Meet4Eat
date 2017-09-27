@@ -74,6 +74,13 @@ class User : public QObject
          */
         void                    requestAllEvents();
 
+        /**
+         * @brief Request for searching for users given the keyword. The hits are emitted by signal 'onResponseUserSearch'.
+         *
+         * @param keyword  Keyword to search for
+         */
+        void                    requestUserSearch( const QString& keyword );
+
     signals:
 
         /**
@@ -91,6 +98,14 @@ class User : public QObject
          * @param events   User's events
          */
         void                    onResponseUserAllEvents( bool success, QList< m4e::data::ModelEventPtr > events );
+
+        /**
+         * @brief Results of user search request.
+         *
+         * @param success  true if user data could successfully be retrieved, otherwise false
+         * @param users List of user hits
+         */
+        void                    onResponseUserSearch( bool success, QList< m4e::data::ModelUserInfoPtr > users );
 
     protected slots:
 
@@ -123,6 +138,21 @@ class User : public QObject
          * @param reason    Error string
          */
         void                    onRESTEventErrorGetAllEvents( QString errorCode, QString reason );
+
+        /**
+         * @brief Receive the results of searchForUser request.
+         *
+         * @param users     List of found user candidates
+         */
+        void                    onRESTUserSearchResults( QList< m4e::data::ModelUserInfoPtr > users );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTUserErrorSearchResults( QString errorCode, QString reason );
 
     protected:
 

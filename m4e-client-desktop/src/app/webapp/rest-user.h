@@ -55,6 +55,13 @@ class RESTUser : public Meet4EatREST
          */
         void                    getUserData( const QString& userId );
 
+        /**
+         * @brief Search for a user given a keyword. The results are emitted by signal 'onRESTUserSearchResults'.
+         *
+         * @param keyword  Keyword to search for.
+         */
+        void                    searchForUser( const QString& keyword );
+
     signals:
 
         /**
@@ -71,6 +78,21 @@ class RESTUser : public Meet4EatREST
          * @param reason    Error string
          */
         void                    onRESTUserErrorGetData( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of searchForUser request.
+         *
+         * @param users     List of found user candidates
+         */
+        void                    onRESTUserSearchResults( QList< m4e::data::ModelUserInfoPtr > users );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTUserErrorSearchResults( QString errorCode, QString reason );
 };
 
 } // namespace webapp

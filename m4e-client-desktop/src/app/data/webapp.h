@@ -125,6 +125,13 @@ class WebApp : public QObject
          */
         void                            requestDocument( const QString& id, const QString& eTag );
 
+        /**
+         * @brief Request for searching for users given the keyword. The hits are emitted by signal 'onResponseUserSearch'.
+         *
+         * @param keyword  Keyword to search for
+         */
+        void                            requestUserSearch( const QString& keyword );
+
     signals:
 
         /**
@@ -148,6 +155,13 @@ class WebApp : public QObject
          * @param document   Document
          */
         void                            onDocumentReady( m4e::data::ModelDocumentPtr document );
+
+        /**
+         * @brief This signal is emitted when user search results were arrived.
+         *
+         * @param users List of user hits
+         */
+        void                            onUserSearch( QList< m4e::data::ModelUserInfoPtr > users );
 
     protected slots:
 
@@ -183,6 +197,14 @@ class WebApp : public QObject
          * @param document   Document
          */
         void                            onCacheDocumentReady( m4e::data::ModelDocumentPtr document );
+
+        /**
+         * @brief This signal is received from user REST api when the results of search request arrive. It is forwarded to 'onUserSearch'.
+         *
+         * @param success  true if user data could successfully be retrieved, otherwise false
+         * @param users List of user hits
+         */
+        void                            onResponseUserSearch( bool success, QList< m4e::data::ModelUserInfoPtr > users );
 
     protected:
 

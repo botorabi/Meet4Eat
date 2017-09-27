@@ -89,7 +89,7 @@ void WebApp::requestUserData()
 {
     if ( _userID.isEmpty() )
     {
-        log_error << "cannot request for user data, invalid user ID" << std::endl;
+        log_error << TAG << "cannot request for user data, invalid user ID" << std::endl;
         return;
     }
     user::User* p_user = getOrCreateUser();
@@ -107,7 +107,7 @@ void WebApp::requestUserEvents()
 {
     if ( !_p_user )
     {
-        log_error << "cannot request for user events, invalid user" << std::endl;
+        log_error << TAG << "cannot request for user events, invalid user" << std::endl;
         return;
     }
     // request for getting all user events
@@ -118,6 +118,11 @@ void WebApp::requestDocument( const QString& id, const QString& eTag )
 {
     // document arrives with signal 'onCacheDocumentReady'
     getOrCreateDocumentCache()->requestDocument( id, eTag );
+}
+
+void WebApp::requestUserSearch( const QString& keyword )
+{
+    getOrCreateUser()->requestUserSearch( keyword );
 }
 
 user::UserAuthentication* WebApp::getOrCreateUserAuth()
@@ -144,6 +149,9 @@ user::User* WebApp::getOrCreateUser()
 
         connect( _p_user, SIGNAL( onResponseUserAllEvents( bool, QList< m4e::data::ModelEventPtr > ) ),
                  this, SLOT( onResponseUserAllEvents( bool, QList< m4e::data::ModelEventPtr > ) ) );
+
+        connect( _p_user, SIGNAL( onResponseUserSearch( bool, QList< m4e::data::ModelUserInfoPtr > ) ),
+                 this, SLOT( onResponseUserSearch( bool, QList< m4e::data::ModelUserInfoPtr > ) ) );
 
         QString server = m4e::data::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
         _p_user->setServerURL( server );
@@ -207,7 +215,7 @@ void WebApp::onResponseUserAllEvents( bool success, QList< m4e::data::ModelEvent
     }
     else
     {
-        log_warning << "could not get user's events from server!" << std::endl;
+        log_warning << TAG << "could not get user's events from server!" << std::endl;
     }
 
     emit onUserEventsReady( _events );
@@ -216,6 +224,19 @@ void WebApp::onResponseUserAllEvents( bool success, QList< m4e::data::ModelEvent
 void WebApp::onCacheDocumentReady( m4e::data::ModelDocumentPtr document )
 {
     emit onDocumentReady( document );
+}
+
+void WebApp::onResponseUserSearch( bool success, QList< m4e::data::ModelUserInfoPtr > users )
+{
+    if ( success )
+    {
+        emit onUserSearch( users );
+    }
+    else
+    {
+        log_warning << TAG << "could not get user search results!" << std::endl;
+        emit onUserSearch( QList< ModelUserInfoPtr >() );
+    }
 }
 
 } // namespace data

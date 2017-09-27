@@ -71,9 +71,26 @@ class DialogEventSettings : public BaseDialog
         void                        onDocumentReady( m4e::data::ModelDocumentPtr document );
 
         /**
+         * @brief This signal is received when user search results were arrived.
+         *
+         * @param users List of user hits
+         */
+        void                        onUserSearch( QList< m4e::data::ModelUserInfoPtr > users );
+
+        /**
          * @brief Called to remove a member from event list.
          */
         void                        onMemberRemoveClicked();
+
+        /**
+         * @brief Called when a new member is being added to event.
+         */
+        void                        onBtnAddMemberClicked();
+
+        /**
+         * @brief On memebr search field the enter key was pressed.
+         */
+        void                        onLineEditSeachtReturnPressed();
 
     protected:
 
@@ -81,7 +98,7 @@ class DialogEventSettings : public BaseDialog
 
         void                        setupMembers( data::ModelEventPtr event );
 
-        QPushButton*                createRemoveMemberButton( const QString& memberId );
+        QWidget*                    createRemoveMemberButton( const QString& memberId );
 
         Ui::WidgetEventSettings*    _p_ui     = nullptr;
 

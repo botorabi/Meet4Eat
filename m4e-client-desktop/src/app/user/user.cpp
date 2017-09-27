@@ -24,6 +24,7 @@ User::User( QObject* p_parent ) :
     _p_restEvent = new m4e::webapp::RESTEvent( this );
     connect( _p_restUser, SIGNAL( onRESTUserGetData( m4e::data::ModelUserPtr ) ), this, SLOT( onRESTUserGetData( m4e::data::ModelUserPtr ) ) );
     connect( _p_restUser, SIGNAL( onRESTUserErrorGetData( QString, QString ) ), this, SLOT( onRESTUserErrorGetData( QString, QString ) ) );
+    connect( _p_restUser, SIGNAL( onRESTUserSearchResults( QList< m4e::data::ModelUserInfoPtr > ) ), this, SLOT( onRESTUserSearchResults( QList< m4e::data::ModelUserInfoPtr > ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventGetAllEvents( QList< m4e::data::ModelEventPtr > ) ), this, SLOT( onRESTEventGetAllEvents( QList< m4e::data::ModelEventPtr > ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorGetAllEvents( QString, QString ) ), this, SLOT( onRESTEventErrorGetAllEvents( QString, QString ) ) );
 }
@@ -53,6 +54,11 @@ void User::requestAllEvents()
     _p_restEvent->getAllEvents();
 }
 
+void User::requestUserSearch( const QString& keyword )
+{
+    _p_restUser->searchForUser( keyword );
+}
+
 void User::onRESTUserGetData( m4e::data::ModelUserPtr user )
 {
     log_verbose << TAG << "got user data: " << user->getName().toStdString() << std::endl;
@@ -75,6 +81,17 @@ void User::onRESTEventErrorGetAllEvents( QString errorCode, QString reason )
 {
     log_verbose << TAG << "failed to get user events: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
     emit onResponseUserAllEvents( false, QList< data::ModelEventPtr >() );
+}
+
+void User::onRESTUserSearchResults( QList< data::ModelUserInfoPtr > users )
+{
+    emit onResponseUserSearch( true, users );
+}
+
+void User::onRESTUserErrorSearchResults( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to get user search hits: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    emit onResponseUserSearch( false, QList< data::ModelUserInfoPtr >() );
 }
 
 } // namespace user

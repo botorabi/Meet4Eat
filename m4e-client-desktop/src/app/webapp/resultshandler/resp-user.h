@@ -42,6 +42,28 @@ class ResponseGetUserData: public Meet4EatRESTResponse
         RESTUser*   _p_requester;
 };
 
+
+/**
+ * @brief Response handler for GetUserSearch
+ *
+ * @author boto
+ * @date Sep 25, 2017
+ */
+class ResponseGetUserSearch: public Meet4EatRESTResponse
+{
+    public:
+
+        explicit    ResponseGetUserSearch( RESTUser* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTUser*   _p_requester;
+};
+
 } // namespace webapp
 } // namespace m4e
 
