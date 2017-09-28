@@ -19,7 +19,7 @@
 /* App name and version */
 #define M4E_APP_NAME            "Meet4Eat"
 #define M4E_ORGANIZATION_NAME   "vr-fun"
-#define M4E_APP_VERSION         "0.5.0"
+#define M4E_APP_VERSION         "0.6.0"
 #define M4E_APP_COPYRIGHT       "(c) 2017"
 #define M4E_APP_URL             "https://github.com/botorabi/Meet4Eat"
 

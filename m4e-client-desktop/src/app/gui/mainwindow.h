@@ -10,7 +10,8 @@
 #define MAINWINDOW_H
 
 #include <configuration.h>
-#include <data/webapp.h>
+#include <webapp/webapp.h>
+#include <event/events.h>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QTimer>
@@ -21,7 +22,7 @@ namespace Ui {
 
 namespace m4e
 {
-namespace ui
+namespace gui
 {
 
 /**
@@ -81,14 +82,15 @@ class MainWindow : public QMainWindow
          *
          * @param user     User data
          */
-        void                        onUserDataReady( m4e::data::ModelUserPtr user );
+        void                        onUserDataReady( m4e::user::ModelUserPtr user );
 
         /**
          * @brief This signal is received when user events were arrived.
          *
+         * @param success  true for successful access
          * @param events   User events
          */
-        void                        onUserEventsReady( QList< m4e::data::ModelEventPtr > events );
+        void                        onResponseGetEvents( bool success, QList< m4e::event::ModelEventPtr > events );
 
     protected:
 
@@ -118,14 +120,16 @@ class MainWindow : public QMainWindow
 
         QTimer*                     _p_initTimer    = nullptr;
 
-        data::WebApp*               _p_webApp       = nullptr;
+        webapp::WebApp*             _p_webApp       = nullptr;
+
+        event::Events*              _p_events       = nullptr;
 
         bool                        _dragging       = false;
 
         QPoint                      _draggingPos;
 };
 
-} // namespace ui
+} // namespace gui
 } // namespace m4e
 
 #endif // MAINWINDOW_H

@@ -8,11 +8,11 @@
 
 #include "mainwindow.h"
 #include <core/log.h>
-#include <data/appsettings.h>
-#include "dialogsettings.h"
-#include "widgeteventlist.h"
-#include "widgetevent.h"
-#include "basedialog.h"
+#include <settings/appsettings.h>
+#include <settings/dialogsettings.h>
+#include <event/widgeteventlist.h>
+#include <event/widgetevent.h>
+#include <common/basedialog.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
 #include <QLayout>
@@ -21,7 +21,7 @@
 
 namespace m4e
 {
-namespace ui
+namespace gui
 {
 
 MainWindow::MainWindow() :
@@ -36,9 +36,11 @@ MainWindow::MainWindow() :
     restoreWindowGeometry();
 
     // prepare the start of webapp, it connects the application to the webapp server
-    _p_webApp = new data::WebApp( this );
-    connect( _p_webApp, SIGNAL( onUserDataReady( m4e::data::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::data::ModelUserPtr ) ) );
-    connect( _p_webApp, SIGNAL( onUserEventsReady( QList< m4e::data::ModelEventPtr > ) ), this, SLOT( onUserEventsReady( QList< m4e::data::ModelEventPtr > ) ) );
+    _p_webApp = new webapp::WebApp( this );
+    connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
+
+    _p_events = _p_webApp->getEvents();
+    connect( _p_events, SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
 
     _p_initTimer = new QTimer();
     _p_initTimer->setSingleShot( true );
@@ -78,7 +80,7 @@ void MainWindow::closeEvent( QCloseEvent* p_event )
 
 void MainWindow::onTimerInit()
 {
-    QString remember = m4e::data::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
+    QString remember = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
     if ( remember == "yes" )
     {
         _p_webApp->establishConnection();
@@ -87,14 +89,14 @@ void MainWindow::onTimerInit()
 
 void MainWindow::storeWindowGeometry()
 {
-    QSettings* p_settings = m4e::data::AppSettings::get()->getSettings();
+    QSettings* p_settings = settings::AppSettings::get()->getSettings();
     QByteArray geom = saveGeometry();
     p_settings->setValue( M4E_SETTINGS_KEY_WIN_GEOM, geom );
 }
 
 void MainWindow::restoreWindowGeometry()
 {
-    QSettings* p_settings = m4e::data::AppSettings::get()->getSettings();
+    QSettings* p_settings = settings::AppSettings::get()->getSettings();
     QByteArray geom =  p_settings->value( M4E_SETTINGS_KEY_WIN_GEOM ).toByteArray();
     restoreGeometry( geom );
 }
@@ -166,7 +168,7 @@ void MainWindow::onBtnEventsClicked()
 
 void MainWindow::onBtnSettingsClicked()
 {
-    DialogSettings* dlg = new DialogSettings( this );
+    settings::DialogSettings* dlg = new settings::DialogSettings( this );
     dlg->exec();
     delete dlg;
 }
@@ -174,7 +176,7 @@ void MainWindow::onBtnSettingsClicked()
 void MainWindow::onBtnAboutClicked()
 {
     Ui::WidgetAbout about;
-    BaseDialog* p_dlg = new BaseDialog( this );
+    common::BaseDialog* p_dlg = new common::BaseDialog( this );
     p_dlg->decorate( about );
 
     QString text = about.labelText->text();
@@ -204,7 +206,7 @@ void MainWindow::onWidgetEventBack()
     createWidgetMyEvents();
 }
 
-void MainWindow::onUserDataReady( data::ModelUserPtr user )
+void MainWindow::onUserDataReady( user::ModelUserPtr user )
 {
     QString text;
     if ( user.valid() )
@@ -216,9 +218,11 @@ void MainWindow::onUserDataReady( data::ModelUserPtr user )
         text = QApplication::translate( "MainWindow", "Server Connection Problem!" );
     }
     _p_ui->labelStatus->setText( text );
+
+    _p_events->requestGetEvents();
 }
 
-void MainWindow::onUserEventsReady( QList< data::ModelEventPtr > /*events*/ )
+void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEventPtr > /*events*/ )
 {
     clearMyEventsWidget();
     createWidgetMyEvents();
@@ -248,18 +252,18 @@ void MainWindow::clearMyEventsWidget()
 
 void MainWindow::createWidgetMyEvents()
 {
-    WidgetEventList* p_widget = new WidgetEventList( _p_webApp, this );
+    event::WidgetEventList* p_widget = new event::WidgetEventList( _p_webApp, this );
     _p_ui->widgetSubMenu->layout()->addWidget( p_widget );
     connect( p_widget, SIGNAL( onEventSelection( QString /*id*/ ) ), this, SLOT( onEventSelection( QString /*id*/ ) ) );
 }
 
 void MainWindow::createWidgetEvent( const QString& eventId )
 {
-    WidgetEvent* p_widget = new WidgetEvent( _p_webApp, _p_ui->widgetClientArea );
+    event::WidgetEvent* p_widget = new event::WidgetEvent( _p_webApp, _p_ui->widgetClientArea );
     p_widget->setEvent( eventId );
     _p_ui->widgetClientArea->layout()->addWidget( p_widget );
     connect( p_widget, SIGNAL( onWidgetBack() ), this, SLOT( onWidgetEventBack() ) );
 }
 
-} // namespace ui
+} // namespace gui
 } // namespace m4e

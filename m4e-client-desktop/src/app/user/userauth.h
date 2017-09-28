@@ -10,7 +10,7 @@
 #define USERAUTH_H
 
 #include <configuration.h>
-#include <webapp/rest-authentication.h>
+#include <webapp/request/rest-authentication.h>
 #include <QObject>
 
 
@@ -170,7 +170,7 @@ class UserAuthentication : public QObject
 
     protected:
 
-        m4e::webapp::RESTAuthentication*  _p_restAuth = nullptr;
+        webapp::RESTAuthentication*       _p_restAuth = nullptr;
         QString                           _userName;
         QString                           _password;
 };
