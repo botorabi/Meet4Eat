@@ -19,6 +19,8 @@ namespace m4e
 namespace event
 {
 
+static const QString M4E_DEFAULT_USER_ICON = ":/icon-user.png";
+
 DialogEventSettings::DialogEventSettings( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  common::BaseDialog( p_parent ),
  _p_webApp( p_webApp )
@@ -38,6 +40,10 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
 
     connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
     connect( _p_webApp, SIGNAL( onUserSearch( QList< m4e::user::ModelUserInfoPtr > ) ), this, SLOT( onUserSearch( QList< m4e::user::ModelUserInfoPtr > ) ) );
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseUpdateEvent( bool, QString ) ), this, SLOT( onResponseUpdateEvent( bool, QString ) ) );
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseAddMember( bool, QString, QString ) ), this, SLOT( onResponseAddMember( bool, QString, QString ) ) );
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseRemoveMember( bool, QString, QString ) ), this, SLOT( onResponseRemoveMember( bool, QString, QString ) ) );
+
     connect( _p_ui->pushButtonAddMember, SIGNAL( clicked() ), this, SLOT( onBtnAddMemberClicked() ) );
     connect( _p_ui->lineEditSearchMember, SIGNAL( returnPressed() ), this, SLOT( onLineEditSeachtReturnPressed() ) );
 
@@ -47,6 +53,7 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     setupButtons( &applybtn, &cancelbtn, nullptr );
     setResizable( true );
 
+    _p_ui->lineEditOwner->setText( event->getOwner()->getName() );
     _p_ui->lineEditName->setText( event->getName() );
     _p_ui->textEditDescription->setPlainText( event->getDescription() );
     _p_ui->checkBoxIsPublic->setChecked( event->getIsPublic() );
@@ -92,17 +99,108 @@ void DialogEventSettings::onUserSearch( QList< user::ModelUserInfoPtr > users )
     {
         QVariant data;
         data.setValue( user );
-        _p_ui->comboBoxSearchMember->addItem( user->getName(), data );
+        // exclude all event members from hit list
+        if ( ( _event->getOwner()->getId() != user->getId() ) && !_members.contains( user->getId() ) )
+            _p_ui->comboBoxSearchMember->addItem( user->getName(), data );
     }
 }
 
-void DialogEventSettings::onMemberRemoveClicked()
+void DialogEventSettings::onResponseAddMember( bool success, QString eventId, QString memberId )
+{
+    // is this the response of our own request?
+    if ( ( eventId != _event->getId() ) || ( memberId != _newMember->getId() ) )
+        return;
+
+    if ( !_newMember.valid() )
+        return;
+
+    if ( !success )
+    {
+        log_warning << TAG << "could not add member!" << std::endl;
+
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogEventSettings", "Add Member" ),
+                     QApplication::translate( "DialogEventSettings", "Could not add new member!" ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+        return;
+    }
+
+    log_verbose << TAG << "new member added: " << _newMember->getId().toStdString() << std::endl;
+
+    QList< user::ModelUserInfoPtr > members = _event->getMembers();
+    members.append( _newMember );
+    _event->setMembers( members );
+
+    _newMember = nullptr;
+    setupMembers( _event );
+
+    common::DialogMessage msg( this );
+    msg.setupUI( QApplication::translate( "DialogEventSettings", "Add Member" ),
+                 QApplication::translate( "DialogEventSettings", "New member was successfully added to event." ),
+                 common::DialogMessage::BtnOk );
+    msg.exec();
+}
+
+void DialogEventSettings::onResponseRemoveMember( bool success, QString eventId, QString memberId )
+{
+    // is this the response of our own request?
+    if ( ( eventId != _event->getId() ) || ( memberId != _removeMemberId ) )
+        return;
+
+    if ( !success )
+    {
+        log_warning << TAG << "could not remove member!" << std::endl;
+
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogEventSettings", "Remove Member" ),
+                     QApplication::translate( "DialogEventSettings", "Could not remove member from event!" ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+        return;
+    }
+    QList< user::ModelUserInfoPtr > members = _event->getMembers();
+    for ( int i = 0; i < members.size(); i++ )
+    {
+        user::ModelUserInfoPtr member = members.at( i );
+        if ( member->getId() == memberId )
+        {
+            members.removeAt( i );
+            break;
+        }
+    }
+    _event->setMembers( members );
+    _members.remove( memberId );
+    setupMembers( _event );
+
+    common::DialogMessage msg( this );
+    msg.setupUI( QApplication::translate( "DialogEventSettings", "Remove Member" ),
+                 QApplication::translate( "DialogEventSettings", "Member was successfully removed from event." ),
+                 common::DialogMessage::BtnOk );
+    msg.exec();
+}
+
+void DialogEventSettings::onResponseUpdateEvent( bool success, QString /*eventId*/ )
+{
+    if ( !success )
+    {
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogEventSettings", "Update Event" ),
+                     QApplication::translate( "DialogEventSettings", "Event could not be updated!" ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+        return;
+    }
+    done( common::BaseDialog::Btn1 );
+}
+
+void DialogEventSettings::onBtnMemberRemoveClicked()
 {
     QPushButton* p_btn = dynamic_cast< QPushButton* >( sender() );
     assert ( p_btn && "unexpected event sender, a button was expected!" );
 
-    QString memberId = p_btn->property( "userId" ).toString();
-    log_verbose << TAG << "TODO remove member: " << memberId.toStdString() << std::endl;
+    _removeMemberId = p_btn->property( "userId" ).toString();
+    _p_webApp->getEvents()->requestRemoveMember( _event->getId(), _removeMemberId );
 }
 
 void DialogEventSettings::onBtnAddMemberClicked()
@@ -113,27 +211,21 @@ void DialogEventSettings::onBtnAddMemberClicked()
 
     QVariant data = _p_ui->comboBoxSearchMember->itemData( index );
     user::ModelUserInfoPtr user = data.value< user::ModelUserInfoPtr >();
+    _newMember = nullptr;
 
     if ( _members.contains( user->getId() ) )
     {
         common::DialogMessage msg( this );
-        msg.setupUI( "Add Member", "This user is already a member of event.",  common::DialogMessage::BtnOk );
+        msg.setupUI( QApplication::translate( "DialogEventSettings", "Add Member" ),
+                     QApplication::translate( "DialogEventSettings", "This user is already a member of event." ),
+                     common::DialogMessage::BtnOk );
         msg.exec();
         return;
     }
 
-    log_verbose << TAG << "TODO onBtnAddMemberClicked, adding member: " << user->getId().toStdString() << std::endl;
-
-    QList< user::ModelUserInfoPtr > members = _event->getMembers();
-    user::ModelUserInfoPtr newmember = new user::ModelUserInfo();
-    newmember->setId( user->getId() );
-    newmember->setName( user->getName() );
-    newmember->setPhotoId( user->getPhotoId() );
-    newmember->setPhotoETag( user->getPhotoETag() );
-    members.append( newmember );
-
-    _event->setMembers( members );
-    setupMembers( _event );
+    // store the user until we get the response from server
+    _newMember = user;
+    _p_webApp->getEvents()->requestAddMember( _event->getId(), user->getId() );
 }
 
 void DialogEventSettings::onLineEditSeachtReturnPressed()
@@ -154,13 +246,19 @@ void DialogEventSettings::onLineEditSeachtReturnPressed()
 
 bool DialogEventSettings::onButton1Clicked()
 {
-    log_verbose << TAG << "handle apply" << std::endl;
-    return true;
+    _event->setName( _p_ui->lineEditName->text() );
+    _event->setDescription( _p_ui->textEditDescription->toPlainText() );
+    _event->setIsPublic( _p_ui->checkBoxIsPublic->isChecked() );
+    _event->setStartDate( _p_ui->dateTimeEditStart->dateTime() );
+    _event->setRepeatDayTime( _p_ui->timeEditDayTime->time() );
+    _event->setRepeatWeekDays( getWeekDays() );
+
+    _p_webApp->getEvents()->requestUpdateEvent( _event );
+    return false;
 }
 
 bool DialogEventSettings::onButton2Clicked()
 {
-    log_verbose << TAG << "handle cancel" << std::endl;
     return true;
 }
 
@@ -173,6 +271,19 @@ void DialogEventSettings::setupWeekDays( unsigned int weekDays )
     _p_ui->pushButtonWDFri->setChecked( ( weekDays & event::ModelEvent::WeekDayFriday ) != 0 );
     _p_ui->pushButtonWDSat->setChecked( ( weekDays & event::ModelEvent::WeekDaySaturday ) != 0 );
     _p_ui->pushButtonWDSun->setChecked( ( weekDays & event::ModelEvent::WeekDaySunday ) != 0 );
+}
+
+unsigned int DialogEventSettings::getWeekDays()
+{
+    unsigned int weekdays = 0;
+    weekdays |= _p_ui->pushButtonWDMon->isChecked() ? event::ModelEvent::WeekDayMonday : 0;
+    weekdays |= _p_ui->pushButtonWDTue->isChecked() ? event::ModelEvent::WeekDayTuesday : 0;
+    weekdays |= _p_ui->pushButtonWDWed->isChecked() ? event::ModelEvent::WeekDayWednesday : 0;
+    weekdays |= _p_ui->pushButtonWDThu->isChecked() ? event::ModelEvent::WeekDayThursday : 0;
+    weekdays |= _p_ui->pushButtonWDFri->isChecked() ? event::ModelEvent::WeekDayFriday : 0;
+    weekdays |= _p_ui->pushButtonWDSat->isChecked() ? event::ModelEvent::WeekDaySaturday : 0;
+    weekdays |= _p_ui->pushButtonWDSun->isChecked() ? event::ModelEvent::WeekDaySunday : 0;
+    return weekdays;
 }
 
 void DialogEventSettings::setupMembers( event::ModelEventPtr event )
@@ -203,6 +314,11 @@ void DialogEventSettings::setupMembers( event::ModelEventPtr event )
             _memberPhotos.insert( photoid, row );
             _p_webApp->requestDocument( photoid, member->getPhotoETag() );
         }
+        else
+        {
+            QPixmap pix = common::GuiUtils::createRoundIcon( QPixmap( M4E_DEFAULT_USER_ICON ) );
+            p_item->setIcon( QIcon( pix ) );
+        }
         row++;
     }
 
@@ -225,7 +341,7 @@ QWidget *DialogEventSettings::createRemoveMemberButton( const QString& memberId 
     p_btn->setMinimumSize( QSize( 20, 20 ) );
     p_widget->layout()->addWidget( p_btn );
 
-    connect( p_btn, SIGNAL( clicked() ), this, SLOT( onMemberRemoveClicked() ) );
+    connect( p_btn, SIGNAL( clicked() ), this, SLOT( onBtnMemberRemoveClicked() ) );
 
     return p_widget;
 }

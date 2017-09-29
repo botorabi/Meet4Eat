@@ -11,8 +11,8 @@
 
 #include <configuration.h>
 #include <user/userauth.h>
+#include <webapp/webapp.h>
 #include <common/basedialog.h>
-
 
 namespace Ui {
   class WidgetSettings;
@@ -38,38 +38,44 @@ class DialogSettings : public common::BaseDialog
         /**
          * @brief Create a settings dialog instance.
          *
-         * @param p_parent          Parent widget
+         * @param p_webApp  Web application interface
+         * @param p_parent  Parent widget
          */
-        explicit                    DialogSettings( QWidget* p_parent );
+        explicit                    DialogSettings( webapp::WebApp* p_webApp, QWidget* p_parent );
 
         /**
          * @brief Destroy the instance.
          */
         virtual                     ~DialogSettings();
 
-        void                        accept();
-
     protected slots:
+
+        /**
+         * @brief Overridden method for handling Apply button click
+         */
+        virtual bool                onButton1Clicked();
 
         void                        onBtnSignInClicked();
 
         void                        onBtnSignOutClicked();
 
-        void                        onResponseAuthState( bool authenticated, QString userId );
-
-        void                        onResponseSignInResult( bool success, QString userId, enum m4e::user::UserAuthentication::AuthResultsCode code, QString reason );
-
-        void                        onResponseSignOutResult( bool success, enum m4e::user::UserAuthentication::AuthResultsCode code, QString reason );
+        /**
+         * @brief This signal is received to notify about user authentication results.
+         *
+         * @param success  true if the user was successfully authenticated, otherwise false
+         * @param userId   User ID, valid if success is true
+         */
+        void                        onUserSignedIn( bool success, QString userId );
 
     protected:
 
         void                        setupUI();
 
-        user::UserAuthentication*   getOrCreateUserAuth();
+        void                        storeCredentials();
 
-        Ui::WidgetSettings*         _p_ui = nullptr;
+        Ui::WidgetSettings*         _p_ui     = nullptr;
 
-        user::UserAuthentication*   _p_userAuth = nullptr;
+        webapp::WebApp*             _p_webApp = nullptr;
 };
 
 } // namespace settings

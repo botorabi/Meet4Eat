@@ -12,6 +12,7 @@
 #include <configuration.h>
 #include <common/basedialog.h>
 #include <event/modelevent.h>
+#include <user/modeluserinfo.h>
 #include <webapp/webapp.h>
 #include <QPushButton>
 
@@ -78,9 +79,35 @@ class DialogEventSettings : public common::BaseDialog
         void                        onUserSearch( QList< m4e::user::ModelUserInfoPtr > users );
 
         /**
+         * @brief This signal is received when the results of adding a new member were arrived.
+         *
+         * @param success   true if the request was successful
+         * @param eventId   Event ID, should be the one of this event
+         * @param memberId  User ID of new member
+         */
+        void                        onResponseAddMember( bool success, QString eventId, QString memberId );
+
+        /**
+         * @brief This signal is received when the results of removing a member were arrived.
+         *
+         * @param success   true if the request was successful
+         * @param eventId   Event ID, should be the one of this event
+         * @param memberId  User ID of removed member
+         */
+        void                        onResponseRemoveMember( bool success, QString eventId, QString memberId );
+
+        /**
+         * @brief This signal is received when results of event update request.
+         *
+         * @param success  true if user data could successfully be retrieved, otherwise false
+         * @param eventId  ID of event which was updated
+         */
+        void                        onResponseUpdateEvent( bool success, QString eventId );
+
+        /**
          * @brief Called to remove a member from event list.
          */
-        void                        onMemberRemoveClicked();
+        void                        onBtnMemberRemoveClicked();
 
         /**
          * @brief Called when a new member is being added to event.
@@ -106,6 +133,8 @@ class DialogEventSettings : public common::BaseDialog
 
         void                        setupWeekDays( unsigned int weekDays );
 
+        unsigned int                getWeekDays();
+
         void                        setupMembers( event::ModelEventPtr event );
 
         QWidget*                    createRemoveMemberButton( const QString& memberId );
@@ -119,6 +148,10 @@ class DialogEventSettings : public common::BaseDialog
         QMap< QString, int >        _memberPhotos;
 
         QSet< QString >             _members;
+
+        user::ModelUserInfoPtr      _newMember;
+
+        QString                     _removeMemberId;
 };
 
 } // namespace event

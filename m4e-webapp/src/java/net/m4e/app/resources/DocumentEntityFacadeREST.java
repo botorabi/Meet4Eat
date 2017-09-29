@@ -23,8 +23,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.AbstractFacade;
-
-import static net.m4e.common.ResponseResults.*;
+import net.m4e.common.ResponseResults;
 
 /**
  * REST services for Document entity operations
@@ -75,9 +74,9 @@ public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
         jsonresponse.add("id", id);
         DocumentEntity document = super.find(id);
         if (Objects.isNull(document) || !document.getStatus().getIsActive()) {
-            return buildJSON(STATUS_NOT_OK, "Document was not found.", CODE_NOT_FOUND, jsonresponse.build().toString());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
-        return buildJSON(STATUS_OK, "Document was found.", CODE_OK, document.toJsonString());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Document was found.", ResponseResults.CODE_OK, document.toJsonString());
     }
 }

@@ -23,6 +23,8 @@ Meet4EatRESTOperations::Meet4EatRESTOperations( QObject* p_parent ) :
     _p_nam = new QNetworkAccessManager( this );
     _s_cookie = _s_cookie ? _s_cookie : new QNetworkCookieJar();
     _p_nam->setCookieJar( _s_cookie );
+    // in order to share the cookie jar, we have to reset its parent!
+    _s_cookie->setParent( nullptr );
     connect( _p_nam, SIGNAL( finished( QNetworkReply* ) ), this, SLOT( onReplyFinished( QNetworkReply* ) ) );
 }
 

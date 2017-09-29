@@ -110,27 +110,6 @@ public class DocumentEntity implements Serializable {
      */
     private String eTag = "";
 
-
-    /**
-     * Export all fields into a JSON string
-     *
-     * @return A JSON string containing all entity fields with their respective values
-     */
-    public String toJsonString() {
-        JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", getOrDefault(id, 0L));
-        json.add("name", getOrDefault(name, ""));
-        json.add("type", getOrDefault(type, ""));
-        json.add("content", content == null ? "" : new String(content));
-        json.add("eTag", getOrDefault(eTag, ""));
-        json.add("encoding", getOrDefault(encoding, ""));
-        return json.build().toString();
-    }
-
-    private <T> T getOrDefault(T value, T defaultValue) {
-        return value != null ? value : defaultValue;
-    }
-
     /**
      * Get ID.
      *
@@ -330,5 +309,28 @@ public class DocumentEntity implements Serializable {
     @Override
     public String toString() {
         return "net.m4e.common.DocumentEntity[ id=" + id + " ]";
+    }
+
+    /**
+     * Export all fields into a JSON string
+     *
+     * @return A JSON string containing all entity fields with their respective values
+     */
+    public String toJsonString() {
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("id", getOrDefault(id, 0L));
+        json.add("name", getOrDefault(name, ""));
+        json.add("type", getOrDefault(type, ""));
+        json.add("content", content == null ? "" : new String(content));
+        json.add("eTag", getOrDefault(eTag, ""));
+        json.add("encoding", getOrDefault(encoding, ""));
+        return json.build().toString();
+    }
+
+    /**
+     * Get the given value, if it does not exit (i.e. null) then return a given default.
+     */
+    private <T> T getOrDefault(T value, T defaultValue) {
+        return value != null ? value : defaultValue;
     }
 }

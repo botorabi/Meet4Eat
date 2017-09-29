@@ -38,9 +38,7 @@ MainWindow::MainWindow() :
     // prepare the start of webapp, it connects the application to the webapp server
     _p_webApp = new webapp::WebApp( this );
     connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
-
-    _p_events = _p_webApp->getEvents();
-    connect( _p_events, SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
+    connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
 
     _p_initTimer = new QTimer();
     _p_initTimer->setSingleShot( true );
@@ -168,7 +166,7 @@ void MainWindow::onBtnEventsClicked()
 
 void MainWindow::onBtnSettingsClicked()
 {
-    settings::DialogSettings* dlg = new settings::DialogSettings( this );
+    settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );
     dlg->exec();
     delete dlg;
 }
@@ -215,11 +213,23 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     }
     else
     {
-        text = QApplication::translate( "MainWindow", "Server Connection Problem!" );
+        text = QApplication::translate( "MainWindow", "No Connection!" );
     }
     _p_ui->labelStatus->setText( text );
 
-    _p_events->requestGetEvents();
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
+    _p_webApp->getEvents()->requestGetEvents();
+}
+
+void MainWindow::onUserSignedOff( bool success )
+{
+    _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
+
+    if ( success )
+    {
+        clearMyEventsWidget();
+        createWidgetMyEvents();
+    }
 }
 
 void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEventPtr > /*events*/ )

@@ -59,8 +59,8 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
         start.setTime_t( static_cast< uint >( eventstart ) );
         ev->setStartDate( start );
     }
-    uint hour = static_cast< uint >( repdaytime / 60 );
-    uint min = static_cast< uint >( repdaytime ) - hour * 60;
+    uint hour = static_cast< uint >( repdaytime / ( 60 * 60 ) );
+    uint min = static_cast< uint >( repdaytime / 60 ) - hour * 60;
     QTime reptime( hour, min, 0 );
     ev->setRepeatDayTime( reptime );
 
@@ -117,7 +117,7 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
 }
 
 /******************************************************/
-/************* ResponseGetUserAllEvents ***************/
+/***************** ResponseGetEvents ******************/
 /******************************************************/
 
 ResponseGetEvents::ResponseGetEvents( RESTEvent* p_requester ) :
@@ -151,6 +151,36 @@ void ResponseGetEvents::onRESTResponseSuccess( const QJsonDocument& results )
 void ResponseGetEvents::onRESTResponseError( const QString& reason )
 {
     emit _p_requester->onRESTEventErrorGetEvents( "", reason );
+}
+
+/******************************************************/
+/**************** ResponseUpdateEvent *****************/
+/******************************************************/
+
+ResponseUpdateEvent::ResponseUpdateEvent( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{}
+
+void ResponseUpdateEvent::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorUpdateEvent( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj  = datadoc.object();
+    QString eventid  = QString::number( obj.value( "id" ).toInt() );
+    emit _p_requester->onRESTEventUpdateEvent( eventid );
+}
+
+void ResponseUpdateEvent::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorUpdateEvent( "", reason );
 }
 
 /******************************************************/
@@ -211,6 +241,38 @@ void ResponseEventAddMember::onRESTResponseSuccess( const QJsonDocument& results
 void ResponseEventAddMember::onRESTResponseError( const QString& reason )
 {
     emit _p_requester->onRESTEventErrorAddMember( "", reason );
+}
+
+/******************************************************/
+/************* ResponseEventRemoveMember **************/
+/******************************************************/
+
+ResponseEventRemoveMember::ResponseEventRemoveMember( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{}
+
+void ResponseEventRemoveMember::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorRemoveMember( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj  = datadoc.object();
+    QString eventid  = QString::number( obj.value( "eventId" ).toInt() );
+    QString memberid = QString::number( obj.value( "memberId" ).toInt() );
+
+    emit _p_requester->onRESTEventRemoveMember( eventid, memberid );
+}
+
+void ResponseEventRemoveMember::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorRemoveMember( "", reason );
 }
 
 } // namespace webapp

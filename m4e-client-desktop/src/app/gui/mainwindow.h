@@ -84,6 +84,15 @@ class MainWindow : public QMainWindow
          */
         void                        onUserDataReady( m4e::user::ModelUserPtr user );
 
+
+        /**
+         * @brief This signal is emitted to notify about user authentication results.
+         *
+         * @param success  true if the user was successfully authenticated, otherwise false
+         * @param userId   User ID, valid if success is true
+         */
+        void                        onUserSignedOff( bool success );
+
         /**
          * @brief This signal is received when user events were arrived.
          *
@@ -121,8 +130,6 @@ class MainWindow : public QMainWindow
         QTimer*                     _p_initTimer    = nullptr;
 
         webapp::WebApp*             _p_webApp       = nullptr;
-
-        event::Events*              _p_events       = nullptr;
 
         bool                        _dragging       = false;
 

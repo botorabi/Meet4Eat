@@ -130,6 +130,22 @@ class WebApp : public QObject
     signals:
 
         /**
+         * @brief This signal is emitted to notify about user authentication results.
+         *
+         * @param success  true if the user was successfully authenticated, otherwise false
+         * @param userId   User ID, valid if success is true
+         */
+        void                            onUserSignedIn( bool success, QString userId );
+
+        /**
+         * @brief This signal is emitted to notify about user authentication results.
+         *
+         * @param success  true if the user was successfully authenticated, otherwise false
+         * @param userId   User ID, valid if success is true
+         */
+        void                            onUserSignedOff( bool success );
+
+        /**
          * @brief This signal is emitted when an update of user data was arrived.
          *        The user data model can also be empty (e.g. if there were server connection problems).
          *
@@ -162,6 +178,15 @@ class WebApp : public QObject
          * @param reason    If authentication attempt failed, this string contains a possible reason.
          */
         void                            onResponseSignInResult( bool success, QString userId, enum m4e::user::UserAuthentication::AuthResultsCode code, QString reason );
+
+        /**
+         * @brief Results of an sign out attempt are emitted by this signal.
+         *
+         * @param success   True if the sign-out was successful, otherwise false.
+         * @param code      Results code
+         * @param reason    If sign-out attempt failed, this string contains a possible reason.
+         */
+        void                            onResponseSignOutResult( bool success, enum m4e::user::UserAuthentication::AuthResultsCode code, QString reason );
 
         /**
          * @brief Results of user data request.

@@ -43,6 +43,27 @@ class ResponseGetEvents: public Meet4EatRESTResponse
 };
 
 /**
+ * @brief Response handler for UpdateEvent
+ *
+ * @author boto
+ * @date Sep 29, 2017
+ */
+class ResponseUpdateEvent: public Meet4EatRESTResponse
+{
+    public:
+
+        explicit    ResponseUpdateEvent( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
+/**
  * @brief Response handler for GetEvent
  *
  * @author boto
@@ -63,7 +84,6 @@ class ResponseGetEvent: public Meet4EatRESTResponse
         RESTEvent*  _p_requester;
 };
 
-
 /**
  * @brief Response handler for AddMember
  *
@@ -75,6 +95,27 @@ class ResponseEventAddMember: public Meet4EatRESTResponse
     public:
 
         explicit    ResponseEventAddMember( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
+/**
+ * @brief Response handler for RemoveMember
+ *
+ * @author boto
+ * @date Sep 29, 2017
+ */
+class ResponseEventRemoveMember: public Meet4EatRESTResponse
+{
+    public:
+
+        explicit    ResponseEventRemoveMember( RESTEvent* p_requester );
 
         void        onRESTResponseSuccess( const QJsonDocument& results );
 

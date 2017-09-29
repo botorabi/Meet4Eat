@@ -76,12 +76,27 @@ class Events : public QObject
         void                                requestGetEvents();
 
         /**
+         * @brief Request for update an existing event, the results are emitted by signal 'onResponseUpdateEvent'.
+         *
+         * @param event  The event to update
+         */
+        void                                requestUpdateEvent( m4e::event::ModelEventPtr event );
+
+        /**
          * @brief Request for a new member to event, the results are emitted by signal 'onResponseAddMember'.
          *
          * @param eventId  ID of event which should get a new member
          * @param memberId ID of new member to add to given event
          */
         void                                requestAddMember( const QString& eventId, const QString& memberId );
+
+        /**
+         * @brief Request for removing a member from event, the results are emitted by signal 'onResponseRemoveMember'.
+         *
+         * @param eventId  ID of event
+         * @param memberId ID of member to remove from given event
+         */
+        void                                requestRemoveMember( const QString& eventId, const QString& memberId );
 
     signals:
 
@@ -94,6 +109,14 @@ class Events : public QObject
         void                                onResponseGetEvents( bool success, QList< m4e::event::ModelEventPtr > events );
 
         /**
+         * @brief Results of event update request.
+         *
+         * @param success  true if user data could successfully be retrieved, otherwise false
+         * @param eventId  ID of event which was updated
+         */
+        void                                onResponseUpdateEvent( bool success, QString eventId );
+
+        /**
          * @brief Results of add member request.
          *
          * @param success  true if user data could successfully be retrieved, otherwise false
@@ -101,6 +124,15 @@ class Events : public QObject
          * @param memberId ID of new added member
          */
         void                                onResponseAddMember( bool success, QString eventId, QString memberId );
+
+        /**
+         * @brief Results of remove member request.
+         *
+         * @param success  true if user data could successfully be retrieved, otherwise false
+         * @param eventId  ID of event
+         * @param memberId ID of member to remove
+         */
+        void                                onResponseRemoveMember( bool success, QString eventId, QString memberId );
 
     protected slots:
 
@@ -120,6 +152,21 @@ class Events : public QObject
         void                                onRESTEventErrorGetEvents( QString errorCode, QString reason );
 
         /**
+         * @brief Signal is received when the results of updating event arrive.
+         *
+         * @param eventId    ID of event which was updated
+         */
+        void                                onRESTEventUpdateEvent( QString eventId );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorUpdateEvent( QString errorCode, QString reason );
+
+        /**
          * @brief Signal is received when the results of addMember request arrive.
          *
          * @param eventId   ID of event the user was added to
@@ -134,6 +181,22 @@ class Events : public QObject
          * @param reason    Error string
          */
         void                                onRESTEventErrorAddMember( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of removeMember request arrive.
+         *
+         * @param eventId   ID of event the user was removed from
+         * @param memberId  User ID of removed member
+         */
+        void                                onRESTEventRemoveMember( QString eventId, QString memberId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorRemoveMember( QString errorCode, QString reason );
 
     protected:
 

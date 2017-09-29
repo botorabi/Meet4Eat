@@ -40,11 +40,35 @@ void RESTEvent::getEvent( const QString& eventId )
     getRESTOps()->GET( url, createResultsCallback( p_callback ) );
 }
 
+void RESTEvent::updateEvent( event::ModelEventPtr event )
+{
+    //! NOTE we do not request for setting the photo here!
+    QJsonObject obj;
+    obj.insert( "name",           event->getName() );
+    obj.insert( "description",    event->getDescription() );
+    obj.insert( "public",         event->getIsPublic() );
+    obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
+    obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
+    obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
+    QJsonDocument json( obj );
+
+    QUrl url( getResourcePath() + "/rest/events/" + event->getId() );
+    auto p_callback = new ResponseUpdateEvent( this );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ), json );
+}
+
 void RESTEvent::addMember( const QString& eventId, const QString& memberId )
 {
     QUrl url( getResourcePath() + "/rest/events/addmember/" + eventId + "/" + memberId );
     auto p_callback = new ResponseEventAddMember( this );
-    getRESTOps()->GET( url, createResultsCallback( p_callback ) );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ) );
+}
+
+void RESTEvent::removeMember( const QString& eventId, const QString& memberId )
+{
+    QUrl url( getResourcePath() + "/rest/events/removemember/" + eventId + "/" + memberId );
+    auto p_callback = new ResponseEventRemoveMember( this );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ) );
 }
 
 } // namespace webapp

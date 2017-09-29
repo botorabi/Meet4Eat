@@ -9,10 +9,10 @@
 #include "webapp.h"
 #include <core/log.h>
 #include <settings/appsettings.h>
+#include <common/dialogmessage.h>
 #include <user/userauth.h>
 #include <user/user.h>
 #include <QApplication>
-#include <QMessageBox>
 
 
 namespace m4e
@@ -123,6 +123,9 @@ user::UserAuthentication* WebApp::getOrCreateUserAuth()
         connect( _p_userAuth, SIGNAL( onResponseSignInResult( bool, QString, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ),
                  this, SLOT( onResponseSignInResult( bool, QString, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ) );
 
+        connect( _p_userAuth, SIGNAL( onResponseSignOutResult( bool, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ),
+                 this, SLOT( onResponseSignOutResult( bool, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ) );
+
         QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
         _p_userAuth->setServerURL( server );
     }
@@ -177,6 +180,7 @@ void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::Us
     {
         log_verbose << TAG << "successfully signed in user" << std::endl;
         _userID = userId;
+        emit onUserSignedIn( true, userId );
         user::User* p_user = getOrCreateUser();
         p_user->requestUserData( userId );
     }
@@ -184,12 +188,15 @@ void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::Us
     {
         _connState = ConnFail;
         _connFailReason = reason;
-
+        emit onUserSignedIn( false, "" );
         log_verbose << TAG << "failed to sign in user (" << QString::number( code ).toStdString() << "), reason: " << reason.toStdString() << std::endl;
-        QString text = QApplication::translate( "WebApp", "Could not sign in. Check your credentials and try again." );
-        QMessageBox msgbox( QMessageBox::Warning, "Sign In", text, QMessageBox::Ok, nullptr );
-        msgbox.exec();
     }
+}
+
+void WebApp::onResponseSignOutResult( bool success, user::UserAuthentication::AuthResultsCode code, QString reason )
+{
+    log_verbose << TAG << "user was signed off " << QString::number( code ).toStdString() << "), reason: " << reason.toStdString() << std::endl;
+    emit onUserSignedOff( success );
 }
 
 void WebApp::onResponseUserData( bool success, m4e::user::ModelUserPtr user )

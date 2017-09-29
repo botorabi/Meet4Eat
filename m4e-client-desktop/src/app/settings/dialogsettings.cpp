@@ -8,10 +8,9 @@
 
 #include "dialogsettings.h"
 #include <core/log.h>
+#include <common/dialogmessage.h>
 #include <ui_widgetsettings.h>
 #include <settings/appsettings.h>
-#include <webapp/request/rest-authentication.h>
-#include <QMessageBox>
 
 
 namespace m4e
@@ -19,8 +18,9 @@ namespace m4e
 namespace settings
 {
 
-DialogSettings::DialogSettings( QWidget* p_parent ) :
- common::BaseDialog( p_parent )
+DialogSettings::DialogSettings( webapp::WebApp* p_webApp, QWidget* p_parent ) :
+ common::BaseDialog( p_parent ),
+ _p_webApp( p_webApp )
 {
     _p_ui = new Ui::WidgetSettings();
     setupUI();
@@ -32,39 +32,13 @@ DialogSettings::~DialogSettings()
         delete _p_ui;
 }
 
-void DialogSettings::setupUI()
+bool DialogSettings::onButton1Clicked()
 {
-    decorate( *_p_ui );
-    setTitle( "Settings" );
-    QString btnok( "Ok" );
-    QString btncancel( "Cancel" );
-    setupButtons( &btnok, &btncancel, nullptr );
-    setResizable( false );
-
-    connect( _p_ui->pushButtonSignOut, SIGNAL( clicked() ), this, SLOT( onBtnSignOutClicked() ) );
-    connect( _p_ui->pushButtonSignIn, SIGNAL( clicked() ), this, SLOT( onBtnSignInClicked() ) );
-
-    QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
-    QString login    = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
-    QString passwd   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
-    QString remember = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
-
-    _p_ui->lineEditServer->setText( server );
-    _p_ui->lineEditLogin->setText( login );
-    _p_ui->lineEditPassword->setText( "" );
-    _p_ui->checkBoxRememberPw->setChecked( remember == "yes" );
-    _p_ui->pushButtonSignOut->setEnabled( false );
-
-    user::UserAuthentication* p_user = getOrCreateUserAuth();
-    p_user->setServerURL( server );
-    if ( !server.isEmpty() && !login.isEmpty() && !passwd.isEmpty() )
-    {
-        _p_ui->pushButtonSignIn->setEnabled( false );
-        p_user->requestAuthState();
-    }
+    storeCredentials();
+    return true;
 }
 
-void DialogSettings::accept()
+void DialogSettings::storeCredentials()
 {
     QString server   = _p_ui->lineEditServer->text();
     QString login    = _p_ui->lineEditLogin->text();
@@ -79,12 +53,42 @@ void DialogSettings::accept()
         settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, passwd );
     }
     settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, remember );
+}
 
-    QDialog::accept();
+void DialogSettings::setupUI()
+{
+    connect( _p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
+
+    decorate( *_p_ui );
+    setTitle( QApplication::translate( "DialogSettings", "Settings" ) );
+    QString btnok( QApplication::translate( "DialogSettings", "Ok" ) );
+    QString btncancel( QApplication::translate( "DialogSettings", "Cancel" ) );
+    setupButtons( &btnok, &btncancel, nullptr );
+    setResizable( false );
+
+    connect( _p_ui->pushButtonSignOut, SIGNAL( clicked() ), this, SLOT( onBtnSignOutClicked() ) );
+    connect( _p_ui->pushButtonSignIn, SIGNAL( clicked() ), this, SLOT( onBtnSignInClicked() ) );
+
+    QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
+    QString login    = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
+    QString remember = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
+    //QString passwd   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
+
+    _p_ui->lineEditServer->setText( server );
+    _p_ui->lineEditLogin->setText( login );
+    _p_ui->lineEditPassword->setText( "" );
+    _p_ui->checkBoxRememberPw->setChecked( remember == "yes" );
+
+    bool connestablished = _p_webApp->getConnectionState() == webapp::WebApp::ConnEstablished;
+    _p_ui->pushButtonSignOut->setEnabled( connestablished );
+    _p_ui->pushButtonSignIn->setEnabled( !connestablished );
 }
 
 void DialogSettings::onBtnSignInClicked()
 {
+    if ( _p_webApp->getConnectionState() == webapp::WebApp::ConnEstablished )
+        return;
+
     QString server   = _p_ui->lineEditServer->text();
     QString login    = _p_ui->lineEditLogin->text();
     QString passwd   = _p_ui->lineEditPassword->text();
@@ -97,31 +101,33 @@ void DialogSettings::onBtnSignInClicked()
         passwd = webapp::RESTAuthentication::createHash( passwd );
     }
 
-    user::UserAuthentication* p_user = getOrCreateUserAuth();
     if ( !server.isEmpty() && !login.isEmpty() && !passwd.isEmpty() )
     {
-        p_user->requestSignIn( login, passwd );
+        // the webapp gets the credentials from central settings, so store them before trying a connection
+         storeCredentials();
+        _p_webApp->establishConnection();
     }
     else
     {
-        QMessageBox msgbox( QMessageBox::Information, "Sign In", QApplication::translate( "DialogSettings", "Please, first enter the account information." ), QMessageBox::Ok, this );
-        msgbox.exec();
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
+                     QApplication::translate( "DialogSettings", "Please, first enter the account information." ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
     }
 }
 
 void DialogSettings::onBtnSignOutClicked()
 {
-    user::UserAuthentication* p_user = getOrCreateUserAuth();
-    p_user->requestSignOut();
+    if ( _p_webApp->getConnectionState() != webapp::WebApp::ConnEstablished )
+        return;
+
+    _p_webApp->shutdownConnection();
+    _p_ui->pushButtonSignIn->setEnabled( true );
+    _p_ui->pushButtonSignOut->setEnabled( false );
 }
 
-void DialogSettings::onResponseAuthState( bool authenticated, QString /*userId*/ )
-{
-    _p_ui->pushButtonSignIn->setEnabled( !authenticated );
-    _p_ui->pushButtonSignOut->setEnabled( authenticated );
-}
-
-void DialogSettings::onResponseSignInResult( bool success, QString /*userId*/, m4e::user::UserAuthentication::AuthResultsCode code, QString reason )
+void DialogSettings::onUserSignedIn( bool success, QString /*userId*/ )
 {
     _p_ui->pushButtonSignIn->setEnabled( !success );
     _p_ui->pushButtonSignOut->setEnabled( success );
@@ -129,41 +135,21 @@ void DialogSettings::onResponseSignInResult( bool success, QString /*userId*/, m
     if ( success )
     {
         log_debug << "successfully signed in user" << std::endl;
-        QMessageBox msgbox( QMessageBox::Information, "Sign In", QApplication::translate( "DialogSettings", "Your were successfully signed in." ), QMessageBox::Ok, this );
-        msgbox.exec();
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
+                     QApplication::translate( "DialogSettings", "You were successfully signed in." ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
     }
     else
     {
-        log_debug << "failed to sign in user (" << QString::number( code ).toStdString() << "), reason: " << reason.toStdString() << std::endl;
-        QString text = QApplication::translate( "DialogSettings", "Could not sign in. Check your credentials and try again." );
-        QMessageBox msgbox( QMessageBox::Warning, "Sign In", text, QMessageBox::Ok, this );
-        msgbox.exec();
+        log_debug << "failed to sign in user" << std::endl;
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
+                     QApplication::translate( "DialogSettings", "Could not sign in. Check your credentials and try again." ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
     }
-}
-
-void DialogSettings::onResponseSignOutResult( bool /*success*/, user::UserAuthentication::AuthResultsCode /*code*/, QString /*reason*/ )
-{
-    user::UserAuthentication* p_user = getOrCreateUserAuth();
-    p_user->requestAuthState();
-}
-
-user::UserAuthentication* DialogSettings::getOrCreateUserAuth()
-{
-    if ( !_p_userAuth )
-    {
-        _p_userAuth = new user::UserAuthentication( this );
-        connect( _p_userAuth, SIGNAL( onResponseSignInResult( bool, QString, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ),
-                 this, SLOT( onResponseSignInResult( bool, QString, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ) );
-
-        connect( _p_userAuth, SIGNAL( onResponseSignOutResult( bool, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ),
-                 this, SLOT( onResponseSignOutResult( bool, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ) );
-
-        connect( _p_userAuth, SIGNAL( onResponseAuthState( bool, QString ) ), this, SLOT( onResponseAuthState( bool, QString ) ) );
-    }
-
-    _p_userAuth->setServerURL( _p_ui->lineEditServer->text() );
-
-    return _p_userAuth;
 }
 
 } // namespace settings
