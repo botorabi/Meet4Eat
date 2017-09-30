@@ -195,7 +195,7 @@ void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::Us
 
 void WebApp::onResponseSignOutResult( bool success, user::UserAuthentication::AuthResultsCode code, QString reason )
 {
-    log_verbose << TAG << "user was signed off " << QString::number( code ).toStdString() << "), reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "user was signed off (" << QString::number( code ).toStdString() << "), reason: " << reason.toStdString() << std::endl;
     emit onUserSignedOff( success );
 }
 

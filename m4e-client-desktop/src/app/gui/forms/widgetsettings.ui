@@ -113,22 +113,22 @@
            <number>10</number>
           </property>
           <item>
-           <widget class="QPushButton" name="pushButtonSignIn">
-            <property name="toolTip">
-             <string>Sign in into your account.</string>
-            </property>
-            <property name="text">
-             <string>Sign in</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="pushButtonSignOut">
             <property name="toolTip">
              <string>Sign out from your account.</string>
             </property>
             <property name="text">
              <string>Sign out</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonSignIn">
+            <property name="toolTip">
+             <string>Sign in into your account.</string>
+            </property>
+            <property name="text">
+             <string>Sign in</string>
             </property>
            </widget>
           </item>

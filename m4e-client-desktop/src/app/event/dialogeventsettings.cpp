@@ -38,6 +38,12 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     _event = event;
     decorate( *_p_ui );
 
+    _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
+
+    // if the user is not the event owner then disable editting ui
+    if ( !_userIsOwner )
+        setupReadOnly();
+
     connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
     connect( _p_webApp, SIGNAL( onUserSearch( QList< m4e::user::ModelUserInfoPtr > ) ), this, SLOT( onUserSearch( QList< m4e::user::ModelUserInfoPtr > ) ) );
     connect( _p_webApp->getEvents(), SIGNAL( onResponseUpdateEvent( bool, QString ) ), this, SLOT( onResponseUpdateEvent( bool, QString ) ) );
@@ -48,10 +54,19 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     connect( _p_ui->lineEditSearchMember, SIGNAL( returnPressed() ), this, SLOT( onLineEditSeachtReturnPressed() ) );
 
     setTitle( QApplication::translate( "DialogEventSettings", "Event Settings" ) );
-    QString applybtn( QApplication::translate( "DialogEventSettings", "Apply" ) );
-    QString cancelbtn( QApplication::translate( "DialogEventSettings", "Cancel" ) );
-    setupButtons( &applybtn, &cancelbtn, nullptr );
-    setResizable( true );
+    if ( _userIsOwner )
+    {
+        QString applybtn( QApplication::translate( "DialogEventSettings", "Apply" ) );
+        QString cancelbtn( QApplication::translate( "DialogEventSettings", "Cancel" ) );
+        setupButtons( &applybtn, &cancelbtn, nullptr );
+    }
+    else
+    {
+        QString dismissbtn( QApplication::translate( "DialogEventSettings", "Dismiss" ) );
+        setupButtons( &dismissbtn, nullptr, nullptr );
+    }
+
+    setResizable( false );
 
     _p_ui->lineEditOwner->setText( event->getOwner()->getName() );
     _p_ui->lineEditName->setText( event->getName() );
@@ -246,6 +261,9 @@ void DialogEventSettings::onLineEditSeachtReturnPressed()
 
 bool DialogEventSettings::onButton1Clicked()
 {
+    if ( !_userIsOwner )
+        return true;
+
     _event->setName( _p_ui->lineEditName->text() );
     _event->setDescription( _p_ui->textEditDescription->toPlainText() );
     _event->setIsPublic( _p_ui->checkBoxIsPublic->isChecked() );
@@ -302,7 +320,7 @@ void DialogEventSettings::setupMembers( event::ModelEventPtr event )
         _p_ui->tableWidgetMembers->setItem( row, 0, p_item );
         _members.insert( member->getId() );
 
-        if ( event->getOwner().valid() && common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp ) )
+        if ( _userIsOwner )
         {
             _p_ui->tableWidgetMembers->setCellWidget( row, 1, createRemoveMemberButton( member->getId() ) );
         }
@@ -344,6 +362,23 @@ QWidget *DialogEventSettings::createRemoveMemberButton( const QString& memberId 
     connect( p_btn, SIGNAL( clicked() ), this, SLOT( onBtnMemberRemoveClicked() ) );
 
     return p_widget;
+}
+
+void DialogEventSettings::setupReadOnly()
+{
+    _p_ui->lineEditName->setReadOnly( true );
+    _p_ui->textEditDescription->setReadOnly( true );
+    _p_ui->dateTimeEditStart->setReadOnly( true );
+    _p_ui->timeEditDayTime->setReadOnly( true );
+    _p_ui->widgetSearchMember->hide();
+    _p_ui->checkBoxIsPublic->setEnabled( false );
+    _p_ui->pushButtonWDMon->setEnabled( false );
+    _p_ui->pushButtonWDTue->setEnabled( false );
+    _p_ui->pushButtonWDWed->setEnabled( false );
+    _p_ui->pushButtonWDThu->setEnabled( false );
+    _p_ui->pushButtonWDFri->setEnabled( false );
+    _p_ui->pushButtonWDSat->setEnabled( false );
+    _p_ui->pushButtonWDSun->setEnabled( false );
 }
 
 } // namespace event

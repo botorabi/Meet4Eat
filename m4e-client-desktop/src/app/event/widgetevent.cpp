@@ -57,6 +57,7 @@ void WidgetEvent::setEvent( const QString& id )
     {
         _locations.clear();
         _eventId = id;
+        _p_ui->widgetChat->setChannel( _eventId );
         if ( event->getLocations().size() > 0 )
         {
             for ( auto location: event->getLocations() )
@@ -76,9 +77,9 @@ void WidgetEvent::setupUI()
 {
     _p_ui = new Ui::WidgetEvent;
     _p_ui->setupUi( this );
+    _p_ui->widgetChat->setWebApp( _p_webApp );
 
     _p_clientArea = _p_ui->listWidget;
-    _p_labelFooter = _p_ui->labelFoot;
 
     _p_clientArea->setUniformItemSizes( true );
     _p_clientArea->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );

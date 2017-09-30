@@ -74,8 +74,6 @@ class MainWindow : public QMainWindow
 
         void                        onEventSelection( QString id );
 
-        void                        onWidgetEventBack();
-
         /**
          * @brief This signal is emitted when an update of user data was arrived.
          *        The user data model can also be empty (e.g. if there were server connection problems).
@@ -84,6 +82,13 @@ class MainWindow : public QMainWindow
          */
         void                        onUserDataReady( m4e::user::ModelUserPtr user );
 
+        /**
+         * @brief This signal is emitted to notify about user authentication results.
+         *
+         * @param success  true if the user was successfully authenticated, otherwise false
+         * @param userId   User ID, valid if success is true
+         */
+        void                        onUserSignedIn( bool success, QString userId );
 
         /**
          * @brief This signal is emitted to notify about user authentication results.

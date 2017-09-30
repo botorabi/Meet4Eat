@@ -20,7 +20,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="leftMargin">
-    <number>2</number>
+    <number>0</number>
    </property>
    <property name="topMargin">
     <number>0</number>
@@ -32,12 +32,15 @@
     <number>2</number>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
+     <property name="spacing">
+      <number>2</number>
+     </property>
      <item>
       <widget class="QWidget" name="widgetHead" native="true">
        <property name="styleSheet">
         <string notr="true">#widgetHead {
-  border-radius: 4px;
+  border-radius: 0px;
   border: 2px solid rgb(131, 147, 167);
   background-color: rgb(80,112,125);
 }</string>
@@ -90,6 +93,71 @@
          </layout>
         </item>
         <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Minimum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
+          <item>
+           <widget class="QLabel" name="labelMembersHead">
+            <property name="font">
+             <font>
+              <family>Roboto</family>
+              <pointsize>11</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: white;</string>
+            </property>
+            <property name="text">
+             <string>Members</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelMembersBody">
+            <property name="font">
+             <font>
+              <family>Roboto</family>
+              <pointsize>9</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: white;</string>
+            </property>
+            <property name="text">
+             <string>Members Body</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -119,7 +187,6 @@
           <property name="styleSheet">
            <string notr="true">QPushButton {
   background: transparent;
-  border-radius:  5px;
   border-image: url(:/btn-buzz.png);
 }
 QPushButton:hover {
@@ -136,29 +203,60 @@ QPushButton:hover {
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget">
-       <property name="styleSheet">
-        <string notr="true">#listWidget {
+      <layout class="QHBoxLayout" name="horizontalClient">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,0">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QListWidget" name="listWidget">
+           <property name="styleSheet">
+            <string notr="true">#listWidget {
  border: 0px solid  rgb(170, 255, 255);
  background: transparent;
 }</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalFoot">
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="m4e::chat::WidgetChat" name="widgetChat" native="true"/>
+         </item>
+        </layout>
+       </item>
        <item>
-        <widget class="QLabel" name="labelFoot">
+        <widget class="QWidget" name="widgetEventMenu" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="styleSheet">
-          <string notr="true">#labelFoot {
-  border-radius: 4px;
-  border: 2px solid rgb(131, 147, 167);
+          <string notr="true">#widgetEventMenu {
   background-color: rgb(80,112,125);
 }</string>
          </property>
-         <property name="text">
-          <string/>
-         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_7"/>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -167,6 +265,14 @@ QPushButton:hover {
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>m4e::chat::WidgetChat</class>
+   <extends>QWidget</extends>
+   <header location="global">chat/widgetchat.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

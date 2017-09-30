@@ -28,7 +28,7 @@ RESTEvent::~RESTEvent()
 
 void RESTEvent::getEvents()
 {
-    QUrl url( getResourcePath() + "/rest/events/" );
+    QUrl url( getResourcePath() + "/rest/events" );
     auto p_callback = new ResponseGetEvents( this );
     getRESTOps()->GET( url, createResultsCallback( p_callback ) );
 }

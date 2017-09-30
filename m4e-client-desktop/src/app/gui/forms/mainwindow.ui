@@ -366,9 +366,10 @@ QPushButton:hover {
                       </property>
                       <property name="styleSheet">
                        <string notr="true">QLabel#labelStatus {
-  background-color: rgba(234, 234, 234, 0.6);
-  border: 1px solid lightgray;
-  border-radius: 4px;
+  color: rgb(231, 247, 167);
+  background: transparent;
+  border: 1px solid rgb(131,147, 167);
+  border-radius: 2px;
 }</string>
                       </property>
                       <property name="alignment">
@@ -572,12 +573,6 @@ QPushButton:hover {
                <layout class="QVBoxLayout" name="verticalLayout_10" stretch="0,1">
                 <item>
                  <widget class="QWidget" name="widgetSubMenu" native="true">
-                  <property name="minimumSize">
-                   <size>
-                    <width>150</width>
-                    <height>0</height>
-                   </size>
-                  </property>
                   <property name="styleSheet">
                    <string notr="true">#widgetSubMenu {
   background-color: rgb(28,52,62);
@@ -620,9 +615,12 @@ QPushButton:hover {
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::MinimumExpanding</enum>
+                  </property>
                   <property name="sizeHint" stdset="0">
                    <size>
-                    <width>20</width>
+                    <width>0</width>
                     <height>40</height>
                    </size>
                   </property>

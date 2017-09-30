@@ -139,9 +139,13 @@ class DialogEventSettings : public common::BaseDialog
 
         QWidget*                    createRemoveMemberButton( const QString& memberId );
 
+        void                        setupReadOnly();
+
         Ui::WidgetEventSettings*    _p_ui     = nullptr;
 
         webapp::WebApp*             _p_webApp = nullptr;
+
+        bool                        _userIsOwner = false;
 
         event::ModelEventPtr        _event;
 

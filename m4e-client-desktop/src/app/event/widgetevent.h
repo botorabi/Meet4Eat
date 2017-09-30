@@ -48,6 +48,7 @@ class WidgetEvent : public QWidget
 
         /**
          * @brief Create a new "Event" widget
+         *
          * @param p_webApp          Web application interface
          * @param p_parent          Parent widget
          */
@@ -60,6 +61,7 @@ class WidgetEvent : public QWidget
 
         /**
          * @brief Set the event which is represented by this widget.
+         *
          * @param id    Event ID
          */
         void                        setEvent( const QString& id );
@@ -67,13 +69,6 @@ class WidgetEvent : public QWidget
     protected slots:
 
         void                        onButtonBuzzClicked();
-
-    signals:
-
-        /**
-         * @brief This signal is emitted when the widget's back button was pressed.
-         */
-        void                        onWidgetBack();
 
     protected:
 
@@ -84,6 +79,7 @@ class WidgetEvent : public QWidget
 
         /**
          * @brief Setup the head elements in event widget (info fields, etc.)
+         *
          * @param event   The event
          */
         void                        setupWidgetHead( m4e::event::ModelEventPtr event );
@@ -103,8 +99,6 @@ class WidgetEvent : public QWidget
         Ui::WidgetEvent*            _p_ui           = nullptr;
 
         QListWidget*                _p_clientArea   = nullptr;
-
-        QLabel*                     _p_labelFooter  = nullptr;
 
         webapp::WebApp*             _p_webApp       = nullptr;
 

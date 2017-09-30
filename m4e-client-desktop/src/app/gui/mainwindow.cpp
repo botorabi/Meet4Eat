@@ -37,15 +37,16 @@ MainWindow::MainWindow() :
 
     // prepare the start of webapp, it connects the application to the webapp server
     _p_webApp = new webapp::WebApp( this );
-    connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
+    connect( _p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
+    connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
 
     _p_initTimer = new QTimer();
     _p_initTimer->setSingleShot( true );
     connect( _p_initTimer, SIGNAL( timeout() ), this, SLOT( onTimerInit() ) );
     _p_initTimer->start( 1000 );
 
-    _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Connecting Server..." ) );
+    _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
 
     clearClientWidget();
 }
@@ -198,12 +199,6 @@ void MainWindow::onEventSelection( QString id )
     createWidgetEvent( id );
 }
 
-void MainWindow::onWidgetEventBack()
-{
-    clearClientWidget();
-    createWidgetMyEvents();
-}
-
 void MainWindow::onUserDataReady( user::ModelUserPtr user )
 {
     QString text;
@@ -219,6 +214,19 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
 
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
     _p_webApp->getEvents()->requestGetEvents();
+}
+
+void MainWindow::onUserSignedIn( bool success, QString userId )
+{
+    if ( success )
+    {
+        log_verbose << TAG << "user was successfully signed in: " << userId.toStdString() << std::endl;
+    }
+    else
+    {
+        log_verbose << TAG << "user could not sign in: " << userId.toStdString() << std::endl;
+        _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
+    }
 }
 
 void MainWindow::onUserSignedOff( bool success )
@@ -262,9 +270,13 @@ void MainWindow::clearMyEventsWidget()
 
 void MainWindow::createWidgetMyEvents()
 {
+    clearClientWidget();
+
     event::WidgetEventList* p_widget = new event::WidgetEventList( _p_webApp, this );
     _p_ui->widgetSubMenu->layout()->addWidget( p_widget );
     connect( p_widget, SIGNAL( onEventSelection( QString /*id*/ ) ), this, SLOT( onEventSelection( QString /*id*/ ) ) );
+    // auto-select the first event
+    p_widget->selectFirstEvent();
 }
 
 void MainWindow::createWidgetEvent( const QString& eventId )
@@ -272,7 +284,6 @@ void MainWindow::createWidgetEvent( const QString& eventId )
     event::WidgetEvent* p_widget = new event::WidgetEvent( _p_webApp, _p_ui->widgetClientArea );
     p_widget->setEvent( eventId );
     _p_ui->widgetClientArea->layout()->addWidget( p_widget );
-    connect( p_widget, SIGNAL( onWidgetBack() ), this, SLOT( onWidgetEventBack() ) );
 }
 
 } // namespace gui

@@ -104,7 +104,6 @@ void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
     if ( p_reply->error() != QNetworkReply::NoError )
     {
         QString errstring = "Could not connect web api: " + p_reply->request().url().toString() + ". Reason: " + p_reply->errorString();
-        //log_debug << TAG << errstring.toStdString() << std::endl;
         emit onResponseFailed( reqid, errstring );
     }
     else
@@ -115,12 +114,10 @@ void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
         if ( jsonresp.isEmpty() )
         {
             QString errstring = "Unexpected response arrived from web api: " + p_reply->request().url().toString() + ". Reponse body: " + response;
-            //log_debug << TAG << errstring.toStdString() << std::endl;
             emit onResponseFailed( reqid, errstring );
         }
         else
         {
-            //log_verbose << TAG << " response: " <<  jsonresp.toJson().toStdString() << std::endl;
             emit onResponse( reqid, jsonresp );
         }
     }

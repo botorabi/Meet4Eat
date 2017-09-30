@@ -50,6 +50,18 @@ class WidgetEventList : public QWidget
          */
                                     WidgetEventList( webapp::WebApp* p_webApp, QWidget* p_parent = nullptr );
 
+        /**
+         * @brief Visually select the event widget with given event ID.
+         *
+         * @param eventId  Event ID
+         */
+        void                        selectEvent( const QString& eventId );
+
+        /**
+         * @brief Visually select the first event.
+         */
+        void                        selectFirstEvent();
+
     signals:
 
         void                        onEventSelection( QString id );

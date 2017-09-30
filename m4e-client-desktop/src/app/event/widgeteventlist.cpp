@@ -25,6 +25,17 @@ WidgetEventList::WidgetEventList( webapp::WebApp* p_webApp, QWidget* p_parent ) 
     setupUI();
 }
 
+void WidgetEventList::selectEvent( const QString& eventId )
+{
+    onClicked( eventId );
+}
+
+void WidgetEventList::selectFirstEvent()
+{
+    if ( _widgets.size() > 0 )
+        onClicked( _widgets.at( 0 )->getId() );
+}
+
 void WidgetEventList::setupUI()
 {
     QVBoxLayout* p_layout = new QVBoxLayout();

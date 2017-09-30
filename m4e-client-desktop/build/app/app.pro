@@ -29,6 +29,7 @@ SOURCES += \
     ../../src/app/core/core.cpp \
     ../../src/app/core/log.cpp \
     ../../src/app/core/utils.cpp \
+    ../../src/app/chat/widgetchat.cpp \
     ../../src/app/document/documentcache.cpp \
     ../../src/app/document/modeldocument.cpp \
     ../../src/app/event/dialogeventsettings.cpp \
@@ -68,6 +69,7 @@ HEADERS += \
     ../../src/app/core/utils.h \
     ../../src/app/core/smartptr.h \
     ../../src/app/core/smartptr.inl \
+    ../../src/app/chat/widgetchat.h \
     ../../src/app/document/documentcache.h \
     ../../src/app/document/modeldocument.h \
     ../../src/app/event/dialoglocationdetails.h \
@@ -108,7 +110,8 @@ FORMS += \
     ../../src/app/gui/forms/widgetabout.ui \
     ../../src/app/gui/forms/widgetsettings.ui \
     ../../src/app/gui/forms/widgetlocationdetails.ui \
-    ../../src/app/gui/forms/widgeteventsettings.ui
+    ../../src/app/gui/forms/widgeteventsettings.ui \
+    ../../src/app/gui/forms/widgetchat.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

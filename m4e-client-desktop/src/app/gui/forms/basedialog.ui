@@ -163,11 +163,7 @@ QPushButton:hover {
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="widgetClientArea" native="true">
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-    </widget>
+    <widget class="QWidget" name="widgetClientArea" native="true"/>
    </item>
    <item>
     <widget class="QLabel" name="labelLineBottom">
@@ -207,6 +203,12 @@ QPushButton:hover {
      </item>
      <item>
       <widget class="QPushButton" name="pushButton3">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
@@ -217,6 +219,12 @@ QPushButton:hover {
      </item>
      <item>
       <widget class="QPushButton" name="pushButton2">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
@@ -227,6 +235,12 @@ QPushButton:hover {
      </item>
      <item>
       <widget class="QPushButton" name="pushButton1">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
