@@ -51,8 +51,8 @@ public class UserEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public UserEntity validateNewEntityInput(String userJson) throws Exception {
-        Users userutils = new Users(entityManager);
-        UserEntity reqentity = userutils.importUserJSON(userJson);
+        Users users = new Users(entityManager);
+        UserEntity reqentity = users.importUserJSON(userJson);
         if (reqentity == null) {
             throw new Exception("Failed to create user, invalid input.");
         }
@@ -74,7 +74,7 @@ public class UserEntityInputValidator {
             throw new Exception(getLenRangeText("The E-Mail address", USER_INPUT_MIN_LEN_EMAIL, USER_INPUT_MAX_LEN_EMAIL));
         }
 
-        if (Objects.nonNull(userutils.findUser(reqentity.getLogin()))) {
+        if (Objects.nonNull(users.findUser(reqentity.getLogin()))) {
             throw new Exception("Login name is not available.");            
         }
 
@@ -98,8 +98,8 @@ public class UserEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public UserEntity validateUpdateEntityInput(String userJson) throws Exception {
-        Users      userutils = new Users(entityManager);
-        UserEntity reqentity = userutils.importUserJSON(userJson);
+        Users      users = new Users(entityManager);
+        UserEntity reqentity = users.importUserJSON(userJson);
         if (reqentity == null) {
             throw new Exception("Failed to update user, invalid input.");
         }

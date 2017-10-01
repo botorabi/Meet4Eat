@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -30,6 +32,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.notification.SendEmailEvent;
 import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppInfoEntity;
@@ -61,6 +64,13 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      * User utilities
      */
     Users userUtils;
+
+    /**
+     * Event for sending e-mail to user.
+     */
+    @Inject
+    Event<SendEmailEvent> sendMailEvent;
+
 
     /**
      * Create the user entity REST facade.
@@ -108,12 +118,92 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             newuser = getUsers().createNewUser(reqentity, sessionuser.getId());
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not create new user, reaon: " + ex.getLocalizedMessage());
+            Log.warning(TAG, "*** Could not create new user, reason: " + ex.getLocalizedMessage());
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
         //! NOTE on successful entity creation the new ID is sent back by results.data field.
         jsonresponse.add("id", newuser.getId());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Register a new user. For activating the user, there is an activation process.
+     * Only guests can use this service.
+     * 
+     * @param userJson   User details in JSON format
+     * @param request    HTTP request
+     * @return           JSON response
+     */
+    @POST
+    @Path("register")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    public String registerUser(String userJson, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (Objects.nonNull(sessionuser)) {
+            Log.error(TAG, "*** an already authenticated user tries a user registration!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to register user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        UserEntity reqentity;
+        try {
+            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager);
+            reqentity = validator.validateNewEntityInput(userJson);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not register a new user, validation failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+        }
+
+        // just to be safe: no roles can be defined during registration
+        reqentity.setRoles(null);
+
+        UserEntity newuser;
+        try {
+            newuser = getUsers().createNewUser(reqentity, sessionuser.getId());
+            // the user is not enabled until the registration process was completed
+            newuser.getStatus().setEnabled(false);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not register a new user, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to register a new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        }
+
+        getUsers().sendRegistrationMail(newuser, sendMailEvent);
+
+        //! NOTE on successful entity creation the new ID is sent back by results.data field.
+        jsonresponse.add("id", newuser.getId());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Activate a user by given its activation token. This is usually used during the registration process.
+     * 
+     * @param id        User ID
+     * @param token     Activation token
+     * @param request   HTTP request
+     * @return          JSON response
+     */
+    @GET
+    @Path("activate/{id}/{token}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    public String activateUser(@PathParam("id") Long id, @PathParam("token") String token, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (Objects.nonNull(sessionuser)) {
+            Log.error(TAG, "*** an already authenticated user tries a user activation!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        //! TODO - check the activation code and activate the user if it is valid
+        //       - delete the registration entity
+        //       - show the result of activation as html
+
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 

@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import javax.enterprise.event.Event;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -26,6 +27,7 @@ import javax.json.JsonString;
 import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
+import net.m4e.app.notification.SendEmailEvent;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.Entities;
@@ -161,7 +163,7 @@ public class Users {
             createUserEntity(newuser);
             status.setIdOwner(newuser.getId());
             newuser.setStatus(status);
-            // NOTE this call updates the entity in database, no need to call userutils.updateUser!
+            // NOTE this call updates the entity in database, no need to call users.updateUser!
             updateUserLastLogin(newuser);
         }
         catch (Exception ex) {
@@ -453,5 +455,32 @@ public class Users {
             }
         }
         return allusers;
+    }
+
+    /**
+     * Send an e-mail to a user. It contains an activation token for completing the registration.
+     * 
+     * @param user      User, mail recipient
+     * @param event     Mail event sent out to mail observer.
+     */
+    public void sendRegistrationMail(UserEntity user, Event event) {
+        UserRegistrationEntity reg = new UserRegistrationEntity();
+        reg.setUser(user);
+        String regtoken = reg.createActivationToken();
+        Entities entities = new Entities(entityManager);
+        entities.createEntity(reg);
+        String body = "Please click the following link for completing your registration for Meet4Eat.\n";
+        body += "\n";
+        body += " http://m4e.org//webresources/rest/users/activate/" + user.getId() + "/" + regtoken + "  \n";
+        body += "\n";
+        body += "Best Regards\n";
+        body += "Meet4Eat Team\n";
+        body += "\n";
+        body += "http://m4e.org\n";
+        SendEmailEvent sendmail = new SendEmailEvent();
+        sendmail.setEmail(user.getEmail());
+        sendmail.setTitle("Meet4Eat User Activation");
+        sendmail.setMessage(body);
+        event.fireAsync(sendmail);
     }
 }
