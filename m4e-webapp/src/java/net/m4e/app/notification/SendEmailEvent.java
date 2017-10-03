@@ -8,6 +8,8 @@
 
 package net.m4e.app.notification;
 
+import java.util.List;
+
 /**
  * Event used for sending an e-mail to a user.
  * 
@@ -17,44 +19,83 @@ package net.m4e.app.notification;
 public class SendEmailEvent {
 
     /**
-     * Recipient address
+     * Recipients
      */
-    private String email;
+    private List<String> recipients;
 
     /**
-     * E-Mail's title
+     * Carbon copy recipients
      */
-    private String title;
+    private List<String> recipientsCC;
+
+    /**
+     * Blind copy recipients
+     */
+    private List<String> recipientsBCC;
+
+    /**
+     * E-Mail's subject
+     */
+    private String subject;
 
     /**
      * E-Mails body
      */
-    private String message;
+    private String body;
 
-    public SendEmailEvent() {        
+    /**
+     * Is the body in HTML format? If not then plain text is assumed.
+     */
+    private boolean htmlBody = false;
+
+
+    public SendEmailEvent() {}
+
+    public List<String> getRecipients() {
+        return recipients;
     }
 
-    public String getEmail() {
-        return email;
+    public void setRecipients(List<String> recipients) {
+        this.recipients = recipients;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public List<String> getRecipientsCC() {
+        return recipientsCC;
     }
 
-    public String getTitle() {
-        return title;
+    public void setRecipientsCC(List<String> recipientsCC) {
+        this.recipientsCC = recipientsCC;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public List<String> getRecipientsBCC() {
+        return recipientsBCC;
     }
 
-    public String getMessage() {
-        return message;
+    public void setRecipientsBCC(List<String> recipientsBCC) {
+        this.recipientsBCC = recipientsBCC;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String title) {
+        this.subject = title;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public boolean getHtmlBody() {
+        return htmlBody;
+    }
+
+    public void setHtmlBody(boolean htmlBody) {
+        this.htmlBody = htmlBody;
     }
 }

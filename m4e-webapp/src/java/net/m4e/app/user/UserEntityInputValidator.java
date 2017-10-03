@@ -22,7 +22,7 @@ import net.m4e.common.Strings;
 public class UserEntityInputValidator {
 
     /* Min/max string length for user input fields */
-    private final int USER_INPUT_MIN_LEN_LOGIN  = 8;
+    private final int USER_INPUT_MIN_LEN_LOGIN  = 6;
     private final int USER_INPUT_MAX_LEN_LOGIN  = 32;
     private final int USER_INPUT_MIN_LEN_NAME   = 6;
     private final int USER_INPUT_MAX_LEN_NAME   = 32;
@@ -74,8 +74,12 @@ public class UserEntityInputValidator {
             throw new Exception(getLenRangeText("The E-Mail address", USER_INPUT_MIN_LEN_EMAIL, USER_INPUT_MAX_LEN_EMAIL));
         }
 
+        if (Objects.nonNull(users.findUserByEmail(reqentity.getEmail()))) {
+            throw new Exception("A user with given email already exists.");
+        }
+
         if (Objects.nonNull(users.findUser(reqentity.getLogin()))) {
-            throw new Exception("Login name is not available.");            
+            throw new Exception("Login name is not available.");
         }
 
         // validate the roles

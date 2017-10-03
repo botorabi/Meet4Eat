@@ -138,7 +138,7 @@ public class Users {
      * Create a new user entity basing on data in given input entity.
      * 
      * @param inputEntity   Input data for new entity
-     * @param creatorID     ID of creator
+     * @param creatorID     ID of creator, let null in order to take the new user itself as creator.
      * @return              New created entity
      * @throws Exception    Throws exception if something went wrong.
      */
@@ -154,7 +154,6 @@ public class Users {
 
         // setup the status
         StatusEntity status = new StatusEntity();
-        status.setIdCreator(creatorID);
         Date now = new Date();
         status.setDateCreation(now.getTime());
         status.setDateLastUpdate(now.getTime());
@@ -162,6 +161,7 @@ public class Users {
         try {
             createUserEntity(newuser);
             status.setIdOwner(newuser.getId());
+            status.setIdCreator(Objects.isNull(creatorID) ? creatorID: newuser.getId());
             newuser.setStatus(status);
             // NOTE this call updates the entity in database, no need to call users.updateUser!
             updateUserLastLogin(newuser);
@@ -313,6 +313,24 @@ public class Users {
     }
 
     /**
+     * Try to find a user with given email.
+     * 
+     * @param email User's email
+     * @return Return user entity if found, otherwise return null.
+     */
+    public UserEntity findUserByEmail(String email) {
+        Entities eutils = new Entities(entityManager);
+        List<UserEntity> entities = eutils.findEntityByField(UserEntity.class, "email", email);
+        if (entities.size() == 1) {
+            return entities.get(0);
+        }
+        else if (entities.size() > 1) {
+            Log.error(TAG, "*** Fatal error, more than one user with same email '" + email + "' exist in database!");
+        }
+        return null;
+    }
+
+    /**
      * Update user's last login timestamp.
      * 
      * @param user User entity to update
@@ -402,9 +420,11 @@ public class Users {
             photo  = jobject.getString("photo", null);
             
             JsonArray r = jobject.getJsonArray("roles");
-            List<JsonString> roles = r.getValuesAs(JsonString.class);
-            for (int i = 0; i < roles.size(); i++) {
-                userroles.add(roles.get(i).getString());
+            if (Objects.nonNull(r)) {
+                List<JsonString> roles = r.getValuesAs(JsonString.class);
+                for (int i = 0; i < roles.size(); i++) {
+                    userroles.add(roles.get(i).getString());
+                }
             }
         }
         catch(Exception ex) {
@@ -455,32 +475,5 @@ public class Users {
             }
         }
         return allusers;
-    }
-
-    /**
-     * Send an e-mail to a user. It contains an activation token for completing the registration.
-     * 
-     * @param user      User, mail recipient
-     * @param event     Mail event sent out to mail observer.
-     */
-    public void sendRegistrationMail(UserEntity user, Event event) {
-        UserRegistrationEntity reg = new UserRegistrationEntity();
-        reg.setUser(user);
-        String regtoken = reg.createActivationToken();
-        Entities entities = new Entities(entityManager);
-        entities.createEntity(reg);
-        String body = "Please click the following link for completing your registration for Meet4Eat.\n";
-        body += "\n";
-        body += " http://m4e.org//webresources/rest/users/activate/" + user.getId() + "/" + regtoken + "  \n";
-        body += "\n";
-        body += "Best Regards\n";
-        body += "Meet4Eat Team\n";
-        body += "\n";
-        body += "http://m4e.org\n";
-        SendEmailEvent sendmail = new SendEmailEvent();
-        sendmail.setEmail(user.getEmail());
-        sendmail.setTitle("Meet4Eat User Activation");
-        sendmail.setMessage(body);
-        event.fireAsync(sendmail);
     }
 }

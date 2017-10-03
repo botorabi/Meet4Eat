@@ -8,6 +8,10 @@
         <param-name>javax.faces.PROJECT_STAGE</param-name>
         <param-value>Development</param-value>
     </context-param>
+    <context-param>
+        <param-name>MailerConfigFile</param-name>
+        <param-value>mailer.cfg</param-value>
+    </context-param>
     <!-- A listener for setting up the application on startup -->
     <listener>
         <description>ServletContextListener</description>

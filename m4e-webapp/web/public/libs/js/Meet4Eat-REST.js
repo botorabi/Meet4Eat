@@ -16,7 +16,7 @@ function Meet4EatREST() {
 	var self = this;
 
 	/* API version */
-	self._version = "0.6.1";
+	self._version = "0.7.0";
 
 	/* Root path of web service */
 	self._webRoot = "/m4e-webapp";
@@ -98,6 +98,17 @@ function Meet4EatREST() {
 	 */
 	self.buildUserREST = function() {
 		var inst = new Meet4EatBaseREST();
+		inst.initialize(self._urlUsers, self._requestJSON);
+		return inst;
+	};
+
+	/**
+	 * Build a REST api for user registration operations.
+	 * 
+	 * @returns {Meet4EatUserRegREST}		REST API for user registration operations
+	 */
+	self.buildUserRegistrationREST = function() {
+		var inst = new Meet4EatUserRegREST();
 		inst.initialize(self._urlUsers, self._requestJSON);
 		return inst;
 	};
@@ -455,6 +466,56 @@ function Meet4EatMaintenanceREST() {
 	 */
 	self.maintenancePurge = function(resultsCallback) {
 		self._fcnRequestJson(self._rootPath + "/purge", null, 'GET', resultsCallback);
+	};
+}
+
+/**
+ * User registration REST services
+ */
+function Meet4EatUserRegREST() {
+
+	/* self ref */
+	var self = this;
+
+	/* API version */
+	self._version = "1.0.0";
+
+	/* Root URL for REST requests */
+	self._rootPath = "";
+
+	/* Function for contacting the server via JSON */
+	self._fcnRequestJson = null;
+
+	/**
+	 * Initialize the instance.
+	 * 
+	 * @param {string} rootPath			Root URL
+	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
+	 */
+	self.initialize = function (rootPath, fcnRequestJson) {
+		self._rootPath = rootPath;
+		self._fcnRequestJson = fcnRequestJson;
+	};
+
+	/**
+	 * Request for registering a new user.
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 * @param {array}    fields           User account data
+	 */
+	self.accountRegister = function(resultsCallback, fields) {
+		self._fcnRequestJson(self._rootPath + '/register', fields, 'POST', resultsCallback);
+	};
+
+	/**
+	 * Request for activating an user account.
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 * @param {integer}  id               User id
+	 * @param {integer}  token            Activation token
+	 */
+	self.accountActivate = function(resultsCallback, id, token) {
+		self._fcnRequestJson(self._rootPath + '/activate/' + id + '/' + token, null, 'GET', resultsCallback);
 	};
 }
 

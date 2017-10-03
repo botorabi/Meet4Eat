@@ -11,6 +11,8 @@ package net.m4e.app.user;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
@@ -20,6 +22,7 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpUtils;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -35,6 +38,7 @@ import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.SendEmailEvent;
 import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
+import net.m4e.system.core.AppConfiguration;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
@@ -163,7 +167,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
         UserEntity newuser;
         try {
-            newuser = getUsers().createNewUser(reqentity, sessionuser.getId());
+            newuser = getUsers().createNewUser(reqentity, null);
             // the user is not enabled until the registration process was completed
             newuser.getStatus().setEnabled(false);
         }
@@ -172,7 +176,10 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to register a new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
-        getUsers().sendRegistrationMail(newuser, sendMailEvent);
+        // create the activation URL
+        String activationurl = AppConfiguration.getInstance().getHTMLBaseURL(request) + "/activate.html";
+        UserRegistrations register = new UserRegistrations(entityManager);
+        register.registerUserAccount(newuser, activationurl, sendMailEvent);
 
         //! NOTE on successful entity creation the new ID is sent back by results.data field.
         jsonresponse.add("id", newuser.getId());
@@ -189,7 +196,6 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      */
     @GET
     @Path("activate/{id}/{token}")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
     public String activateUser(@PathParam("id") Long id, @PathParam("token") String token, @Context HttpServletRequest request) {
@@ -200,11 +206,18 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
-        //! TODO - check the activation code and activate the user if it is valid
-        //       - delete the registration entity
-        //       - show the result of activation as html
-
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        Log.verbose(TAG, "activating user account: user id: " + id + ", token: " + token);
+        UserEntity user;
+        try {
+            UserRegistrations register = new UserRegistrations(entityManager);
+            user = register.activateUserAccount(id, token);
+        }
+        catch (Exception ex) {
+            Log.debug(TAG, "user activation failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+        jsonresponse.add("userName", user.getName());
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully activated.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     /**
@@ -385,6 +398,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         if (!getUsers().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Insufficient privilege", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());            
         }
+
         return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was found.", ResponseResults.CODE_OK, getUsers().exportUserJSON(user).build().toString());
     }
 
