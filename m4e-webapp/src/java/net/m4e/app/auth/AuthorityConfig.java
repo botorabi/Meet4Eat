@@ -66,7 +66,16 @@ public class AuthorityConfig {
      * @return          Return session's UserEntity, or null if no user was set in session
      */
     public UserEntity getSessionUser(HttpServletRequest request) {
-       HttpSession session = request.getSession();
+       return getSessionUser(request.getSession());
+    }
+
+    /**
+     * Given a HTTP session, return the user entity set in its session.
+     * 
+     * @param session   HTTP session
+     * @return          Return session's UserEntity, or null if no user was set in session
+     */
+    public UserEntity getSessionUser(HttpSession session) {
         Object sessionuser = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (Objects.isNull(sessionuser) || !(sessionuser instanceof UserEntity)) {
             return null;
