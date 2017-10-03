@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import javax.enterprise.event.Event;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -26,6 +27,7 @@ import javax.json.JsonString;
 import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
+import net.m4e.app.notification.SendEmailEvent;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.Entities;
@@ -136,7 +138,7 @@ public class Users {
      * Create a new user entity basing on data in given input entity.
      * 
      * @param inputEntity   Input data for new entity
-     * @param creatorID     ID of creator
+     * @param creatorID     ID of creator, let null in order to take the new user itself as creator.
      * @return              New created entity
      * @throws Exception    Throws exception if something went wrong.
      */
@@ -152,7 +154,6 @@ public class Users {
 
         // setup the status
         StatusEntity status = new StatusEntity();
-        status.setIdCreator(creatorID);
         Date now = new Date();
         status.setDateCreation(now.getTime());
         status.setDateLastUpdate(now.getTime());
@@ -160,8 +161,9 @@ public class Users {
         try {
             createUserEntity(newuser);
             status.setIdOwner(newuser.getId());
+            status.setIdCreator(Objects.isNull(creatorID) ? creatorID: newuser.getId());
             newuser.setStatus(status);
-            // NOTE this call updates the entity in database, no need to call userutils.updateUser!
+            // NOTE this call updates the entity in database, no need to call users.updateUser!
             updateUserLastLogin(newuser);
         }
         catch (Exception ex) {
@@ -311,6 +313,24 @@ public class Users {
     }
 
     /**
+     * Try to find a user with given email.
+     * 
+     * @param email User's email
+     * @return Return user entity if found, otherwise return null.
+     */
+    public UserEntity findUserByEmail(String email) {
+        Entities eutils = new Entities(entityManager);
+        List<UserEntity> entities = eutils.findEntityByField(UserEntity.class, "email", email);
+        if (entities.size() == 1) {
+            return entities.get(0);
+        }
+        else if (entities.size() > 1) {
+            Log.error(TAG, "*** Fatal error, more than one user with same email '" + email + "' exist in database!");
+        }
+        return null;
+    }
+
+    /**
      * Update user's last login timestamp.
      * 
      * @param user User entity to update
@@ -400,9 +420,11 @@ public class Users {
             photo  = jobject.getString("photo", null);
             
             JsonArray r = jobject.getJsonArray("roles");
-            List<JsonString> roles = r.getValuesAs(JsonString.class);
-            for (int i = 0; i < roles.size(); i++) {
-                userroles.add(roles.get(i).getString());
+            if (Objects.nonNull(r)) {
+                List<JsonString> roles = r.getValuesAs(JsonString.class);
+                for (int i = 0; i < roles.size(); i++) {
+                    userroles.add(roles.get(i).getString());
+                }
             }
         }
         catch(Exception ex) {

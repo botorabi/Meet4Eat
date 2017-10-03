@@ -25,7 +25,7 @@ function Meet4EatUI() {
 	var self = this;
 
 	/* UI version */
-	self._version              = "0.6.1";
+	self._version              = "0.7.0";
 
 	self._m4eAppInfo           = {'clientVersion' : '0.0.0', 'serverVersion' : '0.0.0', 'viewVersion' : '0'};
 	self._m4eAuthUser          = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
@@ -33,9 +33,9 @@ function Meet4EatUI() {
 	self._m4eRESTAuth          = null;
 	self._m4eREST              = null;
 	self._m4eRESTUsers         = null;
+	self._m4eRESTUserReg       = null;
 	self._m4eRESTEvents        = null;
 	self._m4eRESTMaintenance   = null;
-
 	self._eventEventDatePicker = null;
 	self._lastMenuItem         = null;
 
@@ -51,19 +51,26 @@ function Meet4EatUI() {
 		self._m4eREST            = new Meet4EatREST();
 		self._m4eRESTAuth        = self._m4eREST.buildUserAuthREST();
 		self._m4eRESTUsers       = self._m4eREST.buildUserREST();
+		self._m4eRESTUserReg     = self._m4eREST.buildUserRegistrationREST();
 		self._m4eRESTEvents      = self._m4eREST.buildEventREST();
 		self._m4eRESTMaintenance = self._m4eREST.buildMaintenanceREST();
 
 		self._m4eAppInfo.clientVersion = self._m4eREST.getVersion();
 		self._m4eAppInfo.viewVersion   = self._version;
 
-		// setup the ui modules
-		self._uiModuleUser = new Meet4EatUI_User(self);
-		self._uiModuleUser.initialize();
-		self._uiModuleEvent = new Meet4EatUI_Event(self);
-		self._uiModuleEvent.initialize();
-		self._uiModuleImage = new Meet4EatUI_Image(self);
-		self._uiModuleImage.initialize();
+		// setup the ui modules which are used, i.e. referenced in  html code
+		if (typeof(Meet4EatUI_User) === typeof(Function)) {
+			self._uiModuleUser = new Meet4EatUI_User(self);
+			self._uiModuleUser.initialize();
+		}
+		if (typeof(Meet4EatUI_Event) === typeof(Function)) {
+			self._uiModuleEvent = new Meet4EatUI_Event(self);
+			self._uiModuleEvent.initialize();
+		}
+		if (typeof(Meet4EatUI_Image) === typeof(Function)) {
+			self._uiModuleImage = new Meet4EatUI_Image(self);
+			self._uiModuleImage.initialize();
+		}
 
 		self._setupUi();
 	};
@@ -196,6 +203,34 @@ function Meet4EatUI() {
 	 */
 	self.onBtnLogout = function() {
 		self._logout();
+	};
+
+	/**
+	 * Handle user registration button click.
+	 */
+	self.onBtnRegisterUser = function() {
+		var inputfields = $('#user_registration_form').serializeArray().reduce(function(obj, item) {
+			obj[item.name] = item.value;
+			return obj;
+		}, {});
+		inputfields['password'] = self._m4eRESTAuth.createHash(inputfields['password']);
+		self._m4eRESTUserReg.accountRegister({
+			success: function(res, resp) {
+				if (res.status === "ok") {
+					self.showModalBox("You were successfully registered. An account activation email was sent to you. Please check your mailbox.", "Registration", "Dismiss", null, {
+						 onClickBtn1: function() {
+							 window.location.href = "index.html";
+						 }
+					});
+				}
+				else {
+					self.showModalBox("Registration failed. Reason: " + res.description, "Registration Problem", "Dismiss");
+				}
+			},
+			error: function(err) {
+				self.showModalBox(err, "Connection Problem", "Dismiss");
+			}
+		}, inputfields);		
 	};
 
 	/**

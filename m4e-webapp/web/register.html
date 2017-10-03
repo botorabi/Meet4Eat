@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Meat4Eat - User Registration</title>
+		<meta charset="UTF-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="public/libs/js/jquery.js"></script>
+		<script src="public/libs/js/bootstrap.js"></script>
+		<script src="public/libs/js/Meet4Eat-REST.js"></script>
+		<script src="public/libs/js/Meet4Eat-UI.js"></script>
+		<link rel="stylesheet" href="public/libs/css/bootstrap.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/font-awesome.css" type="text/css">
+		<link rel="stylesheet" href="public/libs/css/Meet4Eat-UI.css" type="text/css">
+	</head>
+	<body>
+		<div class="container">
+			<h1 class="text-center">Meet4Eat - User Registration</h1>
+			<div class="row">
+				<div class="col-sm-8 col-sm-offset-2">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<strong>Please enter your account details</strong>
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body">
+							<form role="form" id="user_registration_form">
+								<input name="id" hidden>
+								<div class="form-group">
+									<label>Login</label>
+									<input maxlength="32" class="form-control" name="login" placeholder="Login name">
+									<p class="help-block">This name is used for authentication (At least 6 characters).</p>
+								</div>
+								<div class="form-group">
+									<label>Name</label>
+									<input class="form-control" maxlength="32" name="name" placeholder="Enter your name">
+									<p class="help-block">Real user name</p>
+								</div>
+								<div class="form-group">
+									<label>Email</label>
+									<input class="form-control" maxlength="64" name="email" placeholder="yourmail@dot.com">
+									<p class="help-block">Email address</p>
+								</div>
+								<div class="form-group">
+									<label>Password</label>
+									<input class="form-control" maxlength="128" type="password" name="password" placeholder="Password">
+								</div>
+								<div class="form-group">
+									<label>Password Repeat</label>
+									<input class="form-control" maxlength="128" type="password" name="password-repeat" placeholder="Password">
+								</div>
+								<input type="submit" hidden onclick="getMeet4EatUI().onBtnRegisterUser(); event.preventDefault();">
+							</form>
+						</div>
+						<!-- /.panel-body -->
+						<div class="panel-footer">
+							<div class="btn-toolbar text-right">
+								<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="getMeet4EatUI().onBtnRegisterUser()">Register</a>
+								<a class="btn btn-lg btn-primary col-lg-3 pull-right" href="index.html">Cancel</a>
+							</div>
+						</div>
+						<!-- /.panel-footer -->
+					</div>
+					<!-- /.panel -->
+				</div>
+				<!-- /.col-lg-12 -->
+			</div>
+		</div>
+
+		<!-- Modal used for message dialog -->
+		<div class="modal fade" id="msg_box" tabindex="-1" role="dialog" aria-labelledby="msg_box_title" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="msg_box_title">title</h4>
+					</div>
+					<div id="msg_box_text" class="modal-body">
+					</div>
+					<div class="modal-footer btn-toolbar">
+						<button id="msg_box_btn2" type="button" class="btn btn-primary col-sm-3 pull-right" data-dismiss="modal">Btn2</button>
+						<button id="msg_box_btn1" type="button" class="btn btn-primary col-sm-3 pull-right" data-dismiss="modal">Btn1</button>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+		<!-- /.modal -->
+
+		<div id="display_error"></div>
+		<script>
+			var m4eUI   = null;
+
+			/**
+			 * Get the UI controller.
+			 * @returns {Meet4EatUI}  UI controller
+			 */
+			function getMeet4EatUI() {
+				return m4eUI;
+			}
+
+			/* initialize UI */
+			$(function() {
+				m4eUI = new Meet4EatUI();
+				m4eUI.initialize();
+			});
+		</script>
+	</body>
+</html>

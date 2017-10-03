@@ -49,6 +49,8 @@ public class ContextListener implements ServletContextListener {
         ServletContext ctx = sce.getServletContext();
         String appversion = ctx.getInitParameter(AppConfiguration.TOKEN_APP_VERSION);
         AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_APP_VERSION, appversion);
+        String mailercfg = ctx.getInitParameter(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
+        AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE, mailercfg);
 
         // handle a possible deployment update
         AppUpdateManager um = new AppUpdateManager(entityManager);

@@ -93,6 +93,7 @@ public class UserEntity implements Serializable {
     /**
      * User's E-Mail address
      */
+    @Column(unique=true, nullable=false)
     private String email;
 
     /**

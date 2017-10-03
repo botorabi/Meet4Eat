@@ -80,6 +80,12 @@ public class StatusEntity implements Serializable {
     private Long referenceCount = 0L;
 
     /**
+     * Some resources (such as users) need an activation process. This flag can be
+     * used for storing the activation state.
+     */
+    private boolean enabled = true;
+
+    /**
      * Get the entity ID.
      * 
      * @return Entity ID
@@ -170,12 +176,12 @@ public class StatusEntity implements Serializable {
     }
 
     /**
-     * Is the entity active? An entity gets inactive either if it is deleted or banned.
+     * Is the entity active? An entity gets inactive either if it is disabled, deleted, or banned.
      * 
      * @return Return true if the entity is active.
      */
     public boolean getIsActive() {
-        return (dateDeletion == 0L) && (dateBan == 0L);
+        return enabled && (dateDeletion == 0L) && (dateBan == 0L);
     }
 
     /**
@@ -263,6 +269,24 @@ public class StatusEntity implements Serializable {
     public Long decreaseRefCount() {
         referenceCount--;
         return referenceCount;
+    }
+
+    /**
+     * Is the resource enabled? See method getIsActive.
+     * 
+     * @return true if the resource is enabled.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * Set the enable  flag.
+     * 
+     * @param enabled
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override

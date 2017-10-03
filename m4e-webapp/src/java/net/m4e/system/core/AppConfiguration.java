@@ -9,6 +9,7 @@ package net.m4e.system.core;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Central place for application configuration. This is a singleton class.
@@ -41,6 +42,11 @@ public class AppConfiguration {
     public final static String TOKEN_APP_VERSION = "AppVersion";
 
     /**
+     * Configuration token name for mailer config file.
+     */
+    public final static String TOKEN_MAILER_CONFIG_FILE = "MailerConfigFile";
+
+    /**
      * App configuration map holding environment parameters.
      */
     private final Map<String, String> configs = new HashMap<>();
@@ -63,6 +69,19 @@ public class AppConfiguration {
      */
     public void setConfigValue(String token, String value) {
         configs.put(token, value);
+    }
+
+    /**
+     * Given a HTTP servlet request, return the base URL for HTML resources.
+     * 
+     * @param request   HTTP request
+     * @return          Base URL for html resources
+     */
+    public String getHTMLBaseURL(HttpServletRequest request) {
+        String url = request.getScheme() + "://" + request.getServerName();
+        url += (request.getServerPort() == 80) ? "" : ":" + request.getServerPort();
+        url += request.getContextPath();
+        return url;
     }
 
     /**
