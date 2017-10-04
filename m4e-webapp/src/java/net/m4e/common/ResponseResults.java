@@ -8,27 +8,23 @@
 
 package net.m4e.common;
 
-import java.io.Serializable;
-import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.xml.bind.annotation.XmlRootElement;
 
 
 /**
  * Class for creating request responses. Every response contains a status, a code, 
- * and a data field which is expected to be JSON format or null if no data needed.
+ * and a data field which is expected to be in JSON format or null if no data needed.
  * 
  * @author boto
  * Date of creation Aug 18, 2017
  */
-@XmlRootElement
-public class ResponseResults implements Serializable {
+public class ResponseResults {
 
     /**
      * Status string for OK
      */
-    public final static String STATUS_OK     = "ok";
+    public final static String STATUS_OK = "ok";
 
     /**
      * Status string for Not-OK
@@ -74,11 +70,6 @@ public class ResponseResults implements Serializable {
      * Code for service unavailable
      */
     public final static int CODE_SERVICE_UNAVAILABLE = 503;
-
-    /**
-     * Serialization version
-     */
-    private static final long serialVersionUID = 1L;
 
     /**
      * Status: 'ok' or 'nok'
@@ -145,43 +136,6 @@ public class ResponseResults implements Serializable {
         this.description = description;
         this.code = code;
         this.data = data;
-    }
-
-    @Override
-    public int hashCode() {
-        return status.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ResponseResults other = (ResponseResults) obj;
-        if (this.code != other.code) {
-            return false;
-        }
-        if (!Objects.equals(this.status, other.status)) {
-            return false;
-        }
-        if (!Objects.equals(this.description, other.description)) {
-            return false;
-        }
-        if (!Objects.equals(this.data, other.data)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.common.ResponseResults[ status=" + status + ", code=" + code + ", description=" + description + " ]";
     }
 
     /**

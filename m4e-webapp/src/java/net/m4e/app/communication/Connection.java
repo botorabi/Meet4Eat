@@ -9,6 +9,7 @@
 package net.m4e.app.communication;
 import java.io.IOException;
 import java.util.Objects;
+import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import javax.websocket.CloseReason;
 import javax.websocket.EndpointConfig;
@@ -45,10 +46,17 @@ public class Connection {
      * User communicating by this connection.
      */
     UserEntity user;
-    
+
+    /**
+     * Central place to hold all client connections
+     */
+    @Inject
+    ConnectedClients connections;
+
+
     @OnOpen
     public void open(Session session, EndpointConfig config) throws IOException {
-        Log.verbose(TAG, "new client connected");
+        Log.verbose(TAG, "new client connected, id: " + session.getId());
         httpSession = (HttpSession)config.getUserProperties().get(ConnectionConfigurator.KEY_HTTP_SESSION);
         if (Objects.isNull(httpSession)) {
             // close the connection, no http session exists
@@ -65,13 +73,22 @@ public class Connection {
             session.close(reason);
             return;
         }
+
+        // store the user connection
+        if (!connections.addConnection(user, session)) {
+            Log.warning(TAG, "could not store user's connection");
+        }
+
         String response = "User " + user.getName() + " established a connection";
         session.getBasicRemote().sendText(response);
     }
 
     @OnClose
     public void close(Session session) {
-        Log.verbose(TAG, "client connection closed");
+        Log.verbose(TAG, "client connection closed, id: " + session.getId());
+        if (!connections.removeConnection(user, session)) {
+            Log.warning(TAG, "could not remove user's connection");
+        }
     }
 
     @OnError
