@@ -10,7 +10,6 @@ package net.m4e.app.notification;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Objects;
 import java.util.Properties;
 import javax.ejb.Stateless;
 import javax.enterprise.event.ObservesAsync;
@@ -70,7 +69,7 @@ public class SendEmailListener {
      */
     private void assembleMail(SendEmailEvent event) {
         Properties cfg = getMailerConfig();
-        if (Objects.isNull(cfg)) {
+        if (null == cfg) {
             Log.warning(TAG, "Cannot send e-mail, invalid configuration");
             return;
         }
@@ -91,12 +90,12 @@ public class SendEmailListener {
             for (String rec: event.getRecipients()) {
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(rec));
             }
-            if (Objects.nonNull(event.getRecipientsCC())) {
+            if (null != event.getRecipientsCC()) {
                 for (String rec: event.getRecipientsCC()) {
                     message.addRecipient(Message.RecipientType.CC, new InternetAddress(rec));
                 }                
             }
-            if (Objects.nonNull(event.getRecipientsBCC())) {
+            if (null != event.getRecipientsBCC()) {
                 for (String rec: event.getRecipientsBCC()) {
                     message.addRecipient(Message.RecipientType.BCC, new InternetAddress(rec));
                 }                
@@ -121,18 +120,18 @@ public class SendEmailListener {
      * @return Mailer configuration
      */
     private Properties getMailerConfig() {
-        if (Objects.nonNull(mailServerConfig)) {
+        if (null != mailServerConfig) {
             return mailServerConfig;
         }
 
         try {
             String cfgfile = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
-            if (Objects.isNull(cfgfile)) {
+            if (null == cfgfile) {
                 Log.error(TAG, "*** Missing mailer configuration file entry in application configuration!");
                 return null;
             }
             InputStream resourceContent = context.getResourceAsStream("/WEB-INF/" + cfgfile);
-            if (Objects.isNull(cfgfile)) {
+            if (null == cfgfile) {
                 Log.error(TAG, "*** Missing mailer configuration file: " + "/WEB-INF/" + cfgfile);
                 return null;
             }

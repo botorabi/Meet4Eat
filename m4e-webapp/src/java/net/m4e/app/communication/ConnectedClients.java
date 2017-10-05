@@ -8,18 +8,22 @@
 
 package net.m4e.app.communication;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.enterprise.context.ApplicationScoped;
 import javax.websocket.Session;
 import net.m4e.app.user.UserEntity;
 import net.m4e.system.core.Log;
 
+
 /**
- * This resource tracks all connected clients.
+ * This resource tracks all connected (via WebSocket) clients. It provides functionality
+ * to retrieve connected users and send packets to them.
+ * 
+ * See 'Connection' class for WebSocket handling.
  * 
  * @author boto
  * Date of creation Oct 4, 2017
@@ -35,7 +39,7 @@ public class ConnectedClients {
     /**
      * Class used for a user entry
      */
-    public static class UserEntry {
+    private class UserEntry {
         public UserEntity user;
         public List<Session /*WebSocket session*/> sessions = new ArrayList();
     }
@@ -46,17 +50,8 @@ public class ConnectedClients {
     private final Map<Long /*user ID*/, UserEntry >  connections = new HashMap();
 
     /**
-     * Get the WebSocket session of given user.
-     * 
-     * @param userId        User ID
-     * @return              User's Websocket sessions, or null if there is no sessions for given user.
-     */
-    public UserEntry getConnection(Long userId) {
-        return connections.get(userId);
-    }
-
-    /**
      * Add a new WebSocket connection coming from a user.
+     * This method is used by 'Connection' when a WebSocket connection was established.
      * 
      * NOTE: a user can be connected multiple times.
      * 
@@ -64,9 +59,9 @@ public class ConnectedClients {
      * @param session   WebSocket session
      * @return          Return false if the session was already added before, otherwise return true.
      */
-    public boolean addConnection(UserEntity user, Session session) {
-        UserEntry entry = getConnection(user.getId());
-        if (Objects.isNull(entry)) {
+    protected boolean addConnection(UserEntity user, Session session) {
+        UserEntry entry = connections.get(user.getId());
+        if (null == entry) {
             entry = new UserEntry();
             entry.user = user;
             connections.put(user.getId(), entry);
@@ -81,14 +76,15 @@ public class ConnectedClients {
 
     /**
      * Remove a session from given user.
+     * This method is used by 'Connection' when a WebSocket connection was closed.
      * 
      * @param user      User
      * @param session   The session to remove
      * @return          Return true if successful.
      */
-    public boolean removeConnection(UserEntity user, Session session) {
-        UserEntry entry = getConnection(user.getId());
-        if (Objects.isNull(entry)) {
+    protected boolean removeConnection(UserEntity user, Session session) {
+        UserEntry entry = connections.get(user.getId());
+        if (null == entry) {
             return false;
         }
         if (!entry.sessions.remove(session)) {
@@ -99,5 +95,42 @@ public class ConnectedClients {
             connections.remove(user.getId());
         }
         return true;
+    }
+
+    /**
+     * Given an user ID return its user entity if it is currently connected.
+     * 
+     * @param userId        User ID
+     * @return              User entity or null if there is no sessions for given user.
+     */
+    public UserEntity getConnectedUser(Long userId) {
+        UserEntry entry = connections.get(userId);
+        if (null != entry) {
+            return entry.user;
+        }
+        return null;
+    }
+
+    /**
+     * Send a packet to given recipients.
+     * 
+     * @param packet        Packet to send
+     * @param recipientIds  List of recipients containing user IDs
+     */
+    public void sendPacket(Packet packet, List<Long> recipientIds) {
+        String msg = packet.getJSON();
+        recipientIds.forEach(id -> {
+            UserEntry recentry = connections.get(id);
+            if (recentry != null) {
+                recentry.sessions.forEach(session -> {
+                    try {
+                        session.getBasicRemote().sendText(msg);
+                    }
+                    catch(IOException ex) {
+                        Log.warning(TAG, "problem occurred while sending notification to user (" + id + "), reason: " + ex.getLocalizedMessage());
+                    }
+                });
+            }
+        });
     }
 }

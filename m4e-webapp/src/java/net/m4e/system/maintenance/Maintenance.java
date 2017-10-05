@@ -11,7 +11,6 @@ package net.m4e.system.maintenance;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.json.Json;
@@ -111,7 +110,7 @@ public class Maintenance {
                     eventutils.removeAnyMember(event, users);
                     // purge deleted event locations
                     Collection<EventLocationEntity> locs = event.getLocations();
-                    if (Objects.nonNull(locs)) {
+                    if (null != locs) {
                         Predicate<EventLocationEntity> pred = ev-> ev.getStatus().getIsDeleted();
                         List<EventLocationEntity> deadlocs = locs.stream().filter(pred).collect(Collectors.toList());
                         // update event's location list
@@ -152,7 +151,7 @@ public class Maintenance {
         // upate app info
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
-        if (Objects.isNull(info)) {
+        if (null == info) {
             Log.warning(TAG, "Could not update app info");
             return;
         }

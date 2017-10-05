@@ -26,10 +26,68 @@
 							<div id="output"></div>
 						</div>
 					</div>
+					<a class="btn btn-lg btn-primary col-lg-5 pull-right" onclick="notifyUsers()">Notify Users</a>
 				</div>
 			</div>
 		</div>
 		<script>
+
+			function requestJSON(requestUrl, requestData, method, responseCallback) {
+				var json = requestData ? JSON.stringify(requestData) : null;
+				$.ajax({
+					type: method,
+					url: requestUrl,
+					data: json,
+					contentType: "application/json; charset=UTF-8",
+					dataType: "text",
+					cache: false,
+					success: function(response) {
+						if (responseCallback !== null) {
+							var results = null;
+							try {
+								results = $.parseJSON(response);
+								// the data is also expected to be in JSON format
+								if (results.data) {
+									results.data = $.parseJSON(results.data);
+								}
+							}
+							catch(e) {
+								if (responseCallback.error) {
+									responseCallback.error("Exception occurred while parsing JSON response, reason: " + e, response);
+								}
+							}
+							if (responseCallback.success) {
+								responseCallback.success(results, response);
+							}
+						}
+					},
+					error: function(jqXHR, errorString, errorThrown ) {
+						if (responseCallback && responseCallback.error) {
+							responseCallback.error("Problem while contacting '" + requestUrl + "' | Error string: " + errorString + " | Error thrown: " + errorThrown, jqXHR);
+						}
+					}
+				});
+			};
+
+			function notifyUsers() {
+				// NOTE make sure that an event with following ID exists on server
+				var eventid = 456;
+				var url = "/m4e-webapp/webresources/rest/events/notifyMembers/" + eventid;
+				var notify = { 'subject': 'Buzz', 'text' : 'Coffee in the kitchen' };
+				requestJSON(url, notify, 'POST', {
+					success(results, response) {
+						if (results.status === "ok") {
+							outputText("Event members were successfully notified.");
+						}
+						else {
+							outputText("Problem occurred while notifiying event memebers: " + results.description);
+						}
+					},
+					error(text, resp) {
+						alert("Problem notifying event members! Reson: " + text + "\n" + resp);
+					}
+				});
+			}
 
 			function outputText(text) {
 				var txt = $('#output').html();

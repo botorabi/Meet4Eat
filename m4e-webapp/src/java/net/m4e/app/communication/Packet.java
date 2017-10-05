@@ -11,6 +11,7 @@ package net.m4e.app.communication;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
+
 /**
  * This class is used for WebSocket communication.
  * 
@@ -20,37 +21,44 @@ import javax.json.JsonObjectBuilder;
 public class Packet {
 
     /**
-     * Packet type for system notifications
+     * Packet channel for system notifications
      */
-    public final static String TYPE_SYSTEM = "system";
+    public final static String CHANNEL_SYSTEM = "system";
 
     /**
-     * Packet type for chat messages
+     * Packet channel for chat messages
      */
-    public final static String TYPE_CHAT = "chat";
+    public final static String CHANNEL_NOTIFY = "notify";
 
     /**
-     * Packet type for event related communication
+     * Packet channel for chat messages
      */
-    public final static String TYPE_EVENT = "event";
+    public final static String CHANNEL_CHAT = "chat";
 
-    private String type;
+    /**
+     * Packet channel for meeting event related communication
+     */
+    public final static String CHANNEL_EVENT = "event";
+
+    private String channel;
     private String source;
-    private String destination;
     private String data;
+
+    /**
+     * Create an empty packet instance.
+     */
+    public Packet() {}
 
     /**
      * Create a packet instance.
      * 
-     * @param type
-     * @param source
-     * @param destination
-     * @param data 
+     * @param channel   Packet channel, one of CHANNEL_xx strings
+     * @param source    Human readable string, e.g. user name, as far as available
+     * @param data      Packet data
      */
-    public Packet(String type, String source, String destination, String data) {
-        this.type = type;
+    public Packet(String channel, String source, String data) {
+        this.channel = channel;
         this.source = source;
-        this.destination = destination;
         this.data = data;
     }
 
@@ -61,9 +69,8 @@ public class Packet {
      */
     public String getJSON() {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("type", ((type != null) ? type : ""));
+        json.add("channel", ((channel != null) ? channel : ""));
         json.add("source", ((source != null) ? source : ""));
-        json.add("destination", ((destination != null) ? destination : ""));
         json.add("data", ((data != null) ? data : ""));
         return json.build().toString();
     }
@@ -71,54 +78,65 @@ public class Packet {
     /**
      * Create a JSON string with given fields.
      * 
-     * @param type
-     * @param source
-     * @param destination
-     * @param data
-     * @return JSON fromatted string
+     * @param channel   Packet channel
+     * @param source    Human readable string, e.g. user name, as far as available
+     * @param data      Packet data
+     * @return JSON formatted string
      */
-    public static String buildJSON(String type, String source, String destination, String data) {
-        return new Packet(type, source, destination, data).getJSON();
+    public static String buildJSON(String channel, String source, String data) {
+        return new Packet(channel, source, data).getJSON();
     }
 
     /**
-     * Get the packet type, one of TYPE_xxx stringg.
+     * Get the packet channel, one of CHANNEL_xxx string.
      * 
-     * @return Packet type
+     * @return Packet channel
      */
-    public String getType() {
-        return type;
+    public String getChannel() {
+        return channel;
     }
 
     /**
-     * Set the packet type.
+     * Set the packet channel.
      * 
-     * @param type The packet type
+     * @param channel The packet channel
      */
-    public void setType(String type) {
-        this.type = type;
+    public void setChannel(String channel) {
+        this.channel = channel;
     }
 
+    /**
+     * Get packet source, can be also empty.
+     * 
+     * @return Packet source, e.g. a user name
+     */
     public String getSource() {
         return source;
     }
 
+    /**
+     * Set packet's source
+     * 
+     * @param source
+     */
     public void setSource(String source) {
         this.source = source;
     }
 
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
+    /**
+     * Packet data, this can be a JSON document.
+     * 
+     * @return The packet data
+     */
     public String getData() {
         return data;
     }
 
+    /**
+     * Set the packet data.
+     * 
+     * @param data Packet data
+     */
     public void setData(String data) {
         this.data = data;
     }

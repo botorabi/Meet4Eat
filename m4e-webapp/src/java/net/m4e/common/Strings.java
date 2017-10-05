@@ -8,8 +8,6 @@
 
 package net.m4e.common;
 
-import java.util.Objects;
-
 /**
  * A collection of string related utilities
  * 
@@ -26,7 +24,7 @@ public class Strings {
      * @return          Return length limited string, or null if the input was null.
      */
     public static String limitStringLen(String input, int maxLen) {
-        if (Objects.nonNull(input)) {
+        if (null != input) {
             if (input.length() > maxLen) {
                 input = input.substring(0, maxLen);
             }
@@ -43,7 +41,7 @@ public class Strings {
      * @return         Return true if the string has a length in given range, otherwise return false.
      */
     public static boolean checkMinMaxLength(String input, int minLen, int maxLen) {
-        if (Objects.isNull(input)) {
+        if (null == input) {
             return false;
         }
         int len = input.length();

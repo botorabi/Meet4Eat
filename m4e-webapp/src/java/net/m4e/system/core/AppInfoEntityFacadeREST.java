@@ -7,7 +7,6 @@
  */
 package net.m4e.system.core;
 
-import java.util.Objects;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -58,7 +57,7 @@ public class AppInfoEntityFacadeREST extends net.m4e.common.AbstractFacade<AppIn
     public String getInfo() {
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
-        if (Objects.isNull(info)) {
+        if (null == info) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();

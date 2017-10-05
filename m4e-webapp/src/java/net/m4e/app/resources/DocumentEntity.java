@@ -11,7 +11,6 @@ package net.m4e.app.resources;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
@@ -262,7 +261,7 @@ public class DocumentEntity implements Serializable {
      * NOTE: Call this method whenever the content was changed.
      */
     public void updateETag() {
-        if (Objects.isNull(content)) {
+        if (null == content) {
             eTag = "";
             return;
         }

@@ -12,7 +12,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -189,7 +188,7 @@ public class UserEntity implements Serializable {
     @XmlTransient
     public List<String> getRolesAsString() {
         List<String> stringlist = new ArrayList<>();
-        if (Objects.isNull(roles)) {
+        if (null == roles) {
             return stringlist;
         }
         roles.stream().forEach((role) -> {

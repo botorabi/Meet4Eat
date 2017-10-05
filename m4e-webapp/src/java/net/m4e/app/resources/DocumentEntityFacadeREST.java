@@ -8,7 +8,6 @@
 
 package net.m4e.app.resources;
 
-import java.util.Objects;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -73,7 +72,7 @@ public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
         DocumentEntity document = super.find(id);
-        if (Objects.isNull(document) || !document.getStatus().getIsActive()) {
+        if ((null == document) || !document.getStatus().getIsActive()) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 

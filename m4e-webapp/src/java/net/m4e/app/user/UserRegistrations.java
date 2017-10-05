@@ -11,7 +11,6 @@ package net.m4e.app.user;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import javax.enterprise.event.Event;
 import javax.persistence.EntityManager;
 import net.m4e.app.notification.SendEmailEvent;
@@ -113,7 +112,7 @@ public class UserRegistrations {
         }
         UserRegistrationEntity registration = regs.get(0);
         UserEntity user = registration.getUser();
-        if (Objects.isNull(user)) {
+        if (null == user) {
             throw new Exception("Internal error, user no longer exists.");            
         }
         // check the expiration

@@ -252,7 +252,7 @@ public class StatusEntity implements Serializable {
     }
 
     /**
-     * Increase the reference coung.
+     * Increase the reference count.
      * 
      * @return Current reference count
      */
@@ -262,7 +262,7 @@ public class StatusEntity implements Serializable {
     }
 
     /**
-     * Decrease the reference coung.
+     * Decrease the reference count.
      * 
      * @return Current reference count
      */

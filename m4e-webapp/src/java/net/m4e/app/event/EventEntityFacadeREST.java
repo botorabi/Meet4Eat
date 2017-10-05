@@ -8,12 +8,19 @@
 
 package net.m4e.app.event;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +36,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
@@ -57,6 +66,18 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      */
     @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
     private EntityManager entityManager;
+
+    /**
+     * Event used for notifying other users
+     */
+    @Inject
+    Event<NotifyUsersEvent> notifyUsersEvent;
+
+    /**
+     * Central place to hold all client connections
+     */
+    @Inject
+    ConnectedClients connections;
 
     /**
      * Event utilities
@@ -132,12 +153,12 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         jsonresponse.add("id", id);
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         EventEntity reqentity = getEvents().importEventJSON(eventJson);
-        if (Objects.isNull(reqentity)) {
+        if (null == reqentity) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event, invalid input.", ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
 
         EventEntity event = super.find(id);
-        if (Objects.isNull(event)) {
+        if (null == event) {
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find event for updating.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
@@ -148,13 +169,13 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         // take over non-empty fields
-        if (Objects.nonNull(reqentity.getName()) && !reqentity.getName().isEmpty()) {
+        if ((null != reqentity.getName()) && !reqentity.getName().isEmpty()) {
             event.setName(reqentity.getName());
         }
-        if (Objects.nonNull(reqentity.getDescription()) && !reqentity.getDescription().isEmpty()) {
+        if ((null != reqentity.getDescription()) && !reqentity.getDescription().isEmpty()) {
             event.setDescription(reqentity.getDescription());
         }
-        if (Objects.nonNull(reqentity.getPhoto())) {
+        if (null != reqentity.getPhoto()) {
             try {
                 getEvents().updateEventImage(event, reqentity.getPhoto());
             }
@@ -195,7 +216,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         EventEntity event = super.find(id);
         jsonresponse.add("id", id);
-        if (Objects.isNull(event)) {
+        if (null == event) {
             Log.warning(TAG, "*** User was attempting to delete non-existing event!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -231,7 +252,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         EventEntity event = super.find(id);
-        if (Objects.isNull(event) || !event.getStatus().getIsActive()) {
+        if ((null == event) || !event.getStatus().getIsActive()) {
             JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
             jsonresponse.add("id", id);
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Event was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
@@ -310,7 +331,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String addMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        if (Objects.isNull(eventId) || Objects.isNull(memberId)) {
+        if ((null == eventId) || (null == memberId)) {
             Log.error(TAG, "*** Cannot add member to event, no valid inputs!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
@@ -329,7 +350,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         if (!event.getStatus().getIsActive()) {
             event = null;
         }
-        if (Objects.isNull(event) || Objects.isNull(user2add)) {
+        if ((null == event) || (null == user2add)) {
             Log.warning(TAG, "*** Cannot add member to event: non-existing member or event!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -366,7 +387,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String removeMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        if (Objects.isNull(eventId) || Objects.isNull(memberId)) {
+        if ((null == eventId) || (null == memberId)) {
             Log.error(TAG, "*** Cannot remove member from event, no valid inputs!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
@@ -385,7 +406,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         if (!event.getStatus().getIsActive()) {
             event = null;
         }
-        if (Objects.isNull(event) || Objects.isNull(user2remove)) {
+        if ((null == event) || (null == user2remove)) {
             Log.warning(TAG, "*** Cannot remove member from event: non-existing member or event!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -409,6 +430,38 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     }
 
     /**
+     * Notify all event members. This service can be used e.g. for buzzing all members.
+     * 
+     * @param eventId           Event ID
+     * @param notificationJson  Notification content
+     * @param request           HTTP request
+     * @return                  JSON response
+     */
+    @POST
+    @Path("notifyMembers/{eventId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    public String notifyMembers(@PathParam("eventId") Long eventId, String notificationJson, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        if (null == eventId) {
+            Log.error(TAG, "*** Cannot notify event members, no valid inputs!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to notify event members, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        jsonresponse.add("eventId", eventId);
+
+        EventEntity event = super.find(eventId);
+        if ((null == event) || !event.getStatus().getIsActive()) {
+            Log.warning(TAG, "*** Cannot notify event members: non-existing event!");
+            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed notify event members, invalid event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        }
+
+        getEvents().notifyEventMembers(AuthorityConfig.getInstance().getSessionUser(request), event, notifyUsersEvent, notificationJson);
+        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Event members were notified.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
      * Get the location with given ID.
      * 
      * @param eventId      Event ID
@@ -422,13 +475,13 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String putLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        if (Objects.isNull(eventId) || Objects.isNull(locationId)) {
+        if ((null == eventId) || (null == locationId)) {
             Log.error(TAG, "*** Cannot get event location, no valid inputs!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         EventEntity event = getEvents().findEvent(eventId);
-        if (Objects.isNull(event)) {
+        if (null == event) {
             Log.warning(TAG, "*** Cannot get location: non-existing event!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event information.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -441,7 +494,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
         EventLocations elutils = new EventLocations(entityManager);
         EventLocationEntity location = elutils.findLocation(locationId);
-        if (Objects.isNull(location)) {
+        if (null == location) {
             Log.warning(TAG, "*** Failed to get event location, it does not exist!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -467,13 +520,13 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String putLocation(@PathParam("eventId") Long eventId, String locationJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        if (Objects.isNull(eventId) || Objects.isNull(locationJson)) {
+        if ((null == eventId) || (null == locationJson)) {
             Log.error(TAG, "*** Cannot add location to event, no valid inputs!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         EventEntity event = getEvents().findEvent(eventId);
-        if (Objects.isNull(event)) {
+        if (null == event) {
             Log.warning(TAG, "*** Cannot add location to event: non-existing event!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -499,7 +552,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         EventLocations elutils = new EventLocations(entityManager);
         try {
             // add new location or update an existing one?
-            if (Objects.nonNull(inputlocation.getId()) && (inputlocation.getId() > 0)) {
+            if ((null != inputlocation.getId()) && (inputlocation.getId() > 0)) {
                 location = elutils.updateLocation(inputlocation);                
             }
             else {
@@ -509,7 +562,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
                 location = elutils.createNewLocation(event, inputlocation, sessionuser.getId());
             }
             // is a photo given? if so update it, too
-            if (Objects.nonNull(inputlocation.getPhoto())) {
+            if (null != inputlocation.getPhoto()) {
                 elutils.updateEventLocationImage(location, inputlocation.getPhoto());
                 elutils.updateLocation(location);
             }
@@ -539,7 +592,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String removeLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        if (Objects.isNull(eventId) || Objects.isNull(locationId)) {
+        if ((null == eventId) || (null == locationId)) {
             Log.error(TAG, "*** Cannot remove location from event, no valid inputs!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
@@ -559,7 +612,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         if (!event.getStatus().getIsActive()) {
             event = null;
         }
-        if (Objects.isNull(event) || Objects.isNull(loc2remove)) {
+        if ((null == event) || (null == loc2remove)) {
             Log.warning(TAG, "*** Cannot remove location from event: non-existing location or event!");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -597,7 +650,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * @return Event utils
      */
     private Events getEvents() {
-        if (Objects.isNull(eventUtils)) {
+        if (null == eventUtils) {
             eventUtils = new Events(entityManager);
         }
         return eventUtils;
@@ -609,7 +662,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * @return User utils
      */
     private Users getUsers() {
-        if (Objects.isNull(userUtils)) {
+        if (null == userUtils) {
             userUtils = new Users(entityManager);
         }
         return userUtils;

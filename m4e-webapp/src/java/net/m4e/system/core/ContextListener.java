@@ -7,7 +7,6 @@
  */
 package net.m4e.system.core;
 
-import java.util.Objects;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -64,7 +63,7 @@ public class ContextListener implements ServletContextListener {
         catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             problem = ex;
         }
-        if (Objects.nonNull(problem)) {
+        if (null != problem) {
             Log.error( TAG, "problem occurred while update checking, reason: " + problem.getLocalizedMessage());
             try {
                 userTransaction.rollback();

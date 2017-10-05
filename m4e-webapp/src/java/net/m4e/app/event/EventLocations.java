@@ -12,7 +12,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -77,7 +76,7 @@ public class EventLocations {
         Entities eutils = new Entities(entityManager);
         eutils.createEntity(newlocation);
         Collection<EventLocationEntity> locs = event.getLocations();
-        if (Objects.isNull(locs)) {
+        if (null == locs) {
             locs = new ArrayList<>();
             event.setLocations(locs);
         }
@@ -96,17 +95,17 @@ public class EventLocations {
     EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
         Entities entityutils = new Entities(entityManager);
         EventLocationEntity location = entityutils.findEntity(EventLocationEntity.class, inputLocation.getId());
-        if (Objects.isNull(location) || !location.getStatus().getIsActive()) {
+        if ((null == location) || !location.getStatus().getIsActive()) {
             throw new Exception("Entity location does not exist.");
         }
 
-        if (Objects.nonNull(inputLocation.getName())) {
+        if (null != inputLocation.getName()) {
             location.setName(inputLocation.getName());
         }
-        if (Objects.nonNull(inputLocation.getDescription())) {
+        if (null != inputLocation.getDescription()) {
             location.setDescription(inputLocation.getDescription());
         }
-        if (Objects.nonNull(inputLocation.getPhoto())) {
+        if (null != inputLocation.getPhoto()) {
             updateEventLocationImage(location, inputLocation.getPhoto());
         }
 
@@ -159,7 +158,7 @@ public class EventLocations {
             throw new Exception("Location is already deleted.");            
         }
         Collection<EventLocationEntity> locations = event.getLocations();
-        if (Objects.isNull(locations) || !locations.contains(locationToRemove)) {
+        if ((null == locations) || !locations.contains(locationToRemove)) {
             throw new Exception("Location is not part of event.");
         }
         // mark the location entity as deleted
@@ -170,7 +169,7 @@ public class EventLocations {
         // update the app stats
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
-        if (Objects.isNull(appinfo)) {
+        if (null == appinfo) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementEventLocationCountPurge(1L);
@@ -184,7 +183,7 @@ public class EventLocations {
      * @return            Event location entity or null if the JSON string was not appropriate
      */
     public EventLocationEntity importLocationJSON(String jsonString) {
-        if (Objects.isNull(jsonString)) {
+        if (null == jsonString) {
             return null;
         }
 
@@ -212,14 +211,14 @@ public class EventLocations {
         if (id != 0) {
             entity.setId(id);
         }
-        if (Objects.nonNull(name)) {
+        if (null != name) {
             entity.setName(Strings.limitStringLen(name, 32));
         }
-        if (Objects.nonNull(description)) {
+        if (null != description) {
             entity.setDescription(Strings.limitStringLen(description, 1000));
         }
 
-        if (Objects.nonNull(photo)) {
+        if (null != photo) {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);
@@ -240,11 +239,11 @@ public class EventLocations {
      */
     public JsonObjectBuilder exportEventLocationJSON(EventLocationEntity entity) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", Objects.nonNull(entity.getId()) ? entity.getId() : 0);
-        json.add("name", Objects.nonNull(entity.getName()) ? entity.getName() : "");
-        json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
-        json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getETag() : "");
+        json.add("id", (null != entity.getId()) ? entity.getId() : 0);
+        json.add("name", (null != entity.getName()) ? entity.getName() : "");
+        json.add("description", (null != entity.getDescription()) ? entity.getDescription(): "");
+        json.add("photoId", (null != entity.getPhoto()) ? entity.getPhoto().getId(): 0);
+        json.add("photoETag", (null != entity.getPhoto()) ? entity.getPhoto().getETag() : "");
         return json;
     }
 }

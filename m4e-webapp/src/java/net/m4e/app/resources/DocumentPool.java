@@ -53,11 +53,11 @@ public class DocumentPool {
      * @throws Exception  Throws an exception if something goes wrong.
      */
     public DocumentEntity getOrCreatePoolDocument(String etag) throws Exception {
-        if (Objects.isNull(etag)) {
+        if (null == etag) {
             throw new Exception("Invalid document etag");
         }
         DocumentEntity doc = findPoolDocument(etag);
-        if (Objects.isNull(doc)) {
+        if (null == doc) {
             return createDocument();
         }
         return doc;
@@ -71,7 +71,7 @@ public class DocumentPool {
      *                    if the document was invalid or it was not found in pool.
      */
     public boolean releasePoolDocument(DocumentEntity document) {
-        if (Objects.isNull(document) || !document.getStatus().getIsActive()) {
+        if ((null == document) || !document.getStatus().getIsActive()) {
             return false;
         }
         if (document.getStatus().getReferenceCount() < 1L) {
@@ -92,7 +92,7 @@ public class DocumentPool {
      * @return           Return true if both are valid (i.e. active) and have the same content etag, otherwise return false.
      */
     public boolean equals(DocumentEntity document1, DocumentEntity document2) {
-        if (Objects.isNull(document1) || Objects.isNull(document2)) {
+        if ((null == document1) || (null == document2)) {
             return false;
         }
         if (!document1.getStatus().getIsActive() || !document2.getStatus().getIsActive()) {
@@ -109,7 +109,7 @@ public class DocumentPool {
      * @return          Return true if document is valid (i.e. active) and has the given content etag, otherwise return false.
      */
     public boolean compareETag(DocumentEntity document, String etag) {
-        if (Objects.isNull(document) || !document.getStatus().getIsActive() || Objects.isNull(etag)) {
+        if ((null == document) || !document.getStatus().getIsActive() || (null == etag)) {
             return false;
         }
         return Objects.equals(document.getETag(), etag);

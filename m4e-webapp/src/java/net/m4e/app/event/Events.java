@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import javax.enterprise.event.Event;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -22,6 +23,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthRole;
+import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
@@ -32,6 +34,7 @@ import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
+import net.m4e.common.ResponseResults;
 
 /**
  * A collection of event related utilities
@@ -177,7 +180,7 @@ public class Events {
      */
     public boolean getUserIsEventOwnerOrMember(UserEntity user, EventEntity event) {
         boolean owner = Objects.equals(user.getId(), event.getStatus().getIdOwner());
-        if (!owner && Objects.nonNull(event.getMembers())) {
+        if (!owner && (null != event.getMembers())) {
             if (event.getMembers().stream().anyMatch((u) -> (Objects.equals(u.getId(), user.getId())))) {
                 return true;
             } 
@@ -194,7 +197,7 @@ public class Events {
      */
     public void addMember(EventEntity event, UserEntity userToAdd) throws Exception {
         Collection<UserEntity> members = event.getMembers();
-        if (Objects.isNull(members)) {
+        if (null == members) {
             members = new ArrayList<>();
             event.setMembers(members);
         }
@@ -217,7 +220,7 @@ public class Events {
      */
     public void removeMember(EventEntity event, UserEntity userToRemove) throws Exception {
         Collection<UserEntity> members = event.getMembers();
-        if (Objects.isNull(members)) {
+        if (null == members) {
             throw new Exception("User is not member of event.");
         }
         if (!members.remove(userToRemove)) {
@@ -236,7 +239,7 @@ public class Events {
     public void removeAnyMember(EventEntity event, List<UserEntity> usersToRemove) throws Exception {
         for (UserEntity user: usersToRemove) {
             Collection<UserEntity> members = event.getMembers();
-            if (Objects.isNull(members)) {
+            if (null == members) {
                 continue;
             }
             members.remove(user);
@@ -254,7 +257,7 @@ public class Events {
     public void markEventAsDeleted(EventEntity event) throws Exception {
         Entities eutils = new Entities(entityManager);
         StatusEntity status = event.getStatus();
-        if (Objects.isNull(status)) {
+        if (null == status) {
             throw new Exception("Event has no status field!");
         }
         status.setDateDeletion((new Date().getTime()));
@@ -263,7 +266,7 @@ public class Events {
         // update the app stats
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
-        if (Objects.isNull(appinfo)) {
+        if (null == appinfo) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementEventCountPurge(1L);
@@ -312,41 +315,41 @@ public class Events {
      */
     public JsonObjectBuilder exportEventJSON(EventEntity entity) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", Objects.nonNull(entity.getId()) ? entity.getId() : 0);
-        json.add("name", Objects.nonNull(entity.getName()) ? entity.getName() : "");
-        json.add("description", Objects.nonNull(entity.getDescription()) ? entity.getDescription(): "");
+        json.add("id", (null != entity.getId()) ? entity.getId() : 0);
+        json.add("name", (null != entity.getName()) ? entity.getName() : "");
+        json.add("description", (null != entity.getDescription()) ? entity.getDescription(): "");
         json.add("public", entity.getIsPublic());
-        json.add("photoId", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", Objects.nonNull(entity.getPhoto()) ? entity.getPhoto().getETag(): "");
-        json.add("eventStart", Objects.nonNull(entity.getEventStart()) ? entity.getEventStart(): 0);
-        json.add("repeatWeekDays", (Objects.nonNull(entity.getRepeatWeekDays()) ? entity.getRepeatWeekDays(): 0));
-        json.add("repeatDayTime", (Objects.nonNull(entity.getRepeatDayTime()) ? entity.getRepeatDayTime(): 0));
+        json.add("photoId", (null != entity.getPhoto()) ? entity.getPhoto().getId(): 0);
+        json.add("photoETag", (null != entity.getPhoto()) ? entity.getPhoto().getETag(): "");
+        json.add("eventStart", (null != entity.getEventStart()) ? entity.getEventStart(): 0);
+        json.add("repeatWeekDays", (null != entity.getRepeatWeekDays()) ? entity.getRepeatWeekDays(): 0);
+        json.add("repeatDayTime", (null != entity.getRepeatDayTime()) ? entity.getRepeatDayTime(): 0);
 
         JsonArrayBuilder members = Json.createArrayBuilder();
-        if (Objects.nonNull(entity.getMembers())) {
+        if (null != entity.getMembers()) {
             for (UserEntity m: entity.getMembers()) {
                 if (!m.getStatus().getIsActive()) {
                     continue;
                 }
                 JsonObjectBuilder member = Json.createObjectBuilder();
                 member.add("id", m.getId());
-                member.add("name", Objects.nonNull(m.getName()) ? m.getName() : "");
-                member.add("photoId", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getId(): 0);
-                member.add("photoETag", Objects.nonNull(m.getPhoto()) ? m.getPhoto().getETag() : "");
+                member.add("name", (null != m.getName()) ? m.getName() : "");
+                member.add("photoId", (null != m.getPhoto()) ? m.getPhoto().getId(): 0);
+                member.add("photoETag", (null != m.getPhoto()) ? m.getPhoto().getETag() : "");
                 members.add(member);
             }
         }
         json.add("members", members);
 
         JsonArrayBuilder locations = Json.createArrayBuilder();
-        if (Objects.nonNull(entity.getLocations())) {
+        if (null != entity.getLocations()) {
             for (EventLocationEntity l: entity.getLocations()) {
                 JsonObjectBuilder loc = Json.createObjectBuilder();
                 loc.add("id", l.getId());
-                loc.add("name", Objects.nonNull(l.getName()) ? l.getName() : "");
-                loc.add("description", Objects.nonNull(l.getDescription()) ? l.getDescription() : "");
-                loc.add("photoId", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getId(): 0);
-                loc.add("photoETag", Objects.nonNull(l.getPhoto()) ? l.getPhoto().getETag(): "");
+                loc.add("name", (null != l.getName()) ? l.getName() : "");
+                loc.add("description", (null != l.getDescription()) ? l.getDescription() : "");
+                loc.add("photoId", (null != l.getPhoto()) ? l.getPhoto().getId(): 0);
+                loc.add("photoETag", (null != l.getPhoto()) ? l.getPhoto().getETag(): "");
                 locations.add( loc );
             }
         }
@@ -357,7 +360,7 @@ public class Events {
         Long       ownerid   = entity.getStatus().getIdOwner();
         Users      userutils = new Users(entityManager);
         UserEntity owner     = userutils.findUser(ownerid);
-        if (Objects.isNull(owner) || !owner.getStatus().getIsActive()) {
+        if ((null == owner) || !owner.getStatus().getIsActive()) {
             ownerid = 0L;
             ownername = "";
             ownerphotoid = 0L;
@@ -365,8 +368,8 @@ public class Events {
         }
         else {
             ownername = owner.getName();
-            ownerphotoid = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getId() : 0L;
-            ownerphotoetag = Objects.nonNull(owner.getPhoto()) ? owner.getPhoto().getETag(): "";
+            ownerphotoid = (null != owner.getPhoto()) ? owner.getPhoto().getId() : 0L;
+            ownerphotoetag = (null != owner.getPhoto()) ? owner.getPhoto().getETag(): "";
         }
         json.add("ownerId", ownerid);
         json.add("ownerName", ownername);
@@ -385,7 +388,7 @@ public class Events {
      * @return            Event entity or null if the JSON string was not appropriate
      */
     public EventEntity importEventJSON(String jsonString) {
-        if (Objects.isNull(jsonString)) {
+        if (null == jsonString) {
             return null;
         }
 
@@ -410,10 +413,10 @@ public class Events {
         }
 
         EventEntity entity = new EventEntity();
-        if (Objects.nonNull(name)) {
+        if (null != name) {
             entity.setName(Strings.limitStringLen(name, 32));
         }
-        if (Objects.nonNull(description)) {
+        if (null != description) {
             entity.setDescription(Strings.limitStringLen(description, 1000));
         }
         if (eventstart > 0L) {
@@ -423,7 +426,7 @@ public class Events {
         entity.setRepeatWeekDays(repeatweekdays);
         entity.setRepeatDayTime(repeatdaytime);
 
-        if (Objects.nonNull(photo)) {
+        if (null != photo) {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);
@@ -478,5 +481,44 @@ public class Events {
             });
 
         return allevents;
+    }
+
+    /**
+     * Send a notification to all event members. The notification data is extracted from given notificationJson string, which is
+     * expected to have the following fields:
+     * 
+     *   subject (string)
+     *   text (string)
+     * 
+     * @param sender            Sender of this notification
+     * @param event             Members of this meeting event are notified
+     * @param notifyUsersEvent  The event object
+     * @param notificationJson  JSON string containing the necessary notification fields (subject and text)
+     */
+    public void notifyEventMembers(UserEntity sender, EventEntity event, Event<NotifyUsersEvent> notifyUsersEvent, String notificationJson) {
+        JsonReader jreader = Json.createReader(new StringReader(notificationJson));
+        JsonObject jobject = jreader.readObject();
+        String subject = jobject.getString("subject", "");
+        String text = jobject.getString("text", "");
+        if (subject.isEmpty() && text.isEmpty()) {
+            return;
+        }
+
+        // the owner and all event members get the notification
+        List<Long> userids = new ArrayList();
+        userids.add(event.getStatus().getIdOwner());
+        Collection<UserEntity> members = event.getMembers();
+        if (null != members) {
+            members.stream().forEach(user -> {
+                userids.add(user.getId());
+            });
+        }
+
+        NotifyUsersEvent notify = new NotifyUsersEvent();
+        notify.setRecipientIds(userids);
+        notify.setSenderId(sender.getId());
+        notify.setSubject(subject);
+        notify.setText(text);
+        notifyUsersEvent.fireAsync(notify);
     }
 }

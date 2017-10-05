@@ -8,7 +8,6 @@
 
 package net.m4e.app.communication;
 import java.io.IOException;
-import java.util.Objects;
 import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import javax.websocket.CloseReason;
@@ -58,7 +57,7 @@ public class Connection {
     public void open(Session session, EndpointConfig config) throws IOException {
         Log.verbose(TAG, "new client connected, id: " + session.getId());
         httpSession = (HttpSession)config.getUserProperties().get(ConnectionConfigurator.KEY_HTTP_SESSION);
-        if (Objects.isNull(httpSession)) {
+        if (null == httpSession) {
             // close the connection, no http session exists
             session.getBasicRemote().sendText("No HTTP session exists.");
             CloseReason reason = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "No HTTP session exists.");
@@ -66,7 +65,7 @@ public class Connection {
             return;
         }
         user = AuthorityConfig.getInstance().getSessionUser(httpSession);
-        if (Objects.isNull(user)) {
+        if (null == user) {
             // close the connection, user is not authorized
             session.getBasicRemote().sendText("User is not authenticated.");
             CloseReason reason = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "User is not authenticated.");

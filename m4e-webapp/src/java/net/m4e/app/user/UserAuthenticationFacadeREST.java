@@ -9,7 +9,6 @@
 package net.m4e.app.user;
 
 import java.io.StringReader;
-import java.util.Objects;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -68,7 +67,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         JsonObjectBuilder json = Json.createObjectBuilder();
         HttpSession session = request.getSession();
         Object user = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (Objects.nonNull(user)) {
+        if (null != user) {
             UserEntity userentity = (UserEntity)user;
             json.add("auth", "yes");
             json.add("id", userentity.getId());
@@ -114,7 +113,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
 
         HttpSession session = request.getSession();
         Object      user    = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (Objects.nonNull(user)) {
+        if (null != user) {
             Log.debug(TAG, "  User login attempt failed, user is already logged in, user (" + login+ ")");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user. A user is already logged in.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }
@@ -122,7 +121,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         // try to find the user in database
         Users userutils = new Users(entityManager);
         UserEntity existinguser = userutils.findUser(login);
-        if (Objects.isNull(existinguser) || !existinguser.getStatus().getIsActive()) {
+        if ((null == existinguser) || !existinguser.getStatus().getIsActive()) {
             Log.debug(TAG, "  User login attempt failed, no user with this login found, user (" + login+ ")");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_FOUND, null);
         }
@@ -153,7 +152,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
     public String logout(@Context HttpServletRequest request) {
         HttpSession session = request.getSession(true);
         Object user = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (Objects.isNull(user)) {
+        if (null == user) {
             Log.debug(TAG, "*** Invalid logout attempt");
             return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to logout user. User was not logged in before.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }

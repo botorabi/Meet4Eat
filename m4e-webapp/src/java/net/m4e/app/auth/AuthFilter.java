@@ -12,7 +12,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -25,8 +24,10 @@ import net.m4e.common.ResponseResults;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 
+
 /**
- *
+ * Authentication/authorization filter which checks user's access to resources
+ * 
  * @author boto
  * Date of creation Aug 18, 2017
  */
@@ -74,7 +75,7 @@ public class AuthFilter implements Filter {
      */
     public AuthFilter() {
         authChecker = new AuthChecker();
-    }    
+    }
 
     /**
      * Destroy method for this filter
@@ -149,7 +150,7 @@ public class AuthFilter implements Filter {
                 // get the user roles out of the http session
                 UserEntity sessionuser = getSessionUser(httprequest);
                 List<String> userroles;
-                if (Objects.nonNull(sessionuser)) {
+                if (null != sessionuser) {
                     Log.verbose(TAG, "   User '" + sessionuser.getLogin() + "' accessing protected resource: " + path);
                     userroles = sessionuser.getRolesAsString();
                     // authenticated users get automatically the role USER
@@ -190,7 +191,7 @@ public class AuthFilter implements Filter {
     private UserEntity getSessionUser(HttpServletRequest request) {
         HttpSession  session   = request.getSession();
         Object       user      = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (Objects.nonNull(user)) {
+        if (null != user) {
             if (user instanceof UserEntity) {
                 return (UserEntity)user;
             }
