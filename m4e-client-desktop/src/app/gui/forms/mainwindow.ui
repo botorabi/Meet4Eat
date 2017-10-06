@@ -142,6 +142,22 @@
                </widget>
               </item>
               <item>
+               <spacer name="horizontalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Minimum</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>30</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
                <widget class="QLabel" name="labelLogoText">
                 <property name="minimumSize">
                  <size>
@@ -152,7 +168,7 @@
                 <property name="font">
                  <font>
                   <family>Roboto Black</family>
-                  <pointsize>12</pointsize>
+                  <pointsize>10</pointsize>
                   <weight>75</weight>
                   <bold>true</bold>
                  </font>
@@ -165,17 +181,17 @@
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QLabel#labelLogoText {
-  color: rgb(231, 247, 167);
+  color: rgb(181,197, 217);;
 }</string>
                 </property>
                 <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;meet your friends&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;and have a nice time&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;meet your friends&lt;/span&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;/&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;&amp;nbsp;&amp;nbsp;and have a nice time&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                 </property>
                 <property name="margin">
-                 <number>10</number>
+                 <number>0</number>
                 </property>
                </widget>
               </item>
