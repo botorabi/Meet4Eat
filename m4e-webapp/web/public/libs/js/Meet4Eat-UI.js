@@ -76,8 +76,9 @@ function Meet4EatUI() {
 	};
 
 	/**
-	 * Get the web interface version.
-	 * @returns {string} Version of this web interface.
+	 * Get the module version.
+	 * 
+	 * @returns {string} Version of this module.
 	 */
 	self.getVersion = function() {
 		return self._version;

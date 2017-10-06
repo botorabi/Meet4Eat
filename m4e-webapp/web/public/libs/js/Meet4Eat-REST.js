@@ -9,6 +9,9 @@
 
 /**
  * Main Meet4Eat REST service API
+ * 
+ * @author boto
+ * Date of creation Aug 18, 2017
  */
 function Meet4EatREST() {
 
@@ -44,7 +47,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Get the web interface version.
-	 * @returns {string} Version of self web interface.
+	 * @returns {string} Version of web interface.
 	 */
 	self.getVersion = function() {
 		return self._version;

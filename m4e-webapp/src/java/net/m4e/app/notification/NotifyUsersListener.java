@@ -66,7 +66,6 @@ public class NotifyUsersListener {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("subject", (null != event.getSubject()) ? event.getSubject() : "");
         json.add("text", (null != event.getText()) ? event.getText() : "");
-        json.add("time", (new Date()).getTime()); // send the time stamp
         json.add("data", (null != event.getData()) ? event.getData() : "");
         packet.setData(json.build().toString());
 

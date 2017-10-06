@@ -9,6 +9,7 @@
 package net.m4e.app.communication;
 import java.io.IOException;
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.servlet.http.HttpSession;
 import javax.websocket.CloseReason;
 import javax.websocket.EndpointConfig;
@@ -37,6 +38,12 @@ public class Connection {
     private final static String TAG = "Connection";
 
     /**
+     * WebSocket protocol version. The packet header may differ from version 
+     * to version.
+     */
+    public final static String PROTOCOL_VERSION = "1.0.0";
+
+    /**
      * Underlying HTTP session which allows access to authenticated user.
      */
     HttpSession httpSession;
@@ -59,7 +66,7 @@ public class Connection {
         httpSession = (HttpSession)config.getUserProperties().get(ConnectionConfigurator.KEY_HTTP_SESSION);
         if (null == httpSession) {
             // close the connection, no http session exists
-            session.getBasicRemote().sendText("No HTTP session exists.");
+            session.getBasicRemote().sendText(createResponse("nok", "No HTTP session exists."));
             CloseReason reason = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "No HTTP session exists.");
             session.close(reason);
             return;
@@ -67,7 +74,7 @@ public class Connection {
         user = AuthorityConfig.getInstance().getSessionUser(httpSession);
         if (null == user) {
             // close the connection, user is not authorized
-            session.getBasicRemote().sendText("User is not authenticated.");
+            session.getBasicRemote().sendText(createResponse("nok", "User is not authenticated."));
             CloseReason reason = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "User is not authenticated.");
             session.close(reason);
             return;
@@ -78,7 +85,7 @@ public class Connection {
             Log.warning(TAG, "could not store user's connection");
         }
 
-        String response = "User " + user.getName() + " established a connection";
+        String response = createResponse("ok", "User " + user.getName() + " established a connection");
         session.getBasicRemote().sendText(response);
     }
 
@@ -97,7 +104,24 @@ public class Connection {
 
     @OnMessage
     public void handleMessage(String message, Session session) throws IOException {
-        Log.verbose(TAG, "client message arrived: " + message);
-        session.getBasicRemote().sendText("ECHO: " + message);
+        connections.onMessage(message, session);
+    }
+
+    /**
+     * Create a connection response packet.
+     * 
+     * @param status        Status ok or nok
+     * @param description   Response description   
+     * @return              String in JSON format ready to send.
+     */
+    private String createResponse(String status, String description) {
+        Packet packet = new Packet();
+        packet.setChannel(Packet.CHANNEL_SYSTEM);
+        packet.setSource("");
+        packet.setData(Json.createObjectBuilder().add("protocolVersion", PROTOCOL_VERSION)
+                                                 .add("status", status)
+                                                 .add("description", description)
+                                                 .build().toString());
+        return packet.getJSON();
     }
 }

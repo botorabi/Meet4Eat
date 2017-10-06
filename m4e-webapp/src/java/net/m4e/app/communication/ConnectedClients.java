@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.websocket.Session;
 import net.m4e.app.user.UserEntity;
@@ -50,54 +52,6 @@ public class ConnectedClients {
     private final Map<Long /*user ID*/, UserEntry >  connections = new HashMap();
 
     /**
-     * Add a new WebSocket connection coming from a user.
-     * This method is used by 'Connection' when a WebSocket connection was established.
-     * 
-     * NOTE: a user can be connected multiple times.
-     * 
-     * @param user      User
-     * @param session   WebSocket session
-     * @return          Return false if the session was already added before, otherwise return true.
-     */
-    protected boolean addConnection(UserEntity user, Session session) {
-        UserEntry entry = connections.get(user.getId());
-        if (null == entry) {
-            entry = new UserEntry();
-            entry.user = user;
-            connections.put(user.getId(), entry);
-        }
-        if (entry.sessions.contains(session)) {
-            Log.warning(TAG, "session for user " + user.getId() + " already exists!");
-            return false;
-        }
-        entry.sessions.add(session);
-        return true;
-    }
-
-    /**
-     * Remove a session from given user.
-     * This method is used by 'Connection' when a WebSocket connection was closed.
-     * 
-     * @param user      User
-     * @param session   The session to remove
-     * @return          Return true if successful.
-     */
-    protected boolean removeConnection(UserEntity user, Session session) {
-        UserEntry entry = connections.get(user.getId());
-        if (null == entry) {
-            return false;
-        }
-        if (!entry.sessions.remove(session)) {
-            return false;
-        }
-        // if there are no futher connections then remove the user entry
-        if (entry.sessions.size() < 1) {
-            connections.remove(user.getId());
-        }
-        return true;
-    }
-
-    /**
      * Given an user ID return its user entity if it is currently connected.
      * 
      * @param userId        User ID
@@ -132,5 +86,75 @@ public class ConnectedClients {
                 });
             }
         });
+    }
+
+    /**
+     * Add a new WebSocket connection coming from a user.
+     * This method is used by 'Connection' when a WebSocket connection was established.
+     * 
+     * NOTE: a user can be connected multiple times.
+     * 
+     * @param user      User
+     * @param session   WebSocket session
+     * @return          Return false if the session was already added before, otherwise return true.
+     */
+    protected boolean addConnection(UserEntity user, Session session) {
+        UserEntry entry = connections.get(user.getId());
+        if (null == entry) {
+            entry = new UserEntry();
+            entry.user = user;
+            connections.put(user.getId(), entry);
+        }
+        if (entry.sessions.contains(session)) {
+            Log.warning(TAG, "session for user " + user.getId() + " already exists!");
+            return false;
+        }
+        // store the user in session, we need it later while handling incoming messages
+        session.getUserProperties().put("user", user);
+        entry.sessions.add(session);
+        return true;
+    }
+
+    /**
+     * Remove a session from given user.
+     * This method is used by 'Connection' when a WebSocket connection was closed.
+     * 
+     * @param user      User
+     * @param session   The session to remove
+     * @return          Return true if successful.
+     */
+    protected boolean removeConnection(UserEntity user, Session session) {
+        UserEntry entry = connections.get(user.getId());
+        if (null == entry) {
+            return false;
+        }
+        if (!entry.sessions.remove(session)) {
+            return false;
+        }
+        // if there are no futher connections then remove the user entry
+        if (entry.sessions.size() < 1) {
+            connections.remove(user.getId());
+        }
+        return true;
+    }
+
+    /**
+     * Handle incoming message.
+     * 
+     * @param message   Message
+     * @param session   WebSocket session the message was arrived
+     */
+    protected void onMessage(String message, Session session) {
+        UserEntity user = (UserEntity)session.getUserProperties().get("user");
+
+        //! TODO distribute the message to registered channels
+
+        Log.verbose(TAG, "client message arrived from user (" + user.getName() + "): " + message);
+        try {
+            session.getBasicRemote().sendText("ECHO: " + message);
+        }
+        catch (IOException ex) {
+            Log.warning(TAG, "could not send out message, reason: " + ex.getLocalizedMessage());
+        }
     }
 }

@@ -153,6 +153,7 @@ public class UpdateInit extends AppUdateBaseHandler {
         UserEntity user = new UserEntity();
         user.setName("Administrator");
         user.setLogin("admin");
+        user.setEmail("dummy AT mail.com");
         user.setPassword(AuthorityConfig.getInstance().createPassword("admin"));
         eutils.createEntity(user);
 

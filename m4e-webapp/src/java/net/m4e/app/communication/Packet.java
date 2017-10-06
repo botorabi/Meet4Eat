@@ -8,6 +8,7 @@
 
 package net.m4e.app.communication;
 
+import java.util.Date;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
@@ -42,6 +43,7 @@ public class Packet {
 
     private String channel;
     private String source;
+    private Long   time = 0L;
     private String data;
 
     /**
@@ -54,7 +56,7 @@ public class Packet {
      * 
      * @param channel   Packet channel, one of CHANNEL_xx strings
      * @param source    Human readable string, e.g. user name, as far as available
-     * @param data      Packet data
+     * @param data      Packet data, it should be in JSON format
      */
     public Packet(String channel, String source, String data) {
         this.channel = channel;
@@ -71,6 +73,7 @@ public class Packet {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("channel", ((channel != null) ? channel : ""));
         json.add("source", ((source != null) ? source : ""));
+        json.add("time", (time == 0L) ? (new Date()).getTime() : time);
         json.add("data", ((data != null) ? data : ""));
         return json.build().toString();
     }
@@ -80,7 +83,7 @@ public class Packet {
      * 
      * @param channel   Packet channel
      * @param source    Human readable string, e.g. user name, as far as available
-     * @param data      Packet data
+     * @param data      Packet data, it should be in JSON format
      * @return JSON formatted string
      */
     public static String buildJSON(String channel, String source, String data) {
@@ -139,5 +142,24 @@ public class Packet {
      */
     public void setData(String data) {
         this.data = data;
+    }
+
+    /**
+     * Get packet's timestamp.
+     * 
+     * @return Timestamp
+     */
+    public Long getTime() {
+        return time;
+    }
+
+    /**
+     * Set the packet time, this is a timestamp. Pass a 0L in order
+     * to automatically take the current timestamp when building the JSON string.
+     * 
+     * @param time Packet timestamp
+     */
+    public void setTime(Long time) {
+        this.time = time;
     }
 }
