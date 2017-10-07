@@ -8,7 +8,6 @@
 
 package net.m4e.app.notification;
 
-import java.util.Date;
 import javax.ejb.Stateless;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;

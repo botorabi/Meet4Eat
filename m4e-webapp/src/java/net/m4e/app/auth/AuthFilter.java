@@ -170,7 +170,7 @@ public class AuthFilter implements Filter {
                 }
                 else {
                     Log.warning(TAG, "*** Access denied to protected resource: " + path);
-                    response.getWriter().print(ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK,
+                    response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
                                                 "Denied access to: " + path, ResponseResults.CODE_FORBIDDEN, null));
                 }
             }
@@ -219,7 +219,7 @@ public class AuthFilter implements Filter {
         }
         catch (IOException | ServletException ex) {
             Log.error(TAG, "*** A problem occured while executing filters, reason: " + ex.getLocalizedMessage());
-            response.getWriter().print(ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK,
+            response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
                                        "Problem occurred while processing filter chain, reason: " + ex.getLocalizedMessage(),
                                        ResponseResults.CODE_INTERNAL_SRV_ERROR, null));
             throw ex;

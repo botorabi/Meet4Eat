@@ -58,10 +58,10 @@ public class AppInfoEntityFacadeREST extends net.m4e.common.AbstractFacade<AppIn
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
         if (null == info) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("version", info.getVersion());
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 }

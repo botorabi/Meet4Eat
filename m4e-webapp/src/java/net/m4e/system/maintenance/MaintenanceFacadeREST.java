@@ -61,11 +61,11 @@ public class MaintenanceFacadeREST {
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
         if (null == info) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
         Maintenance mutils = new Maintenance(entityManager);
         String appstats = mutils.exportInfoJSON(info).build().toString();
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "System stats", ResponseResults.CODE_OK, appstats);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "System stats", ResponseResults.CODE_OK, appstats);
     }
 
     /**
@@ -82,7 +82,7 @@ public class MaintenanceFacadeREST {
         Maintenance mutils = new Maintenance(entityManager);
         int countpurges = mutils.purgeResources();
         jsonresponse.add("countPurges", countpurges);
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "" +  countpurges + " resources were purged.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "" +  countpurges + " resources were purged.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     /**

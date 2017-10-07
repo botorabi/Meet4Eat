@@ -119,8 +119,8 @@ public class ResponseResults {
      * @param data          Optional data, if it exists the it must be in JSON format.
      * @return Response results in JSON format
      */
-    public static String buildJSON(String status, String description, int code, String data) {
-        return new ResponseResults(status, description, code, data).getJSON();
+    public static String toJSON(String status, String description, int code, String data) {
+        return new ResponseResults(status, description, code, data).toJSON();
     }
 
     /**
@@ -143,7 +143,7 @@ public class ResponseResults {
      * 
      * @return JSON string representing the response
      */
-    public String getJSON() {
+    public String toJSON() {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("status", ((status != null) ? status : ""));
         json.add("description", ((description != null) ? description : ""));

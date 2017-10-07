@@ -13,10 +13,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.websocket.Session;
+import net.m4e.app.chat.ChatSystem;
 import net.m4e.app.user.UserEntity;
 import net.m4e.system.core.Log;
 
@@ -37,6 +37,12 @@ public class ConnectedClients {
      * Used for logging
      */
     private final static String TAG = "ConnectedClients";
+
+    /**
+     * The chat system handles incoming chat messages.
+     */
+    @Inject
+    ChatSystem chatSystem;
 
     /**
      * Class used for a user entry
@@ -72,7 +78,7 @@ public class ConnectedClients {
      * @param recipientIds  List of recipients containing user IDs
      */
     public void sendPacket(Packet packet, List<Long> recipientIds) {
-        String msg = packet.getJSON();
+        String msg = packet.toJSON();
         recipientIds.forEach(id -> {
             UserEntry recentry = connections.get(id);
             if (recentry != null) {
@@ -86,6 +92,17 @@ public class ConnectedClients {
                 });
             }
         });
+    }
+
+    /**
+     * Given a WebSocket session return its user.
+     * 
+     * @param session   WebSocket session
+     * @return          User entity using this session
+     */
+    public UserEntity getUser(Session session) {
+        UserEntity user = (UserEntity)session.getUserProperties().get("user");
+        return user;
     }
 
     /**
@@ -136,25 +153,5 @@ public class ConnectedClients {
             connections.remove(user.getId());
         }
         return true;
-    }
-
-    /**
-     * Handle incoming message.
-     * 
-     * @param message   Message
-     * @param session   WebSocket session the message was arrived
-     */
-    protected void onMessage(String message, Session session) {
-        UserEntity user = (UserEntity)session.getUserProperties().get("user");
-
-        //! TODO distribute the message to registered channels
-
-        Log.verbose(TAG, "client message arrived from user (" + user.getName() + "): " + message);
-        try {
-            session.getBasicRemote().sendText("ECHO: " + message);
-        }
-        catch (IOException ex) {
-            Log.warning(TAG, "could not send out message, reason: " + ex.getLocalizedMessage());
-        }
     }
 }

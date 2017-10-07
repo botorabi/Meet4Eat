@@ -59,6 +59,10 @@ public class Connection {
     @Inject
     ConnectedClients connections;
 
+    /**
+     * Distribute the incoming message in proper channels.
+     */
+    MessageDistribution msgHandler = new MessageDistribution();
 
     @OnOpen
     public void open(Session session, EndpointConfig config) throws IOException {
@@ -104,7 +108,12 @@ public class Connection {
 
     @OnMessage
     public void handleMessage(String message, Session session) throws IOException {
-        connections.onMessage(message, session);
+        Packet packet = Packet.fromJSON(message);
+        if (packet == null) {
+            Log.debug(TAG, "invalid message format received from client, ignoring it");
+            return;
+        }
+        msgHandler.dispatchMessage(packet, session);
     }
 
     /**
@@ -122,6 +131,6 @@ public class Connection {
                                                  .add("status", status)
                                                  .add("description", description)
                                                  .build().toString());
-        return packet.getJSON();
+        return packet.toJSON();
     }
 }

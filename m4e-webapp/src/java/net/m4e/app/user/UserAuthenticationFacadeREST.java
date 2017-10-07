@@ -79,7 +79,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
 
         json.add("sid", session.getId());
         String respdata = json.build().toString();
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Session state", ResponseResults.CODE_OK, respdata);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Session state", ResponseResults.CODE_OK, respdata);
     }
 
     @POST
@@ -91,7 +91,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         // roughly check the input
         if (input == null || input.isEmpty()) {
             Log.debug(TAG, "*** Invalid login attempt");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_BAD_REQUEST, null);
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_BAD_REQUEST, null);
         }
         // try to get login and password
         String login, passwd;
@@ -107,7 +107,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         }
         if (login.isEmpty() || passwd.isEmpty()) {
             Log.debug(TAG, "*** No valid login data");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_BAD_REQUEST, null);           
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_BAD_REQUEST, null);           
         }
         Log.verbose(TAG, "User tries to login: " + login);
 
@@ -115,7 +115,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         Object      user    = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (null != user) {
             Log.debug(TAG, "  User login attempt failed, user is already logged in, user (" + login+ ")");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user. A user is already logged in.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user. A user is already logged in.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }
 
         // try to find the user in database
@@ -123,13 +123,13 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         UserEntity existinguser = userutils.findUser(login);
         if ((null == existinguser) || !existinguser.getStatus().getIsActive()) {
             Log.debug(TAG, "  User login attempt failed, no user with this login found, user (" + login+ ")");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_FOUND, null);
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_FOUND, null);
         }
         // check user password
         String saltedpasswd = AuthorityConfig.getInstance().createPassword(existinguser.getPassword() + session.getId());
         if (!saltedpasswd.contentEquals(passwd)) {
             Log.debug(TAG, "  User login attempt failed, wrong password, user (" + login + ")");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_UNAUTHORIZED, null);
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
         Log.verbose(TAG, " User successfully logged in: " + login);
@@ -141,7 +141,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", existinguser.getId());
         json.add("sid", session.getId());
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully logged in.", ResponseResults.CODE_OK, json.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully logged in.", ResponseResults.CODE_OK, json.build().toString());
     }
 
     @POST
@@ -154,10 +154,10 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         Object user = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (null == user) {
             Log.debug(TAG, "*** Invalid logout attempt");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to logout user. User was not logged in before.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to logout user. User was not logged in before.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }
         session.invalidate();
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully logged out.", ResponseResults.CODE_OK, null);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully logged out.", ResponseResults.CODE_OK, null);
     }
 
     /**
