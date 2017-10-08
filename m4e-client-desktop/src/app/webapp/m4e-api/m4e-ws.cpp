@@ -82,6 +82,10 @@ void Meet4EatWebSocket::shutdownConnection()
 
 bool Meet4EatWebSocket::sendPacket( comm::PacketPtr packet )
 {
+    // if no timestamp was set then set it now
+    if ( !packet->getTime().isValid() )
+        packet->setTime( QDateTime::currentDateTime() );
+
     return sendMessage( packet->toJSON() );
 }
 

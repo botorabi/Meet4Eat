@@ -103,6 +103,11 @@ void WebApp::requestUserData()
     p_user->requestUserData( _userID );
 }
 
+comm::Connection *WebApp::getConnection()
+{
+    return getOrCreateConnection();
+}
+
 event::Events* WebApp::getEvents()
 {
     return getOrCreateEvent();

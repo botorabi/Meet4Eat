@@ -29,7 +29,7 @@ bool Meet4EatRESTResponse::checkStatus( const QJsonDocument& results, QJsonDocum
     }
 
     // extract the data (it is also in json format)
-    QByteArray    datastr = jobject.value( "data" ).toString( "" ).toUtf8();
+    QByteArray datastr = jobject.value( "data" ).toString( "" ).toUtf8();
     data = QJsonDocument::fromJson( datastr );
     return true;
 }

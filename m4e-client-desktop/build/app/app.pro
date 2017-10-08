@@ -29,6 +29,7 @@ SOURCES += \
     ../../src/app/core/core.cpp \
     ../../src/app/core/log.cpp \
     ../../src/app/core/utils.cpp \
+    ../../src/app/chat/chatsystem.cpp \
     ../../src/app/chat/widgetchat.cpp \
     ../../src/app/document/documentcache.cpp \
     ../../src/app/document/modeldocument.cpp \
@@ -72,6 +73,7 @@ HEADERS += \
     ../../src/app/core/utils.h \
     ../../src/app/core/smartptr.h \
     ../../src/app/core/smartptr.inl \
+    ../../src/app/chat/chatsystem.h \
     ../../src/app/chat/widgetchat.h \
     ../../src/app/document/documentcache.h \
     ../../src/app/document/modeldocument.h \

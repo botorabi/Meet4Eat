@@ -12,6 +12,7 @@
 #include <configuration.h>
 #include <core/smartptr.h>
 #include <event/modellocation.h>
+#include <QJsonDocument>
 #include <QString>
 
 
@@ -118,6 +119,29 @@ class ModelDocument : public m4e::core::RefCount< ModelDocument >
          * @param name  Document ETag
          */
         void                                setETag( const QString& etag ) { _eTag = etag; }
+
+        /**
+         * @brief Create a JSON string out of the document.
+         *
+         * @return JSON formatted string representing the document
+         */
+        QString                             toJSON();
+
+        /**
+         * @brief Setup the document given a JSON formatted string.
+         *
+         * @param input Input string in JSON format
+         * @return Return false if the input was not in proper format.
+         */
+        bool                                fromJSON( const QString& input );
+
+        /**
+         * @brief Setup the document given a JSON document.
+         *
+         * @param input Input in JSON document
+         * @return Return false if the input was not in proper format.
+         */
+        bool                                fromJSON( const QJsonDocument& input );
 
         /**
          * @brief Comparison operator which considers the document ID.

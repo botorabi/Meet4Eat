@@ -36,24 +36,16 @@ void ResponseGetDocument::onRESTResponseSuccess( const QJsonDocument& results )
         return;
     }
 
-    QJsonObject data      = datadoc.object();
-    QString     id        = QString::number( data.value( "id" ).toInt() );
-    QString     name      = data.value( "name" ).toString( "" );
-    QString     encoding  = data.value( "encoding" ).toString( "" );
-    QString     type      = data.value( "type" ).toString( "" );
-    QString     etag      = data.value( "eTag" ).toString( "" );
-    QByteArray  content   = data.value( "content" ).toString( "" ).toUtf8();
-
     doc::ModelDocumentPtr document = new doc::ModelDocument();
-
-    document->setId( id );
-    document->setName( name );
-    document->setEncoding( encoding );
-    document->setType( type );
-    document->setETag( etag );
-    document->setContent( content );
-
-    emit _p_requester->onRESTDocumentGet( document );
+    res = document->fromJSON( datadoc );
+    if ( !res )
+    {
+        emit _p_requester->onRESTDocumentErrorGet( "", "invalid input format, JSON was expected" );
+    }
+    else
+    {
+        emit _p_requester->onRESTDocumentGet( document );
+    }
 }
 
 void ResponseGetDocument::onRESTResponseError( const QString& reason )

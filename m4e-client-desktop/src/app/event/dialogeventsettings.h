@@ -43,7 +43,6 @@ class DialogEventSettings : public common::BaseDialog
 
     public:
 
-
         /**
          * @brief Create a dialog instance.
          *

@@ -8,11 +8,57 @@
 
 #include <configuration.h>
 #include "modeldocument.h"
+#include <QJsonObject>
+
 
 namespace m4e
 {
 namespace doc
 {
+
+QString ModelDocument::toJSON()
+{
+    QJsonObject obj;
+    obj.insert( "id", getId() );
+    obj.insert( "name", getName() );
+    obj.insert( "encoding", getEncoding() );
+    obj.insert( "type", getType() );
+    obj.insert( "eTag", getETag() );
+    obj.insert( "content", QString( getContent() ) );
+
+    QJsonDocument doc( obj );
+    return QString( doc.toJson() );
+}
+
+bool ModelDocument::fromJSON( const QString& input )
+{
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson( input.toUtf8(), &err );
+    if ( err.error != QJsonParseError::NoError )
+        return false;
+
+    return fromJSON( doc );
+}
+
+bool ModelDocument::fromJSON( const QJsonDocument& input )
+{
+    QJsonObject data      = input.object();
+    QString     id        = QString::number( data.value( "id" ).toInt() );
+    QString     name      = data.value( "name" ).toString( "" );
+    QString     encoding  = data.value( "encoding" ).toString( "" );
+    QString     type      = data.value( "type" ).toString( "" );
+    QString     etag      = data.value( "eTag" ).toString( "" );
+    QByteArray  content   = data.value( "content" ).toString( "" ).toUtf8();
+
+    setId( id );
+    setName( name );
+    setEncoding( encoding );
+    setType( type );
+    setETag( etag );
+    setContent( content );
+
+    return true;
+}
 
 bool ModelDocument::extractImageData( QByteArray& data, QString& format )
 {
