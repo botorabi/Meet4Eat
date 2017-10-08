@@ -79,14 +79,14 @@ void DialogSettings::setupUI()
     _p_ui->lineEditPassword->setText( "" );
     _p_ui->checkBoxRememberPw->setChecked( remember == "yes" );
 
-    bool connestablished = _p_webApp->getConnectionState() == webapp::WebApp::ConnEstablished;
+    bool connestablished = _p_webApp->getAuthState() == webapp::WebApp::AuthSuccessful;
     _p_ui->pushButtonSignOut->setEnabled( connestablished );
     _p_ui->pushButtonSignIn->setEnabled( !connestablished );
 }
 
 void DialogSettings::onBtnSignInClicked()
 {
-    if ( _p_webApp->getConnectionState() == webapp::WebApp::ConnEstablished )
+    if ( _p_webApp->getAuthState() == webapp::WebApp::AuthSuccessful )
         return;
 
     QString server   = _p_ui->lineEditServer->text();
@@ -119,7 +119,7 @@ void DialogSettings::onBtnSignInClicked()
 
 void DialogSettings::onBtnSignOutClicked()
 {
-    if ( _p_webApp->getConnectionState() != webapp::WebApp::ConnEstablished )
+    if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
         return;
 
     _p_webApp->shutdownConnection();

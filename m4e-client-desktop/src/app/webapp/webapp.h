@@ -17,6 +17,7 @@
 #include <event/events.h>
 #include <document/modeldocument.h>
 #include <document/documentcache.h>
+#include <communication/connection.h>
 #include <QObject>
 
 
@@ -47,14 +48,14 @@ class WebApp : public QObject
     public:
 
         /**
-         * @brief The sever connection states
+         * @brief The sever authentication states
          */
-        enum ConnectionState
+        enum AuthState
         {
-            ConnNoConnection,
-            ConnConnecting,
-            ConnEstablished,
-            ConnFail
+            AuthNoConnection,
+            AuthConnecting,
+            AuthSuccessful,
+            AuthFail
         };
 
         /**
@@ -80,17 +81,18 @@ class WebApp : public QObject
         void                            shutdownConnection();
 
         /**
-         * @brief Get current web app connection state
-         * @return Connection state
+         * @brief Get current web app authentication state
+         *
+         * @return Authentication state
          */
-        enum ConnectionState            getConnectionState() const;
+        enum AuthState                  getAuthState() const;
 
         /**
-         * @brief If the connection state is in ConnFail, then this string may help further.
+         * @brief If the connection state is in AuthFail, then this string may help further.
          *
-         * @return Connection failure string
+         * @return Authentication failure string
          */
-        const QString&                  getConnFailReason() const;
+        const QString&                  getAuthFailReason() const;
 
         /**
          * @brief If the connection was established successfully then the user data can be retrieved by this method.
@@ -103,6 +105,13 @@ class WebApp : public QObject
          * @brief Request for updating user data. If successful then the data will be notified by signal 'onUserDataReady';
          */
         void                            requestUserData();
+
+        /**
+         * @brief Get the connection instance, it handles the real-time communication with the server.
+         *
+         * @return Connection instance
+         */
+        comm::Connection*               getConnection();
 
         /**
          * @brief User this Events instance in order to access the user events.
@@ -213,27 +222,31 @@ class WebApp : public QObject
 
     protected:
 
-        user::UserAuthentication*           getOrCreateUserAuth();
+        user::UserAuthentication*       getOrCreateUserAuth();
 
-        user::User*                         getOrCreateUser();
+        comm::Connection*               getOrCreateConnection();
 
-        event::Events*                      getOrCreateEvent();
+        user::User*                     getOrCreateUser();
 
-        doc::DocumentCache*                 getOrCreateDocumentCache();
+        event::Events*                  getOrCreateEvent();
 
-        QString                             _userID;
+        doc::DocumentCache*             getOrCreateDocumentCache();
 
-        user::UserAuthentication*           _p_userAuth = nullptr;
+        QString                         _userID;
 
-        user::User*                         _p_user = nullptr;
+        user::UserAuthentication*       _p_userAuth = nullptr;
 
-        event::Events*                      _p_events = nullptr;
+        comm::Connection*               _p_connection = nullptr;
 
-        doc::DocumentCache*                 _p_documentCache = nullptr;
+        user::User*                     _p_user = nullptr;
 
-        ConnectionState                     _connState = ConnNoConnection;
+        event::Events*                  _p_events = nullptr;
 
-        QString                             _connFailReason;
+        doc::DocumentCache*             _p_documentCache = nullptr;
+
+        AuthState                       _authState = AuthNoConnection;
+
+        QString                         _authFailReason;
 };
 
 } // namespace webapp

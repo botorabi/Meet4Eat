@@ -31,21 +31,21 @@ WebApp::~WebApp()
 
 void WebApp::establishConnection()
 {
-    if ( _connState == ConnEstablished )
+    if ( _authState == AuthSuccessful )
     {
         log_warning << TAG << "connection is already established!" << std::endl;
         return;
     }
 
     _userID    = "";
-    _connState = ConnNoConnection;
+    _authState = AuthNoConnection;
 
     QString username = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
     QString passwd   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
 
     if ( !username.isEmpty() && !passwd.isEmpty() )
     {
-        _connState = ConnConnecting;
+        _authState = AuthConnecting;
         m4e::user::UserAuthentication* p_user = getOrCreateUserAuth();
         p_user->requestSignIn( username, passwd );
         username.clear();
@@ -55,32 +55,36 @@ void WebApp::establishConnection()
 
 void WebApp::shutdownConnection()
 {
-    if ( _connState != ConnEstablished )
+    if ( _authState != AuthSuccessful )
     {
         log_warning << TAG << "there is no connection to shutdown!" << std::endl;
         return;
     }
 
-    m4e::user::UserAuthentication* p_user = getOrCreateUserAuth();
-    p_user->requestSignOut();
+    // first close the real-time communication connection
+    getOrCreateConnection()->closeConnection();
+    // now sign-off
+    getOrCreateUserAuth()->requestSignOut();
 
     _userID = "";
-    _connState = ConnNoConnection;
-    _connFailReason = "";
+    _authState = AuthNoConnection;
+    _authFailReason = "";
     delete _p_user;
     _p_user = nullptr;
     delete _p_events;
     _p_events = nullptr;
+    delete _p_connection;
+    _p_connection = nullptr;
 }
 
-WebApp::ConnectionState WebApp::getConnectionState() const
+WebApp::AuthState WebApp::getAuthState() const
 {
-    return _connState;
+    return _authState;
 }
 
-const QString& WebApp::getConnFailReason() const
+const QString& WebApp::getAuthFailReason() const
 {
-    return _connFailReason;
+    return _authFailReason;
 }
 
 user::User* WebApp::getUser()
@@ -130,6 +134,17 @@ user::UserAuthentication* WebApp::getOrCreateUserAuth()
         _p_userAuth->setServerURL( server );
     }
     return _p_userAuth;
+}
+
+comm::Connection* WebApp::getOrCreateConnection()
+{
+    if ( !_p_connection )
+    {
+        _p_connection = new comm::Connection( this );
+        QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
+        _p_connection->setServerURL( server );
+    }
+    return _p_connection;
 }
 
 user::User* WebApp::getOrCreateUser()
@@ -183,11 +198,14 @@ void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::Us
         emit onUserSignedIn( true, userId );
         user::User* p_user = getOrCreateUser();
         p_user->requestUserData( userId );
+
+        // after a successful sign-in start the real-time communication
+        getOrCreateConnection()->connectServer();
     }
     else
     {
-        _connState = ConnFail;
-        _connFailReason = reason;
+        _authState = AuthFail;
+        _authFailReason = reason;
         emit onUserSignedIn( false, "" );
         log_verbose << TAG << "failed to sign in user (" << QString::number( code ).toStdString() << "), reason: " << reason.toStdString() << std::endl;
     }
@@ -201,8 +219,8 @@ void WebApp::onResponseSignOutResult( bool success, user::UserAuthentication::Au
 
 void WebApp::onResponseUserData( bool success, m4e::user::ModelUserPtr user )
 {
-    _connState = success ? ConnEstablished : ConnFail;
-    _connFailReason = success ? "" : QApplication::translate( "WebApp", "Could not retrieve user data." );
+    _authState = success ? AuthSuccessful : AuthFail;
+    _authFailReason = success ? "" : QApplication::translate( "WebApp", "Could not retrieve user data." );
     if ( !success )
     {
         log_warning << TAG << "could not get user data!" << std::endl;

@@ -106,6 +106,7 @@ class Meet4EatREST : public QObject
 
         /**
          * @brief Internally used to get requester's callback object and remove it from internal lookup.
+         *
          * @param requestId   Request ID
          * @return The Callback object, if any exists, otherwise nullptr.
          */

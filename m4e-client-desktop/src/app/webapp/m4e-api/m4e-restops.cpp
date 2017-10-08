@@ -52,6 +52,11 @@ void Meet4EatRESTOperations::DELETE( const QUrl& url, unsigned int requestId )
     startRequest( url, QNetworkAccessManager::DeleteOperation, requestId, QJsonDocument() );
 }
 
+QNetworkCookieJar* Meet4EatRESTOperations::getCookie()
+{
+    return _s_cookie;
+}
+
 void Meet4EatRESTOperations::startRequest( const QUrl& url, enum QNetworkAccessManager::Operation op, unsigned int requestId, const QJsonDocument& json )
 {
     QNetworkRequest request( url );

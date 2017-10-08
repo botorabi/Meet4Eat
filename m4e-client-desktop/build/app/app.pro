@@ -4,9 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += core gui network
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core gui widgets network websockets
 
 TARGET = Meet4Eat
 TEMPLATE = app
@@ -26,6 +24,8 @@ SOURCES += \
     ../../src/app/common/basedialog.cpp \
     ../../src/app/common/dialogmessage.cpp \
     ../../src/app/common/guiutils.cpp \
+    ../../src/app/communication/connection.cpp \
+    ../../src/app/communication/packet.cpp \
     ../../src/app/core/core.cpp \
     ../../src/app/core/log.cpp \
     ../../src/app/core/utils.cpp \
@@ -48,6 +48,7 @@ SOURCES += \
     ../../src/app/webapp/m4e-api/m4e-response.cpp \
     ../../src/app/webapp/m4e-api/m4e-rest.cpp \
     ../../src/app/webapp/m4e-api/m4e-restops.cpp \
+    ../../src/app/webapp/m4e-api/m4e-ws.cpp \
     ../../src/app/webapp/request/rest-authentication.cpp \
     ../../src/app/webapp/request/rest-event.cpp \
     ../../src/app/webapp/request/rest-document.cpp \
@@ -64,6 +65,8 @@ HEADERS += \
     ../../src/app/common/dialogmessage.h \
     ../../src/app/common/guiutils.h \
     ../../src/app/common/modelbase.h \
+    ../../src/app/communication/connection.h \
+    ../../src/app/communication/packet.h \
     ../../src/app/core/core.h \
     ../../src/app/core/log.h \
     ../../src/app/core/utils.h \
@@ -91,6 +94,7 @@ HEADERS += \
     ../../src/app/webapp/m4e-api/m4e-response.h \
     ../../src/app/webapp/m4e-api/m4e-rest.h \
     ../../src/app/webapp/m4e-api/m4e-restops.h \
+    ../../src/app/webapp/m4e-api/m4e-ws.h \
     ../../src/app/webapp/request/rest-authentication.h \
     ../../src/app/webapp/request/rest-document.h \
     ../../src/app/webapp/request/rest-event.h \
@@ -103,10 +107,10 @@ HEADERS += \
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
+    ../../src/app/gui/forms/basedialog.ui \
     ../../src/app/gui/forms/widgetevent.ui \
     ../../src/app/gui/forms/widgetlocation.ui \
     ../../src/app/gui/forms/widgeteventitem.ui \
-    ../../src/app/gui/forms/basedialog.ui \
     ../../src/app/gui/forms/widgetabout.ui \
     ../../src/app/gui/forms/widgetsettings.ui \
     ../../src/app/gui/forms/widgetlocationdetails.ui \

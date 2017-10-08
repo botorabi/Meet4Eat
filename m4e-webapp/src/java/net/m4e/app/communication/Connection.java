@@ -8,6 +8,7 @@
 
 package net.m4e.app.communication;
 import java.io.IOException;
+import java.util.Date;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.servlet.http.HttpSession;
@@ -68,17 +69,17 @@ public class Connection {
     public void open(Session session, EndpointConfig config) throws IOException {
         Log.verbose(TAG, "new client connected, id: " + session.getId());
         httpSession = (HttpSession)config.getUserProperties().get(ConnectionConfigurator.KEY_HTTP_SESSION);
-        if (null == httpSession) {
+        if (httpSession == null) {
             // close the connection, no http session exists
-            session.getBasicRemote().sendText(createResponse("nok", "No HTTP session exists."));
+            Log.debug(TAG, "  closing websocket connection, no session was established before");
             CloseReason reason = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "No HTTP session exists.");
             session.close(reason);
             return;
         }
         user = AuthorityConfig.getInstance().getSessionUser(httpSession);
-        if (null == user) {
+        if (user == null) {
             // close the connection, user is not authorized
-            session.getBasicRemote().sendText(createResponse("nok", "User is not authenticated."));
+            Log.debug(TAG, "  closing websocket connection, user was not authenticated before");
             CloseReason reason = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "User is not authenticated.");
             session.close(reason);
             return;
@@ -86,7 +87,7 @@ public class Connection {
 
         // store the user connection
         if (!connections.addConnection(user, session)) {
-            Log.warning(TAG, "could not store user's connection");
+            Log.warning(TAG, "  could not store user's connection");
         }
 
         String response = createResponse("ok", "User " + user.getName() + " established a connection");
@@ -97,13 +98,13 @@ public class Connection {
     public void close(Session session) {
         Log.verbose(TAG, "client connection closed, id: " + session.getId());
         if (!connections.removeConnection(user, session)) {
-            Log.warning(TAG, "could not remove user's connection");
+            Log.warning(TAG, "  could not remove user's connection");
         }
     }
 
     @OnError
     public void onError(Throwable error) {
-        Log.verbose(TAG, "error on client connection: " + error.getLocalizedMessage());
+        Log.verbose(TAG, "error on client connection");
     }
 
     @OnMessage
@@ -127,6 +128,7 @@ public class Connection {
         Packet packet = new Packet();
         packet.setChannel(Packet.CHANNEL_SYSTEM);
         packet.setSource("");
+        packet.setTime( ( new Date() ).getTime() );
         packet.setData(Json.createObjectBuilder().add("protocolVersion", PROTOCOL_VERSION)
                                                  .add("status", status)
                                                  .add("description", description)

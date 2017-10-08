@@ -40,6 +40,9 @@
 /* Resource path to base REST services on the web application server */
 #define M4E_REST_SRV_RESOURCE_PATH   "/m4e-webapp/webresources"
 
+/* WebSocket path for real-time server communication */
+#define M4E_WS_SRV_RESOURCE_PATH     "/m4e-webapp/ws"
+
 /* Name of local cache directory */
 #define M4E_LOCAL_CACHE_DIR          "cache"
 

@@ -34,7 +34,6 @@ import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
-import net.m4e.common.ResponseResults;
 
 /**
  * A collection of event related utilities
