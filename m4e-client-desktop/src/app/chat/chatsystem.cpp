@@ -19,7 +19,7 @@ namespace chat
 
 /* Chat message fields in network packet */
 static const QString PACKET_FIELD_TEXT       = "text";
-static const QString PACKET_FIELD_DOC        = "text";
+static const QString PACKET_FIELD_DOC        = "document";
 static const QString PACKET_FIELD_RECV_USER  = "receiverUser";
 static const QString PACKET_FIELD_RECV_EVENT = "receiverEvent";
 
@@ -53,7 +53,7 @@ void ChatSystem::onChannelChatPacket( comm::PacketPtr packet )
     QJsonObject obj = doc.object();
 
     ChatMessagePtr msg = new ChatMessage();
-    msg->setSender( packet->getSender() );
+    msg->setSender( packet->getSource() );
     msg->setTime( packet->getTime() );
     msg->setText( obj.value( PACKET_FIELD_TEXT ).toString( "" ) );
     QString document = obj.value( PACKET_FIELD_DOC ).toString( "" );
@@ -105,7 +105,7 @@ bool ChatSystem::createAndSendPacket( bool receiverUser, ChatMessagePtr message 
 
     comm::PacketPtr packet = new comm::Packet();
     packet->setChannel( comm::Packet::CHANNEL_CHAT );
-    packet->setSender( user->getName() );
+    packet->setSource( user->getName() );
     packet->setTime( message->getTime().isValid() ? message->getTime() : QDateTime::currentDateTime() );
     packet->setData( chatdata );
 

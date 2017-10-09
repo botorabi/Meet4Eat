@@ -60,18 +60,18 @@ class Packet : public core::RefCount< Packet >
         void                    setChannel( const QString& channel ) { _channel = channel; }
 
         /**
-         * @brief Get the packet sender.
+         * @brief Get the packet source which has sent it.
          *
-         * @return Packet sender
+         * @return Packet source
          */
-        const QString&          getSender() const { return _sender; }
+        const QString&          getSource() const { return _source; }
 
         /**
-         * @brief Set the packet sender.
+         * @brief Set the packet source.
          *
-         * @param sender Packet sender
+         * @param sender Packet source
          */
-        void                    setSender( const QString& sender ) { _sender = sender; }
+        void                    setSource( const QString& source ) { _source = source; }
 
         /**
          * @brief Get the packet send/receive time.
@@ -124,7 +124,7 @@ class Packet : public core::RefCount< Packet >
                                 Packet( const Packet& );
 
         QString                 _channel;
-        QString                 _sender;
+        QString                 _source;
         QDateTime               _time;
         QJsonDocument           _data;
 };
