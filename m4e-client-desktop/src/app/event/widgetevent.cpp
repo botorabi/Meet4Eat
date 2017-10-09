@@ -57,7 +57,6 @@ void WidgetEvent::setEvent( const QString& id )
     {
         _locations.clear();
         _eventId = id;
-        _p_ui->widgetChat->setChannel( _eventId );
         if ( event->getLocations().size() > 0 )
         {
             for ( auto location: event->getLocations() )
@@ -73,14 +72,20 @@ void WidgetEvent::setEvent( const QString& id )
     }
 }
 
+void WidgetEvent::setChatSystem( chat::ChatSystem* p_chatSystem )
+{
+    _p_chatSystem = p_chatSystem;
+    connect( _p_chatSystem, SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
+}
+
 void WidgetEvent::setupUI()
 {
     _p_ui = new Ui::WidgetEvent;
     _p_ui->setupUi( this );
-    _p_ui->widgetChat->setWebApp( _p_webApp );
+
+    connect( _p_ui->widgetChat, SIGNAL( onSendMessage( m4e::chat::ChatMessagePtr ) ), this, SLOT( onSendMessage( m4e::chat::ChatMessagePtr ) ) );
 
     _p_clientArea = _p_ui->listWidget;
-
     _p_clientArea->setUniformItemSizes( true );
     _p_clientArea->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
     _p_clientArea->setAutoScroll( true );
@@ -142,6 +147,20 @@ void WidgetEvent::addLocation( event::ModelLocationPtr location )
 void WidgetEvent::onButtonBuzzClicked()
 {
     log_verbose << TAG << "poke event members..." << std::endl;
+}
+
+void WidgetEvent::onSendMessage( m4e::chat::ChatMessagePtr msg )
+{
+    if ( !_p_chatSystem )
+        return;
+
+    msg->setReceiverId( _eventId );
+    _p_chatSystem->sendToEventMembers( msg );
+}
+
+void WidgetEvent::onReceivedChatMessageEvent( chat::ChatMessagePtr msg )
+{
+    _p_ui->widgetChat->appendChatText( msg );
 }
 
 } // namespace event

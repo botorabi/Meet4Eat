@@ -79,7 +79,7 @@ class Connection : public QObject
          * @param packet Network packet to send
          * @return Return false if something went wrong.
          */
-        bool                    sendPacket( comm::PacketPtr packet );
+        bool                    sendPacket( m4e::comm::PacketPtr packet );
 
     signals:
 
@@ -101,28 +101,28 @@ class Connection : public QObject
          *
          * @param packet Arrived System channel packet
          */
-        void                    onChannelSystemPacket( comm::PacketPtr packet );
+        void                    onChannelSystemPacket( m4e::comm::PacketPtr packet );
 
         /**
          * @brief This signal notifies about a new incoming network packet in channel 'Chat'.
          *
          * @param packet Arrived Chat channel packet
          */
-        void                    onChannelChatPacket( comm::PacketPtr packet );
+        void                    onChannelChatPacket( m4e::comm::PacketPtr packet );
 
         /**
          * @brief This signal notifies about a new incoming network packet in channel 'Notify'.
          *
          * @param packet Arrived Notify channel packet
          */
-        void                    onChannelNotifyPacket( comm::PacketPtr packet );
+        void                    onChannelNotifyPacket( m4e::comm::PacketPtr packet );
 
         /**
          * @brief This signal notifies about a new incoming network packet in channel 'Event'.
          *
          * @param packet Arrived Event channel packet
          */
-        void                    onChannelEventPacket( comm::PacketPtr packet );
+        void                    onChannelEventPacket( m4e::comm::PacketPtr packet );
 
     protected slots:
 

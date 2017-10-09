@@ -41,6 +41,9 @@ MainWindow::MainWindow() :
     connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
     connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
 
+    // create the chat system
+    _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
+
     _p_initTimer = new QTimer();
     _p_initTimer->setSingleShot( true );
     connect( _p_initTimer, SIGNAL( timeout() ), this, SLOT( onTimerInit() ) );
@@ -283,6 +286,7 @@ void MainWindow::createWidgetEvent( const QString& eventId )
 {
     event::WidgetEvent* p_widget = new event::WidgetEvent( _p_webApp, _p_ui->widgetClientArea );
     p_widget->setEvent( eventId );
+    p_widget->setChatSystem( _p_chatSystem );
     _p_ui->widgetClientArea->layout()->addWidget( p_widget );
 }
 

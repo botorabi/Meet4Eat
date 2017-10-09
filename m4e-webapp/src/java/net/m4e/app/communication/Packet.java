@@ -49,14 +49,13 @@ public class Packet {
 
     private String channel;
     private String source;
-    private String data;
+    private JsonObject data;
     private Long   time = 0L;
 
     /**
      * Create an empty packet instance.
      */
-    public Packet() {
-    }
+    public Packet() {}
 
     /**
      * Create a packet instance.
@@ -65,7 +64,7 @@ public class Packet {
      * @param source Human readable string, e.g. user name, as far as available
      * @param data Packet data, it should be in JSON format
      */
-    public Packet(String channel, String source, String data) {
+    public Packet(String channel, String source, JsonObject data) {
         this.channel = channel;
         this.source = source;
         this.data = data;
@@ -81,7 +80,9 @@ public class Packet {
         json.add("channel", ((channel != null) ? channel : ""));
         json.add("source", ((source != null) ? source : ""));
         json.add("time", (time == 0L) ? (new Date()).getTime() : time);
-        json.add("data", ((data != null) ? data : ""));
+        if (data != null) {
+            json.add("data", data);
+        }
         return json.build().toString();
     }
 
@@ -93,7 +94,7 @@ public class Packet {
      * @param data Packet data, it should be in JSON format
      * @return JSON formatted string
      */
-    public static String toJSON(String channel, String source, String data) {
+    public static String toJSON(String channel, String source, JsonObject data) {
         return new Packet(channel, source, data).toJSON();
     }
 
@@ -110,8 +111,8 @@ public class Packet {
             JsonReader jreader = Json.createReader(new StringReader(input));
             JsonObject jobject = jreader.readObject();
             String channel = jobject.getString("channel", "");
-            String source = jobject.getString("name", "");
-            String data = jobject.getString("data", "");
+            String source = jobject.getString("soource", "");
+            JsonObject data = jobject.getJsonObject("data");
             int time = jobject.getInt("time", 0);
             packet = new Packet(channel, source, data);
             packet.setTime(new Long(time));
@@ -159,11 +160,11 @@ public class Packet {
     }
 
     /**
-     * Packet data, this can be a JSON document.
+     * Packet data, this is expected to be a JSON document.
      *
      * @return The packet data
      */
-    public String getData() {
+    public JsonObject getData() {
         return data;
     }
 
@@ -172,7 +173,7 @@ public class Packet {
      *
      * @param data Packet data
      */
-    public void setData(String data) {
+    public void setData(JsonObject data) {
         this.data = data;
     }
 

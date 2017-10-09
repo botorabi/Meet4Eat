@@ -12,6 +12,7 @@
 #include <configuration.h>
 #include <communication/connection.h>
 #include <document/modeldocument.h>
+#include <chat/chatmessage.h>
 #include <webapp/webapp.h>
 #include <QObject>
 
@@ -55,34 +56,47 @@ class ChatSystem : public QObject
         /**
          * @brief Send a text message to given user.
          *
-         * @param userId    The recipient ID
          * @param message   Message to send
-         * @param doc       Optional document to send, e.g. an image
          * @return          Return true if the message was successfully sent.
          */
-        bool                    sendToUser( const QString& userId, const QString& message, doc::ModelDocumentPtr doc = doc::ModelDocumentPtr() );
+        bool                    sendToUser( ChatMessagePtr message );
 
         /**
          * @brief Send a text message to all event members.
          *
-         * @param eventId   The event ID
          * @param message   Message to send
-         * @param doc       Optional document to send, e.g. an image
          * @return          Return true if the message was successfully sent.
          */
-        bool                    sendToEventMembers( const QString& eventId, const QString& message, doc::ModelDocumentPtr doc = doc::ModelDocumentPtr() );
+        bool                    sendToEventMembers( ChatMessagePtr message );
 
     signals:
 
-        //! TODO
+        /**
+         * @brief Notify about a new user chat message.
+         *
+         * @param msg Chat message
+         */
+        void                    onReceivedChatMessageUser( m4e::chat::ChatMessagePtr msg );
+
+        /**
+         * @brief Notify about a new event chat message.
+         *
+         * @param msg Chat message
+         */
+        void                    onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr msg );
 
     protected slots:
 
-        //! TODO
+        /**
+         * @brief This signal notifies about a new incoming network packet in channel 'Chat'.
+         *
+         * @param packet Arrived Chat channel packet
+         */
+        void                    onChannelChatPacket( m4e::comm::PacketPtr packet );
 
     protected:
 
-        bool                    createAndSendPacket( bool receiverUser, const QString& receiverId, const QString& message, doc::ModelDocumentPtr doc );
+        bool                    createAndSendPacket( bool receiverUser, ChatMessagePtr message );
 
         webapp::WebApp*         _p_webApp = nullptr;
 };

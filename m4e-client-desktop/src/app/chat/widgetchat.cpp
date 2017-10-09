@@ -30,14 +30,19 @@ WidgetChat::~WidgetChat()
         delete _p_ui;
 }
 
-void WidgetChat::setWebApp(webapp::WebApp *p_webApp)
+void WidgetChat::appendChatText( ChatMessagePtr msg )
 {
-     _p_webApp = p_webApp;
-}
+    if ( msg->getText().isEmpty() && !msg->getDocument().valid() )
+        return;
 
-void WidgetChat::setChannel( const QString& channel )
-{
-    _channel = channel;
+    const QDateTime& timestamp = msg->getTime();
+    QString ts = "[" + timestamp.toString( Qt::ISODate ) + "]";
+    QString output = "<p>";
+    output += "<span style='color: gray;'>" + ts + "</span>";
+    output += " <span style='color: brown;'>" + msg->getSender() + "</span>";
+    output += "  <strong style='color: black;'>" + msg->getText() + "</strong>";
+    output += "</p>";
+    _p_ui->textOutput->appendHtml( output );
 }
 
 void WidgetChat::onBtnEmotieClicked()
@@ -52,7 +57,10 @@ void WidgetChat::onEditLineReturnPressed()
 
 void WidgetChat::onBtnSendClicked()
 {
-    appendChatText( _p_ui->lineEditChat->text() );
+    ChatMessagePtr msg = new ChatMessage();
+    // NOTE the remaing data such as recipient and sender will be added by signal receiver
+    msg->setText( _p_ui->lineEditChat->text() );
+    emit onSendMessage( msg );
     _p_ui->lineEditChat->setText( "" );
 }
 
@@ -60,24 +68,6 @@ void WidgetChat::setupUI()
 {
     _p_ui = new Ui::WidgetChat;
     _p_ui->setupUi( this );
-}
-
-void WidgetChat::appendChatText( const QString& text )
-{
-    if ( text.isEmpty() )
-        return;
-
-    QString ts = "[" + QString::fromStdString( core::getFormatedDateAndTime() ) + "]";
-    QString sender;
-    if ( _p_webApp )
-        sender = " " + _p_webApp->getUser()->getUserData()->getName();
-
-    QString output = "<p>";
-    output += "<span style='color: gray;'>" + ts + "</span>";
-    output += " <span style='color: brown;'>" + sender + "</span>";
-    output += "  <strong style='color: black;'>" + text + "</strong>";
-    output += "</p>";
-    _p_ui->textOutput->appendHtml( output );
 }
 
 } // namespace chat

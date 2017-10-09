@@ -63,7 +63,8 @@ public class Connection {
     /**
      * Distribute the incoming message in proper channels.
      */
-    MessageDistribution msgHandler = new MessageDistribution();
+    @Inject
+    MessageDistribution msgHandler;
 
     @OnOpen
     public void open(Session session, EndpointConfig config) throws IOException {
@@ -132,7 +133,7 @@ public class Connection {
         packet.setData(Json.createObjectBuilder().add("protocolVersion", PROTOCOL_VERSION)
                                                  .add("status", status)
                                                  .add("description", description)
-                                                 .build().toString());
+                                                 .build());
         return packet.toJSON();
     }
 }

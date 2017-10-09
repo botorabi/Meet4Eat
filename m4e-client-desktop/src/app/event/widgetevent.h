@@ -12,6 +12,7 @@
 #include <webapp/webapp.h>
 #include <event/modelevent.h>
 #include <event/modellocation.h>
+#include <chat/chatsystem.h>
 #include <QListWidget>
 #include <QWidget>
 #include <QLabel>
@@ -66,9 +67,30 @@ class WidgetEvent : public QWidget
          */
         void                        setEvent( const QString& id );
 
+        /**
+         * @brief Set the ChatSystem which allows the chat messanging.
+         *
+         * @param p_chatSystem  The chat system
+         */
+        void                        setChatSystem( m4e::chat::ChatSystem* p_chatSystem );
+
     protected slots:
 
         void                        onButtonBuzzClicked();
+
+        /**
+         * @brief The chat widget has a new message to send.
+         *
+         * @param msg Chat message
+         */
+        void                        onSendMessage( m4e::chat::ChatMessagePtr msg );
+
+        /**
+         * @brief This signal is received from chat system whenever a new event chat message arrived.
+         *
+         * @param msg Chat message
+         */
+        void                        onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr msg );
 
     protected:
 
@@ -101,6 +123,8 @@ class WidgetEvent : public QWidget
         QListWidget*                _p_clientArea   = nullptr;
 
         webapp::WebApp*             _p_webApp       = nullptr;
+
+        m4e::chat::ChatSystem*      _p_chatSystem   = nullptr;
 
         typedef QMap< QString /*id*/, QString /*name*/>  Locations;
 

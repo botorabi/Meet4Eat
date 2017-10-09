@@ -66,7 +66,7 @@ public class NotifyUsersListener {
         json.add("subject", (null != event.getSubject()) ? event.getSubject() : "");
         json.add("text", (null != event.getText()) ? event.getText() : "");
         json.add("data", (null != event.getData()) ? event.getData() : "");
-        packet.setData(json.build().toString());
+        packet.setData(json.build());
 
         connections.sendPacket(packet, event.getRecipientIds());
     }

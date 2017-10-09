@@ -8,8 +8,6 @@
 
 package net.m4e.app.communication;
 
-import net.m4e.app.communication.ChannelEvent;
-
 
 /**
  * Event used for handling a chat message

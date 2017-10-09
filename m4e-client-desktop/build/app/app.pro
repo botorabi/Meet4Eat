@@ -58,7 +58,8 @@ SOURCES += \
     ../../src/app/webapp/response/resp-document.cpp \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
-    ../../src/app/webapp/webapp.cpp
+    ../../src/app/webapp/webapp.cpp \
+    ../../src/app/chat/chatmessage.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -105,7 +106,8 @@ HEADERS += \
     ../../src/app/webapp/response/resp-document.h \
     ../../src/app/webapp/response/resp-event.h \
     ../../src/app/webapp/response/resp-user.h \
-    ../../src/app/webapp/webapp.h
+    ../../src/app/webapp/webapp.h \
+    ../../src/app/chat/chatmessage.h
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \

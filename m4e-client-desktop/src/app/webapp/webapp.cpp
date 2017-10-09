@@ -103,7 +103,7 @@ void WebApp::requestUserData()
     p_user->requestUserData( _userID );
 }
 
-comm::Connection *WebApp::getConnection()
+comm::Connection* WebApp::getConnection()
 {
     return getOrCreateConnection();
 }

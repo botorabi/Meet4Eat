@@ -10,6 +10,8 @@ package net.m4e.app.chat;
 import net.m4e.app.communication.ChannelChatEvent;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
+import javax.json.JsonObject;
+import net.m4e.app.communication.Packet;
 import net.m4e.system.core.Log;
 
 
@@ -28,7 +30,14 @@ public class ChatSystem {
     private final static String TAG = "ChatSystem";
 
     public void dispatchMessge(@ObservesAsync ChannelChatEvent event) {
-        //! TODO
+
+        //! TODO send the new message to all recipients
+
         Log.verbose(TAG, "dispatching chat message...");
+        Long senderid = event.getSenderId();
+        Packet packet = event.getPacket();
+        JsonObject data = packet.getData();
+
+        Log.verbose(TAG, "sender: " + senderid + ", data: " + data.toString());
     }
 }

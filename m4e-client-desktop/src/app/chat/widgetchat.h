@@ -10,6 +10,7 @@
 #define WIDGETCHAT_H
 
 #include <webapp/webapp.h>
+#include <chat/chatmessage.h>
 #include <QWidget>
 #include <QLabel>
 
@@ -56,18 +57,11 @@ class WidgetChat : public QWidget
         virtual                     ~WidgetChat();
 
         /**
-         * @brief Set the web app handler.
+         * @brief Append a new chat message.
          *
-         * @param p_webApp WebApp instance
+         * @param msg Chat message
          */
-        void                        setWebApp( webapp::WebApp* p_webApp );
-
-        /**
-         * @brief Set the chat channel which is represented by this widget.
-         *
-         * @param channel   Chat channel
-         */
-        void                        setChannel( const QString& channel );
+        void                        appendChatText( m4e::chat::ChatMessagePtr msg );
 
     protected slots:
 
@@ -79,6 +73,12 @@ class WidgetChat : public QWidget
 
     signals:
 
+        /**
+         * @brief This signal is emitted when the user posted a new message.
+         *
+         * @param msg  Chat message to send.
+         */
+        void                        onSendMessage( m4e::chat::ChatMessagePtr msg );
 
     protected:
 
@@ -87,13 +87,9 @@ class WidgetChat : public QWidget
          */
         void                        setupUI();
 
-        void                        appendChatText( const QString& text );
+        Ui::WidgetChat*             _p_ui = nullptr;
 
-        Ui::WidgetChat*             _p_ui     = nullptr;
-
-        webapp::WebApp*             _p_webApp = nullptr;
-
-        QString                     _channel;
+        QString                     _senderName;
 };
 
 } // namespace chat

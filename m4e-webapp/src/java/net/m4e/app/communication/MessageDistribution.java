@@ -7,6 +7,7 @@
  */
 package net.m4e.app.communication;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.websocket.Session;
@@ -19,7 +20,8 @@ import net.m4e.app.user.UserEntity;
  * @author boto
  * Date of creation Oct 7, 2017
  */
-class MessageDistribution {
+@ApplicationScoped
+public class MessageDistribution {
 
     /**
      * Used for logging
@@ -27,28 +29,30 @@ class MessageDistribution {
     private final static String TAG = "MessageDistribution";
 
     /**
-     * Central place to hold all client connections
-     */
-    @Inject
-    ConnectedClients connections;
-
-    /**
      * Used for firing chat channel events
      */
     @Inject
     Event<ChannelChatEvent> channelEvent;
-    
+
+    @Inject
+    ConnectedClients connections;
+
+    /**
+     * Construct the resource.
+     */
+    public MessageDistribution() {}
+
     /**
      * Handle incoming message.
      * 
-     * @param packet    Incoming network packet
-     * @param session   WebSocket session the message was arrived
+     * @param packet        Incoming network packet
+     * @param session       WebSocket session the message was arrived
      */
     protected void dispatchMessage(Packet packet, Session session) {
         if (packet.getChannel().equals(Packet.CHANNEL_CHAT)) {
             distributeToChannelChat(packet, session);
         }
-        //! TODO else notify....
+        //! TODO cover all other channel types
     }
 
     /**

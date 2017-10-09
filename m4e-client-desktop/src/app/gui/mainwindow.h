@@ -11,10 +11,12 @@
 
 #include <configuration.h>
 #include <webapp/webapp.h>
+#include <chat/chatsystem.h>
 #include <event/events.h>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QTimer>
+
 
 namespace Ui {
   class MainWindow;
@@ -135,6 +137,8 @@ class MainWindow : public QMainWindow
         QTimer*                     _p_initTimer    = nullptr;
 
         webapp::WebApp*             _p_webApp       = nullptr;
+
+        chat::ChatSystem*           _p_chatSystem   = nullptr;
 
         bool                        _dragging       = false;
 

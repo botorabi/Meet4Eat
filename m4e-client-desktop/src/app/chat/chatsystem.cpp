@@ -8,6 +8,8 @@
 
 #include "chatsystem.h"
 #include <core/log.h>
+#include "chatmessage.h"
+#include <QJsonObject>
 
 
 namespace m4e
@@ -15,28 +17,78 @@ namespace m4e
 namespace chat
 {
 
+/* Chat message fields in network packet */
+static const QString PACKET_FIELD_TEXT       = "text";
+static const QString PACKET_FIELD_DOC        = "text";
+static const QString PACKET_FIELD_RECV_USER  = "receiverUser";
+static const QString PACKET_FIELD_RECV_EVENT = "receiverEvent";
+
+
 ChatSystem::ChatSystem( webapp::WebApp* p_webApp, QObject* p_parent ) :
  QObject( p_parent ),
  _p_webApp( p_webApp )
 {
-
+    connect( _p_webApp->getConnection(), SIGNAL( onChannelChatPacket( m4e::comm::PacketPtr ) ), this, SLOT( onChannelChatPacket( m4e::comm::PacketPtr ) ) );
 }
 
 ChatSystem::~ChatSystem()
 {
 }
 
-bool ChatSystem::sendToUser( const QString& userId, const QString& message, doc::ModelDocumentPtr doc )
+bool ChatSystem::sendToUser( ChatMessagePtr message )
 {
-    return createAndSendPacket( true, userId, message, doc );
+    return createAndSendPacket( true, message );
 }
 
-bool ChatSystem::sendToEventMembers( const QString& eventId, const QString& message, doc::ModelDocumentPtr doc )
+bool ChatSystem::sendToEventMembers( ChatMessagePtr message )
 {
-    return createAndSendPacket( false, eventId, message, doc );
+    return createAndSendPacket( false, message );
 }
 
-bool ChatSystem::createAndSendPacket( bool receiverUser, const QString& receiverId, const QString& message, doc::ModelDocumentPtr doc )
+void ChatSystem::onChannelChatPacket( comm::PacketPtr packet )
+{
+    log_verbose << TAG << "channel Chat received new packet" << std::endl;
+
+    const QJsonDocument& doc = packet->getData();
+    QJsonObject obj = doc.object();
+
+    ChatMessagePtr msg = new ChatMessage();
+    msg->setSender( packet->getSender() );
+    msg->setTime( packet->getTime() );
+    msg->setText( obj.value( PACKET_FIELD_TEXT ).toString( "" ) );
+    QString document = obj.value( PACKET_FIELD_DOC ).toString( "" );
+    if ( !document.isEmpty() )
+    {
+        doc::ModelDocumentPtr d = new doc::ModelDocument();
+        if ( !d->fromJSON( document ) )
+        {
+            log_warning << TAG << "invalid document format detected, ignoring it" << std::endl;
+        }
+        else
+        {
+            msg->setDocument( d );
+        }
+    }
+
+    QString recvuser  = obj.value( PACKET_FIELD_RECV_USER ).toString( "" );
+    QString recvevent = obj.value( PACKET_FIELD_RECV_EVENT ).toString( "" );
+    if ( !recvuser.isEmpty() )
+    {
+        msg->setReceiverId( recvuser );
+        emit onReceivedChatMessageUser( msg );
+    }
+    else if ( !recvevent.isEmpty() )
+    {
+        msg->setReceiverId( recvevent );
+        emit onReceivedChatMessageEvent( msg );
+    }
+    else
+    {
+        log_warning << TAG << "invalid recipient in chat message, ignore it" << std::endl;
+    }
+}
+
+bool ChatSystem::createAndSendPacket( bool receiverUser, ChatMessagePtr message )
 {
     user::ModelUserPtr user = _p_webApp->getUser()->getUserData();
 
@@ -44,16 +96,17 @@ bool ChatSystem::createAndSendPacket( bool receiverUser, const QString& receiver
         return false;
 
     QJsonObject obj;
-    obj.insert( receiverUser ? "receiverUser" : "receiverEvent", receiverId );
-    obj.insert( "text" , message );
-    if ( doc.valid() )
-        obj.insert( "document", doc->toJSON() );
+    obj.insert( receiverUser ? PACKET_FIELD_RECV_USER : PACKET_FIELD_RECV_EVENT, message->getReceiverId() );
+    obj.insert( PACKET_FIELD_TEXT , message->getText() );
+    if ( message->getDocument().valid() )
+        obj.insert( PACKET_FIELD_DOC, message->getDocument()->toJSON() );
 
     QJsonDocument chatdata ( obj );
 
     comm::PacketPtr packet = new comm::Packet();
     packet->setChannel( comm::Packet::CHANNEL_CHAT );
     packet->setSender( user->getName() );
+    packet->setTime( message->getTime().isValid() ? message->getTime() : QDateTime::currentDateTime() );
     packet->setData( chatdata );
 
     return _p_webApp->getConnection()->sendPacket( packet );
