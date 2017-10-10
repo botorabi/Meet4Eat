@@ -52,7 +52,7 @@ bool Packet::fromJSON( const QString& input )
     _data    = QJsonDocument( obj.value( "data" ).toObject( QJsonObject() ) );
     _channel = obj.value( "channel" ).toString( "" );
     _source  = obj.value( "source" ).toString( "" );
-    int time = obj.value( "time" ).toInt( 0 );
+    qint64 time = ( qint64 )obj.value( "time" ).toDouble( 0.0 );
     _time = QDateTime::fromMSecsSinceEpoch( time );
 
     return true;

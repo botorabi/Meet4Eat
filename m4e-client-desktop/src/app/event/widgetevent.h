@@ -118,6 +118,13 @@ class WidgetEvent : public QWidget
          */
         void                        addLocation( event::ModelLocationPtr location );
 
+        /**
+         * @brief Setup the event members.
+         *
+         * @param event The event
+         */
+        void                        setEventMembers( event::ModelEventPtr event );
+
         Ui::WidgetEvent*            _p_ui           = nullptr;
 
         QListWidget*                _p_clientArea   = nullptr;

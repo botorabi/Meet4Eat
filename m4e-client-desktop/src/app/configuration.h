@@ -49,4 +49,7 @@
 /* Cache document expiration in days */
 #define M4E_LOCAL_CAHCE_EXPIRE_DAYS  60
 
+/* Default user icon shown if no one is available */
+#define M4E_DEFAULT_USER_ICON        ":/icon-user.png"
+
 #endif // CONFIGURATION_H

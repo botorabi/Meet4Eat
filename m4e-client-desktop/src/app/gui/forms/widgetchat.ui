@@ -5,6 +5,14 @@
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>518</width>
+    <height>228</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>About Meet4Eat</string>
   </property>
@@ -47,13 +55,74 @@ QGroupBox {
     <number>0</number>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayoutMain" stretch="0">
+    <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0">
      <property name="spacing">
       <number>2</number>
      </property>
      <item>
+      <widget class="QWidget" name="widgetHead" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgba(131,147, 167, 255);</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>2</number>
+        </property>
+        <property name="rightMargin">
+         <number>2</number>
+        </property>
+        <property name="bottomMargin">
+         <number>2</number>
+        </property>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>493</width>
+            <height>13</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton">
+          <property name="maximumSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>-</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <widget class="QWidget" name="widgetMain" native="true">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="styleSheet">
+        <string notr="true">#widgetMain {
+ border: 0;
+}</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
         <property name="spacing">
          <number>2</number>
         </property>
@@ -70,46 +139,81 @@ QGroupBox {
          <number>0</number>
         </property>
         <item>
-         <widget class="QPlainTextEdit" name="textOutput">
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
-          </property>
+         <widget class="QWidget" name="widgetChat" native="true">
           <property name="styleSheet">
-           <string notr="true">#textOutput {
+           <string notr="true">#widgetMain {
+ border: 0;
+}</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>2</number>
+           </property>
+           <item>
+            <widget class="QPlainTextEdit" name="textOutput">
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">#textOutput {
   color: black;
   border: 1px solid rgb(131,147, 167);
   background-color: rgba(131,147, 167, 50);
 }</string>
-          </property>
-          <property name="undoRedoEnabled">
-           <bool>false</bool>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalFoot">
-          <property name="spacing">
-           <number>2</number>
-          </property>
-          <item>
-           <widget class="QPushButton" name="pushButtonEmotie">
-            <property name="minimumSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
+             </property>
+             <property name="undoRedoEnabled">
+              <bool>false</bool>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalFoot">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="pushButtonEmotie">
+               <property name="minimumSize">
+                <size>
+                 <width>30</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>30</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton {
   background-color: rgb(28,52,62);
   border: 1px solid rgb(131,147, 167);
   border-image: url(:/icon-user.png);
@@ -118,47 +222,86 @@ QPushButton:hover {
   border: 5px solid white;
   border-radius:  4px;
 }</string>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-           </widget>
-          </item>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>30</width>
+                 <height>30</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditChat">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::ClickFocus</enum>
+               </property>
+               <property name="maxLength">
+                <number>256</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonChatSend">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>60</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Send</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
           <item>
-           <widget class="QLineEdit" name="lineEditChat">
+           <widget class="QListWidget" name="listWidgetMembers">
             <property name="minimumSize">
              <size>
-              <width>0</width>
-              <height>30</height>
+              <width>140</width>
+              <height>0</height>
              </size>
             </property>
             <property name="focusPolicy">
-             <enum>Qt::ClickFocus</enum>
+             <enum>Qt::NoFocus</enum>
             </property>
-            <property name="maxLength">
-             <number>256</number>
+            <property name="styleSheet">
+             <string notr="true">#listWidgetMembers {
+  color: black;
+  border: 1px solid rgb(131,147, 167);
+  background-color: rgba(181,197, 217, 50);
+}</string>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButtonChatSend">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>30</height>
-             </size>
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustToContents</enum>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>60</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Send</string>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SingleSelection</enum>
             </property>
            </widget>
           </item>
@@ -174,18 +317,18 @@ QPushButton:hover {
  <resources/>
  <connections>
   <connection>
-   <sender>lineEditChat</sender>
-   <signal>returnPressed()</signal>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
    <receiver>WidgetChat</receiver>
-   <slot>onEditLineReturnPressed()</slot>
+   <slot>onBtnCollapseClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>615</x>
-     <y>140</y>
+     <x>511</x>
+     <y>13</y>
     </hint>
     <hint type="destinationlabel">
-     <x>693</x>
-     <y>133</y>
+     <x>518</x>
+     <y>26</y>
     </hint>
    </hints>
   </connection>
@@ -196,12 +339,28 @@ QPushButton:hover {
    <slot>onBtnSendClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>667</x>
-     <y>145</y>
+     <x>377</x>
+     <y>214</y>
     </hint>
     <hint type="destinationlabel">
-     <x>692</x>
-     <y>128</y>
+     <x>411</x>
+     <y>228</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEditChat</sender>
+   <signal>returnPressed()</signal>
+   <receiver>WidgetChat</receiver>
+   <slot>onEditLineReturnPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>209</x>
+     <y>211</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>223</x>
+     <y>229</y>
     </hint>
    </hints>
   </connection>
@@ -212,12 +371,12 @@ QPushButton:hover {
    <slot>onBtnEmotieClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>21</x>
-     <y>144</y>
+     <x>25</x>
+     <y>218</y>
     </hint>
     <hint type="destinationlabel">
-     <x>-1</x>
-     <y>129</y>
+     <x>33</x>
+     <y>230</y>
     </hint>
    </hints>
   </connection>
@@ -226,5 +385,6 @@ QPushButton:hover {
   <slot>onEditLineReturnPressed()</slot>
   <slot>onBtnSendClicked()</slot>
   <slot>onBtnEmotieClicked()</slot>
+  <slot>onBtnCollapseClicked()</slot>
  </slots>
 </ui>

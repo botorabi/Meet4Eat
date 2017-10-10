@@ -13,6 +13,7 @@
 #include <user/userauth.h>
 #include <user/user.h>
 #include <QApplication>
+#include <webapp/m4e-api/m4e-restops.h>
 
 
 namespace m4e
@@ -65,6 +66,8 @@ void WebApp::shutdownConnection()
     getOrCreateConnection()->closeConnection();
     // now sign-off
     getOrCreateUserAuth()->requestSignOut();
+    // remove any cookies
+    Meet4EatRESTOperations::resetCookie();
 
     _userID = "";
     _authState = AuthNoConnection;

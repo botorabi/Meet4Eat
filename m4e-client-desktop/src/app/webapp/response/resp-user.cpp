@@ -38,21 +38,16 @@ void ResponseGetUserData::onRESTResponseSuccess( const QJsonDocument& results )
         return;
     }
 
-    QJsonObject data      = datadoc.object();
-    QString     id        = QString::number( data.value( "id" ).toInt() );
-    QString     name      = data.value( "name" ).toString( "" );
-    QString     email     = data.value( "email" ).toString( "" );
-    QString     photoid   = QString::number( data.value( "photoId" ).toInt() );
-    QString     photoetag = data.value( "photoETag" ).toString( "" );
-
     user::ModelUserPtr user = new user::ModelUser();
-    user->setId( id );
-    user->setName( name );
-    user->setEMail( email );
-    user->setPhotoId( photoid );
-    user->setPhotoETag( photoetag );
-
-    emit _p_requester->onRESTUserGetData( user );
+    if ( !user->fromJSON( datadoc ) )
+    {
+        log_warning << TAG << "invalid JSON format detected, ignoring user data!" << std::endl;
+        emit _p_requester->onRESTUserErrorGetData( "", "Invalid user data format" );
+    }
+    else
+    {
+        emit _p_requester->onRESTUserGetData( user );
+    }
 }
 
 void ResponseGetUserData::onRESTResponseError( const QString& reason )
@@ -84,18 +79,15 @@ void ResponseGetUserSearch::onRESTResponseSuccess( const QJsonDocument& results 
     for ( int i = 0; i < users.size(); i++ )
     {
         QJsonObject obj = users.at( i ).toObject();
-        QString id        = QString::number( obj.value( "id" ).toInt() );
-        QString name      = obj.value( "name" ).toString( "" );
-        QString photoid   = QString::number( obj.value( "photoId" ).toInt() );
-        QString photoetag = obj.value( "photoETag" ).toString( "" );
-
         user::ModelUserInfoPtr u = new user::ModelUserInfo();
-        u->setId( id );
-        u->setName( name );
-        u->setPhotoId( photoid );
-        u->setPhotoETag( photoetag );
-
-        hits.append( u );
+        if ( !u->fromJSON( QJsonDocument( obj ) ) )
+        {
+            log_warning << TAG << "invalid JSON format detected, ignoring search result!" << std::endl;
+        }
+        else
+        {
+            hits.append( u );
+        }
     }
 
     emit _p_requester->onRESTUserSearchResults( hits );

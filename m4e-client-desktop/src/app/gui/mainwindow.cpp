@@ -224,6 +224,8 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
     if ( success )
     {
         log_verbose << TAG << "user was successfully signed in: " << userId.toStdString() << std::endl;
+        // create the chat system
+        _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
     }
     else
     {
@@ -235,6 +237,9 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
 void MainWindow::onUserSignedOff( bool success )
 {
     _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
+
+    delete _p_chatSystem;
+    _p_chatSystem = nullptr;
 
     if ( success )
     {

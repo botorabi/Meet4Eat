@@ -31,6 +31,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.notification.SendEmailEvent;
 import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
@@ -70,6 +71,12 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      */
     @Inject
     Event<SendEmailEvent> sendMailEvent;
+
+    /**
+     * User's online status is fetched from connected clients.
+     */
+    @Inject
+    ConnectedClients connections;
 
     /**
      * Create the user entity REST facade.
@@ -394,7 +401,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Insufficient privilege", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());            
         }
 
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was found.", ResponseResults.CODE_OK, getUsers().exportUserJSON(user).build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was found.", ResponseResults.CODE_OK, getUsers().exportUserJSON(user, connections).build().toString());
     }
 
     /**
@@ -409,7 +416,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String findAllUsers(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         List<UserEntity> users = super.findAll();
-        JsonArrayBuilder allusers = getUsers().exportUsersJSON(users, sessionuser);
+        JsonArrayBuilder allusers = getUsers().exportUsersJSON(users, sessionuser, connections);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
     }
 
@@ -428,7 +435,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         List<UserEntity> users = super.findRange(new int[]{from, to});
-        JsonArrayBuilder allusers = getUsers().exportUsersJSON(users, sessionuser);
+        JsonArrayBuilder allusers = getUsers().exportUsersJSON(users, sessionuser, connections);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
     }
 

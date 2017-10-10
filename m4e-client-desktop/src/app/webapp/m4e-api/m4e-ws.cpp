@@ -135,7 +135,7 @@ bool Meet4EatWebSocket::setupNetworkRequest( QNetworkRequest& request )
 
     // it is important to use the session cookie got previously during
     //  sing-in process, otherwise the server will deny the connection!
-    QNetworkCookieJar* p_cookie = Meet4EatRESTOperations::getCookie();
+    QNetworkCookieJar* p_cookie = Meet4EatRESTOperations::getCookies();
     if ( !p_cookie )
     {
         log_error << TAG << "cannot establish a WebSocket connection without a prior sin-in!" << std::endl;

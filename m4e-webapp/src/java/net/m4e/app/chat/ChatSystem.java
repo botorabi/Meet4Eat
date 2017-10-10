@@ -8,9 +8,12 @@
 package net.m4e.app.chat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.m4e.app.communication.ChannelChatEvent;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
@@ -27,7 +30,7 @@ import net.m4e.system.core.Log;
 
 
 /**
- * Central chat functionality providing realtime messanging.
+ * Central chat functionality providing real-time messaging.
  * 
  * @author boto
  * Date of creation Oct 07, 2017
@@ -104,8 +107,10 @@ public class ChatSystem {
         }
 
         Collection<UserEntity> members = event.getMembers();
-        List<Long> receiverids = new ArrayList();
+        // avoid duplicate IDs by using a set (the sender can be also the owner or part of the members)
+        Set<Long> receiverids = new HashSet();
         receiverids.add(sender.getId());
+        receiverids.add(sender.getStatus().getIdOwner());
         if (members != null) {
             members.forEach((m) -> {
                 receiverids.add(m.getId());
@@ -113,7 +118,7 @@ public class ChatSystem {
         }
         packet.setSource(sender.getName());
         packet.setTime((new Date()).getTime());
-        connections.sendPacket(packet, receiverids);
+        connections.sendPacket(packet, new ArrayList(receiverids));
     }
 
     /**

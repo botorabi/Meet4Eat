@@ -23,6 +23,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthRole;
+import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.DocumentEntity;
@@ -309,10 +310,11 @@ public class Events {
     /**
      * Given an event entity, export the necessary fields into a JSON object.
      * 
-     * @param entity    Event entity to export
-     * @return          A JSON object containing builder the proper entity fields
+     * @param entity        Event entity to export
+     * @param connections   Real-time user connections
+     * @return              A JSON object containing builder the proper entity fields
      */
-    public JsonObjectBuilder exportEventJSON(EventEntity entity) {
+    public JsonObjectBuilder exportEventJSON(EventEntity entity, ConnectedClients connections) {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", (null != entity.getId()) ? entity.getId() : 0);
         json.add("name", (null != entity.getName()) ? entity.getName() : "");
@@ -335,6 +337,11 @@ public class Events {
                 member.add("name", (null != m.getName()) ? m.getName() : "");
                 member.add("photoId", (null != m.getPhoto()) ? m.getPhoto().getId(): 0);
                 member.add("photoETag", (null != m.getPhoto()) ? m.getPhoto().getETag() : "");
+
+                // set the online status
+                boolean online = (connections.getConnectedUser(m.getId()) != null);
+                member.add("status", online ? "online" : "offline");
+
                 members.add(member);
             }
         }
@@ -443,11 +450,12 @@ public class Events {
      * the user is a member of event.
      * If the user has admin role then the event is exported.
      * 
-     * @param event    Events used for filtering the user relevant events from
-     * @param user     User     
-     * @return         All user relevant events in JSON format
+     * @param event         Events used for filtering the user relevant events from
+     * @param user          User
+     * @param connections   Real-time user connections
+     * @return              All user relevant events in JSON format
      */
-    public JsonObjectBuilder exportUserEventJSON(EventEntity event, UserEntity user) {
+    public JsonObjectBuilder exportUserEventJSON(EventEntity event, UserEntity user, ConnectedClients connections) {
         Users             userutils = new Users(entityManager);
         boolean           privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonObjectBuilder json      = Json.createObjectBuilder();
@@ -457,18 +465,19 @@ public class Events {
         if (!doexp) {
             return json;
         }
-        return exportEventJSON(event);
+        return exportEventJSON(event, connections);
     }
 
     /**
-     * Export all public events and those accociated (owner or member) to given user to JSON.
+     * Export all public events and those associated (owner or member) to given user to JSON.
      * If the user has admin role then all events are exported.
      * 
-     * @param events   Events used for filtering the user relevant events from
-     * @param user     User     
-     * @return         All user relevant events in JSON format
+     * @param events        Events used for filtering the user relevant events from
+     * @param user          User
+     * @param connections   Real-time user connections
+     * @return              All user relevant events in JSON format
      */
-    public JsonArrayBuilder exportUserEventsJSON(List<EventEntity> events, UserEntity user) {
+    public JsonArrayBuilder exportUserEventsJSON(List<EventEntity> events, UserEntity user, ConnectedClients connections) {
         //! NOTE: Although we could make use of method exportUserEventJSON here, we don't in the sake of performance!
         Users            userutils = new Users(entityManager);
         boolean          privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
@@ -476,7 +485,7 @@ public class Events {
         events.stream()
             .filter((event) -> (event.getStatus().getIsActive() && (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event))))
             .forEach((event) -> {
-                allevents.add(exportEventJSON(event));
+                allevents.add(exportEventJSON(event, connections));
             });
 
         return allevents;

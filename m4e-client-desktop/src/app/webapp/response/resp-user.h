@@ -29,6 +29,11 @@ class RESTUser;
  */
 class ResponseGetUserData: public Meet4EatRESTResponse
 {
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(ResponseGetUserData) ";
+
     public:
 
         explicit    ResponseGetUserData( RESTUser* p_requester );
@@ -51,6 +56,11 @@ class ResponseGetUserData: public Meet4EatRESTResponse
  */
 class ResponseGetUserSearch: public Meet4EatRESTResponse
 {
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(ResponseGetUserSearch) ";
+
     public:
 
         explicit    ResponseGetUserSearch( RESTUser* p_requester );

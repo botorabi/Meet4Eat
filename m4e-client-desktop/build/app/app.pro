@@ -29,6 +29,7 @@ SOURCES += \
     ../../src/app/core/core.cpp \
     ../../src/app/core/log.cpp \
     ../../src/app/core/utils.cpp \
+    ../../src/app/chat/chatmessage.cpp \
     ../../src/app/chat/chatsystem.cpp \
     ../../src/app/chat/widgetchat.cpp \
     ../../src/app/document/documentcache.cpp \
@@ -44,6 +45,8 @@ SOURCES += \
     ../../src/app/gui/mainwindow.cpp \
     ../../src/app/settings/appsettings.cpp \
     ../../src/app/settings/dialogsettings.cpp \
+    ../../src/app/user/modeluser.cpp \
+    ../../src/app/user/modeluserinfo.cpp \
     ../../src/app/user/user.cpp \
     ../../src/app/user/userauth.cpp \
     ../../src/app/webapp/m4e-api/m4e-response.cpp \
@@ -74,6 +77,7 @@ HEADERS += \
     ../../src/app/core/utils.h \
     ../../src/app/core/smartptr.h \
     ../../src/app/core/smartptr.inl \
+    ../../src/app/chat/chatmessage.h \
     ../../src/app/chat/chatsystem.h \
     ../../src/app/chat/widgetchat.h \
     ../../src/app/document/documentcache.h \

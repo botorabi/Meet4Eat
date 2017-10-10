@@ -30,7 +30,7 @@ Connection::~Connection()
 {
 }
 
-void Connection::setServerURL(const QString &url)
+void Connection::setServerURL( const QString& url )
 {
     _p_ws->setWsURL( url );
 }

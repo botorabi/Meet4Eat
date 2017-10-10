@@ -69,6 +69,29 @@ class ChatSystem : public QObject
          */
         bool                    sendToEventMembers( ChatMessagePtr message );
 
+        /**
+         * @brief Set the maximal count of message entries which are stored.
+         *        The default is 100;
+         *
+         * @param count Max count of stored messages
+         */
+        void                    setMaxMessageStorage( int count );
+
+        /**
+         * @brief Get the maximal count of stored messages.
+         *
+         * @return Max count of stored messages.
+         */
+        int                     getMaxMessageStorage() const;
+
+        /**
+         * @brief Get stored event messgages, the count of stored messages is limited and can be set by 'setMaxMessageStorage'.
+         *
+         * @param eventId   Event ID
+         * @return          Messages belonging to given event
+         */
+        QList< ChatMessagePtr > getEventMessages( const QString& eventId );
+
     signals:
 
         /**
@@ -98,7 +121,13 @@ class ChatSystem : public QObject
 
         bool                    createAndSendPacket( bool receiverUser, ChatMessagePtr message );
 
+        void                    storeEventMessage( chat::ChatMessagePtr msg );
+
         webapp::WebApp*         _p_webApp = nullptr;
+
+        QMap< QString /*event ID*/, QList< ChatMessagePtr > > _eventMesssages;
+
+        int                     _maxStoredMessages = 100;
 };
 
 } // namespace chat

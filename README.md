@@ -4,14 +4,14 @@
     License: MIT License (MIT)
     Read the LICENSE text in main directory for more details.
 
-    Current Version:   0.6.0
+    Current Version:   0.7.0
     First Created:     August 2017
     Author:            Botorabi (botorabi AT gmx DOT net)
 
 
 # Meet4Eat
 
-**Meet4Eat** is a social collaboration system providing an easy way to communicate with your colleagues or friends to make an appointment for a social event such as meeting for daily lunch.
+**Meet4Eat** is a social collaboration system providing an easy way to communicate with your colleagues and friends to make an appointment for a social event such as meeting for daily lunch.
 
 
 # Meet4Eat - A Cloud Application

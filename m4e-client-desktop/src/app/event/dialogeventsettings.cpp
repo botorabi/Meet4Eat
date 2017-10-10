@@ -19,8 +19,6 @@ namespace m4e
 namespace event
 {
 
-static const QString M4E_DEFAULT_USER_ICON = ":/icon-user.png";
-
 DialogEventSettings::DialogEventSettings( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  common::BaseDialog( p_parent ),
  _p_webApp( p_webApp )
@@ -245,8 +243,6 @@ void DialogEventSettings::onBtnAddMemberClicked()
 
 void DialogEventSettings::onLineEditSeachtReturnPressed()
 {
-    log_verbose << TAG << "onLineEditSeachtReturnPressed" << std::endl;
-
     QString keyword = _p_ui->lineEditSearchMember->text();
     keyword = keyword.trimmed();
 

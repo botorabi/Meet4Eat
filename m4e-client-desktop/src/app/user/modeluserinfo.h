@@ -14,6 +14,7 @@
 #include <common/modelbase.h>
 #include <QMetaType>
 
+
 namespace m4e
 {
 namespace user
@@ -36,12 +37,51 @@ class ModelUserInfo : public common::ModelBase, public m4e::core::RefCount< Mode
          */
                                         ModelUserInfo() {}
 
+        /**
+         * @brief Get user's status such as 'online' or 'offline'.
+         *
+         * @return User status
+         */
+        const QString&                  getStatus() const { return _status; }
+
+        /**
+         * @brief Set user's status.
+         *
+         * @param status User status (e.g. 'online' or 'offline')
+         */
+        void                            setStatus( const QString& status ) { _status = status; }
+
+        /**
+         * @brief Create a JSON string out of the user model.
+         *
+         * @return JSON formatted string representing the user
+         */
+        QString                         toJSON();
+
+        /**
+         * @brief Setup the user given a JSON formatted string.
+         *
+         * @param input Input string in JSON format
+         * @return Return false if the input was not in proper format.
+         */
+        bool                            fromJSON( const QString& input );
+
+        /**
+         * @brief Setup the user given a JSON document.
+         *
+         * @param input Input in JSON document
+         * @return Return false if the input was not in proper format.
+         */
+        bool                            fromJSON( const QJsonDocument& input );
+
     protected:
 
         virtual                         ~ModelUserInfo() {}
 
         //! Omit copy construction!
                                         ModelUserInfo( const ModelUserInfo& );
+
+        QString                         _status;
 };
 
 typedef m4e::core::SmartPtr< ModelUserInfo > ModelUserInfoPtr;

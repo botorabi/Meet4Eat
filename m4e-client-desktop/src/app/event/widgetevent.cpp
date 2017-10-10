@@ -9,14 +9,14 @@
 #include <configuration.h>
 #include "widgetevent.h"
 #include <core/log.h>
+#include <ui_widgetevent.h>
+#include "widgeteventitem.h"
+#include "widgetlocation.h"
+#include <chat/chatmessage.h>
 #include <QListWidget>
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <ui_widgetevent.h>
-#include "widgeteventitem.h"
-#include "widgetlocation.h"
-
 
 namespace m4e
 {
@@ -69,6 +69,7 @@ void WidgetEvent::setEvent( const QString& id )
             setupNoLocationWidget();
         }
         setupWidgetHead( event );
+        setEventMembers( event );
     }
 }
 
@@ -76,6 +77,13 @@ void WidgetEvent::setChatSystem( chat::ChatSystem* p_chatSystem )
 {
     _p_chatSystem = p_chatSystem;
     connect( _p_chatSystem, SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
+
+    // restore the messages already received
+    QList< chat::ChatMessagePtr > messages = _p_chatSystem->getEventMessages( _eventId );
+    for ( auto msg: messages )
+    {
+        onReceivedChatMessageEvent( msg );
+    }
 }
 
 void WidgetEvent::setupUI()
@@ -83,6 +91,7 @@ void WidgetEvent::setupUI()
     _p_ui = new Ui::WidgetEvent;
     _p_ui->setupUi( this );
 
+    _p_ui->widgetChat->setupUI( _p_webApp );
     connect( _p_ui->widgetChat, SIGNAL( onSendMessage( m4e::chat::ChatMessagePtr ) ), this, SLOT( onSendMessage( m4e::chat::ChatMessagePtr ) ) );
 
     _p_clientArea = _p_ui->listWidget;
@@ -142,6 +151,11 @@ void WidgetEvent::addLocation( event::ModelLocationPtr location )
     _p_clientArea->setDragDropMode( QListWidget::NoDragDrop );
 
     _locations.insert( location->getId(), location->getName() );
+}
+
+void WidgetEvent::setEventMembers( ModelEventPtr event )
+{
+    _p_ui->widgetChat->setMembers( event->getMembers() );
 }
 
 void WidgetEvent::onButtonBuzzClicked()

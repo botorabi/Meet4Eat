@@ -83,12 +83,17 @@ class Meet4EatRESTOperations : public QObject
         void                    DELETE( const QUrl& url, unsigned int requestId = 0 );
 
         /**
-         * @brief Get the common cookie which must be used in all server requests. This cookie contains also authentication
+         * @brief Get the common cookies which must be used in all server requests. This cookie contains also authentication
          *        and session related data.
          *
-         * @return Common cookie used in all server requests
+         * @return Common cookies used in all server requests
          */
-        static QNetworkCookieJar* getCookie();
+        static QNetworkCookieJar* getCookies();
+
+        /**
+         * @brief Reset the cookies, call this when the connection to server is being shut down.
+         */
+        static void             resetCookie();
 
     signals:
 

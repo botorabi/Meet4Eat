@@ -12,9 +12,10 @@
 #include <configuration.h>
 #include <core/smartptr.h>
 #include <common/modelbase.h>
-#include <event/modelevent.h>
+#include <QJsonDocument>
 #include <QString>
 #include <QList>
+
 
 namespace m4e
 {
@@ -51,6 +52,43 @@ class ModelUser : public common::ModelBase, public m4e::core::RefCount< ModelUse
         void                            setEMail( const QString& email ) { _email = email; }
 
         /**
+         * @brief Get user's status such as 'online' or 'offline'.
+         *
+         * @return User status
+         */
+        const QString&                  getStatus() const { return _status; }
+
+        /**
+         * @brief Set user's status.
+         *
+         * @param status User status (e.g. 'online' or 'offline')
+         */
+        void                            setStatus( const QString& status ) { _status = status; }
+
+        /**
+         * @brief Create a JSON string out of the user model.
+         *
+         * @return JSON formatted string representing the user
+         */
+        QString                         toJSON();
+
+        /**
+         * @brief Setup the user given a JSON formatted string.
+         *
+         * @param input Input string in JSON format
+         * @return Return false if the input was not in proper format.
+         */
+        bool                            fromJSON( const QString& input );
+
+        /**
+         * @brief Setup the user given a JSON document.
+         *
+         * @param input Input in JSON document
+         * @return Return false if the input was not in proper format.
+         */
+        bool                            fromJSON( const QJsonDocument& input );
+
+        /**
          * @brief Comparison operator which considers the user ID.
          * @param right     Right hand of operation.
          * @return true if both users have the same ID, otherwise false.
@@ -72,6 +110,8 @@ class ModelUser : public common::ModelBase, public m4e::core::RefCount< ModelUse
                                         ModelUser( const ModelUser& );
 
         QString                         _email;
+
+        QString                         _status;
 };
 
 typedef m4e::core::SmartPtr< ModelUser > ModelUserPtr;

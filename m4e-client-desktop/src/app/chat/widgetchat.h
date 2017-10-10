@@ -11,6 +11,7 @@
 
 #include <webapp/webapp.h>
 #include <chat/chatmessage.h>
+#include <document/modeldocument.h>
 #include <QWidget>
 #include <QLabel>
 
@@ -46,15 +47,27 @@ class WidgetChat : public QWidget
         /**
          * @brief Create a new "Chat" widget
          *
-         * @param p_webApp          Web application interface
          * @param p_parent          Parent widget
          */
                                     WidgetChat( QWidget* p_parent = nullptr );
+        /**
+         * @brief Setup the widget.
+         *
+         * @param p_webApp          Web application interface
+         */
+        void                        setupUI( webapp::WebApp* p_webApp );
 
         /**
          * @brief Destroy WidgetEvent
          */
         virtual                     ~WidgetChat();
+
+        /**
+         * @brief Set the event members.
+         *
+         * @param users Event members
+         */
+        void                        setMembers( const QList< user::ModelUserInfoPtr > users );
 
         /**
          * @brief Append a new chat message.
@@ -71,6 +84,10 @@ class WidgetChat : public QWidget
 
         void                        onBtnSendClicked();
 
+        void                        onBtnCollapseClicked();
+
+        void                        onDocumentReady( m4e::doc::ModelDocumentPtr document );
+
     signals:
 
         /**
@@ -82,14 +99,13 @@ class WidgetChat : public QWidget
 
     protected:
 
-        /**
-         * @brief Setup the widget.
-         */
-        void                        setupUI();
+        webapp::WebApp*             _p_webApp = nullptr;
 
         Ui::WidgetChat*             _p_ui = nullptr;
 
         QString                     _senderName;
+
+        QMap< QString, int >        _memberPhotos;
 };
 
 } // namespace chat

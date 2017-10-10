@@ -253,7 +253,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        JsonObjectBuilder exportedevent = getEvents().exportUserEventJSON(event, sessionuser);
+        JsonObjectBuilder exportedevent = getEvents().exportUserEventJSON(event, sessionuser, connections);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event was found.", ResponseResults.CODE_OK, exportedevent.build().toString());
     }
 
@@ -269,7 +269,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     public String findAllEvents(@Context HttpServletRequest request) {
         List<EventEntity> events = super.findAll();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        JsonArrayBuilder exportedevents = getEvents().exportUserEventsJSON(events, sessionuser);
+        JsonArrayBuilder exportedevents = getEvents().exportUserEventsJSON(events, sessionuser, connections);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of events", ResponseResults.CODE_OK, exportedevents.build().toString());
     }
 
@@ -288,7 +288,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
         List<EventEntity> events = super.findRange(new int[]{from, to});
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        JsonArrayBuilder exportedevents = getEvents().exportUserEventsJSON(events, sessionuser);
+        JsonArrayBuilder exportedevents = getEvents().exportUserEventsJSON(events, sessionuser, connections);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of events", ResponseResults.CODE_OK, exportedevents.build().toString());
     }
 

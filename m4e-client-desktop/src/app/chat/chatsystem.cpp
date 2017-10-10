@@ -45,10 +45,16 @@ bool ChatSystem::sendToEventMembers( ChatMessagePtr message )
     return createAndSendPacket( false, message );
 }
 
+QList< ChatMessagePtr > ChatSystem::getEventMessages( const QString& eventId )
+{
+    if ( !_eventMesssages.contains( eventId ) )
+        return QList< ChatMessagePtr >();
+
+    return _eventMesssages[ eventId ];
+}
+
 void ChatSystem::onChannelChatPacket( comm::PacketPtr packet )
 {
-    log_verbose << TAG << "channel Chat received new packet" << std::endl;
-
     const QJsonDocument& doc = packet->getData();
     QJsonObject obj = doc.object();
 
@@ -80,6 +86,7 @@ void ChatSystem::onChannelChatPacket( comm::PacketPtr packet )
     else if ( !recvevent.isEmpty() )
     {
         msg->setReceiverId( recvevent );
+        storeEventMessage( msg );
         emit onReceivedChatMessageEvent( msg );
     }
     else
@@ -110,6 +117,18 @@ bool ChatSystem::createAndSendPacket( bool receiverUser, ChatMessagePtr message 
     packet->setData( chatdata );
 
     return _p_webApp->getConnection()->sendPacket( packet );
+}
+
+void ChatSystem::storeEventMessage( ChatMessagePtr msg )
+{
+    QString eventid = msg->getReceiverId();
+    if ( !_eventMesssages.contains( eventid ) )
+        _eventMesssages.insert( eventid, QList< ChatMessagePtr >() );
+
+    QList< ChatMessagePtr >& messages = _eventMesssages[ eventid ];
+    messages.append( msg );
+    if ( messages.size() > _maxStoredMessages )
+        messages.erase( messages.begin() );
 }
 
 } // namespace chat

@@ -91,18 +91,15 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
     for ( int i = 0; i < members.size(); i++ )
     {
         QJsonObject obj = members.at( i ).toObject();
-        QString id        = QString::number( obj.value( "id" ).toInt() );
-        QString name      = obj.value( "name" ).toString( "" );
-        QString photoid   = QString::number( obj.value( "photoId" ).toInt() );
-        QString photoetag = obj.value( "photoETag" ).toString( "" );
-
         user::ModelUserInfoPtr u = new user::ModelUserInfo();
-        u->setId( id );
-        u->setName( name );
-        u->setPhotoId( photoid );
-        u->setPhotoETag( photoetag );
-
-        mems.append( u );
+        if ( !u->fromJSON( QJsonDocument( obj ) ) )
+        {
+            log_warning << "createEvent " << "invalid JSON format detected, ignoring search result!" << std::endl;
+        }
+        else
+        {
+            mems.append( u );
+        }
     }
     ev->setMembers( mems );
 
