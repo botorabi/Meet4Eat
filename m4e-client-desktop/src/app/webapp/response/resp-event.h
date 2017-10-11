@@ -126,6 +126,48 @@ class ResponseEventRemoveMember: public Meet4EatRESTResponse
         RESTEvent*  _p_requester;
 };
 
+/**
+ * @brief Response handler for AddLocation
+ *
+ * @author boto
+ * @date Oct 11, 2017
+ */
+class ResponseEventAddLocation: public Meet4EatRESTResponse
+{
+    public:
+
+        explicit    ResponseEventAddLocation( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
+/**
+ * @brief Response handler for RemoveLocation
+ *
+ * @author boto
+ * @date Oct 11, 2017
+ */
+class ResponseEventRemoveLocation: public Meet4EatRESTResponse
+{
+    public:
+
+        explicit    ResponseEventRemoveLocation( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
 } // namespace webapp
 } // namespace m4e
 

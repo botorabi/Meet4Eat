@@ -42,12 +42,12 @@ class Events : public QObject
          *
          * @param p_parent Parent object
          */
-        explicit                        Events( QObject* p_parent );
+        explicit                            Events( QObject* p_parent );
 
         /**
          * @brief Destruct User instance
          */
-        virtual                         ~Events();
+        virtual                             ~Events();
 
         /**
          * @brief Set webapp server's URL including port number. Set this URL before using any services below.
@@ -62,6 +62,20 @@ class Events : public QObject
          * @return Server URL
          */
         const QString&                      getServerURL() const;
+
+        /**
+         * @brief Get the error which occurred while the last request. Use this if a response delivers a 'success' set to false.
+         *
+         * @return Last error
+         */
+        const QString&                      getLastError() const { return _lastError; }
+
+        /**
+         * @brief Get the error code set by REST response, see getLastError above.
+         *
+         * @return Last error code
+         */
+        const QString&                      getLastErrorCode() const { return _lastErrorCode; }
 
         /**
          * @brief Get all events the user is part of. Consider to request it before via 'requestGetEvents'.
@@ -98,6 +112,22 @@ class Events : public QObject
          */
         void                                requestRemoveMember( const QString& eventId, const QString& memberId );
 
+        /**
+         * @brief Request for adding the given location to an event, the results are emitted by signal 'onResponseAddLocation'.
+         *
+         * @param eventId   ID of event getting the new location
+         * @param location  Location to add
+         */
+        void                                requestAddLocation( const QString& eventId, ModelLocationPtr location );
+
+        /**
+         * @brief Request for removing the given location from an event, the results are emitted by signal 'onResponseRemoveLocation'.
+         *
+         * @param eventId       ID of event removing the location from
+         * @param locationId    ID of location to remove
+         */
+        void                                requestRemoveLocation( const QString& eventId, const QString& locationId );
+
     signals:
 
         /**
@@ -133,6 +163,24 @@ class Events : public QObject
          * @param memberId ID of member to remove
          */
         void                                onResponseRemoveMember( bool success, QString eventId, QString memberId );
+
+        /**
+         * @brief Results of add event location request.
+         *
+         * @param success    true if user data could successfully be retrieved, otherwise false
+         * @param eventId    ID of event with new location added
+         * @param locationId ID of new location
+         */
+        void                                onResponseAddLocation( bool success, QString eventId, QString locationId );
+
+        /**
+         * @brief Results of remove event location request.
+         *
+         * @param success    true if user data could successfully be retrieved, otherwise false
+         * @param eventId    ID of event
+         * @param locationId ID of location to remove
+         */
+        void                                onResponseRemoveLocation( bool success, QString eventId, QString locationId );
 
     protected slots:
 
@@ -198,11 +246,49 @@ class Events : public QObject
          */
         void                                onRESTEventErrorRemoveMember( QString errorCode, QString reason );
 
+        /**
+         * @brief Signal is received when the results of addLocation request arrive.
+         *
+         * @param eventId     ID of event the location was added to
+         * @param locationId  ID of new location
+         */
+        void                                onRESTEventAddLocation( QString eventId, QString locationId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorAddLocation( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of removeLocation request arrive.
+         *
+         * @param eventId     ID of event the location was removed from
+         * @param locationId  ID of removed location
+         */
+        void                                onRESTEventRemoveLocation( QString eventId, QString locationId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorRemoveLocation( QString errorCode, QString reason );
+
     protected:
+
+        void                                setLastError( const QString& error ="", const QString& errorCode ="" );
 
         webapp::RESTEvent*                  _p_restEvent = nullptr;
 
         QList< m4e::event::ModelEventPtr >  _events;
+
+        QString                             _lastError;
+
+        QString                             _lastErrorCode;
 };
 
 } // namespace event

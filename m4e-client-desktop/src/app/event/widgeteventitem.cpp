@@ -10,8 +10,9 @@
 #include <core/log.h>
 #include <common/guiutils.h>
 #include "dialogeventsettings.h"
-#include <QGraphicsDropShadowEffect>
+#include "dialoglocationcreate.h"
 #include <ui_widgeteventitem.h>
+#include <QGraphicsDropShadowEffect>
 
 
 namespace m4e
@@ -54,6 +55,12 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
     _p_ui->labelHead->setText( event->getName() );
     _p_ui->labelDescription->setText( event->getDescription() );
 
+    // the button "new location" is only visible for event owner
+    const QString& userid = _p_webApp->getUser()->getUserData()->getId();
+    const QString& ownerid = event->getOwner()->getId();
+    _p_ui->pushButtonNewLocation->setHidden( userid != ownerid );
+
+
     setSelectionMode( true );
 
     QGraphicsDropShadowEffect* p_effect = new QGraphicsDropShadowEffect();
@@ -91,6 +98,19 @@ void WidgetEventItem::onBtnOptionsClicked()
     DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, this );
     p_dlg->setupUI( _event );
     p_dlg->exec();
+    delete p_dlg;
+}
+
+void WidgetEventItem::onBtnNewLocationClicked()
+{
+    DialogLocationCreate* p_dlg = new DialogLocationCreate( _p_webApp, this );
+    p_dlg->setupUI( _event );
+    if ( p_dlg->exec() == common::BaseDialog::Btn1 )
+    {
+        //! TODO append the location...
+        //! emit onNewEventLocation( p_dlg->getLocation() );
+        log_debug << "TODO handle new location" << std::endl;
+    }
     delete p_dlg;
 }
 

@@ -32,7 +32,7 @@
 QGroupBox {
   border-radius: 0px;
   border: 3px solid rgb(131, 147, 167);
-  background-color: rgb(80,112,125);
+  background-color: rgb(50,82,95);
 }
 QLineEdit {
   background-color: rgb(101,117, 137);  

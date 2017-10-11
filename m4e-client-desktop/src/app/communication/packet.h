@@ -104,9 +104,9 @@ class Packet : public core::RefCount< Packet >
         /**
          * @brief Create a JSON string representing the packet.
          *
-         * @return Packet in JSON format
+         * @return Packet as JSON document
          */
-        QString                 toJSON();
+        QJsonDocument           toJSON();
 
         /**
          * @brief Setup the packet given a JSON string.

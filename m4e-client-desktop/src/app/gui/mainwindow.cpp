@@ -291,7 +291,10 @@ void MainWindow::createWidgetEvent( const QString& eventId )
 {
     event::WidgetEvent* p_widget = new event::WidgetEvent( _p_webApp, _p_ui->widgetClientArea );
     p_widget->setEvent( eventId );
-    p_widget->setChatSystem( _p_chatSystem );
+
+    if ( _p_chatSystem )
+        p_widget->setChatSystem( _p_chatSystem );
+
     _p_ui->widgetClientArea->layout()->addWidget( p_widget );
 }
 

@@ -232,6 +232,8 @@ class WebApp : public QObject
 
         doc::DocumentCache*             getOrCreateDocumentCache();
 
+        void                            resetAllResources();
+
         QString                         _userID;
 
         user::UserAuthentication*       _p_userAuth = nullptr;

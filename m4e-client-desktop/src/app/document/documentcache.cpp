@@ -52,6 +52,8 @@ DocumentCache::DocumentCache( QObject* p_parent ) :
 
 DocumentCache::~DocumentCache()
 {
+    // purge the local cache, delete cached documents which were not used in the past
+    purgeCache( M4E_LOCAL_CAHCE_EXPIRE_DAYS );
 }
 
 void DocumentCache::requestDocument( const QString& id, const QString& eTag )

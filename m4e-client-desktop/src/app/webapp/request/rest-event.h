@@ -86,6 +86,22 @@ class RESTEvent : public Meet4EatREST
          */
         void                    removeMember( const QString& eventId, const QString& memberId );
 
+        /**
+         * @brief Add a new location to event.
+         *
+         * @param eventId   Event ID
+         * @param location  Location to add
+         */
+        void                    addLocation( const QString& eventId, event::ModelLocationPtr location );
+
+        /**
+         * @brief Remove a location from given event.
+         *
+         * @param eventId     Event ID
+         * @param locationId  ID of location to remove
+         */
+        void                    removeLocation( const QString& eventId, const QString& locationId );
+
     signals:
 
         /**
@@ -164,6 +180,38 @@ class RESTEvent : public Meet4EatREST
          * @param reason    Error string
          */
         void                    onRESTEventErrorRemoveMember( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of addLocation request.
+         *
+         * @param eventId     ID of event the location was added to
+         * @param locationId  ID of new location
+         */
+        void                    onRESTEventAddLocation( QString eventId, QString locationId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorAddLocation( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of removeLocation request.
+         *
+         * @param eventId     ID of event the location was removed from
+         * @param locationId  ID of removed location
+         */
+        void                    onRESTEventRemoveLocation( QString eventId, QString locationId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorRemoveLocation( QString errorCode, QString reason );
 };
 
 } // namespace webapp

@@ -76,7 +76,9 @@ class WidgetEvent : public QWidget
 
     protected slots:
 
-        void                        onButtonBuzzClicked();
+        void                        onBtnBuzzClicked();
+
+        void                        onBtnRemoveVotesClicked();
 
         /**
          * @brief The chat widget has a new message to send.

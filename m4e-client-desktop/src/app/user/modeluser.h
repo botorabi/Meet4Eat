@@ -68,9 +68,9 @@ class ModelUser : public common::ModelBase, public m4e::core::RefCount< ModelUse
         /**
          * @brief Create a JSON string out of the user model.
          *
-         * @return JSON formatted string representing the user
+         * @return JSON document representing the user
          */
-        QString                         toJSON();
+        QJsonDocument                   toJSON();
 
         /**
          * @brief Setup the user given a JSON formatted string.

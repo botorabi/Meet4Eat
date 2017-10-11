@@ -82,6 +82,8 @@ class WidgetEventItem : public QWidget
 
         void                        onBtnOptionsClicked();
 
+        void                        onBtnNewLocationClicked();
+
         /**
          * @brief This signal is received from webapp when a requested document was arrived.
          *

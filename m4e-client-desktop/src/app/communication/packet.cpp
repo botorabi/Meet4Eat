@@ -25,7 +25,7 @@ Packet::Packet()
 {
 }
 
-QString Packet::toJSON()
+QJsonDocument Packet::toJSON()
 {
     QJsonObject obj;
     obj.insert( "channel", _channel );
@@ -34,8 +34,7 @@ QString Packet::toJSON()
     obj.insert( "data", _data.object() );
 
     QJsonDocument doc( obj );
-    QString json( doc.toJson() );
-    return json;
+    return doc;
 }
 
 bool Packet::fromJSON( const QString& input )

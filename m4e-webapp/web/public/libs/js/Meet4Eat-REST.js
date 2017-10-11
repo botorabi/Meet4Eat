@@ -322,7 +322,7 @@ function Meet4EatEventREST(baseModule) {
 	var base = baseModule;
 
 	/* API version */
-	self._version = "1.1.0";
+	self._version = "1.1.1";
 
 	/**
 	 * Initialize the instance.
@@ -383,7 +383,7 @@ function Meet4EatEventREST(baseModule) {
 	 * @param {integer}  locationId        Location ID
 	 */
 	base.removeEventLocation = function(resultsCallback, eventId, locationId) {
-		base._fcnRequestJson(base._rootPath + '/removelocation/' + eventId + "/" + locationId, null, 'PUT', resultsCallback);
+		base._fcnRequestJson(base._rootPath + '/removelocation/' + eventId + "/" + locationId, null, 'POST', resultsCallback);
 	};
 }
 

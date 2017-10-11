@@ -71,5 +71,19 @@ void RESTEvent::removeMember( const QString& eventId, const QString& memberId )
     getRESTOps()->PUT( url, createResultsCallback( p_callback ) );
 }
 
+void RESTEvent::addLocation( const QString& eventId, event::ModelLocationPtr location )
+{
+    QUrl url( getResourcePath() + "/rest/events/putlocation/" + eventId );
+    auto p_callback = new ResponseEventAddLocation( this );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ), location->toJSON() );
+}
+
+void RESTEvent::removeLocation( const QString& eventId, const QString& locationId )
+{
+    QUrl url( getResourcePath() + "/rest/events/removelocation/" + eventId + "/" + locationId );
+    auto p_callback = new ResponseEventRemoveLocation( this );
+    getRESTOps()->POST( url, createResultsCallback( p_callback ) );
+}
+
 } // namespace webapp
 } // namespace m4e
