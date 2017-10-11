@@ -12,7 +12,6 @@
 #include "dialogeventsettings.h"
 #include "dialoglocationcreate.h"
 #include <ui_widgeteventitem.h>
-#include <QGraphicsDropShadowEffect>
 
 
 namespace m4e
@@ -63,12 +62,7 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
 
     setSelectionMode( true );
 
-    QGraphicsDropShadowEffect* p_effect = new QGraphicsDropShadowEffect();
-    p_effect->setBlurRadius( 4.0 );
-    p_effect->setColor( QColor( 100, 100, 100, 180 ) );
-    p_effect->setXOffset( -2.0 );
-    p_effect->setYOffset( 2.0 );
-    setGraphicsEffect( p_effect );
+    common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 180), QPoint( -2, 2 ), 4 );
 
     // we need to handle mouse clicks manually
     _p_ui->labelHead->installEventFilter( this );
@@ -91,6 +85,9 @@ void WidgetEventItem::setSelectionMode( bool normal )
     QString style = boxStyle;
     style.replace( "@BORDERCOLOR@", ( normal ? boxBorderColorNormal : boxBorderColorSelect ) );
     _p_ui->groupBoxMain->setStyleSheet( style );
+
+    QColor shadowcolor = normal ? QColor( 100, 100, 100, 180) : QColor( 231, 247, 167 , 180 );
+    common::GuiUtils::createShadowEffect( this, shadowcolor, QPoint( -3, 3 ), 6 );
 }
 
 void WidgetEventItem::onBtnOptionsClicked()

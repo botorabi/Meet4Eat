@@ -13,7 +13,6 @@
 #include <common/basedialog.h>
 #include "dialoglocationdetails.h"
 #include <ui_widgetlocation.h>
-#include <QGraphicsDropShadowEffect>
 
 
 namespace m4e
@@ -41,12 +40,7 @@ void WidgetLocation::setupUI( event::ModelLocationPtr location )
     _p_ui->labelHead->setText( _location->getName() );
     _p_ui->labelDescription->setText( _location->getDescription() );
 
-    QGraphicsDropShadowEffect* p_effect = new QGraphicsDropShadowEffect();
-    p_effect->setBlurRadius( 6.0 );
-    p_effect->setColor( QColor( 100, 100, 100, 80 ) );
-    p_effect->setXOffset( -4.0 );
-    p_effect->setYOffset( 4.0 );
-    setGraphicsEffect( p_effect );
+    common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 80), QPoint( -4, 4 ), 6 );
 
     // load  the image only if a valid photo id exits
     QString photoid = _location->getPhotoId();

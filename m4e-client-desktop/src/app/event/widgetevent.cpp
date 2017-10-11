@@ -9,6 +9,7 @@
 #include <configuration.h>
 #include "widgetevent.h"
 #include <core/log.h>
+#include <common/guiutils.h>
 #include <ui_widgetevent.h>
 #include "widgeteventitem.h"
 #include "widgetlocation.h"
@@ -93,6 +94,12 @@ void WidgetEvent::setupUI()
 
     _p_ui->widgetChat->setupUI( _p_webApp );
     connect( _p_ui->widgetChat, SIGNAL( onSendMessage( m4e::chat::ChatMessagePtr ) ), this, SLOT( onSendMessage( m4e::chat::ChatMessagePtr ) ) );
+
+    QColor shadowcolor( 150, 150, 150, 110 );
+    common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
+    common::GuiUtils::createShadowEffect( _p_ui->widgetMembers, shadowcolor, QPoint( -3, 3 ), 3 );
+    common::GuiUtils::createShadowEffect( _p_ui->pushButtonResetMyVotes, shadowcolor, QPoint( -2, 2 ), 2 );
+    common::GuiUtils::createShadowEffect( _p_ui->pushButtonBuzz, shadowcolor, QPoint( -3, 3 ), 3 );
 
     _p_clientArea = _p_ui->listWidget;
     _p_clientArea->setUniformItemSizes( true );

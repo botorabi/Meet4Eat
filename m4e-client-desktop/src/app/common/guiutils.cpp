@@ -7,6 +7,7 @@
  */
 
 #include "guiutils.h"
+#include <QGraphicsDropShadowEffect>
 #include <QPainter>
 
 
@@ -47,6 +48,16 @@ QPixmap GuiUtils::createRoundIcon( doc::ModelDocumentPtr input )
         }
     }
     return QPixmap();
+}
+
+void GuiUtils::createShadowEffect( QWidget* p_widget, const QColor& color, const QPoint& offset, int blurr )
+{
+    QGraphicsDropShadowEffect* p_effect = new QGraphicsDropShadowEffect();
+    p_effect->setBlurRadius( blurr );
+    p_effect->setColor( color );
+    p_effect->setXOffset( offset.x() );
+    p_effect->setYOffset( offset.y() );
+    p_widget->setGraphicsEffect( p_effect );
 }
 
 bool GuiUtils::userIsOwner( const QString& ownerId, webapp::WebApp* p_webApp )
