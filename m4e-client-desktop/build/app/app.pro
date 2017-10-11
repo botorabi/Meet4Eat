@@ -35,6 +35,7 @@ SOURCES += \
     ../../src/app/document/documentcache.cpp \
     ../../src/app/document/modeldocument.cpp \
     ../../src/app/event/dialogeventsettings.cpp \
+    ../../src/app/event/dialoglocationcreate.cpp \
     ../../src/app/event/dialoglocationdetails.cpp \
     ../../src/app/event/events.cpp \
     ../../src/app/event/modelevent.cpp \
@@ -61,7 +62,8 @@ SOURCES += \
     ../../src/app/webapp/response/resp-document.cpp \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
-    ../../src/app/webapp/webapp.cpp
+    ../../src/app/webapp/webapp.cpp \
+    ../../src/app/event/modellocation.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -81,6 +83,7 @@ HEADERS += \
     ../../src/app/chat/widgetchat.h \
     ../../src/app/document/documentcache.h \
     ../../src/app/document/modeldocument.h \
+    ../../src/app/event/dialoglocationcreate.h \
     ../../src/app/event/dialoglocationdetails.h \
     ../../src/app/event/dialogeventsettings.h \
     ../../src/app/event/events.h \
@@ -121,7 +124,10 @@ FORMS += \
     ../../src/app/gui/forms/widgetsettings.ui \
     ../../src/app/gui/forms/widgetlocationdetails.ui \
     ../../src/app/gui/forms/widgeteventsettings.ui \
-    ../../src/app/gui/forms/widgetchat.ui
+    ../../src/app/gui/forms/widgetchat.ui \
+    ../../src/app/gui/forms/widgetlocationcreate.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc
+
+DISTFILES +=

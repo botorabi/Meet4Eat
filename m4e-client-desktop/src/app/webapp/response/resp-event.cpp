@@ -272,5 +272,71 @@ void ResponseEventRemoveMember::onRESTResponseError( const QString& reason )
     emit _p_requester->onRESTEventErrorRemoveMember( "", reason );
 }
 
+/******************************************************/
+/************* ResponseEventAddLocation ***************/
+/******************************************************/
+
+ResponseEventAddLocation::ResponseEventAddLocation( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventAddLocation::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorAddLocation( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj    = datadoc.object();
+    QString eventid    = QString::number( obj.value( "eventId" ).toInt() );
+    QString locationid = QString::number( obj.value( "locationId" ).toInt() );
+
+    emit _p_requester->onRESTEventAddLocation( eventid, locationid );
+}
+
+void ResponseEventAddLocation::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorAddLocation( "", reason );
+}
+
+/******************************************************/
+/************ ResponseEventRemoveLocation *************/
+/******************************************************/
+
+ResponseEventRemoveLocation::ResponseEventRemoveLocation( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventRemoveLocation::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorRemoveLocation( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj    = datadoc.object();
+    QString eventid    = QString::number( obj.value( "eventId" ).toInt() );
+    QString locationid = QString::number( obj.value( "locationId" ).toInt() );
+
+    emit _p_requester->onRESTEventRemoveLocation( eventid, locationid );
+}
+
+void ResponseEventRemoveLocation::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorRemoveLocation( "", reason );
+}
+
 } // namespace webapp
 } // namespace m4e

@@ -111,6 +111,7 @@ void Meet4EatRESTOperations::startRequest( const QUrl& url, enum QNetworkAccessM
 void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
 {
     unsigned int reqid = p_reply->property( "requestId" ).toUInt();
+    p_reply->deleteLater();
 
     if ( p_reply->error() != QNetworkReply::NoError )
     {
@@ -132,8 +133,6 @@ void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
             emit onResponse( reqid, jsonresp );
         }
     }
-
-    p_reply->deleteLater();
 }
 
 } // namespace webapp

@@ -68,23 +68,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0">
-          <item>
-           <widget class="QLabel" name="labelPlaceholder">
-            <property name="minimumSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
-            </property>
-           </widget>
-          </item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
           <item>
            <widget class="QLabel" name="labelHead">
             <property name="minimumSize">
@@ -114,12 +98,12 @@
              <string>Event Name</string>
             </property>
             <property name="alignment">
-             <set>Qt::AlignCenter</set>
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="pushButtonNewLocation">
             <property name="minimumSize">
              <size>
               <width>20</width>
@@ -135,15 +119,51 @@
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
+            <property name="toolTip">
+             <string>Create a new location</string>
+            </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-  background: transparent;
-  border-image: url(:/icon-settings.png);
+  background-color: transparent;
+  border-radius: 10px;
+  border-image: url(:/icon-location-small.png);
 }
 QPushButton:hover {
-  background-color: white;
-  border: 1px solid rgb(115, 210, 22);
-  border-radius:  4px;
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
+}</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonOptions">
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Event settings</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 10px;
+  border-image: url(:/icon-settings-small.png);
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
 }</string>
             </property>
            </widget>
@@ -226,14 +246,14 @@ QPushButton:hover {
  <resources/>
  <connections>
   <connection>
-   <sender>pushButton</sender>
+   <sender>pushButtonOptions</sender>
    <signal>clicked()</signal>
    <receiver>WidgetEventItem</receiver>
    <slot>onBtnOptionsClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>228</x>
-     <y>44</y>
+     <x>233</x>
+     <y>32</y>
     </hint>
     <hint type="destinationlabel">
      <x>248</x>
@@ -241,8 +261,25 @@ QPushButton:hover {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButtonNewLocation</sender>
+   <signal>clicked()</signal>
+   <receiver>WidgetEventItem</receiver>
+   <slot>onBtnNewLocationClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>23</x>
+     <y>26</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>127</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnOptionsClicked()</slot>
+  <slot>onBtnNewLocationClicked()</slot>
  </slots>
 </ui>

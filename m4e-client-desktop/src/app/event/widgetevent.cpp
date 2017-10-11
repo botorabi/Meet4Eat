@@ -107,6 +107,7 @@ void WidgetEvent::setupWidgetHead( event::ModelEventPtr event )
 {
     _p_ui->labelInfoHead->setText( event->getName() );
     QString info;
+    info += "Owner: " + event->getOwner()->getName();
     if ( event->isRepeated() )
     {
         QTime time = event->getRepeatDayTime();
@@ -119,13 +120,13 @@ void WidgetEvent::setupWidgetHead( event::ModelEventPtr event )
         weekdays += ( days & event::ModelEvent::WeekDayFriday )    != 0 ? " Fri" : "";
         weekdays += ( days & event::ModelEvent::WeekDaySaturday )  != 0 ? " Sat" : "";
         weekdays += ( days & event::ModelEvent::WeekDaySunday )    != 0 ? " Sun" : "";
-        info += "Repeated Event";
+        info += "\nRepeated Event";
         info += "\n * Week Days:" + weekdays;
         info += "\n * At " + QString( "%1" ).arg( time.hour(), 2, 10, QChar( '0' ) ) + ":" + QString( "%1" ).arg( time.minute(), 2, 10, QChar( '0' ) );
     }
     else
     {
-        info += "Event date: " + event->getStartDate().toString();
+        info += "\nEvent date: " + event->getStartDate().toString();
     }
     _p_ui->labelInfoBody->setText( info );
 }
@@ -155,12 +156,36 @@ void WidgetEvent::addLocation( event::ModelLocationPtr location )
 
 void WidgetEvent::setEventMembers( ModelEventPtr event )
 {
-    _p_ui->widgetChat->setMembers( event->getMembers() );
+    auto eventmembers = event->getMembers();
+    eventmembers.append( event->getOwner() );
+    _p_ui->widgetChat->setMembers( eventmembers );
+
+    // set the members lable
+    QString members;
+    for ( auto member: event->getMembers() )
+    {
+        if ( !members.isEmpty() )
+            members += ", ";
+        members += member->getName();
+    }
+    // limit the string
+    const int MAX_MEMSTR_LEN = 120;
+    if ( members.length() > MAX_MEMSTR_LEN )
+    {
+        members = members.mid( 0, MAX_MEMSTR_LEN - 3 );
+        members += "...";
+    }
+    _p_ui->labelMembersBody->setText( members );
 }
 
-void WidgetEvent::onButtonBuzzClicked()
+void WidgetEvent::onBtnBuzzClicked()
 {
-    log_verbose << TAG << "poke event members..." << std::endl;
+    log_verbose << TAG << "TODO onBtnBuzzClicked..." << std::endl;
+}
+
+void WidgetEvent::onBtnRemoveVotesClicked()
+{
+    log_verbose << TAG << "TODO onButtonRemoveVotesClicked..." << std::endl;
 }
 
 void WidgetEvent::onSendMessage( m4e::chat::ChatMessagePtr msg )

@@ -10,15 +10,18 @@
         <file>icon-delete.png</file>
         <file>icon-group.png</file>
         <file>icon-location.png</file>
+        <file>icon-location-small.png</file>
         <file>icon-profile.png</file>
         <file>icon-settings.png</file>
+        <file>icon-settings-small.png</file>
         <file>icon-user.png</file>
         <file>icon-thumbup.png</file>
         <file>icon-thumbdown.png</file>
         <file>icon-close.png</file>
         <file>icon-minimize.png</file>
         <file>icon-maximize.png</file>
-        <file>btn-buzz.png</file>
+        <file>icon-buzz-64.png</file>
+        <file>icon-undo-small.png</file>
         <file>icon.ico</file>
         <file>logo.png</file>
     </qresource>

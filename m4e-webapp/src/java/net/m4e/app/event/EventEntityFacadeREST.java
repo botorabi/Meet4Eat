@@ -563,7 +563,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not add/update location, reaon: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location. " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
         //! NOTE on successful entity location creation the new ID is sent back by results.data field.
@@ -580,7 +580,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * @param request      HTTP request
      * @return             JSON response
      */
-    @PUT
+    @POST
     @Path("removelocation/{eventId}/{locationId}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})

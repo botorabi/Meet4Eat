@@ -18,7 +18,7 @@ namespace m4e
 namespace user
 {
 
-QString ModelUserInfo::toJSON()
+QJsonDocument ModelUserInfo::toJSON()
 {
     QJsonObject obj;
     obj.insert( "id", getId().toInt() );
@@ -28,7 +28,7 @@ QString ModelUserInfo::toJSON()
     obj.insert( "status", getStatus() );
 
     QJsonDocument doc( obj );
-    return QString( doc.toJson() );
+    return doc;
 }
 
 bool ModelUserInfo::fromJSON( const QString& input )

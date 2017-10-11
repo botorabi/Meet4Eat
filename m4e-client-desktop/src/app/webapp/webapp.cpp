@@ -43,11 +43,14 @@ void WebApp::establishConnection()
 
     QString username = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
     QString passwd   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
+    QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
 
     if ( !username.isEmpty() && !passwd.isEmpty() )
     {
         _authState = AuthConnecting;
         m4e::user::UserAuthentication* p_user = getOrCreateUserAuth();
+        // just for the case that the server url was changed
+        p_user->setServerURL( server );
         p_user->requestSignIn( username, passwd );
         username.clear();
         passwd.clear();
@@ -63,21 +66,14 @@ void WebApp::shutdownConnection()
     }
 
     // first close the real-time communication connection
+    // first close the real-time communication connection
     getOrCreateConnection()->closeConnection();
     // now sign-off
     getOrCreateUserAuth()->requestSignOut();
     // remove any cookies
     Meet4EatRESTOperations::resetCookie();
 
-    _userID = "";
-    _authState = AuthNoConnection;
-    _authFailReason = "";
-    delete _p_user;
-    _p_user = nullptr;
-    delete _p_events;
-    _p_events = nullptr;
-    delete _p_connection;
-    _p_connection = nullptr;
+    resetAllResources();
 }
 
 WebApp::AuthState WebApp::getAuthState() const
@@ -190,11 +186,23 @@ doc::DocumentCache* WebApp::getOrCreateDocumentCache()
         _p_documentCache = new doc::DocumentCache( this );
         connect( _p_documentCache, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ),
                  this, SLOT( onCacheDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
-
-        // purge the local cache, delete cached documents which were not used in the past
-        _p_documentCache->purgeCache( M4E_LOCAL_CAHCE_EXPIRE_DAYS );
     }
     return _p_documentCache;
+}
+
+void WebApp::resetAllResources()
+{
+    _userID = "";
+    _authState = AuthNoConnection;
+    _authFailReason = "";
+    delete _p_connection;
+    _p_connection = nullptr;
+    delete _p_user;
+    _p_user = nullptr;
+    delete _p_events;
+    _p_events = nullptr;
+    delete _p_connection;
+    _p_connection = nullptr;
 }
 
 void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::UserAuthentication::AuthResultsCode code, QString reason )

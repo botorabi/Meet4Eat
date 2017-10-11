@@ -86,7 +86,7 @@ bool Meet4EatWebSocket::sendPacket( comm::PacketPtr packet )
     if ( !packet->getTime().isValid() )
         packet->setTime( QDateTime::currentDateTime() );
 
-    return sendMessage( packet->toJSON() );
+    return sendMessage( packet->toJSON().toJson() );
 }
 
 void Meet4EatWebSocket::onConnected()

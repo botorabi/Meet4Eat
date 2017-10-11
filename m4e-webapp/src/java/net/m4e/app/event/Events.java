@@ -366,7 +366,9 @@ public class Events {
         Long       ownerid   = entity.getStatus().getIdOwner();
         Users      userutils = new Users(entityManager);
         UserEntity owner     = userutils.findUser(ownerid);
+        boolean    owneronline;
         if ((null == owner) || !owner.getStatus().getIsActive()) {
+            owneronline = false;
             ownerid = 0L;
             ownername = "";
             ownerphotoid = 0L;
@@ -376,12 +378,13 @@ public class Events {
             ownername = owner.getName();
             ownerphotoid = (null != owner.getPhoto()) ? owner.getPhoto().getId() : 0L;
             ownerphotoetag = (null != owner.getPhoto()) ? owner.getPhoto().getETag(): "";
+            owneronline = (connections.getConnectedUser(owner.getId()) != null);
         }
         json.add("ownerId", ownerid);
         json.add("ownerName", ownername);
         json.add("ownerPhotoId", ownerphotoid);
         json.add("ownerPhotoETag", ownerphotoetag);
-
+        json.add("status", owneronline ? "online" : "offline");
         return json;
     }
 

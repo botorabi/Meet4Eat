@@ -50,6 +50,29 @@ class ModelLocation : public common::ModelBase, public m4e::core::RefCount< Mode
         void                            setVotedMembers( const QList< QString >& votedMembers ) { _votedMembers = votedMembers; }
 
         /**
+         * @brief Create a JSON string out of the location model.
+         *
+         * @return JSON document representing the event location
+         */
+        QJsonDocument                   toJSON();
+
+        /**
+         * @brief Setup the location given a JSON formatted string.
+         *
+         * @param input Input string in JSON format
+         * @return Return false if the input was not in proper format.
+         */
+        bool                            fromJSON( const QString& input );
+
+        /**
+         * @brief Setup the location given a JSON document.
+         *
+         * @param input Input in JSON document
+         * @return Return false if the input was not in proper format.
+         */
+        bool                            fromJSON( const QJsonDocument& input );
+
+        /**
          * @brief Comparison operator which considers the location ID.
          * @param right     Right hand of operation.
          * @return true if both locations have the same ID, otherwise false.

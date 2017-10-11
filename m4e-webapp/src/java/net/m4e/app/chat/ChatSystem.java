@@ -110,7 +110,7 @@ public class ChatSystem {
         // avoid duplicate IDs by using a set (the sender can be also the owner or part of the members)
         Set<Long> receiverids = new HashSet();
         receiverids.add(sender.getId());
-        receiverids.add(sender.getStatus().getIdOwner());
+        receiverids.add(event.getStatus().getIdOwner());
         if (members != null) {
             members.forEach((m) -> {
                 receiverids.add(m.getId());
