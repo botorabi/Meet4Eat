@@ -10,7 +10,7 @@
 #define USERAUTH_H
 
 #include <configuration.h>
-#include <webapp/rest-authentication.h>
+#include <webapp/request/rest-authentication.h>
 #include <QObject>
 
 
@@ -124,7 +124,7 @@ class UserAuthentication : public QObject
     protected slots:
 
         /**
-         * @brief Receive the results of getAuthState request.
+         * @brief Receive the results of authentication request.
          *
          * @param authenticated  true if the user is authenticated, otherwise false
          * @param sid            Session ID
@@ -170,7 +170,7 @@ class UserAuthentication : public QObject
 
     protected:
 
-        m4e::webapp::RESTAuthentication*  _p_restAuth = nullptr;
+        webapp::RESTAuthentication*       _p_restAuth = nullptr;
         QString                           _userName;
         QString                           _password;
 };

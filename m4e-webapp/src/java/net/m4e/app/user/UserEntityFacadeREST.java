@@ -10,18 +10,15 @@ package net.m4e.app.user;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -34,10 +31,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.common.EntityUtils;
+import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.notification.SendEmailEvent;
+import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
+import net.m4e.system.core.AppConfiguration;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfoUtils;
+import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 
 /**
@@ -48,7 +48,6 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/users")
-@TransactionManagement(TransactionManagementType.BEAN)
 public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEntity> {
 
     /**
@@ -63,15 +62,21 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     private EntityManager entityManager;
 
     /**
-     * User transaction needed for entity modifications.
-     */
-    @Resource
-    private UserTransaction userTransaction;
-
-    /**
      * User utilities
      */
-    UserUtils userUtils;
+    Users userUtils;
+
+    /**
+     * Event for sending e-mail to user.
+     */
+    @Inject
+    Event<SendEmailEvent> sendMailEvent;
+
+    /**
+     * User's online status is fetched from connected clients.
+     */
+    @Inject
+    ConnectedClients connections;
 
     /**
      * Create the user entity REST facade.
@@ -96,36 +101,125 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         //! NOTE Acutally, this check should not be needed (see AuthFilter), but just to be on the safe side!
-        if (Objects.isNull(sessionuser)) {
+        if (null == sessionuser) {
             Log.error(TAG, "*** Internal error, cannot create user, no user in session found!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
 
         UserEntity reqentity;
         try {
-            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager, userTransaction);
+            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager);
             reqentity = validator.validateNewEntityInput(userJson);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not create new user, validation failed, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
 
         // validate and adapt requested user roles
-        reqentity.setRoles(getUserUtils().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
+        reqentity.setRoles(getUsers().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
 
         UserEntity newuser;
         try {
-            newuser = getUserUtils().createNewUser(reqentity, sessionuser.getId());
+            newuser = getUsers().createNewUser(reqentity, sessionuser.getId());
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not create new user, reaon: " + ex.getLocalizedMessage());
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            Log.warning(TAG, "*** Could not create new user, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
         //! NOTE on successful entity creation the new ID is sent back by results.data field.
         jsonresponse.add("id", newuser.getId());
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Register a new user. For activating the user, there is an activation process.
+     * Only guests can use this service.
+     * 
+     * @param userJson   User details in JSON format
+     * @param request    HTTP request
+     * @return           JSON response
+     */
+    @POST
+    @Path("register")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    public String registerUser(String userJson, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (null != sessionuser) {
+            Log.error(TAG, "*** an already authenticated user tries a user registration!");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to register user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        UserEntity reqentity;
+        try {
+            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager);
+            reqentity = validator.validateNewEntityInput(userJson);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not register a new user, validation failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+        }
+
+        // just to be safe: no roles can be defined during registration
+        reqentity.setRoles(null);
+
+        UserEntity newuser;
+        try {
+            newuser = getUsers().createNewUser(reqentity, null);
+            // the user is not enabled until the registration process was completed
+            newuser.getStatus().setEnabled(false);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not register a new user, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to register a new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        }
+
+        // create the activation URL
+        String activationurl = AppConfiguration.getInstance().getHTMLBaseURL(request) + "/activate.html";
+        UserRegistrations register = new UserRegistrations(entityManager);
+        register.registerUserAccount(newuser, activationurl, sendMailEvent);
+
+        //! NOTE on successful entity creation the new ID is sent back by results.data field.
+        jsonresponse.add("id", newuser.getId());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Activate a user by given its activation token. This is usually used during the registration process.
+     * 
+     * @param id        User ID
+     * @param token     Activation token
+     * @param request   HTTP request
+     * @return          JSON response
+     */
+    @GET
+    @Path("activate/{id}/{token}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    public String activateUser(@PathParam("id") Long id, @PathParam("token") String token, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (null != sessionuser) {
+            Log.error(TAG, "*** an already authenticated user tries a user activation!");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        Log.verbose(TAG, "activating user account: user id: " + id + ", token: " + token);
+        UserEntity user;
+        try {
+            UserRegistrations register = new UserRegistrations(entityManager);
+            user = register.activateUserAccount(id, token);
+        }
+        catch (Exception ex) {
+            Log.debug(TAG, "user activation failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+        jsonresponse.add("userName", user.getName());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully activated.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     /**
@@ -145,51 +239,51 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (Objects.isNull(sessionuser)) {
+        if (null == sessionuser) {
             Log.error(TAG, "*** Cannot update user, no user in session found!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.",
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.",
                                              ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
 
         UserEntity reqentity;
         try {
-            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager, userTransaction);
+            UserEntityInputValidator validator = new UserEntityInputValidator(entityManager);
             reqentity = validator.validateUpdateEntityInput(userJson);
         }
         catch(Exception ex) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, invalid input. Reason: " + 
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, invalid input. Reason: " + 
                                              ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
 
         UserEntity user = super.find(id);
-        if (Objects.isNull(user) || !user.getStatus().getIsActive()) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for updating.",
+        if ((null == user) || !user.getStatus().getIsActive()) {
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for updating.",
                                              ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         // check if a user is updating itself or a user with higher privilege is trying to modify a user
-        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
+        if (!getUsers().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
             Log.warning(TAG, "*** User was attempting to update another user without proper privilege!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, insufficient privilege.",
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, insufficient privilege.",
                                              ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
         // validate the requested roles, check for roles, e.g. only admins can define admin role for other users
-        user.setRoles(getUserUtils().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
+        user.setRoles(getUsers().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
 
         // take over non-empty fields
-        if (Objects.nonNull(reqentity.getName()) && !reqentity.getName().isEmpty()) {
+        if ((null != reqentity.getName()) && !reqentity.getName().isEmpty()) {
             user.setName(reqentity.getName());
         }
-        if (Objects.nonNull(reqentity.getEmail()) && !reqentity.getEmail().isEmpty()) {
+        if ((null != reqentity.getEmail()) && !reqentity.getEmail().isEmpty()) {
             user.setEmail(reqentity.getEmail());
         }
-        if (Objects.nonNull(reqentity.getPassword()) && !reqentity.getPassword().isEmpty()) {
+        if ((null != reqentity.getPassword()) && !reqentity.getPassword().isEmpty()) {
             user.setPassword(reqentity.getPassword());
         }
-        if (Objects.nonNull(reqentity.getPhoto())) {
+        if (null != reqentity.getPhoto()) {
             try {
-                getUserUtils().updateUserImage(user, reqentity.getPhoto());
+                getUsers().updateUserImage(user, reqentity.getPhoto());
             }
             catch (Exception ex) {
                 Log.warning(TAG, "*** User image could not be updated, reason: " + ex.getLocalizedMessage());
@@ -197,13 +291,13 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         try {
-            getUserUtils().updateUser(user);
+            getUsers().updateUser(user);
         }
         catch (Exception ex) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user.",
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user.",
                                              ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User successfully updated",
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User successfully updated",
                                          ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
@@ -224,31 +318,31 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         jsonresponse.add("id", id);
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (Objects.isNull(sessionuser)) {
+        if (null == sessionuser) {
             Log.error(TAG, "*** Cannot delete user, no user in session found!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
 
         if (sessionuser.getId().equals(id)) {
             Log.warning(TAG, "*** User was attempting to delete iteself! Call a doctor.");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete yourself.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());            
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete yourself.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());            
         }
 
         UserEntity user = super.find(id);
-        if (Objects.isNull(user) || !user.getStatus().getIsActive()) {
+        if ((null == user) || !user.getStatus().getIsActive()) {
             Log.warning(TAG, "*** User was attempting to delete non-existing user!");
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         try {
-            getUserUtils().markUserAsDeleted(user);
+            getUsers().markUserAsDeleted(user);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not mark user as deleted, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User successfully deleted", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User successfully deleted", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     /**
@@ -263,11 +357,11 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String search(@PathParam("keyword") String keyword) {
         JsonArrayBuilder results = Json.createArrayBuilder();
-        if (Objects.isNull(keyword)) {
-           return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());        
+        if (null == keyword) {
+           return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());        
         }
 
-        EntityUtils utils = new EntityUtils(entityManager, userTransaction);
+        Entities utils = new Entities(entityManager);
         List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
         for (UserEntity hit: hits) {
             if (!hit.getStatus().getIsActive()) {
@@ -275,10 +369,12 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             }
             JsonObjectBuilder json = Json.createObjectBuilder();
             json.add("id", hit.getId());
-            json.add("name", Objects.nonNull(hit.getName()) ? hit.getName() : "???");
+            json.add("name", (null != hit.getName()) ? hit.getName() : "");
+            json.add("photoId", (null != hit.getPhoto()) ? hit.getPhoto().getId() : 0);
+            json.add("photoETag", (null != hit.getPhoto()) ? hit.getPhoto().getETag() : "");
             results.add(json);
         }
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());
     }
 
     /**
@@ -296,15 +392,16 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
         UserEntity user = super.find(id);
-        if (Objects.isNull(user) || !user.getStatus().getIsActive()) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "User was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        if ((null == user) || !user.getStatus().getIsActive()) {
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "User was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (!getUserUtils().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
-            return ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK, "Insufficient privilege", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());            
+        if (!getUsers().userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Insufficient privilege", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());            
         }
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "User was found.", ResponseResults.CODE_OK, getUserUtils().exportUserJSON(user).build().toString());
+
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was found.", ResponseResults.CODE_OK, getUsers().exportUserJSON(user, connections).build().toString());
     }
 
     /**
@@ -319,8 +416,8 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String findAllUsers(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         List<UserEntity> users = super.findAll();
-        JsonArrayBuilder allusers = getUserUtils().exportUsersJSON(users, sessionuser);
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
+        JsonArrayBuilder allusers = getUsers().exportUsersJSON(users, sessionuser, connections);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
     }
 
     /**
@@ -338,8 +435,8 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         List<UserEntity> users = super.findRange(new int[]{from, to});
-        JsonArrayBuilder allusers = getUserUtils().exportUsersJSON(users, sessionuser);
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
+        JsonArrayBuilder allusers = getUsers().exportUsersJSON(users, sessionuser, connections);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
     }
 
     /**
@@ -354,11 +451,11 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String countREST() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         // NOTE the final user count is the count of UserEntity entries in database minus the count of users to be purged
-        AppInfoUtils autils = new AppInfoUtils(entityManager, userTransaction);
+        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         Long userpurges = appinfo.getUserCountPurge();
         jsonresponse.add("count", super.count() - userpurges);
-        return ResponseResults.buildJSON(ResponseResults.STATUS_OK, "Count of users", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of users", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     /**
@@ -376,9 +473,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      * 
      * @return User utils
      */
-    private UserUtils getUserUtils() {
-        if (Objects.isNull(userUtils)) {
-            userUtils = new UserUtils(entityManager, userTransaction);
+    private Users getUsers() {
+        if (null == userUtils) {
+            userUtils = new Users(entityManager);
         }
         return userUtils;
     }

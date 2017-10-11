@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import net.m4e.system.core.Log;
 
 /**
@@ -92,7 +91,7 @@ public class AuthAccessRuleChecker {
      */
     public boolean addAccessRoles(String accessMethod, List<String> accessRoles) {
         List<String /*role*/> roles = accessRules.get(accessMethod);
-        if (Objects.isNull(roles)) {
+        if (null == roles) {
             roles = new ArrayList<>();
             accessRules.put(accessMethod, roles);
         }
@@ -150,7 +149,7 @@ public class AuthAccessRuleChecker {
      */
     private boolean checkRoles(String accessMethod, List<String> userRoles) {
         List<String /*role*/> roles = accessRules.get(accessMethod);
-        if (Objects.isNull(roles)) {
+        if (null == roles) {
             return false;
         }
         // check for no-check and guest resource

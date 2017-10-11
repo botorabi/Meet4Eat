@@ -12,7 +12,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -25,8 +24,10 @@ import net.m4e.common.ResponseResults;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 
+
 /**
- *
+ * Authentication/authorization filter which checks user's access to resources
+ * 
  * @author boto
  * Date of creation Aug 18, 2017
  */
@@ -43,12 +44,14 @@ public class AuthFilter implements Filter {
     private static final String PARAM_BASE_PATH = "basePath";
 
     /**
-     * Configuration parameter name for "publicBasePath"
+     * Configuration parameter name for "publicBasePath" used for defining path
+     * which is not restricted in access.
      */
     private static final String PARAM_BASE_PATH_PUBLIC = "publicBasePath";
 
     /**
-     * Configuration parameter name for "protectedBasePath"
+     * Configuration parameter name for "protectedBasePath" used for a base path
+     * which is restricted in access.
      */
     private static final String PARAM_BASE_PATH_PROTECTED = "protectedBasePath";
 
@@ -72,7 +75,7 @@ public class AuthFilter implements Filter {
      */
     public AuthFilter() {
         authChecker = new AuthChecker();
-    }    
+    }
 
     /**
      * Destroy method for this filter
@@ -147,7 +150,7 @@ public class AuthFilter implements Filter {
                 // get the user roles out of the http session
                 UserEntity sessionuser = getSessionUser(httprequest);
                 List<String> userroles;
-                if (Objects.nonNull(sessionuser)) {
+                if (null != sessionuser) {
                     Log.verbose(TAG, "   User '" + sessionuser.getLogin() + "' accessing protected resource: " + path);
                     userroles = sessionuser.getRolesAsString();
                     // authenticated users get automatically the role USER
@@ -167,7 +170,7 @@ public class AuthFilter implements Filter {
                 }
                 else {
                     Log.warning(TAG, "*** Access denied to protected resource: " + path);
-                    response.getWriter().print(ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK,
+                    response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
                                                 "Denied access to: " + path, ResponseResults.CODE_FORBIDDEN, null));
                 }
             }
@@ -188,7 +191,7 @@ public class AuthFilter implements Filter {
     private UserEntity getSessionUser(HttpServletRequest request) {
         HttpSession  session   = request.getSession();
         Object       user      = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (Objects.nonNull(user)) {
+        if (null != user) {
             if (user instanceof UserEntity) {
                 return (UserEntity)user;
             }
@@ -209,26 +212,17 @@ public class AuthFilter implements Filter {
      * @throws ServletException 
      */
     protected void processRequest(ServletRequest request, ServletResponse response, FilterChain chain)
-                                    throws IOException, ServletException{
-        
-        Throwable problem = null;
+                                    throws IOException, ServletException {
+
         try {
             chain.doFilter(request, response);
         }
         catch (IOException | ServletException ex) {
             Log.error(TAG, "*** A problem occured while executing filters, reason: " + ex.getLocalizedMessage());
-            problem = ex;
-        }
-
-        if (problem != null) {
-            if (problem instanceof ServletException) {
-                throw (ServletException) problem;
-            }
-            if (problem instanceof IOException) {
-                throw (IOException) problem;
-            }
-            response.getWriter().print(ResponseResults.buildJSON(ResponseResults.STATUS_NOT_OK,
-                                       "Problem occurred while processing filter chain, reason: " + problem.getLocalizedMessage(), 500, null));
+            response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
+                                       "Problem occurred while processing filter chain, reason: " + ex.getLocalizedMessage(),
+                                       ResponseResults.CODE_INTERNAL_SRV_ERROR, null));
+            throw ex;
         }
     }
 

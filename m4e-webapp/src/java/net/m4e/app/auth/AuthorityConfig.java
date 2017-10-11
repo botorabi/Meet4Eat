@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import net.m4e.system.core.Log;
@@ -66,9 +65,18 @@ public class AuthorityConfig {
      * @return          Return session's UserEntity, or null if no user was set in session
      */
     public UserEntity getSessionUser(HttpServletRequest request) {
-       HttpSession session = request.getSession();
+       return getSessionUser(request.getSession());
+    }
+
+    /**
+     * Given a HTTP session, return the user entity set in its session.
+     * 
+     * @param session   HTTP session
+     * @return          Return session's UserEntity, or null if no user was set in session
+     */
+    public UserEntity getSessionUser(HttpSession session) {
         Object sessionuser = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (Objects.isNull(sessionuser) || !(sessionuser instanceof UserEntity)) {
+        if ((null == sessionuser) || !(sessionuser instanceof UserEntity)) {
             return null;
         }
         return (UserEntity)sessionuser;
@@ -86,10 +94,9 @@ public class AuthorityConfig {
     /**
      * Get a list with all bean classes which need protected resource access.
      * 
-     * @param <T> Bean class type
      * @return List of bean classes.
      */
-    public <T> List<Class<T>> getAccessBeanClasses() {
+    public List<Class> getAccessBeanClasses() {
         return Arrays.asList(accessBeanClasses);
     }
 
@@ -121,7 +128,7 @@ public class AuthorityConfig {
         String pw = "" + string;
         for (int i = 0; i < PW_HASH_ITERATOIN; i++) {
             pw = createHash(pw);
-            if (Objects.isNull(pw)) {
+            if (null == pw) {
                 return null;
             }
         }
@@ -132,7 +139,7 @@ public class AuthorityConfig {
      * Given a string, create a representing hash using SHA-512.
      * 
      * @param string    String to build hash for
-     * @return          Hash string, null if somehting went wrong
+     * @return          Hash string, null if something went wrong
      */
     public String createHash(String string) {
         String res = null;

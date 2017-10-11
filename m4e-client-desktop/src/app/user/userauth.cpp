@@ -7,7 +7,7 @@
  */
 
 #include <configuration.h>
-#include <data/appsettings.h>
+#include <settings/appsettings.h>
 #include <core/log.h>
 #include "userauth.h"
 #include <QApplication>
@@ -21,7 +21,7 @@ namespace user
 UserAuthentication::UserAuthentication( QObject* p_parent ) :
  QObject( p_parent )
 {
-    _p_restAuth = new m4e::webapp::RESTAuthentication( this );
+    _p_restAuth = new webapp::RESTAuthentication( this );
     connect( _p_restAuth, SIGNAL( onRESTAuthenticationAuthState( bool, QString, QString ) ), this, SLOT( onRESTAuthenticationAuthState( bool, QString, QString ) ) );
     connect( _p_restAuth, SIGNAL( onRESTAuthenticationErrorAuthState( QString, QString ) ), this, SLOT( onRESTAuthenticationErrorAuthState( QString, QString ) ) );
     connect( _p_restAuth, SIGNAL( onRESTAuthenticationLogin( QString ) ), this, SLOT( onRESTAuthenticationLogin( QString ) ) );

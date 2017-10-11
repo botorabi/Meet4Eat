@@ -10,10 +10,13 @@
 #define MAINWINDOW_H
 
 #include <configuration.h>
-#include <data/webapp.h>
+#include <webapp/webapp.h>
+#include <chat/chatsystem.h>
+#include <event/events.h>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QTimer>
+
 
 namespace Ui {
   class MainWindow;
@@ -21,7 +24,7 @@ namespace Ui {
 
 namespace m4e
 {
-namespace ui
+namespace gui
 {
 
 /**
@@ -73,22 +76,37 @@ class MainWindow : public QMainWindow
 
         void                        onEventSelection( QString id );
 
-        void                        onWidgetEventBack();
-
         /**
          * @brief This signal is emitted when an update of user data was arrived.
          *        The user data model can also be empty (e.g. if there were server connection problems).
          *
          * @param user     User data
          */
-        void                        onUserDataReady( m4e::data::ModelUserPtr user );
+        void                        onUserDataReady( m4e::user::ModelUserPtr user );
+
+        /**
+         * @brief This signal is emitted to notify about user authentication results.
+         *
+         * @param success  true if the user was successfully authenticated, otherwise false
+         * @param userId   User ID, valid if success is true
+         */
+        void                        onUserSignedIn( bool success, QString userId );
+
+        /**
+         * @brief This signal is emitted to notify about user authentication results.
+         *
+         * @param success  true if the user was successfully authenticated, otherwise false
+         * @param userId   User ID, valid if success is true
+         */
+        void                        onUserSignedOff( bool success );
 
         /**
          * @brief This signal is received when user events were arrived.
          *
+         * @param success  true for successful access
          * @param events   User events
          */
-        void                        onUserEventsReady( QList< m4e::data::ModelEventPtr > events );
+        void                        onResponseGetEvents( bool success, QList< m4e::event::ModelEventPtr > events );
 
     protected:
 
@@ -118,14 +136,16 @@ class MainWindow : public QMainWindow
 
         QTimer*                     _p_initTimer    = nullptr;
 
-        data::WebApp*               _p_webApp       = nullptr;
+        webapp::WebApp*             _p_webApp       = nullptr;
+
+        chat::ChatSystem*           _p_chatSystem   = nullptr;
 
         bool                        _dragging       = false;
 
         QPoint                      _draggingPos;
 };
 
-} // namespace ui
+} // namespace gui
 } // namespace m4e
 
 #endif // MAINWINDOW_H

@@ -13,7 +13,7 @@
 #include "log.h"
 #include "utils.h"
 
-#include <data/appsettings.h>
+#include <settings/appsettings.h>
 #include <gui/mainwindow.h>
 
 #include <QDebug>
@@ -86,7 +86,7 @@ void Core::initialize( int &argc, char* argv[] )
     log_info << "Starting the app" << std::endl;
 
     _p_app = new QApplication( argc, argv );
-    _p_mainWindow = new m4e::ui::MainWindow();
+    _p_mainWindow = new m4e::gui::MainWindow();
 }
 
 void Core::start()
@@ -101,7 +101,7 @@ void Core::shutdown()
     if ( _p_mainWindow )
     {
         delete _p_mainWindow;
-        m4e::data::AppSettings::get()->shutdown();
+        settings::AppSettings::get()->shutdown();
     }
     _p_mainWindow = nullptr;
 

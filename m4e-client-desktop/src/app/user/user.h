@@ -10,10 +10,10 @@
 #define USER_H
 
 #include <configuration.h>
-#include <webapp/rest-user.h>
-#include <webapp/rest-event.h>
-#include <data/modeluser.h>
-#include <data/modelevent.h>
+#include <webapp/request/rest-user.h>
+#include <webapp/request/rest-event.h>
+#include <user/modeluser.h>
+#include <event/modelevent.h>
 #include <QObject>
 
 
@@ -41,6 +41,7 @@ class User : public QObject
 
         /**
          * @brief Construct a User instance.
+         *
          * @param p_parent Parent object
          */
         explicit                User( QObject* p_parent );
@@ -65,14 +66,24 @@ class User : public QObject
         const QString&          getServerURL() const;
 
         /**
+         * @brief Get the user data as far as it could be fetched from server successfully. Consider to request the user data before by
+         *        using the method 'requestUserData' below.
+         *
+         * @return User data
+         */
+        user::ModelUserPtr      getUserData();
+
+        /**
          * @brief Request for getting the user data, the results are emitted by signal 'onResponseUserData'.
          */
         void                    requestUserData( const QString userId );
 
         /**
-         * @brief Request for getting all user events, the results are emitted by signal 'onResponseUserAllEvents'.
+         * @brief Request for searching for users given the keyword. The hits are emitted by signal 'onResponseUserSearch'.
+         *
+         * @param keyword  Keyword to search for
          */
-        void                    requestAllEvents();
+        void                    requestUserSearch( const QString& keyword );
 
     signals:
 
@@ -82,15 +93,15 @@ class User : public QObject
          * @param success  true if user data could successfully be retrieved, otherwise false
          * @param user     User data
          */
-        void                    onResponseUserData( bool success, m4e::data::ModelUserPtr user );
+        void                    onResponseUserData( bool success, m4e::user::ModelUserPtr user );
 
         /**
-         * @brief Results of user events request.
+         * @brief Results of user search request.
          *
          * @param success  true if user data could successfully be retrieved, otherwise false
-         * @param events   User's events
+         * @param users List of user hits
          */
-        void                    onResponseUserAllEvents( bool success, QList< m4e::data::ModelEventPtr > events );
+        void                    onResponseUserSearch( bool success, QList< m4e::user::ModelUserInfoPtr > users );
 
     protected slots:
 
@@ -99,7 +110,7 @@ class User : public QObject
          *
          * @param user           User data
          */
-        void                    onRESTUserGetData( m4e::data::ModelUserPtr user );
+        void                    onRESTUserGetData( m4e::user::ModelUserPtr user );
 
         /**
          * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
@@ -110,11 +121,11 @@ class User : public QObject
         void                    onRESTUserErrorGetData( QString errorCode, QString reason );
 
         /**
-         * @brief Signal is received when the results of getUserEvents arrive.
+         * @brief Receive the results of searchForUser request.
          *
-         * @param events    User events
+         * @param users     List of found user candidates
          */
-        void                    onRESTEventGetAllEvents( QList< m4e::data::ModelEventPtr > events );
+        void                    onRESTUserSearchResults( QList< m4e::user::ModelUserInfoPtr > users );
 
         /**
          * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
@@ -122,12 +133,13 @@ class User : public QObject
          * @param errorCode Error code if any exits
          * @param reason    Error string
          */
-        void                    onRESTEventErrorGetAllEvents( QString errorCode, QString reason );
+        void                    onRESTUserErrorSearchResults( QString errorCode, QString reason );
 
     protected:
 
-        m4e::webapp::RESTUser*  _p_restUser  = nullptr;
-        m4e::webapp::RESTEvent* _p_restEvent = nullptr;
+        webapp::RESTUser*       _p_restUser  = nullptr;
+
+        user::ModelUserPtr      _userModel;
 };
 
 } // namespace user

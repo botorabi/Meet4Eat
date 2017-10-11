@@ -33,7 +33,7 @@ function Meet4EatUI_User(baseModule) {
 	var self = this;
 
 	/* UI version */
-	self._version = "1.0.0";
+	self._version = "1.1.0";
 
 	/* User photo data */
 	self._userPhotoData = null;
@@ -144,7 +144,7 @@ function Meet4EatUI_User(baseModule) {
 		if (self._userPhotoData) {
 			fields['photo'] = self._userPhotoData;
 		}
-
+		fields['status'] = "";
 		self._createOrUpdateUser(fields, function(results) {
 			if (results.status === "ok") {
 				base.showModalBox("Changes were successfully applied to user.", "User Update", "Dismiss");
@@ -253,7 +253,8 @@ function Meet4EatUI_User(baseModule) {
 		self._getUserTable().row.add({
 				"DT_RowId" : userFields.id,
 				// make 'me' bold
-				"name" : (me ? "<strong>" : "") + userFields.name + (me ? "</strong>" : ""),
+				"name" : (me ? "<strong>" : "") + userFields.name + (me ? "</strong>" : "") +
+						 ((userFields.status === "online") ? " <a role='button disable'>[online]</a>" : ""),
 				"login" : userFields.login,
 				"creation" : datecreation,
 				"lastlogin" : lastlogin,

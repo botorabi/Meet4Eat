@@ -1,0 +1,198 @@
+/*
+ * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * https://github.com/botorabi/Meet4Eat
+ * 
+ * License: MIT License (MIT), read the LICENSE text in
+ *          main directory for more details.
+ */
+package net.m4e.app.communication;
+
+import java.io.StringReader;
+import java.util.Date;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import net.m4e.system.core.Log;
+
+/**
+ * This class is used for WebSocket communication.
+ *
+ * @author boto Date of creation Oct 4, 2017
+ */
+public class Packet {
+
+    /**
+     * Used for logging
+     */
+    private final static String TAG = "Packet";
+
+    /**
+     * Packet channel for system notifications
+     */
+    public final static String CHANNEL_SYSTEM = "system";
+
+    /**
+     * Packet channel for chat messages
+     */
+    public final static String CHANNEL_NOTIFY = "notify";
+
+    /**
+     * Packet channel for chat messages
+     */
+    public final static String CHANNEL_CHAT = "chat";
+
+    /**
+     * Packet channel for meeting event related communication
+     */
+    public final static String CHANNEL_EVENT = "event";
+
+    private String channel;
+    private String source;
+    private JsonObject data;
+    private Long   time = 0L;
+
+    /**
+     * Create an empty packet instance.
+     */
+    public Packet() {}
+
+    /**
+     * Create a packet instance.
+     *
+     * @param channel Packet channel, one of CHANNEL_xx strings
+     * @param source Human readable string, e.g. user name, as far as available
+     * @param data Packet data, it should be in JSON format
+     */
+    public Packet(String channel, String source, JsonObject data) {
+        this.channel = channel;
+        this.source = source;
+        this.data = data;
+    }
+
+    /**
+     * Get the JSON formated string.
+     *
+     * @return JSON string representing the packet
+     */
+    public String toJSON() {
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("channel", ((channel != null) ? channel : ""));
+        json.add("source", ((source != null) ? source : ""));
+        json.add("time", (time == 0L) ? (new Date()).getTime() : time);
+        if (data != null) {
+            json.add("data", data);
+        }
+        return json.build().toString();
+    }
+
+    /**
+     * Create a JSON string with given fields.
+     *
+     * @param channel Packet channel
+     * @param source Human readable string, e.g. user name, as far as available
+     * @param data Packet data, it should be in JSON format
+     * @return JSON formatted string
+     */
+    public static String toJSON(String channel, String source, JsonObject data) {
+        return new Packet(channel, source, data).toJSON();
+    }
+
+    /**
+     * Create a packet out of given JSON string. If an invalid JSON format is given, then
+     * null will be returned.
+     * 
+     * @param input     Packet in JSON format
+     * @return          A packet representing the JSON format, or null if an invalid JSON input was given.
+     */
+    public static Packet fromJSON(String input) {
+        Packet packet = null;
+        try {
+            JsonReader jreader = Json.createReader(new StringReader(input));
+            JsonObject jobject = jreader.readObject();
+            String channel = jobject.getString("channel", "");
+            String source = jobject.getString("soource", "");
+            JsonObject data = jobject.getJsonObject("data");
+            int time = jobject.getInt("time", 0);
+            packet = new Packet(channel, source, data);
+            packet.setTime(new Long(time));
+        }
+        catch (Exception ex) {
+            Log.debug(TAG, "Could not read JSON string, reason: " + ex.getLocalizedMessage());
+        }
+        return packet;
+    }
+
+    /**
+     * Get the packet channel, one of CHANNEL_xxx string.
+     *
+     * @return Packet channel
+     */
+    public String getChannel() {
+        return channel;
+    }
+
+    /**
+     * Set the packet channel.
+     *
+     * @param channel The packet channel
+     */
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    /**
+     * Get packet source, can be also empty.
+     *
+     * @return Packet source, e.g. a user name
+     */
+    public String getSource() {
+        return source;
+    }
+
+    /**
+     * Set packet's source
+     *
+     * @param source
+     */
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    /**
+     * Packet data, this is expected to be a JSON document.
+     *
+     * @return The packet data
+     */
+    public JsonObject getData() {
+        return data;
+    }
+
+    /**
+     * Set the packet data.
+     *
+     * @param data Packet data
+     */
+    public void setData(JsonObject data) {
+        this.data = data;
+    }
+
+    /**
+     * Get packet's timestamp.
+     *
+     * @return Timestamp
+     */
+    public Long getTime() {
+        return time;
+    }
+
+    /**
+     * Set the packet time, this is a timestamp. Pass a 0L in order to
+     * automatically take the current timestamp when building the JSON string.
+     *
+     * @param time Packet timestamp
+     */
+    public void setTime(Long time) {
+        this.time = time;
+    }
+}

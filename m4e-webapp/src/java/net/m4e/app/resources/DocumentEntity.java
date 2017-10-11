@@ -11,18 +11,20 @@ package net.m4e.app.resources;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+
 import net.m4e.system.core.Log;
 
 /**
  * Class entity for an document. A document can be e.g. an image or a PDF file.
- * 
+ *
  * @author boto
  * Date of creation 30.08.2017
  */
@@ -74,8 +76,8 @@ public class DocumentEntity implements Serializable {
     /**
      * Entity status
      */
-    @OneToOne(optional=false, cascade = CascadeType.ALL)
-    private StatusEntity status;       
+    @OneToOne(optional = false, cascade = CascadeType.ALL)
+    private StatusEntity status;
 
     /**
      * Document name
@@ -109,6 +111,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Get ID.
+     *
      * @return ID
      */
     public Long getId() {
@@ -117,6 +120,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Set ID.
+     *
      * @param id
      */
     public void setId(Long id) {
@@ -126,7 +130,7 @@ public class DocumentEntity implements Serializable {
     /**
      * Get entity status. It contains information about entity's life-cycle,
      * ownership, etc.
-     * 
+     *
      * @return Entity status
      */
     public StatusEntity getStatus() {
@@ -135,7 +139,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Set entity status.
-     * 
+     *
      * @param status Entity status
      */
     public void setStatus(StatusEntity status) {
@@ -144,6 +148,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Set document name.
+     *
      * @return Document name
      */
     public String getName() {
@@ -152,7 +157,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Set document name.
-     * 
+     *
      * @param name Document name
      */
     public void setName(String name) {
@@ -161,7 +166,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Get the content type. It can be one of TYPE_xxx.
-     * 
+     *
      * @return Content type
      */
     public String getType() {
@@ -170,7 +175,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Set the content type.
-     * 
+     *
      * @param type Content type
      */
     public void setType(String type) {
@@ -179,7 +184,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Get the resouce URL.
-     * 
+     *
      * @return Resource URL
      */
     public String getResourceURL() {
@@ -188,7 +193,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Set resource URL.
-     * 
+     *
      * @param resourceURL Resource URL
      */
     public void setResourceURL(String resourceURL) {
@@ -197,7 +202,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Content encoding, e.g. ENCODING_BASE64 or ENCODING_BINARY
-     * 
+     *
      * @return Content encoding
      */
     public String getEncoding() {
@@ -206,7 +211,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Get content encoding.
-     * 
+     *
      * @param encoding Content encoding
      */
     public void setEncoding(String encoding) {
@@ -215,7 +220,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Get document content.
-     * 
+     *
      * @return The document content.
      */
     public byte[] getContent() {
@@ -224,7 +229,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Set Document content.
-     * 
+     *
      * @param content Document content
      */
     public void setContent(byte[] content) {
@@ -233,7 +238,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Get document etag. It can be used on client side for caching purpose.
-     * 
+     *
      * @return Document etag
      */
     public String getETag() {
@@ -242,7 +247,7 @@ public class DocumentEntity implements Serializable {
 
     /**
      * Set document etag.
-     * 
+     *
      * @param etag The document ETag
      */
     public void setDocumentETag(String etag) {
@@ -250,13 +255,13 @@ public class DocumentEntity implements Serializable {
     }
 
     /**
-     * Update the hash (etag) string out of the document content. If the content is empty 
+     * Update the hash (etag) string out of the document content. If the content is empty
      * then the hash will set to an empty string.
-     * 
+     * <p>
      * NOTE: Call this method whenever the content was changed.
      */
     public void updateETag() {
-        if (Objects.isNull(content)) {
+        if (null == content) {
             eTag = "";
             return;
         }
@@ -267,7 +272,7 @@ public class DocumentEntity implements Serializable {
             diggest.update(content);
             byte data[] = diggest.digest();
             StringBuilder hexstring = new StringBuilder();
-            for (int i=0; i < data.length; i++) {
+            for (int i = 0; i < data.length; i++) {
                 String hex = Integer.toHexString(0xff & data[i]);
                 if (hex.length() == 1) {
                     hexstring.append('0');
@@ -276,8 +281,7 @@ public class DocumentEntity implements Serializable {
             }
             hash = hexstring.toString();
             eTag = hash;
-        }
-        catch (NoSuchAlgorithmException ex) {
+        } catch (NoSuchAlgorithmException ex) {
             Log.error(TAG, "Problem occurred while hashing an document content, reason: " + ex.getLocalizedMessage());
         }
     }
@@ -304,5 +308,28 @@ public class DocumentEntity implements Serializable {
     @Override
     public String toString() {
         return "net.m4e.common.DocumentEntity[ id=" + id + " ]";
+    }
+
+    /**
+     * Export all fields into a JSON string
+     *
+     * @return A JSON string containing all entity fields with their respective values
+     */
+    public String toJsonString() {
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("id", getOrDefault(id, 0L));
+        json.add("name", getOrDefault(name, ""));
+        json.add("type", getOrDefault(type, ""));
+        json.add("content", content == null ? "" : new String(content));
+        json.add("eTag", getOrDefault(eTag, ""));
+        json.add("encoding", getOrDefault(encoding, ""));
+        return json.build().toString();
+    }
+
+    /**
+     * Get the given value, if it does not exit (i.e. null) then return a given default.
+     */
+    private <T> T getOrDefault(T value, T defaultValue) {
+        return value != null ? value : defaultValue;
     }
 }

@@ -16,7 +16,7 @@ class QApplication;
 namespace m4e
 {
 
-namespace ui {
+namespace gui {
   class MainWindow;
 }
 
@@ -47,7 +47,7 @@ class Core
 
         QApplication*               _p_app          = nullptr;
 
-        m4e::ui::MainWindow*        _p_mainWindow   = nullptr;
+        m4e::gui::MainWindow*       _p_mainWindow   = nullptr;
 };
 
 } // namespace core

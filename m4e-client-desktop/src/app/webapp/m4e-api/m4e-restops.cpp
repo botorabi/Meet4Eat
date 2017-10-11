@@ -23,6 +23,8 @@ Meet4EatRESTOperations::Meet4EatRESTOperations( QObject* p_parent ) :
     _p_nam = new QNetworkAccessManager( this );
     _s_cookie = _s_cookie ? _s_cookie : new QNetworkCookieJar();
     _p_nam->setCookieJar( _s_cookie );
+    // in order to share the cookie jar, we have to reset its parent!
+    _s_cookie->setParent( nullptr );
     connect( _p_nam, SIGNAL( finished( QNetworkReply* ) ), this, SLOT( onReplyFinished( QNetworkReply* ) ) );
 }
 
@@ -48,6 +50,17 @@ void Meet4EatRESTOperations::PUT( const QUrl& url, unsigned int requestId, const
 void Meet4EatRESTOperations::DELETE( const QUrl& url, unsigned int requestId )
 {
     startRequest( url, QNetworkAccessManager::DeleteOperation, requestId, QJsonDocument() );
+}
+
+QNetworkCookieJar* Meet4EatRESTOperations::getCookies()
+{
+    return _s_cookie;
+}
+
+void Meet4EatRESTOperations::resetCookie()
+{
+    delete _s_cookie;
+    _s_cookie = new QNetworkCookieJar();
 }
 
 void Meet4EatRESTOperations::startRequest( const QUrl& url, enum QNetworkAccessManager::Operation op, unsigned int requestId, const QJsonDocument& json )
@@ -98,11 +111,11 @@ void Meet4EatRESTOperations::startRequest( const QUrl& url, enum QNetworkAccessM
 void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
 {
     unsigned int reqid = p_reply->property( "requestId" ).toUInt();
+    p_reply->deleteLater();
 
     if ( p_reply->error() != QNetworkReply::NoError )
     {
         QString errstring = "Could not connect web api: " + p_reply->request().url().toString() + ". Reason: " + p_reply->errorString();
-        //log_debug << TAG << errstring.toStdString() << std::endl;
         emit onResponseFailed( reqid, errstring );
     }
     else
@@ -113,17 +126,13 @@ void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
         if ( jsonresp.isEmpty() )
         {
             QString errstring = "Unexpected response arrived from web api: " + p_reply->request().url().toString() + ". Reponse body: " + response;
-            //log_debug << TAG << errstring.toStdString() << std::endl;
             emit onResponseFailed( reqid, errstring );
         }
         else
         {
-            //log_verbose << TAG << " response: " <<  jsonresp.toJson().toStdString() << std::endl;
             emit onResponse( reqid, jsonresp );
         }
     }
-
-    p_reply->deleteLater();
 }
 
 } // namespace webapp

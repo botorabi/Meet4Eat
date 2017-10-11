@@ -55,6 +55,12 @@
 									<a class="btn btn-lg btn-primary btn-block" onclick="getMeet4EatUI().onBtnLogin()">Login</a>
 								</fieldset>
 							</form>
+							<div style="margin-top: 30px;">
+								<hr>
+								<div>
+									<a class="btn" href="register.html">You have no account? <strong>Register now</strong>.</a>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -240,17 +246,17 @@
 										<div class="form-group">
 											<label>Login</label>
 											<input id="page_users_edit_form_login" maxlength="32" class="form-control" name="login" placeholder="Login name">
-											<p class="help-block">This name is used for authentication (At least 8 characters).</p>
+											<p class="help-block">This name is used for authentication (At least 6 characters).</p>
 										</div>
 										<div class="form-group">
 											<label>Name</label>
-											<input class="form-control" maxlength="32" name="name" placeholder="Enter text">
+											<input class="form-control" maxlength="32" name="name" placeholder="Enter your name">
 											<p class="help-block">Real user name</p>
 										</div>
 										<div class="form-group">
-											<label>E-Mail</label>
-											<input class="form-control" maxlength="64" name="email" placeholder="E-Mail">
-											<p class="help-block">Contact e-mail address</p>
+											<label>Email</label>
+											<input class="form-control" maxlength="64" name="email" placeholder="yourmail@dot.com">
+											<p class="help-block">Your email address</p>
 										</div>
 										<div id="page_users_edit_form_grp_passwd" class="form-group">
 											<label>Password</label>
@@ -265,7 +271,7 @@
 											<select id="page_users_edit_roles_sel" multiple class="form-control">
 												<option>ADMIN</option>
 												<option>MODERATOR</option>
-												<option></option>
+												<option>&nbsp;</option>
 											</select>
 											<p class="help-block">Assign special roles. Select multiple roles by holding down Ctrl key.</p>
 										</div>

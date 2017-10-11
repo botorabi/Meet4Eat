@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import net.m4e.system.core.Log;
 
@@ -56,7 +55,7 @@ public class AuthChecker {
     private final Map<String /*resource path*/, AuthAccessRuleChecker> accessRulesFixPath;
 
     /**
-     * A list of access rules with comples paths consisting of regular expressions.
+     * A list of access rules with complex paths consisting of regular expressions.
      */
     private final List<AuthAccessRuleChecker> accessRulesComplexPath;
 
@@ -78,10 +77,9 @@ public class AuthChecker {
      * Initialize the checker given a list of java beans providing resource
      * access (e.g. REST facades).
      * 
-     * @param <T>           Type of java bean class
      * @param beanClasses   List of java beans
      */
-    public <T> void initialize(List<Class<T>> beanClasses) {
+    public void initialize(List<Class> beanClasses) {
         Log.info(TAG, "Initializing authorization checker");
         setupRules(beanClasses);
     }
@@ -107,14 +105,13 @@ public class AuthChecker {
     }
 
     /**
-     * Setup all authorization rules found on given methods.
+     * Setup all authorization rules found on methods of given classes.
      * 
-     * @param <T>           Type of java bean class
      * @param beanClasses   List of java beans
      */
-    private <T> void setupRules(List<Class<T>> beanClasses) {
+    private void setupRules(List<Class> beanClasses) {
         // gather information from all bean classes about authorization relevant annotations
-        AnnotationUtils autils = new AnnotationUtils();
+        Annotations autils = new Annotations();
         beanClasses.stream().map((cls) -> {
             Log.debug(TAG, " adding rules for bean class " + cls.getName());
             return cls;
@@ -123,10 +120,10 @@ public class AuthChecker {
             String classrulepath = autils.getClassPath(cls);
 
             //! NOTE Currently we check access only againes roles, but AuthRole provides also definition of
-            //        permissions (see AnnotationUtils.getMethodsAuthPermissions), so in future it is possible
+            //        permissions (see Annotations.getMethodsAuthPermissions), so in future it is possible
             //        to provide a more fine-grained access control if needed.
             autils.getMethodsAuthRoles(cls).entrySet().stream().forEach((pathentry) -> {
-                
+
                 String fullrespath = classrulepath + (pathentry.getKey().isEmpty() ? "" : "/" + pathentry.getKey());
                 AuthAccessRuleChecker rule = new AuthAccessRuleChecker(fullrespath);
 
@@ -178,7 +175,7 @@ public class AuthChecker {
 
             // first check for fix path match
             AuthAccessRuleChecker accrule = accessRulesFixPath.get(respath);
-            if (!Objects.isNull(accrule)) {
+            if (null != accrule) {
                 grantaccess = accrule.checkFixPath(respath, request.getMethod(), userRoles);
             }
             else {
