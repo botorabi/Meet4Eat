@@ -108,6 +108,13 @@ class MainWindow : public QMainWindow
          */
         void                        onResponseGetEvents( bool success, QList< m4e::event::ModelEventPtr > events );
 
+        /**
+         * @brief This signal notifies about a new incoming network packet in channel 'Notify'.
+         *
+         * @param packet Arrived Notify channel packet
+         */
+        void                        onChannelNotifyPacket( m4e::comm::PacketPtr packet );
+
     protected:
 
         void                        closeEvent( QCloseEvent* p_event );

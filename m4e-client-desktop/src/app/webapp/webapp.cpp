@@ -223,13 +223,13 @@ void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::Us
         _authState = AuthFail;
         _authFailReason = reason;
         emit onUserSignedIn( false, "" );
-        log_verbose << TAG << "failed to sign in user (" << QString::number( code ).toStdString() << "), reason: " << reason.toStdString() << std::endl;
+        log_verbose << TAG << "failed to sign in user (" << QString::number( code ) << "), reason: " << reason << std::endl;
     }
 }
 
 void WebApp::onResponseSignOutResult( bool success, user::UserAuthentication::AuthResultsCode code, QString reason )
 {
-    log_verbose << TAG << "user was signed off (" << QString::number( code ).toStdString() << "), reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "user was signed off (" << QString::number( code ) << "), reason: " << reason << std::endl;
     emit onUserSignedOff( success );
 }
 

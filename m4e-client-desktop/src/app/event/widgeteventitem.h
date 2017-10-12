@@ -100,6 +100,8 @@ class WidgetEventItem : public QWidget
         Ui::WidgetEventItem*        _p_ui     = nullptr;
 
         event::ModelEventPtr        _event;
+
+        bool                        _userIsOwner = false;
 };
 
 } // namespace event

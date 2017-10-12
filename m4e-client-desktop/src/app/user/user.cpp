@@ -57,7 +57,7 @@ void User::requestUserSearch( const QString& keyword )
 
 void User::onRESTUserGetData( m4e::user::ModelUserPtr user )
 {
-    log_verbose << TAG << "got user data: " << user->getName().toStdString() << std::endl;
+    log_verbose << TAG << "got user data: " << user->getName() << std::endl;
 
     _userModel = user;
     emit onResponseUserData( true, user );
@@ -65,7 +65,7 @@ void User::onRESTUserGetData( m4e::user::ModelUserPtr user )
 
 void User::onRESTUserErrorGetData( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get user data: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "failed to get user data: " << errorCode << ", reason: " << reason << std::endl;
     emit onResponseUserData( false, m4e::user::ModelUserPtr() );
 }
 
@@ -76,7 +76,7 @@ void User::onRESTUserSearchResults( QList< user::ModelUserInfoPtr > users )
 
 void User::onRESTUserErrorSearchResults( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get user search hits: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "failed to get user search hits: " << errorCode << ", reason: " << reason << std::endl;
     emit onResponseUserSearch( false, QList< user::ModelUserInfoPtr >() );
 }
 

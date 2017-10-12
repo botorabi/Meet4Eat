@@ -17,6 +17,7 @@
 #include <iostream>
 #include <ostream>
 #include <vector>
+#include <QString>
 
 // convenient macros for logging
 #define log_out         m4e::core::defaultlog
@@ -158,11 +159,13 @@ class Log : public std::basic_ostream< char >
 
 
         }                                               _stream;
-
 };
 
 } // namespace core
 } // namespace m4e
+
+//! Accept QString for log stream
+std::ostream& operator << ( std::ostream& stream, const QString& msg );
 
 #endif //_LOG_H_
 

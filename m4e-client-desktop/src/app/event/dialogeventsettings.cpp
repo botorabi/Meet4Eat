@@ -139,7 +139,7 @@ void DialogEventSettings::onResponseAddMember( bool success, QString eventId, QS
         return;
     }
 
-    log_verbose << TAG << "new member added: " << _newMember->getId().toStdString() << std::endl;
+    log_verbose << TAG << "new member added: " << _newMember->getId() << std::endl;
 
     QList< user::ModelUserInfoPtr > members = _event->getMembers();
     members.append( _newMember );

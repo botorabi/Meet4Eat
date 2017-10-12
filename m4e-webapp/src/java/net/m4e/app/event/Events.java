@@ -18,6 +18,7 @@ import java.util.Objects;
 import javax.enterprise.event.Event;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -239,7 +240,7 @@ public class Events {
     public void removeAnyMember(EventEntity event, List<UserEntity> usersToRemove) throws Exception {
         for (UserEntity user: usersToRemove) {
             Collection<UserEntity> members = event.getMembers();
-            if (null == members) {
+            if (members == null) {
                 continue;
             }
             members.remove(user);
@@ -282,11 +283,13 @@ public class Events {
         Entities eutils = new Entities(entityManager);
         List<EventEntity> events = eutils.findAllEntities(EventEntity.class);
         List<EventEntity> deletedevents = new ArrayList<>();
-        for (EventEntity event: events) {
-            if (event.getStatus().getIsDeleted()) {
+        // speed up the task by using parallel processing
+        events.stream().parallel()
+            .filter((event) -> (event.getStatus().getIsDeleted()))
+            .forEach((event) -> {
                 deletedevents.add(event);
-            }
-        }
+            });
+
         return deletedevents;
     }
 
@@ -299,11 +302,13 @@ public class Events {
         Entities eutils = new Entities(entityManager);
         List<EventLocationEntity> eventlocs = eutils.findAllEntities(EventLocationEntity.class);
         List<EventLocationEntity> deletedeventlocs = new ArrayList<>();
-        for (EventLocationEntity loc: eventlocs) {
-            if (loc.getStatus().getIsDeleted()) {
+        // speed up the task by using parallel processing
+        eventlocs.stream().parallel()
+            .filter((loc) -> (loc.getStatus().getIsDeleted()))
+            .forEach((loc) -> {
                 deletedeventlocs.add(loc);
-            }
-        }
+            });
+
         return deletedeventlocs;
     }
 
@@ -328,36 +333,43 @@ public class Events {
 
         JsonArrayBuilder members = Json.createArrayBuilder();
         if (null != entity.getMembers()) {
-            for (UserEntity m: entity.getMembers()) {
-                if (!m.getStatus().getIsActive()) {
-                    continue;
-                }
-                JsonObjectBuilder member = Json.createObjectBuilder();
-                member.add("id", m.getId());
-                member.add("name", (null != m.getName()) ? m.getName() : "");
-                member.add("photoId", (null != m.getPhoto()) ? m.getPhoto().getId(): 0);
-                member.add("photoETag", (null != m.getPhoto()) ? m.getPhoto().getETag() : "");
-
-                // set the online status
-                boolean online = (connections.getConnectedUser(m.getId()) != null);
-                member.add("status", online ? "online" : "offline");
-
-                members.add(member);
-            }
+            entity.getMembers()
+                .stream()
+                .filter((mem) -> (mem.getStatus().getIsActive()))
+                .map((mem) -> {
+                    JsonObjectBuilder member = Json.createObjectBuilder();
+                    member.add("id", mem.getId());
+                    member.add("name", (null != mem.getName()) ? mem.getName() : "");
+                    member.add("photoId", (null != mem.getPhoto()) ? mem.getPhoto().getId(): 0);
+                    member.add("photoETag", (null != mem.getPhoto()) ? mem.getPhoto().getETag() : "");
+                    // set the online status
+                    boolean online = (connections.getConnectedUser(mem.getId()) != null);
+                    member.add("status", online ? "online" : "offline");
+                    return member;
+                })
+                .forEach((memobj) -> {
+                    members.add(memobj);
+                });
         }
         json.add("members", members);
 
         JsonArrayBuilder locations = Json.createArrayBuilder();
-        if (null != entity.getLocations()) {
-            for (EventLocationEntity l: entity.getLocations()) {
-                JsonObjectBuilder loc = Json.createObjectBuilder();
-                loc.add("id", l.getId());
-                loc.add("name", (null != l.getName()) ? l.getName() : "");
-                loc.add("description", (null != l.getDescription()) ? l.getDescription() : "");
-                loc.add("photoId", (null != l.getPhoto()) ? l.getPhoto().getId(): 0);
-                loc.add("photoETag", (null != l.getPhoto()) ? l.getPhoto().getETag(): "");
-                locations.add( loc );
-            }
+        if (entity.getLocations() != null) {
+            entity.getLocations()
+                .stream()
+                .filter((location) -> (location.getStatus().getIsActive()))
+                .map((location) -> {
+                    JsonObjectBuilder loc = Json.createObjectBuilder();
+                    loc.add("id", location.getId());
+                    loc.add("name", (null != location.getName()) ? location.getName() : "");
+                    loc.add("description", (null != location.getDescription()) ? location.getDescription() : "");
+                    loc.add("photoId", (null != location.getPhoto()) ? location.getPhoto().getId(): 0);
+                    loc.add("photoETag", (null != location.getPhoto()) ? location.getPhoto().getETag(): "");
+                    return loc;
+                })
+                .forEach((loc) -> {
+                    locations.add( loc );
+                });
         }
         json.add("locations", locations);
 
@@ -498,19 +510,19 @@ public class Events {
      * Send a notification to all event members. The notification data is extracted from given notificationJson string, which is
      * expected to have the following fields:
      * 
+     *   type (string)
      *   subject (string)
      *   text (string)
      * 
-     * @param sender            Sender of this notification
+     * @param sender            Sender of this notification, if null is passed then a 0 is used as sender ID.
      * @param event             Members of this meeting event are notified
      * @param notifyUsersEvent  The event object
-     * @param notificationJson  JSON string containing the necessary notification fields (subject and text)
+     * @param jsonObject        JSON object containing the necessary notification fields (subject and text)
      */
-    public void notifyEventMembers(UserEntity sender, EventEntity event, Event<NotifyUsersEvent> notifyUsersEvent, String notificationJson) {
-        JsonReader jreader = Json.createReader(new StringReader(notificationJson));
-        JsonObject jobject = jreader.readObject();
-        String subject = jobject.getString("subject", "");
-        String text = jobject.getString("text", "");
+    public void notifyEventMembers(UserEntity sender, EventEntity event, Event<NotifyUsersEvent> notifyUsersEvent, JsonObject jsonObject) {
+        String subject = jsonObject.getString("subject", "");
+        String text = jsonObject.getString("text", "");
+        String type = jsonObject.getString("type", "");
         if (subject.isEmpty() && text.isEmpty()) {
             return;
         }
@@ -519,17 +531,49 @@ public class Events {
         List<Long> userids = new ArrayList();
         userids.add(event.getStatus().getIdOwner());
         Collection<UserEntity> members = event.getMembers();
-        if (null != members) {
-            members.stream().forEach(user -> {
-                userids.add(user.getId());
+        if (members != null) {
+            members.stream()
+                .filter((user) -> (user.getStatus().getIsActive()))
+                .forEach(user -> {
+                    userids.add(user.getId());
             });
         }
 
         NotifyUsersEvent notify = new NotifyUsersEvent();
         notify.setRecipientIds(userids);
-        notify.setSenderId(sender.getId());
+        notify.setSenderId((sender == null) ? 0L : sender.getId());
         notify.setSubject(subject);
+        notify.setType(type);
         notify.setText(text);
+        JsonObject data = jsonObject.getJsonObject("data");
+        if (data != null) {
+            notify.setData(data);
+        }
         notifyUsersEvent.fireAsync(notify);
+    }
+
+    /**
+     * Send a notification to all user relatives.
+     * 
+     *   subject (string)
+     *   text (string)
+     * 
+     * @param user                      The user
+     * @param notifyUserRelativesEvent  The event object
+     * @param jsonObject                JSON object containing the necessary notification fields (subject and text)
+     */
+    public void notifyUserRelatives(UserEntity user, Event<NotifyUsersEvent> notifyUserRelativesEvent, JsonObject jsonObject) {
+        String subject = jsonObject.getString("subject", "");
+        String text = jsonObject.getString("text", "");
+        String type = jsonObject.getString("type", "");
+        if (subject.isEmpty() && text.isEmpty()) {
+            return;
+        }
+
+        NotifyUsersEvent notify = new NotifyUsersEvent();
+        notify.setSenderId(user.getId());
+        notify.setSubject(subject);
+        notify.setText(type);
+        notifyUserRelativesEvent.fireAsync(notify);
     }
 }

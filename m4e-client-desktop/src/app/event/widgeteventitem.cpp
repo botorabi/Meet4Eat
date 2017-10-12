@@ -50,15 +50,14 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
 {
     _event = event;
 
+    // is the user also the owner of the event? some operations are only permitted to owner
+    _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
+
     _p_ui->setupUi( this );
     _p_ui->labelHead->setText( event->getName() );
     _p_ui->labelDescription->setText( event->getDescription() );
 
-    // the button "new location" is only visible for event owner
-    const QString& userid = _p_webApp->getUser()->getUserData()->getId();
-    const QString& ownerid = event->getOwner()->getId();
-    _p_ui->pushButtonNewLocation->setHidden( userid != ownerid );
-
+    _p_ui->pushButtonNewLocation->setHidden( !_userIsOwner );
 
     setSelectionMode( true );
 
@@ -102,12 +101,7 @@ void WidgetEventItem::onBtnNewLocationClicked()
 {
     DialogLocationCreate* p_dlg = new DialogLocationCreate( _p_webApp, this );
     p_dlg->setupUI( _event );
-    if ( p_dlg->exec() == common::BaseDialog::Btn1 )
-    {
-        //! TODO append the location...
-        //! emit onNewEventLocation( p_dlg->getLocation() );
-        log_debug << "TODO handle new location" << std::endl;
-    }
+    p_dlg->exec();
     delete p_dlg;
 }
 

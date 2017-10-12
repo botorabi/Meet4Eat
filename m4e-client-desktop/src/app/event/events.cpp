@@ -94,79 +94,79 @@ void Events::requestRemoveLocation( const QString& eventId, const QString& locat
 
 void Events::onRESTEventGetEvents( QList< event::ModelEventPtr > events )
 {
-    log_verbose << TAG << "got events: " << QString::number( events.size() ).toStdString() << std::endl;
+    log_verbose << TAG << "got events: " << QString::number( events.size() ) << std::endl;
     _events = events;
     emit onResponseGetEvents( true, events );
 }
 
 void Events::onRESTEventErrorGetEvents( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get events: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "failed to get events: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseGetEvents( false, QList< event::ModelEventPtr >() );
 }
 
 void Events::onRESTEventUpdateEvent( QString eventId )
 {
-    log_verbose << TAG << "event was updated: " << eventId.toStdString() << std::endl;
+    log_verbose << TAG << "event was updated: " << eventId << std::endl;
     emit onResponseUpdateEvent( true, eventId );
 }
 
 void Events::onRESTEventErrorUpdateEvent( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to update event: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "failed to update event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseUpdateEvent( false, "" );
 }
 
 void Events::onRESTEventAddMember( QString eventId, QString memberId )
 {
-    log_verbose << TAG << "new member added to event: " << eventId.toStdString() << "/" << memberId.toStdString() << std::endl;
+    log_verbose << TAG << "new member added to event: " << eventId << "/" << memberId << std::endl;
     emit onResponseAddMember( true, eventId, memberId );
 }
 
 void Events::onRESTEventErrorAddMember( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to add new member to event: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "failed to add new member to event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseAddMember( false, "", "" );
 }
 
 void Events::onRESTEventRemoveMember( QString eventId, QString memberId )
 {
-    log_verbose << TAG << "member removed from event: " << eventId.toStdString() << "/" << memberId.toStdString() << std::endl;
+    log_verbose << TAG << "member removed from event: " << eventId << "/" << memberId << std::endl;
     emit onResponseRemoveMember( true, eventId, memberId );
 }
 
 void Events::onRESTEventErrorRemoveMember( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to remove member from event: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "failed to remove member from event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseRemoveMember( false, "", "" );
 }
 
 void Events::onRESTEventAddLocation( QString eventId, QString locationId )
 {
-    log_verbose << TAG << "new location added to event: " << eventId.toStdString() << "/" << locationId.toStdString() << std::endl;
+    log_verbose << TAG << "new location added to event: " << eventId << "/" << locationId << std::endl;
     emit onResponseAddLocation( true, eventId, locationId );
 }
 
 void Events::onRESTEventErrorAddLocation( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to add new location to event: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "failed to add new location to event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseAddLocation( false, "", "" );
 }
 
 void Events::onRESTEventRemoveLocation( QString eventId, QString locationId )
 {
-    log_verbose << TAG << "location removed from event: " << eventId.toStdString() << "/" << locationId.toStdString() << std::endl;
+    log_verbose << TAG << "location removed from event: " << eventId << "/" << locationId << std::endl;
     emit onResponseRemoveLocation( true, eventId, locationId );
 }
 
 void Events::onRESTEventErrorRemoveLocation( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to remove location from event: " << errorCode.toStdString() << ", reason: " << reason.toStdString() << std::endl;
+    log_verbose << TAG << "failed to remove location from event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseRemoveLocation( false, "", "" );
 }

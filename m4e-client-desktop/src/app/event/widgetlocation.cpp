@@ -11,6 +11,7 @@
 #include <user/modeluser.h>
 #include <common/guiutils.h>
 #include <common/basedialog.h>
+#include <common/dialogmessage.h>
 #include "dialoglocationdetails.h"
 #include <ui_widgetlocation.h>
 
@@ -32,13 +33,16 @@ WidgetLocation::~WidgetLocation()
     delete _p_ui;
 }
 
-void WidgetLocation::setupUI( event::ModelLocationPtr location )
+void WidgetLocation::setupUI( event::ModelLocationPtr location, bool userIsOwner )
 {
     _location = location;
 
     _p_ui->setupUi( this );
     _p_ui->labelHead->setText( _location->getName() );
     _p_ui->labelDescription->setText( _location->getDescription() );
+
+    // the button "delete" is only visible for event owner
+    _p_ui->pushButtonDelete->setHidden( !userIsOwner );
 
     common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 80), QPoint( -4, 4 ), 6 );
 
@@ -56,10 +60,19 @@ void WidgetLocation::setupUI( event::ModelLocationPtr location )
     _p_ui->labelPhoto->installEventFilter( this );
 }
 
-void WidgetLocation::onBtnSettingsClicked()
+void WidgetLocation::onBtnDeleteClicked()
 {
-    //! TODO
-    log_verbose << TAG << "onBtnSettingsClicked TODO" << std::endl;
+    common::DialogMessage msg( this );
+    msg.setupUI( QApplication::translate( "WidgetLocation", "Remove Location" ),
+                 QApplication::translate( "WidgetLocation", "Do you really want to remove the location?" ),
+                 common::DialogMessage::BtnYes | common::DialogMessage::BtnNo );
+
+    if ( msg.exec() == common::DialogMessage::BtnNo )
+    {
+        return;
+    }
+
+    emit onDeleteLocation( _location->getId() );
 }
 
 void WidgetLocation::onBtnInfoClicked()

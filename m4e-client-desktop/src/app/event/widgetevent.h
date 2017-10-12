@@ -81,6 +81,13 @@ class WidgetEvent : public QWidget
         void                        onBtnRemoveVotesClicked();
 
         /**
+         * @brief Emitted when the user clicks "location delete" button in location widget.
+         *
+         * @param id   The location ID
+         */
+        void                        onDeleteLocation( QString id );
+
+        /**
          * @brief The chat widget has a new message to send.
          *
          * @param msg Chat message
@@ -94,6 +101,15 @@ class WidgetEvent : public QWidget
          */
         void                        onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr msg );
 
+        /**
+         * @brief Results of remove event location request.
+         *
+         * @param success    true if user data could successfully be retrieved, otherwise false
+         * @param eventId    ID of event
+         * @param locationId ID of location to remove
+         */
+        void                        onResponseRemoveLocation( bool success, QString eventId, QString locationId );
+
     protected:
 
         /**
@@ -103,10 +119,13 @@ class WidgetEvent : public QWidget
 
         /**
          * @brief Setup the head elements in event widget (info fields, etc.)
-         *
-         * @param event   The event
          */
-        void                        setupWidgetHead( m4e::event::ModelEventPtr event );
+        void                        setupWidgetHead();
+
+        /**
+         * @brief Setup all location widgets.
+         */
+        void                        setupLocations();
 
         /**
          * @brief Setup a widget informing that the event has no location.
@@ -116,16 +135,15 @@ class WidgetEvent : public QWidget
         /**
          * @brief Add a new location for an event
          *
-         * @param location  New location to add
+         * @param location      New location to add
+         * @param userIsOwner   Is the user also the owner of the event?
          */
-        void                        addLocation( event::ModelLocationPtr location );
+        void                        addLocation( event::ModelLocationPtr location, bool userIsOwner );
 
         /**
          * @brief Setup the event members.
-         *
-         * @param event The event
          */
-        void                        setEventMembers( event::ModelEventPtr event );
+        void                        setEventMembers();
 
         Ui::WidgetEvent*            _p_ui           = nullptr;
 
@@ -137,9 +155,7 @@ class WidgetEvent : public QWidget
 
         typedef QMap< QString /*id*/, QString /*name*/>  Locations;
 
-        QString                     _eventId;
-
-        Locations                   _locations;
+        m4e::event::ModelEventPtr   _event;
 };
 
 } // namespace event

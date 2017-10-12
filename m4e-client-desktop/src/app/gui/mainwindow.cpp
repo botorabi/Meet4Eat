@@ -217,19 +217,21 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
 
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
     _p_webApp->getEvents()->requestGetEvents();
+
+    connect( _p_webApp->getConnection(), SIGNAL( onChannelNotifyPacket( m4e::comm::PacketPtr ) ), this, SLOT( onChannelNotifyPacket( m4e::comm::PacketPtr ) ) );
 }
 
 void MainWindow::onUserSignedIn( bool success, QString userId )
 {
     if ( success )
     {
-        log_verbose << TAG << "user was successfully signed in: " << userId.toStdString() << std::endl;
+        log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
         // create the chat system
         _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
     }
     else
     {
-        log_verbose << TAG << "user could not sign in: " << userId.toStdString() << std::endl;
+        log_verbose << TAG << "user could not sign in: " << userId << std::endl;
         _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
     }
 }
@@ -252,6 +254,11 @@ void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEvent
 {
     clearMyEventsWidget();
     createWidgetMyEvents();
+}
+
+void MainWindow::onChannelNotifyPacket( m4e::comm::PacketPtr packet )
+{
+    log_verbose << TAG << "TODO notification packet arrived: " << QString( packet->getData().toJson() ) << std::endl;
 }
 
 void MainWindow::clearClientWidget()

@@ -77,7 +77,7 @@ void DocumentCache::clearCache()
     QDir dir( cachedir );
     if ( !dir.removeRecursively() )
     {
-        log_warning << TAG << "could not delete the cache folder: " << cachedir.toStdString() << std::endl;
+        log_warning << TAG << "could not delete the cache folder: " << cachedir << std::endl;
     }
     _cacheDir = "";
 }
@@ -108,11 +108,11 @@ void DocumentCache::purgeCache( int expirationDays )
         {
             if ( !file.remove() )
             {
-                log_warning << TAG << " could not remove cache file: " << filename.toStdString() << std::endl;
+                log_warning << TAG << " could not remove cache file: " << filename << std::endl;
             }
             else
             {
-                log_debug << TAG << " expired cache file removed: " << filename.toStdString() << std::endl;
+                log_debug << TAG << " expired cache file removed: " << filename << std::endl;
             }
         }
     }
@@ -126,7 +126,7 @@ void DocumentCache::onRESTDocumentGet( ModelDocumentPtr document )
 
 void DocumentCache::onRESTDocumentErrorGet( QString errorCode, QString reason )
 {
-    log_warning << TAG << "could not get document from server (" << errorCode.toStdString() << "), reason: " << reason.toStdString() << std::endl;
+    log_warning << TAG << "could not get document from server (" << errorCode << "), reason: " << reason << std::endl;
     emit onDocumentReady( ModelDocumentPtr() );
 }
 
@@ -164,14 +164,14 @@ ModelDocumentPtr DocumentCache::findDocument( const QString& id, const QString& 
 
     ModelDocumentPtr document = new ModelDocument();
 
-    log_verbose << TAG << "loading document " << id.toStdString() << " ..." << std::endl;
+    log_verbose << TAG << "loading document " << id << " ..." << std::endl;
 
     // check if the file can be read from cache. if not then the cache file format may have been changed
     if ( !loadDocument( file, document ) )
     {
         // remove the cache file
         file.close();
-        log_verbose << TAG << " cached document is not in proper format, it will be removed from cache: " << filename.toStdString() << std::endl;
+        log_verbose << TAG << " cached document is not in proper format, it will be removed from cache: " << filename << std::endl;
         file.remove();
         return ModelDocumentPtr();
     }
@@ -193,12 +193,12 @@ bool DocumentCache::cacheDocument( ModelDocumentPtr document )
     QFile file( filename );
     if ( !file.exists() )
     {
-        log_verbose << TAG << "caching document: " << document->getId().toStdString() << std::endl;
+        log_verbose << TAG << "caching document: " << document->getId() << std::endl;
 
         // create a new file
         if ( !file.open( QFile::WriteOnly ) )
         {
-            log_warning << TAG << "  could not create cache file " << filename.toStdString() << std::endl;
+            log_warning << TAG << "  could not create cache file " << filename << std::endl;
             return false;
         }
 
@@ -222,13 +222,13 @@ const QString& DocumentCache::getOrCreateCacheDirectory()
         if ( !dir.mkpath( cachedir ) )
         {
             cachedir = "";
-            log_warning << TAG << "could not create cache folder in " << cachedir.toStdString() << std::endl;
+            log_warning << TAG << "could not create cache folder in " << cachedir << std::endl;
         }
     }
 
     _cacheDir = cachedir;
 
-    log_verbose << TAG << "using cache directory " << cachedir.toStdString() << std::endl;
+    log_verbose << TAG << "using cache directory " << cachedir << std::endl;
 
     return _cacheDir;
 }
@@ -359,7 +359,7 @@ bool DocumentCache::checkAndUpdateCacheFileHeader( QFile& file, QByteArray& data
         qint64 agedays = datecreation.daysTo( datelastfetch );
         qint64 agelastfetch = datelastfetch.daysTo( QDateTime::currentDateTime() );
 
-        log_verbose << TAG << " document cache creation date: " << datecreation.toString().toStdString() <<
+        log_verbose << TAG << " document cache creation date: " << datecreation.toString() <<
                               ", age: " << agedays << " days" <<
                               ", days since last fetch: " << agelastfetch <<
                               " (" << age << " ms)" << std::endl;

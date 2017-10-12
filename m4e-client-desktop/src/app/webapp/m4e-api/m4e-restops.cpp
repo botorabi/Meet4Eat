@@ -120,7 +120,7 @@ void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
     }
     else
     {
-        //log_verbose << TAG << "successfully connected web api: " << p_reply->request().url().toString().toStdString() << std::endl;
+        //log_verbose << TAG << "successfully connected web api: " << p_reply->request().url().toString() << std::endl;
         QByteArray    response = p_reply->readAll();
         QJsonDocument jsonresp = QJsonDocument::fromJson( response );
         if ( jsonresp.isEmpty() )

@@ -10,6 +10,7 @@
 #include "widgetevent.h"
 #include <core/log.h>
 #include <common/guiutils.h>
+#include <common/dialogmessage.h>
 #include <ui_widgetevent.h>
 #include "widgeteventitem.h"
 #include "widgetlocation.h"
@@ -52,25 +53,14 @@ void WidgetEvent::setEvent( const QString& id )
 
     if ( !event.valid() )
     {
-        log_error << TAG << "could not find the event with id: " << id.toStdString() << std::endl;
+        log_error << TAG << "could not find the event with id: " << id << std::endl;
     }
     else
     {
-        _locations.clear();
-        _eventId = id;
-        if ( event->getLocations().size() > 0 )
-        {
-            for ( auto location: event->getLocations() )
-            {
-                addLocation( location );
-            }
-        }
-        else
-        {
-            setupNoLocationWidget();
-        }
-        setupWidgetHead( event );
-        setEventMembers( event );
+        _event = event;
+        setupLocations();
+        setupWidgetHead();
+        setEventMembers();
     }
 }
 
@@ -80,7 +70,7 @@ void WidgetEvent::setChatSystem( chat::ChatSystem* p_chatSystem )
     connect( _p_chatSystem, SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
 
     // restore the messages already received
-    QList< chat::ChatMessagePtr > messages = _p_chatSystem->getEventMessages( _eventId );
+    QList< chat::ChatMessagePtr > messages = _p_chatSystem->getEventMessages( _event->getId() );
     for ( auto msg: messages )
     {
         onReceivedChatMessageEvent( msg );
@@ -94,6 +84,7 @@ void WidgetEvent::setupUI()
 
     _p_ui->widgetChat->setupUI( _p_webApp );
     connect( _p_ui->widgetChat, SIGNAL( onSendMessage( m4e::chat::ChatMessagePtr ) ), this, SLOT( onSendMessage( m4e::chat::ChatMessagePtr ) ) );
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseRemoveLocation( bool, QString, QString ) ), this, SLOT( onResponseRemoveLocation( bool, QString, QString ) ) );
 
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
@@ -110,15 +101,15 @@ void WidgetEvent::setupUI()
     _p_clientArea->setSpacing( 10 );
 }
 
-void WidgetEvent::setupWidgetHead( event::ModelEventPtr event )
+void WidgetEvent::setupWidgetHead()
 {
-    _p_ui->labelInfoHead->setText( event->getName() );
+    _p_ui->labelInfoHead->setText( _event->getName() );
     QString info;
-    info += "Owner: " + event->getOwner()->getName();
-    if ( event->isRepeated() )
+    info += "Owner: " + _event->getOwner()->getName();
+    if ( _event->isRepeated() )
     {
-        QTime time = event->getRepeatDayTime();
-        unsigned int days = event->getRepeatWeekDays();
+        QTime time = _event->getRepeatDayTime();
+        unsigned int days = _event->getRepeatWeekDays();
         QString weekdays;
         weekdays += ( days & event::ModelEvent::WeekDayMonday )    != 0 ? " Mon" : "";
         weekdays += ( days & event::ModelEvent::WeekDayTuesday )   != 0 ? " Tue" : "";
@@ -133,9 +124,25 @@ void WidgetEvent::setupWidgetHead( event::ModelEventPtr event )
     }
     else
     {
-        info += "\nEvent date: " + event->getStartDate().toString();
+        info += "\nEvent date: " + _event->getStartDate().toString();
     }
     _p_ui->labelInfoBody->setText( info );
+}
+
+void WidgetEvent::setupLocations()
+{
+    bool userisowner = common::GuiUtils::userIsOwner( _event->getOwner()->getId(), _p_webApp );
+    if ( _event->getLocations().size() > 0 )
+    {
+        for ( auto location: _event->getLocations() )
+        {
+            addLocation( location, userisowner );
+        }
+    }
+    else
+    {
+        setupNoLocationWidget();
+    }
 }
 
 void WidgetEvent::setupNoLocationWidget()
@@ -144,10 +151,11 @@ void WidgetEvent::setupNoLocationWidget()
     _p_clientArea->addItem( "Event has no location!" );
 }
 
-void WidgetEvent::addLocation( event::ModelLocationPtr location )
+void WidgetEvent::addLocation( event::ModelLocationPtr location, bool userIsOwner )
 {
     WidgetLocation* p_widget = new WidgetLocation( _p_webApp, _p_clientArea );
-    p_widget->setupUI( location );
+    p_widget->setupUI( location, userIsOwner );
+    connect( p_widget, SIGNAL( onDeleteLocation( QString ) ), this, SLOT( onDeleteLocation( QString ) ) );
 
     QListWidgetItem* p_item = new QListWidgetItem( _p_clientArea );
     p_item->setSizeHint( p_widget->size() );
@@ -157,19 +165,17 @@ void WidgetEvent::addLocation( event::ModelLocationPtr location )
 
     //! NOTE this is really needed after every item insertion, otherwise the items get draggable
     _p_clientArea->setDragDropMode( QListWidget::NoDragDrop );
-
-    _locations.insert( location->getId(), location->getName() );
 }
 
-void WidgetEvent::setEventMembers( ModelEventPtr event )
+void WidgetEvent::setEventMembers()
 {
-    auto eventmembers = event->getMembers();
-    eventmembers.append( event->getOwner() );
+    auto eventmembers = _event->getMembers();
+    eventmembers.append( _event->getOwner() );
     _p_ui->widgetChat->setMembers( eventmembers );
 
     // set the members lable
     QString members;
-    for ( auto member: event->getMembers() )
+    for ( auto member: _event->getMembers() )
     {
         if ( !members.isEmpty() )
             members += ", ";
@@ -195,18 +201,46 @@ void WidgetEvent::onBtnRemoveVotesClicked()
     log_verbose << TAG << "TODO onButtonRemoveVotesClicked..." << std::endl;
 }
 
+void WidgetEvent::onDeleteLocation( QString id )
+{
+    _p_webApp->getEvents()->requestRemoveLocation( _event->getId(), id );
+    log_verbose << "going to remove event location: " << id << std::endl;
+}
+
 void WidgetEvent::onSendMessage( m4e::chat::ChatMessagePtr msg )
 {
     if ( !_p_chatSystem )
         return;
 
-    msg->setReceiverId( _eventId );
+    msg->setReceiverId( _event->getId() );
     _p_chatSystem->sendToEventMembers( msg );
 }
 
 void WidgetEvent::onReceivedChatMessageEvent( chat::ChatMessagePtr msg )
 {
     _p_ui->widgetChat->appendChatText( msg );
+}
+
+void WidgetEvent::onResponseRemoveLocation( bool success, QString eventId, QString locationId )
+{
+    QString text;
+    if ( !success )
+    {
+        text = QApplication::translate( "WidgetEvent", "Could not remove location.\nReason: " ) + _p_webApp->getEvents()->getLastError();
+        log_debug << TAG << "event removal failed: " + eventId << "/" << locationId << std::endl;
+    }
+    else
+    {
+        text = QApplication::translate( "WidgetEvent", "Event location was successfully removed" );
+        log_debug << TAG << "event successfully removed: " + eventId << "/" << locationId << std::endl;
+    }
+
+    common::DialogMessage msg( this );
+    msg.setupUI( QApplication::translate( "WidgetEvent", "Remove Location" ),
+                 text,
+                 common::DialogMessage::BtnOk );
+
+    msg.exec();
 }
 
 } // namespace event

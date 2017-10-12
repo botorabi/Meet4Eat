@@ -17,14 +17,14 @@ import java.util.List;
  * @author boto
  * Date of creation Oct 4, 2017
  */
-public class NotifyUsersEvent extends NotifyEvent {
+public class NotifyUserRelativesEvent extends NotifyEvent {
 
     /**
      * Recipient (user) IDs, multiple users can get the notification.
      */
     private List<Long> recipientIds = new ArrayList();
 
-    public NotifyUsersEvent() {}
+    public NotifyUserRelativesEvent() {}
 
     /**
      * Get all users receiving the notification.
