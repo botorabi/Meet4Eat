@@ -113,6 +113,14 @@ class Events : public QObject
         void                                requestRemoveMember( const QString& eventId, const QString& memberId );
 
         /**
+         * @brief Request for getting location data, the results are emitted by signal 'onResponseGetLocation'.
+         *
+         * @param eventId    ID of event
+         * @param locationId ID of location
+         */
+        void                                requestGetLocation( const QString& eventId, const QString& locationId );
+
+        /**
          * @brief Request for adding the given location to an event, the results are emitted by signal 'onResponseAddLocation'.
          *
          * @param eventId   ID of event getting the new location
@@ -163,6 +171,15 @@ class Events : public QObject
          * @param memberId ID of member to remove
          */
         void                                onResponseRemoveMember( bool success, QString eventId, QString memberId );
+
+        /**
+         * @brief Results of getting event location data request.
+         *
+         * @param success    true if user data could successfully be retrieved, otherwise false
+         * @param eventId    ID of event containing the location
+         * @param location   The location
+         */
+        void                                onResponseGetLocation( bool success, QString eventId, m4e::event::ModelLocationPtr location );
 
         /**
          * @brief Results of add event location request.
@@ -245,6 +262,22 @@ class Events : public QObject
          * @param reason    Error string
          */
         void                                onRESTEventErrorRemoveMember( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of getLocation request arrive.
+         *
+         * @param eventId     ID of event
+         * @param location    The location
+         */
+        void                                onRESTEventGetLocation( QString eventId, m4e::event::ModelLocationPtr location );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorGetLocation( QString errorCode, QString reason );
 
         /**
          * @brief Signal is received when the results of addLocation request arrive.

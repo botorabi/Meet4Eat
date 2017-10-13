@@ -64,8 +64,6 @@ void WebApp::shutdownConnection()
         log_warning << TAG << "there is no connection to shutdown!" << std::endl;
         return;
     }
-
-    // first close the real-time communication connection
     // first close the real-time communication connection
     getOrCreateConnection()->closeConnection();
     // now sign-off
@@ -105,6 +103,11 @@ void WebApp::requestUserData()
 comm::Connection* WebApp::getConnection()
 {
     return getOrCreateConnection();
+}
+
+notify::Notifications* WebApp::getNotifications()
+{
+    return getOrCreateNotifications();
 }
 
 event::Events* WebApp::getEvents()
@@ -149,6 +152,15 @@ comm::Connection* WebApp::getOrCreateConnection()
         _p_connection->setServerURL( server );
     }
     return _p_connection;
+}
+
+notify::Notifications* WebApp::getOrCreateNotifications()
+{
+    if ( !_p_notifications )
+    {
+        _p_notifications = new notify::Notifications( this, this );
+    }
+    return _p_notifications;
 }
 
 user::User* WebApp::getOrCreateUser()
@@ -203,6 +215,8 @@ void WebApp::resetAllResources()
     _p_events = nullptr;
     delete _p_connection;
     _p_connection = nullptr;
+    delete _p_notifications;
+    _p_notifications = nullptr;
 }
 
 void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::UserAuthentication::AuthResultsCode code, QString reason )

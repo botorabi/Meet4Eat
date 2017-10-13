@@ -87,6 +87,14 @@ class RESTEvent : public Meet4EatREST
         void                    removeMember( const QString& eventId, const QString& memberId );
 
         /**
+         * @brief Get event  location data.
+         *
+         * @param eventId     Event ID
+         * @param locationId  Location ID
+         */
+        void                    getLocation( const QString& eventId, const QString& locationId );
+
+        /**
          * @brief Add a new location to event.
          *
          * @param eventId   Event ID
@@ -180,6 +188,23 @@ class RESTEvent : public Meet4EatREST
          * @param reason    Error string
          */
         void                    onRESTEventErrorRemoveMember( QString errorCode, QString reason );
+
+
+        /**
+         * @brief Signal is emitted when the results of getLocation request arrive.
+         *
+         * @param eventId     Event ID
+         * @param location    The location
+         */
+        void                    onRESTEventGetLocation( QString eventId, m4e::event::ModelLocationPtr location );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorGetLocation( QString errorCode, QString reason );
 
         /**
          * @brief Emit the results of addLocation request.

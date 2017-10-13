@@ -39,11 +39,14 @@ SOURCES += \
     ../../src/app/event/dialoglocationdetails.cpp \
     ../../src/app/event/events.cpp \
     ../../src/app/event/modelevent.cpp \
+    ../../src/app/event/modellocation.cpp \
     ../../src/app/event/widgetevent.cpp \
     ../../src/app/event/widgeteventitem.cpp \
     ../../src/app/event/widgeteventlist.cpp \
     ../../src/app/event/widgetlocation.cpp \
     ../../src/app/gui/mainwindow.cpp \
+    ../../src/app/notification/notifyevent.cpp \
+    ../../src/app/notification/notifications.cpp \
     ../../src/app/settings/appsettings.cpp \
     ../../src/app/settings/dialogsettings.cpp \
     ../../src/app/user/modeluser.cpp \
@@ -62,8 +65,7 @@ SOURCES += \
     ../../src/app/webapp/response/resp-document.cpp \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
-    ../../src/app/webapp/webapp.cpp \
-    ../../src/app/event/modellocation.cpp
+    ../../src/app/webapp/webapp.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -94,6 +96,8 @@ HEADERS += \
     ../../src/app/event/widgeteventlist.h \
     ../../src/app/event/widgetlocation.h \
     ../../src/app/gui/mainwindow.h \
+    ../../src/app/notification/notifyevent.h \
+    ../../src/app/notification/notifications.h \
     ../../src/app/settings/appsettings.h \
     ../../src/app/settings/dialogsettings.h \
     ../../src/app/user/modeluser.h \

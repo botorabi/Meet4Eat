@@ -27,6 +27,8 @@ Events::Events( QObject* p_parent ) :
     connect( _p_restEvent, SIGNAL( onRESTEventErrorAddMember( QString, QString ) ), this, SLOT( onRESTEventErrorAddMember( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventRemoveMember( QString, QString ) ), this, SLOT( onRESTEventRemoveMember( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorRemoveMember( QString, QString ) ), this, SLOT( onRESTEventErrorRemoveMember( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventGetLocation( QString, m4e::event::ModelLocationPtr ) ), this, SLOT( onRESTEventGetLocation( QString, m4e::event::ModelLocationPtr ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorGetLocation( QString, QString ) ), this, SLOT( onRESTEventErrorGetLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventAddLocation( QString, QString ) ), this, SLOT( onRESTEventAddLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorAddLocation( QString, QString ) ), this, SLOT( onRESTEventErrorAddLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventRemoveLocation( QString, QString ) ), this, SLOT( onRESTEventRemoveLocation( QString, QString ) ) );
@@ -76,6 +78,12 @@ void Events::requestRemoveMember( const QString& eventId, const QString& memberI
 {
     setLastError();
     _p_restEvent->removeMember( eventId, memberId );
+}
+
+void Events::requestGetLocation(const QString &eventId, const QString &locationId)
+{
+    setLastError();
+    _p_restEvent->getLocation( eventId, locationId );
 }
 
 void Events::requestAddLocation( const QString& eventId, ModelLocationPtr location )
@@ -143,6 +151,19 @@ void Events::onRESTEventErrorRemoveMember( QString errorCode, QString reason )
     log_verbose << TAG << "failed to remove member from event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseRemoveMember( false, "", "" );
+}
+
+void Events::onRESTEventGetLocation( QString eventId, ModelLocationPtr location )
+{
+    log_verbose << TAG << "location data arrived: " << eventId << "/" << location->getId() << std::endl;
+    emit onResponseGetLocation( true, eventId, location );
+}
+
+void Events::onRESTEventErrorGetLocation( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to add new location to event: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseGetLocation( false, "", ModelLocationPtr() );
 }
 
 void Events::onRESTEventAddLocation( QString eventId, QString locationId )

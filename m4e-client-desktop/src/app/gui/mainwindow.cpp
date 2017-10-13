@@ -12,6 +12,7 @@
 #include <settings/dialogsettings.h>
 #include <event/widgeteventlist.h>
 #include <event/widgetevent.h>
+#include <notification/notifyevent.h>
 #include <common/basedialog.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
@@ -217,8 +218,6 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
 
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
     _p_webApp->getEvents()->requestGetEvents();
-
-    connect( _p_webApp->getConnection(), SIGNAL( onChannelNotifyPacket( m4e::comm::PacketPtr ) ), this, SLOT( onChannelNotifyPacket( m4e::comm::PacketPtr ) ) );
 }
 
 void MainWindow::onUserSignedIn( bool success, QString userId )
@@ -254,11 +253,6 @@ void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEvent
 {
     clearMyEventsWidget();
     createWidgetMyEvents();
-}
-
-void MainWindow::onChannelNotifyPacket( m4e::comm::PacketPtr packet )
-{
-    log_verbose << TAG << "TODO notification packet arrived: " << QString( packet->getData().toJson() ) << std::endl;
 }
 
 void MainWindow::clearClientWidget()

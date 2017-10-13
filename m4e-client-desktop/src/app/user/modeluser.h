@@ -30,7 +30,7 @@ namespace user
  */
 class ModelUser : public common::ModelBase, public m4e::core::RefCount< ModelUser >
 {
-    DECLARE_SMARTPTR_ACCESS( ModelUser )
+    SMARTPTR_DEFAULTS( ModelUser )
 
     public:
 
@@ -103,11 +103,6 @@ class ModelUser : public common::ModelBase, public m4e::core::RefCount< ModelUse
         bool                            operator != ( const ModelUser& right ) { return _id != right.getId(); }
 
     protected:
-
-        virtual                         ~ModelUser() {}
-
-        //! Omit copy construction!
-                                        ModelUser( const ModelUser& );
 
         QString                         _email;
 

@@ -273,6 +273,48 @@ void ResponseEventRemoveMember::onRESTResponseError( const QString& reason )
 }
 
 /******************************************************/
+/************* ResponseEventGetLocation ***************/
+/******************************************************/
+
+ResponseEventGetLocation::ResponseEventGetLocation( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventGetLocation::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorGetLocation( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj    = datadoc.object();
+    QString eventid    = QString::number( obj.value( "eventId" ).toInt() );
+    QString locationid = QString::number( obj.value( "locationId" ).toInt() );
+
+    event::ModelLocationPtr location = new event::ModelLocation();
+    if ( !location->fromJSON( datadoc ) )
+    {
+        log_warning << TAG << "invalid JSON format detected, ignoring location data!" << std::endl;
+        emit _p_requester->onRESTEventErrorGetLocation( "", "Invalid location format" );
+    }
+    else
+    {
+        emit _p_requester->onRESTEventGetLocation( eventid, location );
+    }
+}
+
+void ResponseEventGetLocation::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorGetLocation( "", reason );
+}
+
+/******************************************************/
 /************* ResponseEventAddLocation ***************/
 /******************************************************/
 

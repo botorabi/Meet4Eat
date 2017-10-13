@@ -29,7 +29,7 @@ namespace doc
  */
 class ModelDocument : public m4e::core::RefCount< ModelDocument >
 {
-    DECLARE_SMARTPTR_ACCESS( ModelDocument )
+    SMARTPTR_DEFAULTS( ModelDocument )
 
     public:
 
@@ -170,11 +170,6 @@ class ModelDocument : public m4e::core::RefCount< ModelDocument >
         bool                                extractImageData( QByteArray& data, QString& format );
 
     protected:
-
-        virtual                             ~ModelDocument() {}
-
-        //! Omit copy construction!
-                                            ModelDocument( const ModelDocument& );
 
         /**
          * @brief Try to extract the header info from given content. The content is expected to have

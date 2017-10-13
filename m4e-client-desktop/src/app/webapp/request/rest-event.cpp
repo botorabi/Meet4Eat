@@ -71,6 +71,13 @@ void RESTEvent::removeMember( const QString& eventId, const QString& memberId )
     getRESTOps()->PUT( url, createResultsCallback( p_callback ) );
 }
 
+void RESTEvent::getLocation( const QString& eventId, const QString& locationId )
+{
+    QUrl url( getResourcePath() + "/rest/events/location/" + eventId + "/" + locationId );
+    auto p_callback = new ResponseEventGetLocation( this );
+    getRESTOps()->GET( url, createResultsCallback( p_callback ) );
+}
+
 void RESTEvent::addLocation( const QString& eventId, event::ModelLocationPtr location )
 {
     QUrl url( getResourcePath() + "/rest/events/putlocation/" + eventId );

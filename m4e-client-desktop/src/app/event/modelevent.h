@@ -33,7 +33,7 @@ namespace event
  */
 class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEvent >
 {
-    DECLARE_SMARTPTR_ACCESS( ModelEvent )
+    SMARTPTR_DEFAULTS( ModelEvent )
 
     public:
 
@@ -192,11 +192,6 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                operator != ( const ModelEvent& right ) { return _id != right.getId(); }
 
     protected:
-
-        virtual                             ~ModelEvent() {}
-
-        //! Omit copy construction!
-                                            ModelEvent( const ModelEvent& );
 
         bool                                _isPublic = false;
         QDateTime                           _startDate;

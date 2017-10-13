@@ -29,7 +29,7 @@ namespace comm
  */
 class Packet : public core::RefCount< Packet >
 {
-    DECLARE_SMARTPTR_ACCESS( Packet )
+    SMARTPTR_DEFAULTS( Packet )
 
     public:
 
@@ -117,11 +117,6 @@ class Packet : public core::RefCount< Packet >
         bool                    fromJSON( const QString& input );
 
     protected:
-
-        virtual                 ~Packet() {}
-
-        //! Omit copy construction!
-                                Packet( const Packet& );
 
         QString                 _channel;
         QString                 _source;

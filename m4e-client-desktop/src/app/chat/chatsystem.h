@@ -47,7 +47,6 @@ class ChatSystem : public QObject
          */
                                 ChatSystem( webapp::WebApp* p_webApp, QObject* p_parent );
 
-
         /**
          * @brief Destroy the ChatSystem instance.
          */

@@ -28,7 +28,7 @@ namespace user
  */
 class ModelUserInfo : public common::ModelBase, public m4e::core::RefCount< ModelUserInfo >
 {
-    DECLARE_SMARTPTR_ACCESS( ModelUserInfo )
+    SMARTPTR_DEFAULTS( ModelUserInfo )
 
     public:
 
@@ -75,11 +75,6 @@ class ModelUserInfo : public common::ModelBase, public m4e::core::RefCount< Mode
         bool                            fromJSON( const QJsonDocument& input );
 
     protected:
-
-        virtual                         ~ModelUserInfo() {}
-
-        //! Omit copy construction!
-                                        ModelUserInfo( const ModelUserInfo& );
 
         QString                         _status;
 };

@@ -13,6 +13,7 @@
 #include <webapp/webapp.h>
 #include <chat/chatsystem.h>
 #include <event/events.h>
+#include <notification/notifications.h>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QTimer>
@@ -108,13 +109,6 @@ class MainWindow : public QMainWindow
          */
         void                        onResponseGetEvents( bool success, QList< m4e::event::ModelEventPtr > events );
 
-        /**
-         * @brief This signal notifies about a new incoming network packet in channel 'Notify'.
-         *
-         * @param packet Arrived Notify channel packet
-         */
-        void                        onChannelNotifyPacket( m4e::comm::PacketPtr packet );
-
     protected:
 
         void                        closeEvent( QCloseEvent* p_event );
@@ -139,15 +133,15 @@ class MainWindow : public QMainWindow
 
         void                        createWidgetEvent( const QString& groupId );
 
-        Ui::MainWindow*             _p_ui           = nullptr;
+        Ui::MainWindow*             _p_ui            = nullptr;
 
-        QTimer*                     _p_initTimer    = nullptr;
+        QTimer*                     _p_initTimer     = nullptr;
 
-        webapp::WebApp*             _p_webApp       = nullptr;
+        webapp::WebApp*             _p_webApp        = nullptr;
 
-        chat::ChatSystem*           _p_chatSystem   = nullptr;
+        chat::ChatSystem*           _p_chatSystem    = nullptr;
 
-        bool                        _dragging       = false;
+        bool                        _dragging        = false;
 
         QPoint                      _draggingPos;
 };
