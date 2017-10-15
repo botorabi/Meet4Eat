@@ -193,10 +193,9 @@ class RESTEvent : public Meet4EatREST
         /**
          * @brief Signal is emitted when the results of getLocation request arrive.
          *
-         * @param eventId     Event ID
          * @param location    The location
          */
-        void                    onRESTEventGetLocation( QString eventId, m4e::event::ModelLocationPtr location );
+        void                    onRESTEventGetLocation( m4e::event::ModelLocationPtr location );
 
         /**
          * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.

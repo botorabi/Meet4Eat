@@ -216,7 +216,12 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     }
     _p_ui->labelStatus->setText( text );
 
-    connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
+                                            SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
+                                     SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
+
     _p_webApp->getEvents()->requestGetEvents();
 }
 
@@ -227,11 +232,13 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
         log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
         // create the chat system
         _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
+        addLogText( "User has successfully signed in" );
     }
     else
     {
         log_verbose << TAG << "user could not sign in: " << userId << std::endl;
         _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
+        addLogText( "User failed to signed in!" );
     }
 }
 
@@ -247,12 +254,41 @@ void MainWindow::onUserSignedOff( bool success )
         clearMyEventsWidget();
         createWidgetMyEvents();
     }
+
+    addLogText( "User has signed off" );
 }
 
 void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEventPtr > /*events*/ )
 {
     clearMyEventsWidget();
     createWidgetMyEvents();
+}
+
+void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType changeType, QString eventId, QString locationId )
+{
+    log_verbose << TAG << "notification: event location was changed: " << eventId << "/" << locationId << std::endl;
+
+    addLogText( "Event location settings have changed" );
+
+    if ( changeType == notify::Notifications::Removed )
+    {
+        //! TODO let the user know about the update
+    }
+    else
+    {
+        //! TODO let the user know about the update
+    }
+}
+
+void MainWindow::addLogText( const QString& text )
+{
+    QDateTime timestamp = QDateTime::currentDateTime();
+    QString ts = "[" + timestamp.toString( "yyyy-M-dd HH:mm:ss" ) + "]";
+    QString logmsg = "<p>";
+    logmsg += "<span style='color: gray;'>" + ts + "</span>";
+    logmsg += " <span style='color: white;'>" + text + "</span>";
+    logmsg += "</p>";
+    _p_ui->textNotify->appendHtml( logmsg );
 }
 
 void MainWindow::clearClientWidget()

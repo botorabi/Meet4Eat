@@ -293,10 +293,6 @@ void ResponseEventGetLocation::onRESTResponseSuccess( const QJsonDocument& resul
         return;
     }
 
-    QJsonObject obj    = datadoc.object();
-    QString eventid    = QString::number( obj.value( "eventId" ).toInt() );
-    QString locationid = QString::number( obj.value( "locationId" ).toInt() );
-
     event::ModelLocationPtr location = new event::ModelLocation();
     if ( !location->fromJSON( datadoc ) )
     {
@@ -305,7 +301,7 @@ void ResponseEventGetLocation::onRESTResponseSuccess( const QJsonDocument& resul
     }
     else
     {
-        emit _p_requester->onRESTEventGetLocation( eventid, location );
+        emit _p_requester->onRESTEventGetLocation( location );
     }
 }
 

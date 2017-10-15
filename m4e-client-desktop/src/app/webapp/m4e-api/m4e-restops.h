@@ -134,11 +134,52 @@ class Meet4EatRESTOperations : public QObject
         void                    startRequest( const QUrl& url, enum QNetworkAccessManager::Operation op, unsigned int requestId, const QJsonDocument& json );
 
         QNetworkAccessManager*  _p_nam = nullptr;
+};
+
+/**
+ * @brief Class used for holding session cookies
+ */
+class RESTCookieJar: public QNetworkCookieJar
+{
+    Q_OBJECT
+
+    public:
 
         /**
-         * One single coolie jar is used for all rest requests.
+         * @brief Get the single cookie jar.
+         *
+         * @return Shared cookie jar
          */
-        static QNetworkCookieJar* _s_cookie;
+        static RESTCookieJar*   get();
+
+        /**
+         * @brief Set the cookie jar for given access manager.
+         *
+         * @param p_nam Network access manager
+         */
+        void                    setCookiejar( QNetworkAccessManager* p_nam );
+
+        /**
+         * @brief Reset all cookies.
+         */
+        void                    resetCookies();
+
+        /**
+         * @brief Destroy the cookie jar.
+         */
+        void                    destroy();
+
+    protected:
+
+        /**
+         * @brief Contruct the jar.
+         */
+                                RESTCookieJar() {}
+
+        /**
+         * One single cookie is shared among all network requests.
+         */
+        static RESTCookieJar*   _s_cookieJar;
 };
 
 } // namespace webapp

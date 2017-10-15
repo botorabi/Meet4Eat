@@ -176,10 +176,9 @@ class Events : public QObject
          * @brief Results of getting event location data request.
          *
          * @param success    true if user data could successfully be retrieved, otherwise false
-         * @param eventId    ID of event containing the location
          * @param location   The location
          */
-        void                                onResponseGetLocation( bool success, QString eventId, m4e::event::ModelLocationPtr location );
+        void                                onResponseGetLocation( bool success, m4e::event::ModelLocationPtr location );
 
         /**
          * @brief Results of add event location request.
@@ -266,10 +265,9 @@ class Events : public QObject
         /**
          * @brief Signal is received when the results of getLocation request arrive.
          *
-         * @param eventId     ID of event
          * @param location    The location
          */
-        void                                onRESTEventGetLocation( QString eventId, m4e::event::ModelLocationPtr location );
+        void                                onRESTEventGetLocation( m4e::event::ModelLocationPtr location );
 
         /**
          * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.

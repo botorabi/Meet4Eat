@@ -586,7 +586,7 @@ QPushButton:hover {
   background-color: rgb(28,52,62);
 }</string>
                </property>
-               <layout class="QVBoxLayout" name="verticalLayout_10" stretch="0,0,1">
+               <layout class="QVBoxLayout" name="verticalLayout_10" stretch="0,0,1,0">
                 <item>
                  <widget class="QWidget" name="widgetSubMenuHead" native="true">
                   <property name="minimumSize">
@@ -722,6 +722,57 @@ QPushButton:hover {
                    </size>
                   </property>
                  </spacer>
+                </item>
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_14">
+                  <property name="spacing">
+                   <number>16</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="label_3">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>2</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>2</height>
+                     </size>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QLabel {
+  background-color: rgb(151,167, 187);
+}</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPlainTextEdit" name="textNotify">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>100</height>
+                     </size>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">#textNotify {
+  color: white;
+  border: 1px solid rgb(131,147, 167);
+  background-color: rgba(131,147, 167, 50);
+}</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </item>
                </layout>
               </widget>

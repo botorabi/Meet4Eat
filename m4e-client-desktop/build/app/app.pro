@@ -11,11 +11,7 @@ TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
-QMAKE_CXXFLAGS += -Wpedantic -Wextra
-
-debug {
-  QMAKE_CXXFLAGS += -O0
-}
+CONFIG += warn_on
 
 INCLUDEPATH += ../../src/app ../../src
 

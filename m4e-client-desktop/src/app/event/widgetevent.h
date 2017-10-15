@@ -101,16 +101,6 @@ class WidgetEvent : public QWidget
          */
         void                        onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr msg );
 
-
-        /**
-         * @brief Results of getting event location data request.
-         *
-         * @param success    true if user data could successfully be retrieved, otherwise false
-         * @param eventId    ID of event containing the location
-         * @param location   The location
-         */
-        void                        onResponseGetLocation( bool success, QString eventId, m4e::event::ModelLocationPtr location );
-
         /**
          * @brief Results of remove event location request.
          *
@@ -119,15 +109,6 @@ class WidgetEvent : public QWidget
          * @param locationId ID of location to remove
          */
         void                        onResponseRemoveLocation( bool success, QString eventId, QString locationId );
-
-        /**
-         * @brief This signal is emitted when an event location was changed.
-         *
-         * @param changeType One of ChangeType enums
-         * @param eventId    Event ID
-         * @param loactionId Event location ID
-         */
-        void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
     protected:
 

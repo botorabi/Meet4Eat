@@ -68,7 +68,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0">
           <item>
            <widget class="QLabel" name="labelHead">
             <property name="minimumSize">
@@ -99,6 +99,39 @@
             </property>
             <property name="alignment">
              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonNewLocation_2">
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Event data was updated, click to referesh!</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+  background-color: red;
+  border-radius: 10px;
+  border-image: url(:/icon-refresh.png);
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
+}</string>
             </property>
            </widget>
           </item>
