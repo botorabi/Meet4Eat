@@ -69,14 +69,28 @@ class WidgetEventItem : public QWidget
          */
         void                        setSelectionMode( bool normal );
 
+        /**
+         * @brief Show a notification icon, which informs the user about an update in event data.
+         *
+         * @param text Notification text
+         */
+        void                        notifyUpdate( const QString& text );
+
     signals:
 
         /**
          * @brief Emitted when the user clicks on the widget.
          *
-         * @param id   The id which was used for setup
+         * @param id   The event ID
          */
         void                        onClicked( QString id );
+
+        /**
+         * @brief Emitted when the user clicks on "update event data" button.
+         *
+         * @param id   The event ID
+         */
+        void                        onRequestUpdateEvent( QString id );
 
     protected slots:
 
@@ -84,12 +98,23 @@ class WidgetEventItem : public QWidget
 
         void                        onBtnNewLocationClicked();
 
+        void                        onBtnNotificationClicked();
+
         /**
          * @brief This signal is received from webapp when a requested document was arrived.
          *
          * @param document   Document
          */
         void                        onDocumentReady( m4e::doc::ModelDocumentPtr document );
+
+        /**
+         * @brief This signal is emitted when an event location was changed.
+         *
+         * @param changeType One of ChangeType enums
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         */
+        void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
     protected:
 

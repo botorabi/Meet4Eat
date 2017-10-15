@@ -246,6 +246,17 @@ void WidgetEvent::onResponseRemoveLocation( bool success, QString eventId, QStri
     {
         text = QApplication::translate( "WidgetEvent", "Event location was successfully removed" );
         log_debug << TAG << "event successfully removed: " + eventId << "/" << locationId << std::endl;
+
+        auto* p_item = findLocationItem( locationId );
+        if ( p_item )
+        {
+            delete p_item;
+        }
+
+        if ( !_event->removeLocation( locationId ) )
+        {
+            log_warning << TAG << "could not remove location, it was not found in event" << std::endl;
+        }
     }
 
     common::DialogMessage msg( this );

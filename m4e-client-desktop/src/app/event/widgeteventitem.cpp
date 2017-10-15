@@ -48,6 +48,9 @@ WidgetEventItem::~WidgetEventItem()
 
 void WidgetEventItem::setupUI( event::ModelEventPtr event )
 {
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
+                                            SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
+
     _event = event;
 
     // is the user also the owner of the event? some operations are only permitted to owner
@@ -58,6 +61,7 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
     _p_ui->labelDescription->setText( event->getDescription() );
 
     _p_ui->pushButtonNewLocation->setHidden( !_userIsOwner );
+    _p_ui->pushButtonNotification->hide();
 
     setSelectionMode( true );
 
@@ -89,6 +93,12 @@ void WidgetEventItem::setSelectionMode( bool normal )
     common::GuiUtils::createShadowEffect( this, shadowcolor, QPoint( -3, 3 ), 6 );
 }
 
+void WidgetEventItem::notifyUpdate( const QString& text )
+{
+    _p_ui->pushButtonNotification->show();
+    _p_ui->pushButtonNotification->setToolTip( text );
+}
+
 void WidgetEventItem::onBtnOptionsClicked()
 {
     DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, this );
@@ -103,6 +113,16 @@ void WidgetEventItem::onBtnNewLocationClicked()
     p_dlg->setupUI( _event );
     p_dlg->exec();
     delete p_dlg;
+
+    // update event data
+    onBtnNotificationClicked();
+}
+
+void WidgetEventItem::onBtnNotificationClicked()
+{
+    _p_ui->pushButtonNotification->hide();
+    //! TODO handle this signal
+    emit onRequestUpdateEvent( _event->getId() );
 }
 
 void WidgetEventItem::onDocumentReady( m4e::doc::ModelDocumentPtr document )
@@ -112,6 +132,14 @@ void WidgetEventItem::onDocumentReady( m4e::doc::ModelDocumentPtr document )
     {
         _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
     }
+}
+
+void WidgetEventItem::onEventLocationChanged( notify::Notifications::ChangeType /*changeType*/, QString eventId, QString /*locationId*/ )
+{
+    if ( !_event.valid() || ( _event->getId() != eventId ) )
+        return;
+
+    notifyUpdate( QApplication::translate( "WidgetEventItem", "Event location settings were changed, click to updage!") );
 }
 
 bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
