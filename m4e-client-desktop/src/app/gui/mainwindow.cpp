@@ -11,9 +11,10 @@
 #include <settings/appsettings.h>
 #include <settings/dialogsettings.h>
 #include <event/widgeteventlist.h>
-#include <event/widgetevent.h>
+#include <event/widgeteventpanel.h>
 #include <notification/notifyevent.h>
 #include <common/basedialog.h>
+#include <event/dialogeventsettings.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
 #include <QLayout>
@@ -51,6 +52,7 @@ MainWindow::MainWindow() :
     _p_initTimer->start( 1000 );
 
     _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
+    _p_ui->pushButtonNotification->hide();
 
     clearClientWidget();
 }
@@ -162,11 +164,10 @@ void MainWindow::onBtnMaximizeClicked()
     }
 }
 
-void MainWindow::onBtnEventsClicked()
+void MainWindow::onBtnUserProfileClicked()
 {
-    clearClientWidget();
-    clearMyEventsWidget();
-    createWidgetMyEvents();
+    //! TODO
+    log_verbose << TAG << "TODO user profile" << std::endl;
 }
 
 void MainWindow::onBtnSettingsClicked()
@@ -195,6 +196,27 @@ void MainWindow::onBtnAboutClicked()
     p_dlg->setResizable( false );
     p_dlg->exec();
     delete p_dlg;
+}
+
+void MainWindow::onBtnAddEvent()
+{
+    event::DialogEventSettings* p_dlg = new event::DialogEventSettings( _p_webApp, this );
+    event::ModelEventPtr event = new event::ModelEvent();
+    event->setStartDate( QDateTime::currentDateTime() );
+
+    p_dlg->setupNewEventUI( event );
+
+    if ( p_dlg->exec() == event::DialogEventSettings::Btn1 )
+    {
+        //! TODO
+    }
+    delete p_dlg;
+}
+
+void MainWindow::onBtnNotificationClicked()
+{
+    // we may show a dialog with news here!
+    _p_ui->pushButtonNotification->hide();
 }
 
 void MainWindow::onEventSelection( QString id )
@@ -264,20 +286,19 @@ void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEvent
     createWidgetMyEvents();
 }
 
-void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType changeType, QString eventId, QString locationId )
+void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType /*changeType*/, QString eventId, QString locationId )
 {
     log_verbose << TAG << "notification: event location was changed: " << eventId << "/" << locationId << std::endl;
 
-    addLogText( "Event location settings have changed" );
+    QString eventname;
+    event::ModelEventPtr event = _p_webApp->getEvents()->getUserEvent( eventId );
 
-    if ( changeType == notify::Notifications::Removed )
-    {
-        //! TODO let the user know about the update
-    }
-    else
-    {
-        //! TODO let the user know about the update
-    }
+    if ( event.valid() )
+        eventname = event->getName();
+
+    addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: '" ) + eventname + "'" );
+
+    _p_ui->pushButtonNotification->show();
 }
 
 void MainWindow::addLogText( const QString& text )
@@ -326,7 +347,7 @@ void MainWindow::createWidgetMyEvents()
 
 void MainWindow::createWidgetEvent( const QString& eventId )
 {
-    event::WidgetEvent* p_widget = new event::WidgetEvent( _p_webApp, _p_ui->widgetClientArea );
+    event::WidgetEventPanel* p_widget = new event::WidgetEventPanel( _p_webApp, _p_ui->widgetClientArea );
     p_widget->setEvent( eventId );
 
     if ( _p_chatSystem )

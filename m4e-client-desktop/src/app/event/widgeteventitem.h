@@ -56,6 +56,13 @@ class WidgetEventItem : public QWidget
         void                        setupUI( event::ModelEventPtr event );
 
         /**
+         * @brief Update the widget with new event data.
+         *
+         * @param event The event
+         */
+        void                        updateEvent( event::ModelEventPtr event );
+
+        /**
          * @brief Get the ID which was defined on setup.
          *
          * @return ID
@@ -86,7 +93,7 @@ class WidgetEventItem : public QWidget
         void                        onClicked( QString id );
 
         /**
-         * @brief Emitted when the user clicks on "update event data" button.
+         * @brief This signal is used for updating the event data from app server.
          *
          * @param id   The event ID
          */

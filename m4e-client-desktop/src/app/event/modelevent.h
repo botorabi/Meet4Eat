@@ -212,7 +212,7 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                _isPublic = false;
         QDateTime                           _startDate;
         QTime                               _repeatDayTime;
-        unsigned int                        _repeatWeekDays;
+        unsigned int                        _repeatWeekDays = 0;
         QList< ModelLocationPtr >           _locations;
         user::ModelUserInfoPtr              _owner;
         QList< user::ModelUserInfoPtr >     _members;

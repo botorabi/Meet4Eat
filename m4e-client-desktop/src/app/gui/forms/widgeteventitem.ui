@@ -124,9 +124,9 @@
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-  background-color: red;
+  background-color: transparent;
   border-radius: 10px;
-  border-image: url(:/icon-refresh.png);
+  border-image: url(:/icon-notify.png);
 }
 QPushButton:hover {
   background-color: rgb(50,82,95);

@@ -24,13 +24,16 @@
     /* Omit copy construction*/ \
     classname( const classname& );
 
+
 /**
  * Declare the common things on a smart pointer class. Take care that this macro also
  * defines the destructor with an emptry body.
  */
 #define SMARTPTR_DEFAULTS( classname )  DECLARE_SMARTPTR_ACCESS( classname ) \
  protected: \
-    virtual ~classname() {}
+    virtual ~classname() {} \
+    /* Omit assignment operator */ \
+    classname& operator = ( const classname& ref );
 
 
 namespace m4e

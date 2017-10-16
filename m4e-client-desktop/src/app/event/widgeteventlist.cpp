@@ -38,6 +38,8 @@ void WidgetEventList::selectFirstEvent()
 
 void WidgetEventList::setupUI()
 {
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvent( bool, m4e::event::ModelEventPtr ) ), this, SLOT( onResponseGetEvent( bool, m4e::event::ModelEventPtr ) ) );
+
     QVBoxLayout* p_layout = new QVBoxLayout();
     setLayout( p_layout );
 
@@ -53,6 +55,7 @@ void WidgetEventList::addEvent( m4e::event::ModelEventPtr event )
     WidgetEventItem* p_item = new WidgetEventItem( _p_webApp, this );
     p_item->setupUI( event );
     connect( p_item, SIGNAL( onClicked( QString ) ), this, SLOT( onClicked( QString ) ) );
+    connect( p_item, SIGNAL( onRequestUpdateEvent( QString ) ), this, SLOT( onRequestUpdateEvent( QString ) ) );
 
     layout()->addWidget( p_item );
     _widgets.append( p_item );
@@ -67,6 +70,32 @@ void WidgetEventList::onClicked( QString id )
 
     // forward the signal
     emit onEventSelection( id );
+}
+
+void WidgetEventList::onRequestUpdateEvent( QString id )
+{
+    _p_webApp->getEvents()->requestGetEvent( id );
+}
+
+void WidgetEventList::onResponseGetEvent( bool success, m4e::event::ModelEventPtr event )
+{
+    if ( !success )
+    {
+        log_warning << TAG << "could not get event data" << std::endl;
+    }
+    else
+    {
+        // update the event widget
+        for ( WidgetEventItem* p_item: _widgets )
+        {
+            if ( p_item->getId() == event->getId() )
+            {
+                p_item->updateEvent( event );
+                selectEvent( event->getId() );
+                break;
+            }
+        }
+    }
 }
 
 } // namespace event

@@ -43,6 +43,27 @@ class ResponseGetEvents: public Meet4EatRESTResponse
 };
 
 /**
+ * @brief Response handler for NewEvent
+ *
+ * @author boto
+ * @date Oct 16, 2017
+ */
+class ResponseNewEvent: public Meet4EatRESTResponse
+{
+    public:
+
+        explicit    ResponseNewEvent( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
+/**
  * @brief Response handler for UpdateEvent
  *
  * @author boto

@@ -48,24 +48,29 @@ WidgetEventItem::~WidgetEventItem()
 
 void WidgetEventItem::setupUI( event::ModelEventPtr event )
 {
+    _p_ui->setupUi( this );
+
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
+    connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
+
+    setSelectionMode( true );
+    common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 180), QPoint( -2, 2 ), 4 );
+
+    updateEvent( event );
+}
+
+void WidgetEventItem::updateEvent( ModelEventPtr event )
+{
     _event = event;
 
     // is the user also the owner of the event? some operations are only permitted to owner
     _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
-
-    _p_ui->setupUi( this );
     _p_ui->labelHead->setText( event->getName() );
     _p_ui->labelDescription->setText( event->getDescription() );
-
     _p_ui->pushButtonNewLocation->setHidden( !_userIsOwner );
     _p_ui->pushButtonNotification->hide();
-
-    setSelectionMode( true );
-
-    common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 180), QPoint( -2, 2 ), 4 );
 
     // we need to handle mouse clicks manually
     _p_ui->labelHead->installEventFilter( this );
@@ -73,12 +78,10 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
     _p_ui->groupBoxMain->installEventFilter( this );
     _p_ui->labelPhoto->installEventFilter( this );
 
-
     // load  the image only if a valid photo id exits
     QString photoid = event->getPhotoId();
     if ( !photoid.isEmpty() && ( photoid != "0" ) )
     {
-        connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
         _p_webApp->requestDocument( photoid, event->getPhotoETag() );
     }
 }
@@ -121,7 +124,6 @@ void WidgetEventItem::onBtnNewLocationClicked()
 void WidgetEventItem::onBtnNotificationClicked()
 {
     _p_ui->pushButtonNotification->hide();
-    //! TODO handle this signal
     emit onRequestUpdateEvent( _event->getId() );
 }
 

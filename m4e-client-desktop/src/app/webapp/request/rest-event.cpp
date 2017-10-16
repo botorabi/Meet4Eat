@@ -40,6 +40,24 @@ void RESTEvent::getEvent( const QString& eventId )
     getRESTOps()->GET( url, createResultsCallback( p_callback ) );
 }
 
+void RESTEvent::createEvent( event::ModelEventPtr event )
+{
+    //! TODO move the json related conversion to the event model
+
+    QJsonObject obj;
+    obj.insert( "name",           event->getName() );
+    obj.insert( "description",    event->getDescription() );
+    obj.insert( "public",         event->getIsPublic() );
+    obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
+    obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
+    obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
+    QJsonDocument json( obj );
+
+    QUrl url( getResourcePath() + "/rest/events/create" );
+    auto p_callback = new ResponseNewEvent( this );
+    getRESTOps()->POST( url, createResultsCallback( p_callback ), json );
+}
+
 void RESTEvent::updateEvent( event::ModelEventPtr event )
 {
     //! NOTE we do not request for setting the photo here!

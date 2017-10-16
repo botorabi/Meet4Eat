@@ -21,6 +21,10 @@ Events::Events( QObject* p_parent ) :
     _p_restEvent = new webapp::RESTEvent( this );
     connect( _p_restEvent, SIGNAL( onRESTEventGetEvents( QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onRESTEventGetEvents( QList< m4e::event::ModelEventPtr > ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorGetEvents( QString, QString ) ), this, SLOT( onRESTEventErrorGetEvents( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventGetEvent( m4e::event::ModelEventPtr ) ), this, SLOT( onRESTEventGetEvent( m4e::event::ModelEventPtr ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorGetEvent( QString, QString ) ), this, SLOT( onRESTEventErrorGetEvent( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventNewEvent( QString ) ), this, SLOT( onRESTEventNewEvent( QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorNewEvent( QString, QString ) ), this, SLOT( onRESTEventErrorNewEvent( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventUpdateEvent( QString ) ), this, SLOT( onRESTEventUpdateEvent( QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorUpdateEvent( QString, QString ) ), this, SLOT( onRESTEventErrorUpdateEvent( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventAddMember( QString, QString ) ), this, SLOT( onRESTEventAddMember( QString, QString ) ) );
@@ -54,6 +58,16 @@ QList< event::ModelEventPtr > Events::getUserEvents()
     return _events;
 }
 
+ModelEventPtr Events::getUserEvent( const QString& id )
+{
+    for ( ModelEventPtr event: _events )
+    {
+        if ( event->getId() == id )
+            return event;
+    }
+    return ModelEventPtr();
+}
+
 //######### Requests ############//
 
 void Events::requestGetEvents()
@@ -62,10 +76,22 @@ void Events::requestGetEvents()
     _p_restEvent->getEvents();
 }
 
+void Events::requestGetEvent( const QString& eventId )
+{
+    setLastError();
+    _p_restEvent->getEvent( eventId );
+}
+
 void Events::requestUpdateEvent( ModelEventPtr event )
 {
     setLastError();
     _p_restEvent->updateEvent( event );
+}
+
+void Events::requestNewEvent( ModelEventPtr event )
+{
+    setLastError();
+    _p_restEvent->createEvent( event );
 }
 
 void Events::requestAddMember (const QString& eventId, const QString& memberId )
@@ -112,6 +138,47 @@ void Events::onRESTEventErrorGetEvents( QString errorCode, QString reason )
     log_verbose << TAG << "failed to get events: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseGetEvents( false, QList< event::ModelEventPtr >() );
+}
+
+void Events::onRESTEventGetEvent( ModelEventPtr event )
+{
+    log_verbose << TAG << "got user event: " << event->getId() << std::endl;
+
+    // update the event in our local copy
+    for ( int i = 0; i < _events.size(); i++ )
+    {
+        ModelEventPtr ev = _events[ i ];
+        if ( ev->getId() == event->getId() )
+        {
+            log_verbose << TAG << "  updating the local copy of event" << std::endl;
+            _events[ i ] = event;
+            emit onResponseGetEvent( true, ev );
+            return;
+        }
+    }
+    log_verbose << TAG << "  add new event to local copy of events" << std::endl;
+    _events.append( event );
+    emit onResponseGetEvent( true, event );
+}
+
+void Events::onRESTEventErrorGetEvent( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to get user event: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseGetEvent( false, event::ModelEventPtr() );
+}
+
+void Events::onRESTEventNewEvent( QString eventId )
+{
+    log_verbose << TAG << "new event was created: " << eventId << std::endl;
+    emit onResponseNewEvent( true, eventId );
+}
+
+void Events::onRESTEventErrorNewEvent( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to create new event: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseNewEvent( false, "" );
 }
 
 void Events::onRESTEventUpdateEvent( QString eventId )

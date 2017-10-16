@@ -43,6 +43,7 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
     QString    ownername      = json.value( "ownerName" ).toString( "" );
     QString    ownerphotoid   = QString::number( json.value( "ownerPhotoId" ).toInt() );
     QString    ownerphotoetag = json.value( "ownerPhotoETag" ).toString( "" );
+    QString    ownerstatus    = json.value( "status" ).toString( "" );
 
     event::ModelEventPtr ev = new event::ModelEvent();
     ev->setId( id );
@@ -108,6 +109,7 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
     owner->setName( ownername );
     owner->setPhotoId( ownerphotoid );
     owner->setPhotoETag( ownerphotoetag );
+    owner->setStatus( ownerstatus );
     ev->setOwner( owner );
 
     return ev;
@@ -148,6 +150,36 @@ void ResponseGetEvents::onRESTResponseSuccess( const QJsonDocument& results )
 void ResponseGetEvents::onRESTResponseError( const QString& reason )
 {
     emit _p_requester->onRESTEventErrorGetEvents( "", reason );
+}
+
+/******************************************************/
+/****************** ResponseNewEvent ******************/
+/******************************************************/
+
+ResponseNewEvent::ResponseNewEvent( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{}
+
+void ResponseNewEvent::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorNewEvent( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj  = datadoc.object();
+    QString eventid  = QString::number( obj.value( "id" ).toInt() );
+    emit _p_requester->onRESTEventNewEvent( eventid );
+}
+
+void ResponseNewEvent::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorNewEvent( "", reason );
 }
 
 /******************************************************/

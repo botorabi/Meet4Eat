@@ -45,12 +45,16 @@ bool ModelEvent::removeLocation( const QString& id )
 
 bool ModelEvent::addOrUpdateLocation( ModelLocationPtr location )
 {
-    ModelLocationPtr loc = getLocation( location->getId() );
-    if ( loc.valid() )
+    QList< ModelLocationPtr >::iterator loc = _locations.begin();
+    for ( ; loc != _locations.end(); ++loc )
     {
-        *loc = *location;
-        return false;
+        if ( ( *loc )->getId() == location->getId() )
+        {
+            *loc = location;
+            return false;
+        }
     }
+
     _locations.append( location );
     return true;
 }

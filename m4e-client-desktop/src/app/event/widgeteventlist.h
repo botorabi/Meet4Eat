@@ -75,6 +75,21 @@ class WidgetEventList : public QWidget
          */
         void                        onClicked( QString id );
 
+        /**
+         * @brief This signal is used for updating the event data from app server.
+         *
+         * @param id   The event ID
+         */
+        void                        onRequestUpdateEvent( QString id );
+
+        /**
+         * @brief This signal is emitted by Events and brings fresh event data.
+         *
+         * @param success  true if user events could successfully be retrieved, otherwise false
+         * @param event    User event
+         */
+        void                        onResponseGetEvent( bool success, m4e::event::ModelEventPtr event );
+
     protected:
 
         /**

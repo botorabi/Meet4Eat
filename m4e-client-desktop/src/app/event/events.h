@@ -85,9 +85,24 @@ class Events : public QObject
         QList< m4e::event::ModelEventPtr >   getUserEvents();
 
         /**
+         * @brief Get the event with given ID.
+         *
+         * @param id The event ID
+         * @return User event, or an invalid event object if the ID was not found.
+         */
+        m4e::event::ModelEventPtr           getUserEvent( const QString& id );
+
+        /**
          * @brief Request for getting all user events, the results are emitted by signal 'onResponseGetEvents'.
          */
         void                                requestGetEvents();
+
+        /**
+         * @brief Request for getting a user event, the results are emitted by signal 'onResponseGetEvent'.
+         *
+         * @param eventID The event ID
+         */
+        void                                requestGetEvent( const QString& eventId );
 
         /**
          * @brief Request for update an existing event, the results are emitted by signal 'onResponseUpdateEvent'.
@@ -95,6 +110,13 @@ class Events : public QObject
          * @param event  The event to update
          */
         void                                requestUpdateEvent( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief Request for creating a new event, the results are emitted by signal 'onResponseNewEvent'.
+         *
+         * @param event  The event to create
+         */
+        void                                requestNewEvent( m4e::event::ModelEventPtr event );
 
         /**
          * @brief Request for a new member to event, the results are emitted by signal 'onResponseAddMember'.
@@ -141,18 +163,34 @@ class Events : public QObject
         /**
          * @brief Results of user events request.
          *
-         * @param success  true if user data could successfully be retrieved, otherwise false
+         * @param success  true if user events could successfully be retrieved, otherwise false
          * @param events   User's events
          */
         void                                onResponseGetEvents( bool success, QList< m4e::event::ModelEventPtr > events );
 
         /**
+         * @brief Results of user event request.
+         *
+         * @param success  true if user event could successfully be retrieved, otherwise false
+         * @param event    A user event
+         */
+        void                                onResponseGetEvent( bool success, m4e::event::ModelEventPtr event );
+
+        /**
          * @brief Results of event update request.
          *
-         * @param success  true if user data could successfully be retrieved, otherwise false
+         * @param success  true if event data could successfully be updated, otherwise false
          * @param eventId  ID of event which was updated
          */
         void                                onResponseUpdateEvent( bool success, QString eventId );
+
+        /**
+         * @brief Results of event creation request.
+         *
+         * @param success  true if the event could successfully be created, otherwise false
+         * @param eventId  ID of event which was created
+         */
+        void                                onResponseNewEvent( bool success, QString eventId );
 
         /**
          * @brief Results of add member request.
@@ -214,6 +252,36 @@ class Events : public QObject
          * @param reason    Error string
          */
         void                                onRESTEventErrorGetEvents( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of getEvent arrive.
+         *
+         * @param event     User event
+         */
+        void                                onRESTEventGetEvent( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorGetEvent( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of newEvent arrive.
+         *
+         * @param eventId   ID of new event
+         */
+        void                                onRESTEventNewEvent( QString eventId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorNewEvent( QString errorCode, QString reason );
 
         /**
          * @brief Signal is received when the results of updating event arrive.

@@ -69,11 +69,15 @@ class MainWindow : public QMainWindow
 
         void                        onBtnMaximizeClicked();
 
-        void                        onBtnEventsClicked();
+        void                        onBtnUserProfileClicked();
 
         void                        onBtnSettingsClicked();
 
         void                        onBtnAboutClicked();
+
+        void                        onBtnAddEvent();
+
+        void                        onBtnNotificationClicked();
 
         void                        onEventSelection( QString id );
 
