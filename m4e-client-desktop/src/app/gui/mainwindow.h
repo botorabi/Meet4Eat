@@ -63,6 +63,8 @@ class MainWindow : public QMainWindow
          */
         void                        onTimerInit();
 
+        void                        onBtnLogoClicked();
+
         void                        onBtnCloseClicked();
 
         void                        onBtnMinimizeClicked();
@@ -112,6 +114,14 @@ class MainWindow : public QMainWindow
          * @param events   User events
          */
         void                        onResponseGetEvents( bool success, QList< m4e::event::ModelEventPtr > events );
+
+        /**
+         * @brief This signal is emitted when an event was changed.
+         *
+         * @param changeType One of ChangeType enums
+         * @param eventId    Event ID
+         */
+        void                        onEventChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId );
 
         /**
          * @brief This signal is emitted when an event location was changed.

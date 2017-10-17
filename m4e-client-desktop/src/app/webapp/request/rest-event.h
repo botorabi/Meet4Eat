@@ -71,6 +71,13 @@ class RESTEvent : public Meet4EatREST
         void                    createEvent( m4e::event::ModelEventPtr event );
 
         /**
+         * @brief Delete user's event with given ID. The results are emitted by signal 'onRESTEventDeleteEvent'.
+         *
+         * @param eventId  Event ID
+         */
+        void                    deleteEvent( const QString& eventId );
+
+        /**
          * @brief Update an existing event. The results are emitted by signal 'onRESTEventUpdateEvent'.
          *
          * @param event Event to upate
@@ -163,6 +170,21 @@ class RESTEvent : public Meet4EatREST
          * @param reason    Error string
          */
         void                    onRESTEventErrorNewEvent( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of deleteEvent request.
+         *
+         * @param eventId   ID of deleted event
+         */
+        void                    onRESTEventDeleteEvent( QString eventId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorDeleteEvent( QString errorCode, QString reason );
 
         /**
          * @brief Emit the results of updateEvent request.

@@ -9,6 +9,7 @@
 #include "widgeteventitem.h"
 #include <core/log.h>
 #include <common/guiutils.h>
+#include <common/dialogmessage.h>
 #include "dialogeventsettings.h"
 #include "dialoglocationcreate.h"
 #include <ui_widgeteventitem.h>
@@ -50,14 +51,16 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
 {
     _p_ui->setupUi( this );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ), this,
+                                            SLOT( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ) );
+
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
     connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
 
-    setSelectionMode( true );
     common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 180), QPoint( -2, 2 ), 4 );
-
+    setSelectionMode( true );
     updateEvent( event );
 }
 
@@ -69,6 +72,7 @@ void WidgetEventItem::updateEvent( ModelEventPtr event )
     _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
     _p_ui->labelHead->setText( event->getName() );
     _p_ui->labelDescription->setText( event->getDescription() );
+    _p_ui->pushButtonDelete->setHidden( !_userIsOwner );
     _p_ui->pushButtonNewLocation->setHidden( !_userIsOwner );
     _p_ui->pushButtonNotification->hide();
 
@@ -110,6 +114,22 @@ void WidgetEventItem::onBtnOptionsClicked()
     delete p_dlg;
 }
 
+void WidgetEventItem::onBtnDeleteClicked()
+{
+    common::DialogMessage msg( this );
+    msg.setupUI( QApplication::translate( "WidgetEventItem", "Delete Event" ),
+                 QApplication::translate( "WidgetEventItem", "Do you really want to delete the event?" ),
+                 common::DialogMessage::BtnYes | common::DialogMessage::BtnNo );
+
+    if ( msg.exec() == common::DialogMessage::BtnNo )
+    {
+        return;
+    }
+
+    // the actual deletion is delegated
+    emit onRequestDeleteEvent( _event->getId() );
+}
+
 void WidgetEventItem::onBtnNewLocationClicked()
 {
     DialogLocationCreate* p_dlg = new DialogLocationCreate( _p_webApp, this );
@@ -134,6 +154,14 @@ void WidgetEventItem::onDocumentReady( m4e::doc::ModelDocumentPtr document )
     {
         _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
     }
+}
+
+void WidgetEventItem::onEventChanged( notify::Notifications::ChangeType /*changeType*/, QString eventId )
+{
+    if ( !_event.valid() || ( _event->getId() != eventId ) )
+        return;
+
+    notifyUpdate( QApplication::translate( "WidgetEventItem", "Event settings were changed, click to updage!") );
 }
 
 void WidgetEventItem::onEventLocationChanged( notify::Notifications::ChangeType /*changeType*/, QString eventId, QString /*locationId*/ )

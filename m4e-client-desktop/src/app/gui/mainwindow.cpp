@@ -17,8 +17,8 @@
 #include <event/dialogeventsettings.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
+#include <QDesktopServices>
 #include <QLayout>
-
 
 
 namespace m4e
@@ -90,6 +90,11 @@ void MainWindow::onTimerInit()
     {
         _p_webApp->establishConnection();
     }
+}
+
+void MainWindow::onBtnLogoClicked()
+{
+    QDesktopServices::openUrl(  QUrl( M4E_APP_URL ) );
 }
 
 void MainWindow::storeWindowGeometry()
@@ -215,8 +220,10 @@ void MainWindow::onBtnAddEvent()
 
 void MainWindow::onBtnNotificationClicked()
 {
-    // we may show a dialog with news here!
+    addLogText( QApplication::translate( "MainWindow", "Refreshing all events" ) );
+
     _p_ui->pushButtonNotification->hide();
+    _p_webApp->getEvents()->requestGetEvents();
 }
 
 void MainWindow::onEventSelection( QString id )
@@ -237,6 +244,9 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
         text = QApplication::translate( "MainWindow", "No Connection!" );
     }
     _p_ui->labelStatus->setText( text );
+
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ), this,
+                                            SLOT( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ) );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
@@ -286,9 +296,9 @@ void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEvent
     createWidgetMyEvents();
 }
 
-void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType /*changeType*/, QString eventId, QString locationId )
+void MainWindow::onEventChanged( notify::Notifications::ChangeType changeType, QString eventId )
 {
-    log_verbose << TAG << "notification: event location was changed: " << eventId << "/" << locationId << std::endl;
+    log_verbose << TAG << "event notification arrived: " << eventId << std::endl;
 
     QString eventname;
     event::ModelEventPtr event = _p_webApp->getEvents()->getUserEvent( eventId );
@@ -296,7 +306,32 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType /*cha
     if ( event.valid() )
         eventname = event->getName();
 
-    addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: '" ) + eventname + "'" );
+    if ( changeType == notify::Notifications::Added )
+        addLogText( QApplication::translate( "MainWindow", "A New event was created" ) );
+    else if ( changeType == notify::Notifications::Removed )
+        addLogText( QApplication::translate( "MainWindow", "An event was removed" ) );
+    else
+        addLogText( QApplication::translate( "MainWindow", "Event settings have changed: '" ) + eventname + "'" );
+
+    _p_ui->pushButtonNotification->show();
+}
+
+void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType changeType, QString eventId, QString locationId )
+{
+    log_verbose << TAG << "event location notification arrived: " << eventId << "/" << locationId << std::endl;
+
+    QString eventname;
+    event::ModelEventPtr event = _p_webApp->getEvents()->getUserEvent( eventId );
+
+    if ( event.valid() )
+        eventname = event->getName();
+
+    if ( changeType == notify::Notifications::Added )
+        addLogText( QApplication::translate( "MainWindow", "A New event location was created" ) );
+    else if ( changeType == notify::Notifications::Removed )
+        addLogText( QApplication::translate( "MainWindow", "An event location was removed" ) );
+    else
+        addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: '" ) + eventname + "'" );
 
     _p_ui->pushButtonNotification->show();
 }
@@ -326,8 +361,8 @@ void MainWindow::clearClientWidget()
 void MainWindow::clearMyEventsWidget()
 {
     QLayoutItem* p_item;
-    QLayout* p_layout = _p_ui->widgetSubMenu->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = _p_ui->widgetSubMenu->layout()->takeAt( 0 ) ) ) )
+    QLayout* p_layout = _p_ui->widgetEventItems->layout();
+    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = _p_ui->widgetEventItems->layout()->takeAt( 0 ) ) ) )
     {
         p_item->widget()->deleteLater();
         delete p_item;
@@ -339,7 +374,7 @@ void MainWindow::createWidgetMyEvents()
     clearClientWidget();
 
     event::WidgetEventList* p_widget = new event::WidgetEventList( _p_webApp, this );
-    _p_ui->widgetSubMenu->layout()->addWidget( p_widget );
+    _p_ui->widgetEventItems->layout()->addWidget( p_widget );
     connect( p_widget, SIGNAL( onEventSelection( QString /*id*/ ) ), this, SLOT( onEventSelection( QString /*id*/ ) ) );
     // auto-select the first event
     p_widget->selectFirstEvent();

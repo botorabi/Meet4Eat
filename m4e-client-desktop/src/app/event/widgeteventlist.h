@@ -13,7 +13,6 @@
 #include <configuration.h>
 #include <webapp/webapp.h>
 #include <QListWidget>
-#include <QWidget>
 #include <QMap>
 
 
@@ -31,12 +30,12 @@ class WidgetEventItem;
  * @author boto
  * @date Aug 2, 2017
  */
-class WidgetEventList : public QWidget
+class WidgetEventList : public QListWidget
 {
     /**
      * @brief TAG Used for logging
      */
-    const std::string TAG = "(WidgetMyEvents) ";
+    const std::string TAG = "(WidgetEventList) ";
 
     Q_OBJECT
 
@@ -83,6 +82,13 @@ class WidgetEventList : public QWidget
         void                        onRequestUpdateEvent( QString id );
 
         /**
+         * @brief This signal is used if the event should be deleted.
+         *
+         * @param id    The event ID
+         */
+        void                        onRequestDeleteEvent( QString id );
+
+        /**
          * @brief This signal is emitted by Events and brings fresh event data.
          *
          * @param success  true if user events could successfully be retrieved, otherwise false
@@ -90,12 +96,22 @@ class WidgetEventList : public QWidget
          */
         void                        onResponseGetEvent( bool success, m4e::event::ModelEventPtr event );
 
+        /**
+         * @brief This signal is emitted by Events and delivers the results of deleting a user event request.
+         *
+         * @param success  true if user event could successfully be retrieved, otherwise false
+         * @param eventId  User event which was deleted
+         */
+        void                        onResponseDeleteEvent( bool success, QString eventId );
+
     protected:
 
         /**
          * @brief Setup the widget.
          */
         void                        setupUI();
+
+        void                        setupListView();
 
         /**
          * @brief Add a new group to widget

@@ -89,8 +89,8 @@ void WidgetEventPanel::setupUI()
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetMembers, shadowcolor, QPoint( -3, 3 ), 3 );
-    common::GuiUtils::createShadowEffect( _p_ui->pushButtonResetMyVotes, shadowcolor, QPoint( -2, 2 ), 2 );
-    common::GuiUtils::createShadowEffect( _p_ui->pushButtonBuzz, shadowcolor, QPoint( -3, 3 ), 3 );
+    //common::GuiUtils::createShadowEffect( _p_ui->pushButtonResetMyVotes, shadowcolor, QPoint( -2, 2 ), 2 );
+    common::GuiUtils::createShadowEffect( _p_ui->pushButtonBuzz, shadowcolor, QPoint( -2, 2 ), 1 );
 
     _p_clientArea = _p_ui->listWidget;
     _p_clientArea->setUniformItemSizes( true );

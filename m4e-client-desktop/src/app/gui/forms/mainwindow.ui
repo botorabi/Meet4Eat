@@ -79,7 +79,7 @@
            <item>
             <widget class="QWidget" name="widgetHead" native="true">
              <property name="cursor">
-              <cursorShape>SizeAllCursor</cursorShape>
+              <cursorShape>ArrowCursor</cursorShape>
              </property>
              <property name="styleSheet">
               <string notr="true">#widgetHead {
@@ -100,13 +100,7 @@
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="labelLogo">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
+               <widget class="QPushButton" name="pushButtonLogo">
                 <property name="minimumSize">
                  <size>
                   <width>90</width>
@@ -119,25 +113,24 @@
                   <height>90</height>
                  </size>
                 </property>
-                <property name="font">
-                 <font>
-                  <pointsize>15</pointsize>
-                 </font>
-                </property>
                 <property name="cursor">
                  <cursorShape>PointingHandCursor</cursorShape>
                 </property>
                 <property name="toolTip">
                  <string>Click to Visit the Meet4Eat Site</string>
                 </property>
-                <property name="pixmap">
-                 <pixmap resource="../resources/application.qrc">:/logo.png</pixmap>
+                <property name="styleSheet">
+                 <string notr="true"/>
                 </property>
-                <property name="scaledContents">
-                 <bool>true</bool>
+                <property name="icon">
+                 <iconset resource="../resources/application.qrc">
+                  <normaloff>:/logo.png</normaloff>:/logo.png</iconset>
                 </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
+                <property name="iconSize">
+                 <size>
+                  <width>90</width>
+                  <height>90</height>
+                 </size>
                 </property>
                </widget>
               </item>
@@ -172,12 +165,6 @@
                   <weight>75</weight>
                   <bold>true</bold>
                  </font>
-                </property>
-                <property name="cursor">
-                 <cursorShape>PointingHandCursor</cursorShape>
-                </property>
-                <property name="toolTip">
-                 <string>Click to Visit the Meet4Eat Site</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QLabel#labelLogoText {
@@ -580,15 +567,24 @@ QPushButton:hover {
               </widget>
              </item>
              <item>
-              <widget class="QWidget" name="verticalWidget" native="true">
+              <widget class="QWidget" name="widgetMyEvents" native="true">
+               <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="styleSheet">
-                <string notr="true">#verticalWidget {
+                <string notr="true">#widgetMyEvents {
   background-color: rgb(28,52,62);
 }</string>
                </property>
-               <layout class="QVBoxLayout" name="verticalLayout_10" stretch="0,0,1,0">
+               <layout class="QVBoxLayout" name="verticalLayout_10" stretch="0,0,0">
+                <property name="bottomMargin">
+                 <number>2</number>
+                </property>
                 <item>
-                 <widget class="QWidget" name="widgetSubMenuHead" native="true">
+                 <widget class="QWidget" name="widgetEventItemsHead" native="true">
                   <property name="minimumSize">
                    <size>
                     <width>270</width>
@@ -600,6 +596,41 @@ QPushButton:hover {
                     <layout class="QVBoxLayout" name="verticalLayout_11">
                      <item>
                       <layout class="QHBoxLayout" name="horizontalLayout_5">
+                       <item>
+                        <widget class="QLabel" name="labelHead">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>32</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>32</height>
+                          </size>
+                         </property>
+                         <property name="font">
+                          <font>
+                           <family>Roboto</family>
+                           <pointsize>11</pointsize>
+                           <weight>75</weight>
+                           <bold>true</bold>
+                          </font>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QLabel#labelHead {
+  color: rgb(181,197, 217);;
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>Your Events</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                         </property>
+                        </widget>
+                       </item>
                        <item>
                         <spacer name="horizontalSpacer_4">
                          <property name="orientation">
@@ -626,6 +657,9 @@ QPushButton:hover {
                            <width>32</width>
                            <height>32</height>
                           </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Events were changed, click to refresh all events.</string>
                          </property>
                          <property name="styleSheet">
                           <string notr="true">QPushButton {
@@ -699,18 +733,22 @@ QPushButton:hover {
                  </widget>
                 </item>
                 <item>
-                 <widget class="QWidget" name="widgetSubMenu" native="true">
+                 <widget class="QWidget" name="widgetEventItems" native="true">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="styleSheet">
-                   <string notr="true">#widgetSubMenu {
+                   <string notr="true">#widgetEventItems {
   background-color: rgb(28,52,62);
+  border: 0;
 }</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_5">
-                   <property name="sizeConstraint">
-                    <enum>QLayout::SetMinAndMaxSize</enum>
-                   </property>
                    <property name="leftMargin">
-                    <number>0</number>
+                    <number>9</number>
                    </property>
                    <property name="topMargin">
                     <number>0</number>
@@ -721,37 +759,8 @@ QPushButton:hover {
                    <property name="bottomMargin">
                     <number>0</number>
                    </property>
-                   <item>
-                    <layout class="QVBoxLayout" name="verticalLayout_4">
-                     <property name="spacing">
-                      <number>3</number>
-                     </property>
-                     <property name="leftMargin">
-                      <number>0</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>0</number>
-                     </property>
-                    </layout>
-                   </item>
                   </layout>
                  </widget>
-                </item>
-                <item>
-                 <spacer name="verticalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::MinimumExpanding</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>0</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                 <item>
                  <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -804,7 +813,11 @@ QPushButton:hover {
   color: white;
   border: 1px solid rgb(131,147, 167);
   background-color: rgba(131,147, 167, 50);
-}</string>
+}
+</string>
+                    </property>
+                    <property name="readOnly">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -833,6 +846,9 @@ QPushButton:hover {
                <layout class="QVBoxLayout" name="verticalLayout">
                 <property name="spacing">
                  <number>0</number>
+                </property>
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMinAndMaxSize</enum>
                 </property>
                 <property name="leftMargin">
                  <number>2</number>
@@ -1007,6 +1023,22 @@ QPushButton:hover {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButtonLogo</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onBtnLogoClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>68</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>90</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnCloseClicked()</slot>
@@ -1018,5 +1050,6 @@ QPushButton:hover {
   <slot>onBtnMaximizeClicked()</slot>
   <slot>onBtnNotificationClicked()</slot>
   <slot>onBtnAddEvent()</slot>
+  <slot>onBtnLogoClicked()</slot>
  </slots>
 </ui>

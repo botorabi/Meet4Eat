@@ -99,9 +99,18 @@ class WidgetEventItem : public QWidget
          */
         void                        onRequestUpdateEvent( QString id );
 
+        /**
+         * @brief This signal is used if the event should be deleted.
+         *
+         * @param id    The event ID
+         */
+        void                        onRequestDeleteEvent( QString id );
+
     protected slots:
 
         void                        onBtnOptionsClicked();
+
+        void                        onBtnDeleteClicked();
 
         void                        onBtnNewLocationClicked();
 
@@ -113,6 +122,14 @@ class WidgetEventItem : public QWidget
          * @param document   Document
          */
         void                        onDocumentReady( m4e::doc::ModelDocumentPtr document );
+
+        /**
+         * @brief This signal is emitted when an event was changed.
+         *
+         * @param changeType One of ChangeType enums
+         * @param eventId    Event ID
+         */
+        void                        onEventChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId );
 
         /**
          * @brief This signal is emitted when an event location was changed.

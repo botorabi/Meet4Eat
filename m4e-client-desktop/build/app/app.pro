@@ -117,7 +117,6 @@ HEADERS += \
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
     ../../src/app/gui/forms/basedialog.ui \
-    ../../src/app/gui/forms/widgetevent.ui \
     ../../src/app/gui/forms/widgetlocation.ui \
     ../../src/app/gui/forms/widgeteventitem.ui \
     ../../src/app/gui/forms/widgetabout.ui \
@@ -125,7 +124,8 @@ FORMS += \
     ../../src/app/gui/forms/widgetlocationdetails.ui \
     ../../src/app/gui/forms/widgeteventsettings.ui \
     ../../src/app/gui/forms/widgetchat.ui \
-    ../../src/app/gui/forms/widgetlocationcreate.ui
+    ../../src/app/gui/forms/widgetlocationcreate.ui \
+    ../../src/app/gui/forms/widgeteventpanel.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

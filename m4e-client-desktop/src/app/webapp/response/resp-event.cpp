@@ -183,6 +183,36 @@ void ResponseNewEvent::onRESTResponseError( const QString& reason )
 }
 
 /******************************************************/
+/***************** ResponseDeleteEvent ****************/
+/******************************************************/
+
+ResponseDeleteEvent::ResponseDeleteEvent( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{}
+
+void ResponseDeleteEvent::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorDeleteEvent( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj  = datadoc.object();
+    QString eventid  = QString::number( obj.value( "id" ).toInt() );
+    emit _p_requester->onRESTEventDeleteEvent( eventid );
+}
+
+void ResponseDeleteEvent::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorDeleteEvent( "", reason );
+}
+
+/******************************************************/
 /**************** ResponseUpdateEvent *****************/
 /******************************************************/
 

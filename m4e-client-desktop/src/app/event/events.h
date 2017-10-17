@@ -105,6 +105,13 @@ class Events : public QObject
         void                                requestGetEvent( const QString& eventId );
 
         /**
+         * @brief Request for deleting a user event, the results are emitted by signal 'onResponseDeleteEvent'.
+         *
+         * @param eventID The event ID
+         */
+        void                                requestDeleteEvent( const QString& eventId );
+
+        /**
          * @brief Request for update an existing event, the results are emitted by signal 'onResponseUpdateEvent'.
          *
          * @param event  The event to update
@@ -193,6 +200,14 @@ class Events : public QObject
         void                                onResponseNewEvent( bool success, QString eventId );
 
         /**
+         * @brief Results of deleting a user event request.
+         *
+         * @param success  true if user event could successfully be retrieved, otherwise false
+         * @param eventId  User event which was deleted
+         */
+        void                                onResponseDeleteEvent( bool success, QString eventId );
+
+        /**
          * @brief Results of add member request.
          *
          * @param success  true if user data could successfully be retrieved, otherwise false
@@ -267,6 +282,21 @@ class Events : public QObject
          * @param reason    Error string
          */
         void                                onRESTEventErrorGetEvent( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of deleteEvent arrive.
+         *
+         * @param eventId    ID of event which was deleted
+         */
+        void                                onRESTEventDeleteEvent( QString eventId );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorDeleteEvent( QString errorCode, QString reason );
 
         /**
          * @brief Signal is received when the results of newEvent arrive.

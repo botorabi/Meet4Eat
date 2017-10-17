@@ -25,6 +25,8 @@ Events::Events( QObject* p_parent ) :
     connect( _p_restEvent, SIGNAL( onRESTEventErrorGetEvent( QString, QString ) ), this, SLOT( onRESTEventErrorGetEvent( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventNewEvent( QString ) ), this, SLOT( onRESTEventNewEvent( QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorNewEvent( QString, QString ) ), this, SLOT( onRESTEventErrorNewEvent( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventDeleteEvent( QString ) ), this, SLOT( onRESTEventDeleteEvent( QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorDeleteEvent( QString, QString ) ), this, SLOT( onRESTEventErrorDeleteEvent( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventUpdateEvent( QString ) ), this, SLOT( onRESTEventUpdateEvent( QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorUpdateEvent( QString, QString ) ), this, SLOT( onRESTEventErrorUpdateEvent( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventAddMember( QString, QString ) ), this, SLOT( onRESTEventAddMember( QString, QString ) ) );
@@ -80,6 +82,12 @@ void Events::requestGetEvent( const QString& eventId )
 {
     setLastError();
     _p_restEvent->getEvent( eventId );
+}
+
+void Events::requestDeleteEvent( const QString& eventId )
+{
+    setLastError();
+    _p_restEvent->deleteEvent( eventId );
 }
 
 void Events::requestUpdateEvent( ModelEventPtr event )
@@ -152,7 +160,7 @@ void Events::onRESTEventGetEvent( ModelEventPtr event )
         {
             log_verbose << TAG << "  updating the local copy of event" << std::endl;
             _events[ i ] = event;
-            emit onResponseGetEvent( true, ev );
+            emit onResponseGetEvent( true, event );
             return;
         }
     }
@@ -166,6 +174,19 @@ void Events::onRESTEventErrorGetEvent( QString errorCode, QString reason )
     log_verbose << TAG << "failed to get user event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseGetEvent( false, event::ModelEventPtr() );
+}
+
+void Events::onRESTEventDeleteEvent( QString eventId )
+{
+    log_verbose << TAG << "event was deleted: " << eventId << std::endl;
+    emit onResponseDeleteEvent( true, eventId );
+}
+
+void Events::onRESTEventErrorDeleteEvent( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to delete event: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseDeleteEvent( false, "" );
 }
 
 void Events::onRESTEventNewEvent( QString eventId )

@@ -295,6 +295,10 @@ QPushButton:hover {
   color: black;
   border: 1px solid rgb(131,147, 167);
   background-color: rgba(181,197, 217, 50);
+}
+QScrollBar::vertical {
+ background-color: transparent;
+ color: rgb(151,167, 187);
 }</string>
             </property>
             <property name="sizeAdjustPolicy">
