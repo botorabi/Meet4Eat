@@ -64,6 +64,20 @@ class RESTEvent : public Meet4EatREST
         void                    getEvent( const QString& eventId );
 
         /**
+         * @brief Create a new event. The results are emitted by signal 'onRESTEventNewEvent'.
+         *
+         * @param event Event to create
+         */
+        void                    createEvent( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief Delete user's event with given ID. The results are emitted by signal 'onRESTEventDeleteEvent'.
+         *
+         * @param eventId  Event ID
+         */
+        void                    deleteEvent( const QString& eventId );
+
+        /**
          * @brief Update an existing event. The results are emitted by signal 'onRESTEventUpdateEvent'.
          *
          * @param event Event to upate
@@ -85,6 +99,14 @@ class RESTEvent : public Meet4EatREST
          * @param memberId  User ID
          */
         void                    removeMember( const QString& eventId, const QString& memberId );
+
+        /**
+         * @brief Get event  location data.
+         *
+         * @param eventId     Event ID
+         * @param locationId  Location ID
+         */
+        void                    getLocation( const QString& eventId, const QString& locationId );
 
         /**
          * @brief Add a new location to event.
@@ -124,7 +146,7 @@ class RESTEvent : public Meet4EatREST
          *
          * @param event    User event
          */
-        void                    onRESTEventGetEvent( m4e::event::ModelEventPtr events );
+        void                    onRESTEventGetEvent( m4e::event::ModelEventPtr event );
 
         /**
          * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
@@ -133,6 +155,36 @@ class RESTEvent : public Meet4EatREST
          * @param reason    Error string
          */
         void                    onRESTEventErrorGetEvent( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of newEvent request.
+         *
+         * @param eventId   ID of new event
+         */
+        void                    onRESTEventNewEvent( QString eventId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorNewEvent( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of deleteEvent request.
+         *
+         * @param eventId   ID of deleted event
+         */
+        void                    onRESTEventDeleteEvent( QString eventId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorDeleteEvent( QString errorCode, QString reason );
 
         /**
          * @brief Emit the results of updateEvent request.
@@ -180,6 +232,22 @@ class RESTEvent : public Meet4EatREST
          * @param reason    Error string
          */
         void                    onRESTEventErrorRemoveMember( QString errorCode, QString reason );
+
+
+        /**
+         * @brief Signal is emitted when the results of getLocation request arrive.
+         *
+         * @param location    The location
+         */
+        void                    onRESTEventGetLocation( m4e::event::ModelLocationPtr location );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorGetLocation( QString errorCode, QString reason );
 
         /**
          * @brief Emit the results of addLocation request.

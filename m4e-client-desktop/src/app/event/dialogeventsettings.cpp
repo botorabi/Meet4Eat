@@ -84,6 +84,36 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     }
 }
 
+void DialogEventSettings::setupNewEventUI( event::ModelEventPtr event )
+{
+    _event = event;
+    decorate( *_p_ui );
+
+    _userIsOwner = true;
+    _editNewEvent = true;
+
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseNewEvent( bool, QString ) ), this, SLOT( onResponseNewEvent( bool, QString ) ) );
+
+    setTitle( QApplication::translate( "DialogEventSettings", "Create New Event" ) );
+    QString applybtn( QApplication::translate( "DialogEventSettings", "Apply" ) );
+    QString cancelbtn( QApplication::translate( "DialogEventSettings", "Cancel" ) );
+    setupButtons( &applybtn, &cancelbtn, nullptr );
+
+    setResizable( false );
+
+    _p_ui->widgetOwner->hide();
+    _p_ui->labelMembers->hide();
+    _p_ui->groupBoxMembers->hide();
+
+    _p_ui->lineEditName->setText( event->getName() );
+    _p_ui->textEditDescription->setPlainText( event->getDescription() );
+    _p_ui->checkBoxIsPublic->setChecked( event->getIsPublic() );
+    _p_ui->dateTimeEditStart->setDateTime( event->getStartDate() );
+    _p_ui->timeEditDayTime->setTime( event->getRepeatDayTime() );
+
+    setupWeekDays( event->getRepeatWeekDays() );
+}
+
 void DialogEventSettings::onDocumentReady( m4e::doc::ModelDocumentPtr document )
 {
     if ( !document.valid() )
@@ -139,7 +169,7 @@ void DialogEventSettings::onResponseAddMember( bool success, QString eventId, QS
         return;
     }
 
-    log_verbose << TAG << "new member added: " << _newMember->getId().toStdString() << std::endl;
+    log_verbose << TAG << "new member added: " << _newMember->getId() << std::endl;
 
     QList< user::ModelUserInfoPtr > members = _event->getMembers();
     members.append( _newMember );
@@ -207,6 +237,30 @@ void DialogEventSettings::onResponseUpdateEvent( bool success, QString /*eventId
     done( common::BaseDialog::Btn1 );
 }
 
+void DialogEventSettings::onResponseNewEvent( bool success, QString eventId )
+{
+    if ( success )
+    {
+        _event->setId( eventId );
+
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogEventSettings", "New Event" ),
+                     QApplication::translate( "DialogEventSettings", "New event was successfully created." ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+        done( common::BaseDialog::Btn1 );
+    }
+    else
+    {
+        QString reason = _p_webApp->getEvents()->getLastError();
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogEventSettings", "Problem Creating New Event" ),
+                     QApplication::translate( "DialogEventSettings", "New event could not be created!\nReason: " ) + reason,
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+    }
+}
+
 void DialogEventSettings::onBtnMemberRemoveClicked()
 {
     QPushButton* p_btn = dynamic_cast< QPushButton* >( sender() );
@@ -267,7 +321,11 @@ bool DialogEventSettings::onButton1Clicked()
     _event->setRepeatDayTime( _p_ui->timeEditDayTime->time() );
     _event->setRepeatWeekDays( getWeekDays() );
 
-    _p_webApp->getEvents()->requestUpdateEvent( _event );
+    if ( _editNewEvent )
+        _p_webApp->getEvents()->requestNewEvent( _event );
+    else
+        _p_webApp->getEvents()->requestUpdateEvent( _event );
+
     return false;
 }
 

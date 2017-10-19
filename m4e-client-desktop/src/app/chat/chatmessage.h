@@ -22,7 +22,7 @@ namespace chat
 
 class ChatMessage : public core::RefCount< ChatMessage >
 {
-    DECLARE_SMARTPTR_ACCESS( ChatMessage )
+    SMARTPTR_DEFAULTS( ChatMessage )
 
     public:
 
@@ -100,11 +100,6 @@ class ChatMessage : public core::RefCount< ChatMessage >
 
     protected:
 
-        virtual                 ~ChatMessage() {}
-
-        //! Omit copy construction!
-                                ChatMessage( const ChatMessage& );
-
         QString                 _sender;
         QString                 _receiverId;
         QDateTime               _time;
@@ -116,5 +111,7 @@ typedef m4e::core::SmartPtr< ChatMessage > ChatMessagePtr;
 
 } // namespace chat
 } // namespace m4e
+
+Q_DECLARE_METATYPE( m4e::chat::ChatMessagePtr )
 
 #endif // CHATMESSAGE_H

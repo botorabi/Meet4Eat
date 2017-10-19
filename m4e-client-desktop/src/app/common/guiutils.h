@@ -13,6 +13,7 @@
 #include <document/modeldocument.h>
 #include <webapp/webapp.h>
 #include <QPixmap>
+#include <QWidget>
 
 
 namespace m4e
@@ -46,6 +47,19 @@ class GuiUtils
          * @return      Round icon
          */
         static QPixmap      createRoundIcon( doc::ModelDocumentPtr input );
+
+        /**
+         * @brief Create and assign a ShadowEffect to given widget.
+         *
+         * @param p_widget Widget getting the effect
+         * @param color    Shadow color
+         * @param offset   Offset
+         * @param blurr    Blurr radius
+         */
+        static void         createShadowEffect( QWidget* p_widget,
+                                                const QColor& color = QColor( 100, 100, 100, 180 ),
+                                                const QPoint& offset = QPoint( -2, 2 ),
+                                                int blurr = 6 );
 
         /**
          * @brief Check if the given owner ID matches to currently authorized user's ID.

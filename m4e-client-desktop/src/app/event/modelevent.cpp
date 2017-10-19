@@ -29,5 +29,35 @@ ModelLocationPtr ModelEvent::getLocation( const QString &id )
     return location;
 }
 
+bool ModelEvent::removeLocation( const QString& id )
+{
+    QList< ModelLocationPtr >::iterator loc = _locations.begin();
+    for ( ; loc != _locations.end(); ++loc )
+    {
+        if ( ( *loc )->getId() == id )
+        {
+            _locations.erase( loc );
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ModelEvent::addOrUpdateLocation( ModelLocationPtr location )
+{
+    QList< ModelLocationPtr >::iterator loc = _locations.begin();
+    for ( ; loc != _locations.end(); ++loc )
+    {
+        if ( ( *loc )->getId() == location->getId() )
+        {
+            *loc = location;
+            return false;
+        }
+    }
+
+    _locations.append( location );
+    return true;
+}
+
 } // namespace event
 } // namespace m4e

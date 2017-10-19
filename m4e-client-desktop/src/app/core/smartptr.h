@@ -14,8 +14,27 @@
 #ifndef _SMARTPTR_H_
 #define _SMARTPTR_H_
 
-//! Convenient macro for setting up the smart pointer access, place it into derived class
-#define DECLARE_SMARTPTR_ACCESS( classname )    friend class m4e::core::SmartPtr< classname >;
+
+/**
+ * Convenient macro for setting up the smart pointer access, place it into derived class.
+ * Consider also to use the macro SMARTPTR_DEFAULTS below.
+ */
+#define DECLARE_SMARTPTR_ACCESS( classname )    friend class m4e::core::SmartPtr< classname >; \
+  protected: \
+    /* Omit copy construction*/ \
+    classname( const classname& );
+
+
+/**
+ * Declare the common things on a smart pointer class. Take care that this macro also
+ * defines the destructor with an emptry body.
+ */
+#define SMARTPTR_DEFAULTS( classname )  DECLARE_SMARTPTR_ACCESS( classname ) \
+ protected: \
+    virtual ~classname() {} \
+    /* Omit assignment operator */ \
+    classname& operator = ( const classname& ref );
+
 
 namespace m4e
 {

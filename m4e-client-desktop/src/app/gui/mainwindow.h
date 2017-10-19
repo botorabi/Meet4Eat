@@ -13,6 +13,7 @@
 #include <webapp/webapp.h>
 #include <chat/chatsystem.h>
 #include <event/events.h>
+#include <notification/notifications.h>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QTimer>
@@ -62,17 +63,23 @@ class MainWindow : public QMainWindow
          */
         void                        onTimerInit();
 
+        void                        onBtnLogoClicked();
+
         void                        onBtnCloseClicked();
 
         void                        onBtnMinimizeClicked();
 
         void                        onBtnMaximizeClicked();
 
-        void                        onBtnEventsClicked();
+        void                        onBtnUserProfileClicked();
 
         void                        onBtnSettingsClicked();
 
         void                        onBtnAboutClicked();
+
+        void                        onBtnAddEvent();
+
+        void                        onBtnNotificationClicked();
 
         void                        onEventSelection( QString id );
 
@@ -108,7 +115,26 @@ class MainWindow : public QMainWindow
          */
         void                        onResponseGetEvents( bool success, QList< m4e::event::ModelEventPtr > events );
 
+        /**
+         * @brief This signal is emitted when an event was changed.
+         *
+         * @param changeType One of ChangeType enums
+         * @param eventId    Event ID
+         */
+        void                        onEventChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId );
+
+        /**
+         * @brief This signal is emitted when an event location was changed.
+         *
+         * @param changeType One of ChangeType enums
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         */
+        void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
+
     protected:
+
+        void                        addLogText( const QString& text );
 
         void                        closeEvent( QCloseEvent* p_event );
 
@@ -132,15 +158,15 @@ class MainWindow : public QMainWindow
 
         void                        createWidgetEvent( const QString& groupId );
 
-        Ui::MainWindow*             _p_ui           = nullptr;
+        Ui::MainWindow*             _p_ui            = nullptr;
 
-        QTimer*                     _p_initTimer    = nullptr;
+        QTimer*                     _p_initTimer     = nullptr;
 
-        webapp::WebApp*             _p_webApp       = nullptr;
+        webapp::WebApp*             _p_webApp        = nullptr;
 
-        chat::ChatSystem*           _p_chatSystem   = nullptr;
+        chat::ChatSystem*           _p_chatSystem    = nullptr;
 
-        bool                        _dragging       = false;
+        bool                        _dragging        = false;
 
         QPoint                      _draggingPos;
 };

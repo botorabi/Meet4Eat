@@ -28,7 +28,7 @@ namespace event
  */
 class ModelLocation : public common::ModelBase, public m4e::core::RefCount< ModelLocation >
 {
-    DECLARE_SMARTPTR_ACCESS( ModelLocation )
+    SMARTPTR_DEFAULTS( ModelLocation )
 
     public:
 
@@ -87,11 +87,6 @@ class ModelLocation : public common::ModelBase, public m4e::core::RefCount< Mode
         bool                            operator != ( const ModelLocation& right ) { return _id != right.getId(); }
 
     protected:
-
-        virtual                         ~ModelLocation() {}
-
-        //! Omit copy construction!
-                                        ModelLocation( const ModelLocation& );
 
         QList< QString >                _votedMembers;
 };

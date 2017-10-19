@@ -18,6 +18,7 @@
 #include <document/modeldocument.h>
 #include <document/documentcache.h>
 #include <communication/connection.h>
+#include <notification/notifications.h>
 #include <QObject>
 
 
@@ -112,6 +113,13 @@ class WebApp : public QObject
          * @return Connection instance
          */
         comm::Connection*               getConnection();
+
+        /**
+         * @brief Get the Notifications instance, it handles all incoming notifications from app server.
+         *
+         * @return Notifications instance
+         */
+        notify::Notifications*          getNotifications();
 
         /**
          * @brief User this Events instance in order to access the user events.
@@ -226,6 +234,8 @@ class WebApp : public QObject
 
         comm::Connection*               getOrCreateConnection();
 
+        notify::Notifications*          getOrCreateNotifications();
+
         user::User*                     getOrCreateUser();
 
         event::Events*                  getOrCreateEvent();
@@ -236,13 +246,15 @@ class WebApp : public QObject
 
         QString                         _userID;
 
-        user::UserAuthentication*       _p_userAuth = nullptr;
+        user::UserAuthentication*       _p_userAuth      = nullptr;
 
-        comm::Connection*               _p_connection = nullptr;
+        comm::Connection*               _p_connection    = nullptr;
 
-        user::User*                     _p_user = nullptr;
+        notify::Notifications*          _p_notifications = nullptr;
 
-        event::Events*                  _p_events = nullptr;
+        user::User*                     _p_user          = nullptr;
+
+        event::Events*                  _p_events        = nullptr;
 
         doc::DocumentCache*             _p_documentCache = nullptr;
 

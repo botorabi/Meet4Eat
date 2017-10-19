@@ -15,16 +15,13 @@ namespace m4e
 namespace webapp
 {
 
-QNetworkCookieJar* Meet4EatRESTOperations::_s_cookie = nullptr;
+// Implement Meet4EatRESTOperations
 
 Meet4EatRESTOperations::Meet4EatRESTOperations( QObject* p_parent ) :
  QObject( p_parent )
 {
     _p_nam = new QNetworkAccessManager( this );
-    _s_cookie = _s_cookie ? _s_cookie : new QNetworkCookieJar();
-    _p_nam->setCookieJar( _s_cookie );
-    // in order to share the cookie jar, we have to reset its parent!
-    _s_cookie->setParent( nullptr );
+    RESTCookieJar::get()->setCookiejar( _p_nam );
     connect( _p_nam, SIGNAL( finished( QNetworkReply* ) ), this, SLOT( onReplyFinished( QNetworkReply* ) ) );
 }
 
@@ -54,13 +51,12 @@ void Meet4EatRESTOperations::DELETE( const QUrl& url, unsigned int requestId )
 
 QNetworkCookieJar* Meet4EatRESTOperations::getCookies()
 {
-    return _s_cookie;
+    return RESTCookieJar::get();
 }
 
 void Meet4EatRESTOperations::resetCookie()
 {
-    delete _s_cookie;
-    _s_cookie = new QNetworkCookieJar();
+    RESTCookieJar::get()->resetCookies();
 }
 
 void Meet4EatRESTOperations::startRequest( const QUrl& url, enum QNetworkAccessManager::Operation op, unsigned int requestId, const QJsonDocument& json )
@@ -120,7 +116,7 @@ void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
     }
     else
     {
-        //log_verbose << TAG << "successfully connected web api: " << p_reply->request().url().toString().toStdString() << std::endl;
+        //log_verbose << TAG << "successfully connected web api: " << p_reply->request().url().toString() << std::endl;
         QByteArray    response = p_reply->readAll();
         QJsonDocument jsonresp = QJsonDocument::fromJson( response );
         if ( jsonresp.isEmpty() )
@@ -132,6 +128,41 @@ void Meet4EatRESTOperations::onReplyFinished( QNetworkReply* p_reply )
         {
             emit onResponse( reqid, jsonresp );
         }
+    }
+}
+
+
+// Implement RESTCookieJar
+
+RESTCookieJar* RESTCookieJar::_s_cookieJar = nullptr;
+
+RESTCookieJar* RESTCookieJar::get()
+{
+    if ( !_s_cookieJar )
+        _s_cookieJar = new RESTCookieJar();
+    return _s_cookieJar;
+}
+
+void RESTCookieJar::setCookiejar( QNetworkAccessManager* p_nam )
+{
+    p_nam->setCookieJar( _s_cookieJar );
+    // in order to share the cookie jar, we have to reset its parent!
+    _s_cookieJar->setParent( nullptr );
+}
+
+void RESTCookieJar::destroy()
+{
+    if ( _s_cookieJar )
+        delete _s_cookieJar;
+    _s_cookieJar = nullptr;
+}
+
+void RESTCookieJar::resetCookies()
+{
+    QList< QNetworkCookie > cookies = allCookies();
+    for ( int i = 0; i < cookies.size(); i ++ )
+    {
+        deleteCookie( cookies.at( i ) );
     }
 }
 

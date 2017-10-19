@@ -103,7 +103,7 @@ void Meet4EatWebSocket::onDisconnected()
 
 void Meet4EatWebSocket::onError( QAbstractSocket::SocketError error )
 {
-    log_warning << TAG << "communication problem occured, error code: " << error << ", reason: " << _p_webSocket->errorString().toStdString() << std::endl;
+    log_warning << TAG << "communication problem occured, error code: " << error << ", reason: " << _p_webSocket->errorString() << std::endl;
 }
 
 void Meet4EatWebSocket::onTextMessageReceived( QString message )
@@ -115,7 +115,7 @@ void Meet4EatWebSocket::onTextMessageReceived( QString message )
         if ( _webAppProtVersion.isEmpty() )
         {
             _webAppProtVersion = getProtocolVersion( packet );
-            log_info << TAG << "web app protocol version: " << _webAppProtVersion.toStdString() << std::endl;
+            log_info << TAG << "web app protocol version: " << _webAppProtVersion << std::endl;
         }
         else
         {
@@ -125,7 +125,7 @@ void Meet4EatWebSocket::onTextMessageReceived( QString message )
     else
     {
         log_warning << TAG << "invalid net packet received!" << std::endl;
-        log_warning << TAG << " packet content: " << message.toStdString() << std::endl;
+        log_warning << TAG << " packet content: " << message << std::endl;
     }
 }
 

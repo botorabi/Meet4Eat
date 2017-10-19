@@ -27,7 +27,7 @@ namespace event
 {
 
 /**
- * @brief A dialog for event settings.
+ * @brief A dialog for editting event settings and create a new event.
  *
  * @author boto
  * @date Sep 25, 2017
@@ -58,8 +58,17 @@ class DialogEventSettings : public common::BaseDialog
 
         /**
          * @brief Setup the dialog.
+         *
+         * @param event The event which is represented by the dialog.
          */
         void                        setupUI( event::ModelEventPtr event );
+
+        /**
+         * @brief Setup the dialog for creating a new event.
+         *
+         * @param event The event which is used by the dialog. You can pre-define some settings in event.
+         */
+        void                        setupNewEventUI( event::ModelEventPtr event );
 
     protected slots:
 
@@ -104,6 +113,14 @@ class DialogEventSettings : public common::BaseDialog
         void                        onResponseUpdateEvent( bool success, QString eventId );
 
         /**
+         * @brief This signal is received when results of event creation request.
+         *
+         * @param success  true if the event could successfully be created, otherwise false
+         * @param eventId  ID of event which was created
+         */
+        void                        onResponseNewEvent( bool success, QString eventId );
+
+        /**
          * @brief Called to remove a member from event list.
          */
         void                        onBtnMemberRemoveClicked();
@@ -140,11 +157,13 @@ class DialogEventSettings : public common::BaseDialog
 
         void                        setupReadOnly();
 
-        Ui::WidgetEventSettings*    _p_ui     = nullptr;
+        Ui::WidgetEventSettings*    _p_ui         = nullptr;
 
-        webapp::WebApp*             _p_webApp = nullptr;
+        webapp::WebApp*             _p_webApp     = nullptr;
 
-        bool                        _userIsOwner = false;
+        bool                        _userIsOwner  = false;
+
+        bool                        _editNewEvent = false;
 
         event::ModelEventPtr        _event;
 

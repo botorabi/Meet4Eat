@@ -110,6 +110,7 @@ void WidgetChat::onBtnSendClicked()
 void WidgetChat::onBtnCollapseClicked()
 {
     _p_ui->widgetMain->setVisible( !_p_ui->widgetMain->isVisible() );
+    _p_ui->widgetMain->parentWidget()->updateGeometry();
 }
 
 void WidgetChat::onDocumentReady( m4e::doc::ModelDocumentPtr document )

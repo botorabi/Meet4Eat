@@ -35,19 +35,19 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
-    <number>2</number>
+    <number>9</number>
    </property>
    <property name="leftMargin">
-    <number>2</number>
+    <number>9</number>
    </property>
    <property name="topMargin">
-    <number>2</number>
+    <number>9</number>
    </property>
    <property name="rightMargin">
-    <number>2</number>
+    <number>9</number>
    </property>
    <property name="bottomMargin">
-    <number>2</number>
+    <number>9</number>
    </property>
    <item>
     <widget class="QGroupBox" name="groupBoxMain">
@@ -68,7 +68,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0,0">
           <item>
            <widget class="QLabel" name="labelHead">
             <property name="minimumSize">
@@ -103,6 +103,39 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="pushButtonNotification">
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Event data was updated, click to referesh!</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 10px;
+  border-image: url(:/icon-notify.png);
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
+}</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="pushButtonNewLocation">
             <property name="minimumSize">
              <size>
@@ -127,6 +160,39 @@
   background-color: transparent;
   border-radius: 10px;
   border-image: url(:/icon-location-small.png);
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
+}</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonDelete">
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Event settings</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 10px;
+  border-image: url(:/icon-delete-small.png);
 }
 QPushButton:hover {
   background-color: rgb(50,82,95);
@@ -268,8 +334,8 @@ QPushButton:hover {
    <slot>onBtnNewLocationClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>23</x>
-     <y>26</y>
+     <x>181</x>
+     <y>32</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -277,9 +343,43 @@ QPushButton:hover {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButtonNotification</sender>
+   <signal>clicked()</signal>
+   <receiver>WidgetEventItem</receiver>
+   <slot>onBtnNotificationClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>155</x>
+     <y>28</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>180</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonDelete</sender>
+   <signal>clicked()</signal>
+   <receiver>WidgetEventItem</receiver>
+   <slot>onBtnDeleteClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>197</x>
+     <y>21</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>89</x>
+     <y>-13</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnOptionsClicked()</slot>
   <slot>onBtnNewLocationClicked()</slot>
+  <slot>onBtnNotificationClicked()</slot>
+  <slot>onBtnDeleteClicked()</slot>
  </slots>
 </ui>

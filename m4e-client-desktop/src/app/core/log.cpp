@@ -14,7 +14,6 @@
 
 #include "log.h"
 #include "utils.h"
-
 #include <cassert>
 #include <fstream>
 
@@ -230,4 +229,8 @@ std::ostream& Log::operator << ( const Log::LogLevel& ll )
 } // namespace core
 } // namespace m4e
 
-
+std::ostream& operator << ( std::ostream& stream, const QString& msg )
+{
+    stream << msg.toStdString();
+    return stream;
+}

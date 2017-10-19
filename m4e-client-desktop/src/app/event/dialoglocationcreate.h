@@ -25,7 +25,7 @@ namespace event
 {
 
 /**
- * @brief A dialog for creating a new event location.
+ * @brief A dialog for creating new event locations.
  *
  * @author boto
  * @date Oct 11, 2017
@@ -56,13 +56,6 @@ class DialogLocationCreate : public common::BaseDialog
          * @param event  The event which should get a new location
          */
         void                        setupUI( event::ModelEventPtr event );
-
-        /**
-         * @brief If an event location was successfully created then it can be retrieved by this method.
-         *
-         * @return The new event location
-         */
-        event::ModelLocationPtr     getLocation();
 
     protected slots:
 

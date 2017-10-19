@@ -20,6 +20,7 @@ import net.m4e.app.auth.AuthRole;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
+import net.m4e.system.core.Log;
 
 /**
  * REST Web Service for maintenance tasks
@@ -81,6 +82,7 @@ public class MaintenanceFacadeREST {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         Maintenance mutils = new Maintenance(entityManager);
         int countpurges = mutils.purgeResources();
+        Log.info(TAG, "total count of " + countpurges + " resources were purged");
         jsonresponse.add("countPurges", countpurges);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "" +  countpurges + " resources were purged.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }

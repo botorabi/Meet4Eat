@@ -33,7 +33,7 @@ namespace event
  */
 class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEvent >
 {
-    DECLARE_SMARTPTR_ACCESS( ModelEvent )
+    SMARTPTR_DEFAULTS( ModelEvent )
 
     public:
 
@@ -144,6 +144,22 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         ModelLocationPtr                    getLocation( const QString &id );
 
         /**
+         * @brief Remove a location given its ID.
+         *
+         * @param id Location ID
+         * @return   true if sccessfully removed, false if the ID was not found.
+         */
+        bool                                removeLocation( const QString &id );
+
+        /**
+         * @brief Add a new location to event or modify an existing location.
+         *
+         * @param location Location to add or modify
+         * @return   Return true if a new location was added or false if an existing location was updated.
+         */
+        bool                                addOrUpdateLocation( ModelLocationPtr location );
+
+        /**
          * @brief Get the event owner.
          *
          * NOTE: the returned user model does not contain the complete user data.
@@ -193,15 +209,10 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
 
     protected:
 
-        virtual                             ~ModelEvent() {}
-
-        //! Omit copy construction!
-                                            ModelEvent( const ModelEvent& );
-
         bool                                _isPublic = false;
         QDateTime                           _startDate;
         QTime                               _repeatDayTime;
-        unsigned int                        _repeatWeekDays;
+        unsigned int                        _repeatWeekDays = 0;
         QList< ModelLocationPtr >           _locations;
         user::ModelUserInfoPtr              _owner;
         QList< user::ModelUserInfoPtr >     _members;

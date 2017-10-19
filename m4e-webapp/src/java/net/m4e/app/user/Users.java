@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -27,6 +28,7 @@ import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.event.EventEntity;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.Entities;
@@ -327,6 +329,40 @@ public class Users {
             Log.error(TAG, "*** Fatal error, more than one user with same email '" + email + "' exist in database!");
         }
         return null;
+    }
+
+    /**
+     * Get IDs of all users which are relatives of a given user.
+     * Relatives are other users which are in the same events as the user or
+     * friends etc. The term 'relative' is elsewhere known as "connection" (e.g. in LikedIn),
+     * however in order to avoid any confusion with WebSocket connections in this app,
+     * we use the term 'relative'.
+     * 
+     * NOTE: the current data architecture has no back association from users to the events
+     * they are involved in (by being a member). So we do a forward search by iterating
+     * all events and evaluating their members. This solution does not scale well, we may
+     * consider an optimization in data structure or a kind of an in-memory lookup cache in future.
+     * 
+     * @param user  User we search for relatives for
+     * @return      List of IDs of all other users which are relatives of 'user'.
+     */
+    public List<Long> getUserRelatives(UserEntity user) {
+        Set<Long> relatives = new HashSet();
+        Entities eutils = new Entities(entityManager);
+        List<EventEntity> events = eutils.findAllEntities(EventEntity.class);
+        events.stream().parallel()
+            .filter((event) -> (event.getStatus().getIsActive()))
+            .map((event) -> event.getMembers())
+            .filter((members) -> ((members != null) && (members.contains(user))))
+            .forEach((members) -> {
+                members.stream()
+                    .filter((u) -> (u.getStatus().getIsActive()))
+                    .forEach((u) -> {
+                        relatives.add(u.getId());
+                });
+            });
+
+        return new ArrayList(relatives);
     }
 
     /**

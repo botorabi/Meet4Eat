@@ -56,9 +56,12 @@ class WidgetLocation : public QWidget
         virtual                     ~WidgetLocation();
 
         /**
-         * @brief Setup the widget.
+         * @brief Setup the widget for given event location.
+         *
+         * @param location      Event location
+         * @param userIsOwner   Is the authenticated user also the event owner? Some operations are permitted only to owner.
          */
-        void                        setupUI( event::ModelLocationPtr location );
+        void                        setupUI( event::ModelLocationPtr location, bool userIsOwner );
 
         /**
          * @brief Get the ID which was defined on setup.
@@ -72,13 +75,20 @@ class WidgetLocation : public QWidget
         /**
          * @brief Emitted when the user clicks on the widget.
          *
-         * @param id   The id which was used for setup
+         * @param id   The location ID
          */
         void                        onClicked( QString id );
 
+        /**
+         * @brief Emitted when the user clicks "location delete" button.
+         *
+         * @param id   The location ID
+         */
+        void                        onDeleteLocation( QString id );
+
     protected slots:
 
-        void                        onBtnSettingsClicked();
+        void                        onBtnDeleteClicked();
 
         void                        onBtnInfoClicked();
 
