@@ -18,7 +18,6 @@ import java.util.Objects;
 import javax.enterprise.event.Event;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -504,76 +503,5 @@ public class Events {
             });
 
         return allevents;
-    }
-
-    /**
-     * Send a notification to all event members. The notification data is extracted from given notificationJson string, which is
-     * expected to have the following fields:
-     * 
-     *   type (string)
-     *   subject (string)
-     *   text (string)
-     * 
-     * @param sender            Sender of this notification, if null is passed then a 0 is used as sender ID.
-     * @param event             Members of this meeting event are notified
-     * @param notifyUsersEvent  The event object
-     * @param jsonObject        JSON object containing the necessary notification fields (subject and text)
-     */
-    public void notifyEventMembers(UserEntity sender, EventEntity event, Event<NotifyUsersEvent> notifyUsersEvent, JsonObject jsonObject) {
-        String subject = jsonObject.getString("subject", "");
-        String text = jsonObject.getString("text", "");
-        String type = jsonObject.getString("type", "");
-        if (subject.isEmpty() && text.isEmpty()) {
-            return;
-        }
-
-        // the owner and all event members get the notification
-        List<Long> userids = new ArrayList();
-        userids.add(event.getStatus().getIdOwner());
-        Collection<UserEntity> members = event.getMembers();
-        if (members != null) {
-            members.stream()
-                .filter((user) -> (user.getStatus().getIsActive()))
-                .forEach(user -> {
-                    userids.add(user.getId());
-            });
-        }
-
-        NotifyUsersEvent notify = new NotifyUsersEvent();
-        notify.setRecipientIds(userids);
-        notify.setSenderId((sender == null) ? 0L : sender.getId());
-        notify.setSubject(subject);
-        notify.setType(type);
-        notify.setText(text);
-        JsonObject data = jsonObject.getJsonObject("data");
-        if (data != null) {
-            notify.setData(data);
-        }
-        notifyUsersEvent.fireAsync(notify);
-    }
-
-    /**
-     * Send a notification to all user relatives.
-     * 
-     *   subject (string)
-     *   text (string)
-     * 
-     * @param user                      The user
-     * @param notifyUserRelativesEvent  The event object
-     * @param jsonObject                JSON object containing the necessary notification fields (subject and text)
-     */
-    public void notifyUserRelatives(UserEntity user, Event<NotifyUsersEvent> notifyUserRelativesEvent, JsonObject jsonObject) {
-        String subject = jsonObject.getString("subject", "");
-        String text = jsonObject.getString("text", "");
-        String type = jsonObject.getString("type", "");
-        if (subject.isEmpty() && text.isEmpty()) {
-            return;
-        }
-
-        NotifyUsersEvent notify = new NotifyUsersEvent();
-        notify.setSenderId(user.getId());
-        notify.setSubject(subject);
-        notify.setText(type);
-        notifyUserRelativesEvent.fireAsync(notify);
     }
 }
