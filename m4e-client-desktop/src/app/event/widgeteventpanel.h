@@ -21,7 +21,7 @@
 
 namespace Ui
 {
-    class WidgetEvent;
+    class WidgetEventPanel;
 }
 
 
@@ -154,7 +154,7 @@ class WidgetEventPanel : public QWidget
         void                        setEventMembers();
 
 
-        Ui::WidgetEvent*            _p_ui           = nullptr;
+        Ui::WidgetEventPanel*       _p_ui           = nullptr;
 
         QListWidget*                _p_clientArea   = nullptr;
 

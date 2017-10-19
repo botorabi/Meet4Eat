@@ -767,6 +767,9 @@ QPushButton:hover {
                   <property name="spacing">
                    <number>16</number>
                   </property>
+                  <property name="bottomMargin">
+                   <number>2</number>
+                  </property>
                   <item>
                    <widget class="QLabel" name="label_3">
                     <property name="minimumSize">

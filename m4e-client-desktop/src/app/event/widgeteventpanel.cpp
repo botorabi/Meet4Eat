@@ -11,7 +11,7 @@
 #include <core/log.h>
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
-#include <ui_widgetevent.h>
+#include <ui_widgeteventpanel.h>
 #include "widgeteventitem.h"
 #include "widgetlocation.h"
 #include <chat/chatmessage.h>
@@ -79,7 +79,7 @@ void WidgetEventPanel::setChatSystem( chat::ChatSystem* p_chatSystem )
 
 void WidgetEventPanel::setupUI()
 {
-    _p_ui = new Ui::WidgetEvent;
+    _p_ui = new Ui::WidgetEventPanel;
     _p_ui->setupUi( this );
 
     _p_ui->widgetChat->setupUI( _p_webApp );

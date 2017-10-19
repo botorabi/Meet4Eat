@@ -119,6 +119,7 @@ QGroupBox {
       <widget class="QWidget" name="widgetMain" native="true">
        <property name="styleSheet">
         <string notr="true">#widgetMain {
+ background: transparent;
  border: 0;
 }</string>
        </property>
@@ -142,6 +143,7 @@ QGroupBox {
          <widget class="QWidget" name="widgetChat" native="true">
           <property name="styleSheet">
            <string notr="true">#widgetMain {
+ background: transparent;
  border: 0;
 }</string>
           </property>
@@ -159,7 +161,7 @@ QGroupBox {
             <number>0</number>
            </property>
            <property name="bottomMargin">
-            <number>2</number>
+            <number>0</number>
            </property>
            <item>
             <widget class="QPlainTextEdit" name="textOutput">
@@ -277,7 +279,7 @@ QPushButton:hover {
            <number>0</number>
           </property>
           <property name="bottomMargin">
-           <number>2</number>
+           <number>0</number>
           </property>
           <item>
            <widget class="QListWidget" name="listWidgetMembers">
