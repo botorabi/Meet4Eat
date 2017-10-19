@@ -41,15 +41,15 @@ void Notifications::onChannelNotifyPacket( m4e::comm::PacketPtr packet )
     QJsonObject obj = doc.object();
     QString notifytype = notify->getType();
 
-    if ( ( notifytype == "addevent" ) || ( notifytype == "removeevent"  ))
+    if ( ( notifytype == "addevent" ) || ( notifytype == "removeevent"  ) || ( notifytype == "modifyevent"  ) )
     {
-        Notifications::ChangeType changetype = ( notifytype == "addevent" ) ? Notifications::Added : Notifications::Removed;
-        QString eventid = obj.value( "eventId" ).toString( "" );
+        Notifications::ChangeType changetype = ( notifytype == "addevent" ) ? Notifications::Added : ( notifytype == "removeevent" ) ? Notifications::Removed : Notifications::Modified;
+        QString eventid = QString::number( obj.value( "eventId" ).toInt( 0 ) );
         emit onEventChanged( changetype, eventid );
     }
-    else if ( ( notifytype == "addlocation" ) || ( notifytype == "removelocation"  ))
+    else if ( ( notifytype == "addlocation" ) || ( notifytype == "removelocation"  ) || ( notifytype == "modifylocation"  ) )
     {
-        Notifications::ChangeType changetype = ( notifytype == "addlocation" ) ? Notifications::Added : Notifications::Removed;
+        Notifications::ChangeType changetype = ( notifytype == "addlocation" ) ? Notifications::Added : ( notifytype == "removelocation" ) ? Notifications::Removed : Notifications::Modified;
         QString eventid = QString::number( obj.value( "eventId" ).toInt( 0 ) );
         QString locationid = QString::number(  obj.value( "locationId" ).toInt( 0 ) );
         emit onEventLocationChanged( changetype, eventid, locationid );

@@ -21,7 +21,7 @@
 
 namespace Ui
 {
-    class WidgetEvent;
+    class WidgetEventPanel;
 }
 
 
@@ -36,7 +36,7 @@ namespace event
  * @author boto
  * @date Aug 2, 2017
  */
-class WidgetEvent : public QWidget
+class WidgetEventPanel : public QWidget
 {
     /**
      * @brief TAG Used for logging
@@ -48,17 +48,17 @@ class WidgetEvent : public QWidget
     public:
 
         /**
-         * @brief Create a new "Event" widget
+         * @brief Create a new event panel widget
          *
          * @param p_webApp          Web application interface
          * @param p_parent          Parent widget
          */
-                                    WidgetEvent( webapp::WebApp* p_webApp, QWidget* p_parent = nullptr );
+                                    WidgetEventPanel( webapp::WebApp* p_webApp, QWidget* p_parent = nullptr );
 
         /**
-         * @brief Destroy WidgetEvent
+         * @brief Destroy the panel.
          */
-        virtual                     ~WidgetEvent();
+        virtual                     ~WidgetEventPanel();
 
         /**
          * @brief Set the event which is represented by this widget.
@@ -154,7 +154,7 @@ class WidgetEvent : public QWidget
         void                        setEventMembers();
 
 
-        Ui::WidgetEvent*            _p_ui           = nullptr;
+        Ui::WidgetEventPanel*       _p_ui           = nullptr;
 
         QListWidget*                _p_clientArea   = nullptr;
 

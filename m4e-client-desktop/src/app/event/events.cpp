@@ -21,13 +21,19 @@ Events::Events( QObject* p_parent ) :
     _p_restEvent = new webapp::RESTEvent( this );
     connect( _p_restEvent, SIGNAL( onRESTEventGetEvents( QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onRESTEventGetEvents( QList< m4e::event::ModelEventPtr > ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorGetEvents( QString, QString ) ), this, SLOT( onRESTEventErrorGetEvents( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventGetEvent( m4e::event::ModelEventPtr ) ), this, SLOT( onRESTEventGetEvent( m4e::event::ModelEventPtr ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorGetEvent( QString, QString ) ), this, SLOT( onRESTEventErrorGetEvent( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventNewEvent( QString ) ), this, SLOT( onRESTEventNewEvent( QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorNewEvent( QString, QString ) ), this, SLOT( onRESTEventErrorNewEvent( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventDeleteEvent( QString ) ), this, SLOT( onRESTEventDeleteEvent( QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorDeleteEvent( QString, QString ) ), this, SLOT( onRESTEventErrorDeleteEvent( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventUpdateEvent( QString ) ), this, SLOT( onRESTEventUpdateEvent( QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorUpdateEvent( QString, QString ) ), this, SLOT( onRESTEventErrorUpdateEvent( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventAddMember( QString, QString ) ), this, SLOT( onRESTEventAddMember( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorAddMember( QString, QString ) ), this, SLOT( onRESTEventErrorAddMember( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventRemoveMember( QString, QString ) ), this, SLOT( onRESTEventRemoveMember( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorRemoveMember( QString, QString ) ), this, SLOT( onRESTEventErrorRemoveMember( QString, QString ) ) );
-    connect( _p_restEvent, SIGNAL( onRESTEventGetLocation( QString, m4e::event::ModelLocationPtr ) ), this, SLOT( onRESTEventGetLocation( QString, m4e::event::ModelLocationPtr ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventGetLocation( m4e::event::ModelLocationPtr ) ), this, SLOT( onRESTEventGetLocation( m4e::event::ModelLocationPtr ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorGetLocation( QString, QString ) ), this, SLOT( onRESTEventErrorGetLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventAddLocation( QString, QString ) ), this, SLOT( onRESTEventAddLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorAddLocation( QString, QString ) ), this, SLOT( onRESTEventErrorAddLocation( QString, QString ) ) );
@@ -54,6 +60,16 @@ QList< event::ModelEventPtr > Events::getUserEvents()
     return _events;
 }
 
+ModelEventPtr Events::getUserEvent( const QString& id )
+{
+    for ( ModelEventPtr event: _events )
+    {
+        if ( event->getId() == id )
+            return event;
+    }
+    return ModelEventPtr();
+}
+
 //######### Requests ############//
 
 void Events::requestGetEvents()
@@ -62,10 +78,28 @@ void Events::requestGetEvents()
     _p_restEvent->getEvents();
 }
 
+void Events::requestGetEvent( const QString& eventId )
+{
+    setLastError();
+    _p_restEvent->getEvent( eventId );
+}
+
+void Events::requestDeleteEvent( const QString& eventId )
+{
+    setLastError();
+    _p_restEvent->deleteEvent( eventId );
+}
+
 void Events::requestUpdateEvent( ModelEventPtr event )
 {
     setLastError();
     _p_restEvent->updateEvent( event );
+}
+
+void Events::requestNewEvent( ModelEventPtr event )
+{
+    setLastError();
+    _p_restEvent->createEvent( event );
 }
 
 void Events::requestAddMember (const QString& eventId, const QString& memberId )
@@ -114,6 +148,60 @@ void Events::onRESTEventErrorGetEvents( QString errorCode, QString reason )
     emit onResponseGetEvents( false, QList< event::ModelEventPtr >() );
 }
 
+void Events::onRESTEventGetEvent( ModelEventPtr event )
+{
+    log_verbose << TAG << "got user event: " << event->getId() << std::endl;
+
+    // update the event in our local copy
+    for ( int i = 0; i < _events.size(); i++ )
+    {
+        ModelEventPtr ev = _events[ i ];
+        if ( ev->getId() == event->getId() )
+        {
+            log_verbose << TAG << "  updating the local copy of event" << std::endl;
+            _events[ i ] = event;
+            emit onResponseGetEvent( true, event );
+            return;
+        }
+    }
+    log_verbose << TAG << "  add new event to local copy of events" << std::endl;
+    _events.append( event );
+    emit onResponseGetEvent( true, event );
+}
+
+void Events::onRESTEventErrorGetEvent( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to get user event: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseGetEvent( false, event::ModelEventPtr() );
+}
+
+void Events::onRESTEventDeleteEvent( QString eventId )
+{
+    log_verbose << TAG << "event was deleted: " << eventId << std::endl;
+    emit onResponseDeleteEvent( true, eventId );
+}
+
+void Events::onRESTEventErrorDeleteEvent( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to delete event: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseDeleteEvent( false, "" );
+}
+
+void Events::onRESTEventNewEvent( QString eventId )
+{
+    log_verbose << TAG << "new event was created: " << eventId << std::endl;
+    emit onResponseNewEvent( true, eventId );
+}
+
+void Events::onRESTEventErrorNewEvent( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to create new event: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseNewEvent( false, "" );
+}
+
 void Events::onRESTEventUpdateEvent( QString eventId )
 {
     log_verbose << TAG << "event was updated: " << eventId << std::endl;
@@ -153,17 +241,17 @@ void Events::onRESTEventErrorRemoveMember( QString errorCode, QString reason )
     emit onResponseRemoveMember( false, "", "" );
 }
 
-void Events::onRESTEventGetLocation( QString eventId, ModelLocationPtr location )
+void Events::onRESTEventGetLocation( ModelLocationPtr location )
 {
-    log_verbose << TAG << "location data arrived: " << eventId << "/" << location->getId() << std::endl;
-    emit onResponseGetLocation( true, eventId, location );
+    log_verbose << TAG << "location data arrived: " << location->getId() << std::endl;
+    emit onResponseGetLocation( true, location );
 }
 
 void Events::onRESTEventErrorGetLocation( QString errorCode, QString reason )
 {
     log_verbose << TAG << "failed to add new location to event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
-    emit onResponseGetLocation( false, "", ModelLocationPtr() );
+    emit onResponseGetLocation( false, ModelLocationPtr() );
 }
 
 void Events::onRESTEventAddLocation( QString eventId, QString locationId )

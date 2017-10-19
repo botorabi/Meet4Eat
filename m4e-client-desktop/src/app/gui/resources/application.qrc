@@ -8,6 +8,7 @@
         <file>icon-info.png</file>
         <file>icon-warning.png</file>
         <file>icon-delete.png</file>
+        <file>icon-delete-small.png</file>
         <file>icon-group.png</file>
         <file>icon-location.png</file>
         <file>icon-location-small.png</file>
@@ -22,6 +23,8 @@
         <file>icon-maximize.png</file>
         <file>icon-buzz-64.png</file>
         <file>icon-undo-small.png</file>
+        <file>icon-notify.png</file>
+        <file>icon-newevent.png</file>
         <file>icon.ico</file>
         <file>logo.png</file>
     </qresource>

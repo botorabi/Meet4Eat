@@ -7,11 +7,11 @@
  */
 
 #include <configuration.h>
-#include "widgetevent.h"
+#include "widgeteventpanel.h"
 #include <core/log.h>
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
-#include <ui_widgetevent.h>
+#include <ui_widgeteventpanel.h>
 #include "widgeteventitem.h"
 #include "widgetlocation.h"
 #include <chat/chatmessage.h>
@@ -25,20 +25,20 @@ namespace m4e
 namespace event
 {
 
-WidgetEvent::WidgetEvent( webapp::WebApp* p_webApp, QWidget* p_parent ) :
+WidgetEventPanel::WidgetEventPanel( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  QWidget( p_parent ),
  _p_webApp( p_webApp )
 {
     setupUI();
 }
 
-WidgetEvent::~WidgetEvent()
+WidgetEventPanel::~WidgetEventPanel()
 {
     if ( _p_ui )
         delete _p_ui;
 }
 
-void WidgetEvent::setEvent( const QString& id )
+void WidgetEventPanel::setEvent( const QString& id )
 {
     QList< event::ModelEventPtr > events = _p_webApp->getEvents()->getUserEvents();
     event::ModelEventPtr event;
@@ -64,7 +64,7 @@ void WidgetEvent::setEvent( const QString& id )
     }
 }
 
-void WidgetEvent::setChatSystem( chat::ChatSystem* p_chatSystem )
+void WidgetEventPanel::setChatSystem( chat::ChatSystem* p_chatSystem )
 {
     _p_chatSystem = p_chatSystem;
     connect( _p_chatSystem, SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
@@ -77,9 +77,9 @@ void WidgetEvent::setChatSystem( chat::ChatSystem* p_chatSystem )
     }
 }
 
-void WidgetEvent::setupUI()
+void WidgetEventPanel::setupUI()
 {
-    _p_ui = new Ui::WidgetEvent;
+    _p_ui = new Ui::WidgetEventPanel;
     _p_ui->setupUi( this );
 
     _p_ui->widgetChat->setupUI( _p_webApp );
@@ -89,8 +89,8 @@ void WidgetEvent::setupUI()
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetMembers, shadowcolor, QPoint( -3, 3 ), 3 );
-    common::GuiUtils::createShadowEffect( _p_ui->pushButtonResetMyVotes, shadowcolor, QPoint( -2, 2 ), 2 );
-    common::GuiUtils::createShadowEffect( _p_ui->pushButtonBuzz, shadowcolor, QPoint( -3, 3 ), 3 );
+    //common::GuiUtils::createShadowEffect( _p_ui->pushButtonResetMyVotes, shadowcolor, QPoint( -2, 2 ), 2 );
+    common::GuiUtils::createShadowEffect( _p_ui->pushButtonBuzz, shadowcolor, QPoint( -2, 2 ), 1 );
 
     _p_clientArea = _p_ui->listWidget;
     _p_clientArea->setUniformItemSizes( true );
@@ -101,7 +101,7 @@ void WidgetEvent::setupUI()
     _p_clientArea->setSpacing( 10 );
 }
 
-void WidgetEvent::setupWidgetHead()
+void WidgetEventPanel::setupWidgetHead()
 {
     _p_ui->labelInfoHead->setText( _event->getName() );
     QString info;
@@ -129,7 +129,7 @@ void WidgetEvent::setupWidgetHead()
     _p_ui->labelInfoBody->setText( info );
 }
 
-void WidgetEvent::setupLocations()
+void WidgetEventPanel::setupLocations()
 {
     bool userisowner = common::GuiUtils::userIsOwner( _event->getOwner()->getId(), _p_webApp );
     if ( _event->getLocations().size() > 0 )
@@ -145,13 +145,13 @@ void WidgetEvent::setupLocations()
     }
 }
 
-void WidgetEvent::setupNoLocationWidget()
+void WidgetEventPanel::setupNoLocationWidget()
 {
     //! TODO we need a good looking widget here!
     _p_clientArea->addItem( "Event has no location!" );
 }
 
-void WidgetEvent::addLocation( event::ModelLocationPtr location, bool userIsOwner )
+void WidgetEventPanel::addLocation( event::ModelLocationPtr location, bool userIsOwner )
 {
     WidgetLocation* p_widget = new WidgetLocation( _p_webApp, _p_clientArea );
     p_widget->setupUI( location, userIsOwner );
@@ -167,7 +167,7 @@ void WidgetEvent::addLocation( event::ModelLocationPtr location, bool userIsOwne
     _p_clientArea->setDragDropMode( QListWidget::NoDragDrop );
 }
 
-QListWidgetItem* WidgetEvent::findLocationItem( const QString& locationId )
+QListWidgetItem* WidgetEventPanel::findLocationItem( const QString& locationId )
 {
     for ( int i = 0; i < _p_clientArea->count(); i++ )
     {
@@ -181,7 +181,7 @@ QListWidgetItem* WidgetEvent::findLocationItem( const QString& locationId )
     return nullptr;
 }
 
-void WidgetEvent::setEventMembers()
+void WidgetEventPanel::setEventMembers()
 {
     auto eventmembers = _event->getMembers();
     eventmembers.append( _event->getOwner() );
@@ -205,22 +205,22 @@ void WidgetEvent::setEventMembers()
     _p_ui->labelMembersBody->setText( members );
 }
 
-void WidgetEvent::onBtnBuzzClicked()
+void WidgetEventPanel::onBtnBuzzClicked()
 {
     log_verbose << TAG << "TODO onBtnBuzzClicked..." << std::endl;
 }
 
-void WidgetEvent::onBtnRemoveVotesClicked()
+void WidgetEventPanel::onBtnRemoveVotesClicked()
 {
     log_verbose << TAG << "TODO onButtonRemoveVotesClicked..." << std::endl;
 }
 
-void WidgetEvent::onDeleteLocation( QString id )
+void WidgetEventPanel::onDeleteLocation( QString id )
 {
     _p_webApp->getEvents()->requestRemoveLocation( _event->getId(), id );
 }
 
-void WidgetEvent::onSendMessage( m4e::chat::ChatMessagePtr msg )
+void WidgetEventPanel::onSendMessage( m4e::chat::ChatMessagePtr msg )
 {
     if ( !_p_chatSystem )
         return;
@@ -229,12 +229,12 @@ void WidgetEvent::onSendMessage( m4e::chat::ChatMessagePtr msg )
     _p_chatSystem->sendToEventMembers( msg );
 }
 
-void WidgetEvent::onReceivedChatMessageEvent( chat::ChatMessagePtr msg )
+void WidgetEventPanel::onReceivedChatMessageEvent( chat::ChatMessagePtr msg )
 {
     _p_ui->widgetChat->appendChatText( msg );
 }
 
-void WidgetEvent::onResponseRemoveLocation( bool success, QString eventId, QString locationId )
+void WidgetEventPanel::onResponseRemoveLocation( bool success, QString eventId, QString locationId )
 {
     QString text;
     if ( !success )

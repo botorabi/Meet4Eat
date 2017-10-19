@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>765</width>
-    <height>758</height>
+    <height>654</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,49 +78,63 @@ QPushButton::checked {
     <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
      <item>
       <widget class="QWidget" name="widget" native="true">
-       <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1">
+       <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,0">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_6">
+           <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1,0,0,0,0,0,0">
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <property name="bottomMargin">
                <number>6</number>
               </property>
               <item>
-               <layout class="QVBoxLayout" name="verticalLayout_9">
-                <item>
-                 <spacer name="verticalSpacer">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_4">
-                  <property name="text">
-                   <string>Event Name</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="lineEditName">
-                  <property name="maxLength">
-                   <number>32</number>
-                  </property>
-                  <property name="placeholderText">
-                   <string>Event name</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QWidget" name="widgetEventName" native="true">
+                <layout class="QVBoxLayout" name="verticalLayout_9">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <spacer name="verticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_4">
+                   <property name="text">
+                    <string>Event Name</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEditName">
+                   <property name="maxLength">
+                    <number>32</number>
+                   </property>
+                   <property name="placeholderText">
+                    <string>Event name</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </item>
               <item>
                <spacer name="horizontalSpacer_2">
@@ -139,41 +153,55 @@ QPushButton::checked {
                </spacer>
               </item>
               <item>
-               <layout class="QVBoxLayout" name="verticalLayout_10">
-                <item>
-                 <spacer name="verticalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_12">
-                  <property name="text">
-                   <string>Event Owner</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="lineEditOwner">
-                  <property name="maxLength">
-                   <number>32</number>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                  <property name="placeholderText">
-                   <string>Event owner</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QWidget" name="widgetOwner" native="true">
+                <layout class="QVBoxLayout" name="verticalLayout_10">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <spacer name="verticalSpacer_3">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_12">
+                   <property name="text">
+                    <string>Event Owner</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEditOwner">
+                   <property name="maxLength">
+                    <number>32</number>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                   <property name="placeholderText">
+                    <string>Event owner</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </item>
               <item>
                <spacer name="horizontalSpacer_3">
@@ -192,31 +220,45 @@ QPushButton::checked {
                </spacer>
               </item>
               <item>
-               <layout class="QVBoxLayout" name="verticalLayout_3">
-                <item>
-                 <spacer name="verticalSpacer_2">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="checkBoxIsPublic">
-                  <property name="toolTip">
-                   <string>Public events are open to any user.</string>
-                  </property>
-                  <property name="text">
-                   <string>Event is public.</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QWidget" name="widgetPublic" native="true">
+                <layout class="QVBoxLayout" name="verticalLayout_3">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <spacer name="verticalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="checkBoxIsPublic">
+                   <property name="toolTip">
+                    <string>Public events are open to any user.</string>
+                   </property>
+                   <property name="text">
+                    <string>Event is public.</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </item>
               <item>
                <spacer name="horizontalSpacer">
@@ -262,7 +304,7 @@ QPushButton::checked {
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="label_3">
+             <widget class="QLabel" name="labelDesc">
               <property name="text">
                <string>Description</string>
               </property>
@@ -276,7 +318,7 @@ QPushButton::checked {
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_5">
+             <widget class="QLabel" name="labelStart">
               <property name="text">
                <string>Event Start</string>
               </property>
@@ -293,7 +335,7 @@ QPushButton::checked {
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_7">
+             <widget class="QLabel" name="labelRepeat">
               <property name="text">
                <string>Repeated Event</string>
               </property>
@@ -429,7 +471,7 @@ QPushButton::checked {
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_9">
+             <widget class="QLabel" name="labelMembers">
               <property name="text">
                <string>Members</string>
               </property>
@@ -556,6 +598,19 @@ QPushButton::checked {
            </layout>
           </item>
          </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>

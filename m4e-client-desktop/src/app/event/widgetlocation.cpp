@@ -72,6 +72,7 @@ void WidgetLocation::onBtnDeleteClicked()
         return;
     }
 
+    // the actual deletion is delegated
     emit onDeleteLocation( _location->getId() );
 }
 

@@ -11,11 +11,7 @@ TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
-QMAKE_CXXFLAGS += -Wpedantic -Wextra
-
-debug {
-  QMAKE_CXXFLAGS += -O0
-}
+CONFIG += warn_on
 
 INCLUDEPATH += ../../src/app ../../src
 
@@ -40,9 +36,9 @@ SOURCES += \
     ../../src/app/event/events.cpp \
     ../../src/app/event/modelevent.cpp \
     ../../src/app/event/modellocation.cpp \
-    ../../src/app/event/widgetevent.cpp \
     ../../src/app/event/widgeteventitem.cpp \
     ../../src/app/event/widgeteventlist.cpp \
+    ../../src/app/event/widgeteventpanel.cpp \
     ../../src/app/event/widgetlocation.cpp \
     ../../src/app/gui/mainwindow.cpp \
     ../../src/app/notification/notifyevent.cpp \
@@ -91,10 +87,10 @@ HEADERS += \
     ../../src/app/event/events.h \
     ../../src/app/event/modelevent.h \
     ../../src/app/event/modellocation.h \
-    ../../src/app/event/widgetevent.h \
     ../../src/app/event/widgeteventitem.h \
     ../../src/app/event/widgeteventlist.h \
     ../../src/app/event/widgetlocation.h \
+    ../../src/app/event/widgeteventpanel.h \
     ../../src/app/gui/mainwindow.h \
     ../../src/app/notification/notifyevent.h \
     ../../src/app/notification/notifications.h \
@@ -121,7 +117,6 @@ HEADERS += \
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
     ../../src/app/gui/forms/basedialog.ui \
-    ../../src/app/gui/forms/widgetevent.ui \
     ../../src/app/gui/forms/widgetlocation.ui \
     ../../src/app/gui/forms/widgeteventitem.ui \
     ../../src/app/gui/forms/widgetabout.ui \
@@ -129,7 +124,8 @@ FORMS += \
     ../../src/app/gui/forms/widgetlocationdetails.ui \
     ../../src/app/gui/forms/widgeteventsettings.ui \
     ../../src/app/gui/forms/widgetchat.ui \
-    ../../src/app/gui/forms/widgetlocationcreate.ui
+    ../../src/app/gui/forms/widgetlocationcreate.ui \
+    ../../src/app/gui/forms/widgeteventpanel.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

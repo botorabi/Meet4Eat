@@ -8,12 +8,13 @@
 package net.m4e.app.chat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
 import net.m4e.app.communication.ChannelChatEvent;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
@@ -35,6 +36,7 @@ import net.m4e.system.core.Log;
  * @author boto
  * Date of creation Oct 07, 2017
  */
+@Singleton
 @ApplicationScoped
 public class ChatSystem {
 
@@ -54,6 +56,14 @@ public class ChatSystem {
      */
     @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
     private EntityManager entityManager;
+
+    /**
+     * Called on post-construction of the instance.
+     */
+    @PostConstruct
+    public void chatSystemInit() {
+        Log.info(TAG, "Starting the chat system");
+    }
 
     /**
      * New chat messages are dispatched asynchronously.

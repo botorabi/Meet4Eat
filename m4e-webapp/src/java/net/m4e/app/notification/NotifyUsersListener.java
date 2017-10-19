@@ -69,8 +69,8 @@ public class NotifyUsersListener {
 
         // assemble a packet and send it out
         Packet packet = new Packet();
-        packet.setChannel((null != sender) ? Packet.CHANNEL_NOTIFY : Packet.CHANNEL_SYSTEM);
-        packet.setSource((null != sender) ? sender.getName() : "");
+        packet.setChannel(Packet.CHANNEL_NOTIFY);
+        packet.setSource((sender != null) ? sender.getName() : "");
 
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("type", event.getType());

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WidgetEvent</class>
- <widget class="QWidget" name="WidgetEvent">
+ <class>WidgetEventPanel</class>
+ <widget class="QWidget" name="WidgetEventPanel">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -277,30 +277,17 @@ QPushButton:hover {
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>4</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
            <widget class="QPushButton" name="pushButtonBuzz">
             <property name="minimumSize">
              <size>
-              <width>48</width>
-              <height>48</height>
+              <width>64</width>
+              <height>64</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>48</width>
-              <height>48</height>
+              <width>64</width>
+              <height>64</height>
              </size>
             </property>
             <property name="focusPolicy">
@@ -371,7 +358,7 @@ QPushButton:hover {
   <connection>
    <sender>pushButtonResetMyVotes</sender>
    <signal>clicked()</signal>
-   <receiver>WidgetEvent</receiver>
+   <receiver>WidgetEventPanel</receiver>
    <slot>onBtnRemoveVotesClicked()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -387,7 +374,7 @@ QPushButton:hover {
   <connection>
    <sender>pushButtonBuzz</sender>
    <signal>clicked()</signal>
-   <receiver>WidgetEvent</receiver>
+   <receiver>WidgetEventPanel</receiver>
    <slot>onBtnBuzzClicked()</slot>
    <hints>
     <hint type="sourcelabel">
