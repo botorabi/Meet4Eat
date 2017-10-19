@@ -514,11 +514,31 @@ function Meet4EatUserRegREST() {
 	 * Request for activating an user account.
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 * @param {integer}  id               User id
 	 * @param {integer}  token            Activation token
 	 */
-	self.accountActivate = function(resultsCallback, id, token) {
-		self._fcnRequestJson(self._rootPath + '/activate/' + id + '/' + token, null, 'GET', resultsCallback);
+	self.accountActivate = function(resultsCallback, token) {
+		self._fcnRequestJson(self._rootPath + '/activate/' + token, null, 'GET', resultsCallback);
+	};
+
+	/**
+	 * Request for resetting a password.
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 * @param {array}    fields           User email
+	 */
+	self.requestResetPassword = function(resultsCallback, fields) {
+		self._fcnRequestJson(self._rootPath + '/requestpasswordreset', fields, 'POST', resultsCallback);
+	};
+
+        /**
+	 * Request for performing the password reset.
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 * @param {integer}  token            Activation token
+	 * @param {array}    fields           User's new pasword
+	 */
+	self.resetPassword = function(resultsCallback, token, fields) {
+		self._fcnRequestJson(self._rootPath + '/passwordreset/' + token, fields, 'POST', resultsCallback);
 	};
 }
 

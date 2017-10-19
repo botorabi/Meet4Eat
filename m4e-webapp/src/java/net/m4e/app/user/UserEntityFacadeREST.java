@@ -8,6 +8,7 @@
 
 package net.m4e.app.user;
 
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -15,7 +16,9 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
@@ -191,16 +194,15 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     /**
      * Activate a user by given its activation token. This is usually used during the registration process.
      * 
-     * @param id        User ID
      * @param token     Activation token
      * @param request   HTTP request
      * @return          JSON response
      */
     @GET
-    @Path("activate/{id}/{token}")
+    @Path("activate/{token}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
-    public String activateUser(@PathParam("id") Long id, @PathParam("token") String token, @Context HttpServletRequest request) {
+    public String activateUser(@PathParam("token") String token, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (null != sessionuser) {
@@ -208,15 +210,96 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
-        Log.verbose(TAG, "activating user account: user id: " + id + ", token: " + token);
+        Log.verbose(TAG, "activating user account, token: " + token);
         UserEntity user;
         try {
             UserRegistrations register = new UserRegistrations(entityManager);
-            user = register.activateUserAccount(id, token);
+            user = register.activateUserAccount(token);
         }
         catch (Exception ex) {
             Log.debug(TAG, "user activation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+        jsonresponse.add("userName", user.getName());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully activated.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Request for resetting a user password. Only guests can use this service.
+     * 
+     * @param requestJson  Request data such as user email address in JSON format
+     * @param request      HTTP request
+     * @return             JSON response
+     */
+    @POST
+    @Path("requestpasswordreset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    public String requestPasswordReset(String requestJson, @Context HttpServletRequest request) {
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionuser != null) {
+            Log.error(TAG, "*** an already authenticated user tries to reset the password!");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
+        }
+
+        try {
+            JsonReader jreader = Json.createReader(new StringReader(requestJson));
+            JsonObject jobject = jreader.readObject();
+            String email = jobject.getString("email", null);
+            if (email == null) {
+                Log.error(TAG, "cannot process password reset request, invalid input");
+                return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
+            }
+            // create the activation URL
+            String activationurl = AppConfiguration.getInstance().getHTMLBaseURL(request) + "/resetpassword.html";
+            UserRegistrations register = new UserRegistrations(entityManager);
+            register.requestPasswordReset(email, activationurl, sendMailEvent);
+        }
+        catch(Exception ex) {
+            Log.error(TAG, "cannot process password reset request, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, null);           
+        }
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Request for user password reset was successfully processed.", ResponseResults.CODE_OK, null);
+    }
+
+    /**
+     * Try to set a new password for an user account. The password reset token is validated,
+     * on success the user password is reset to the given one in 'requestJason'.
+     * 
+     * @param requestJson Request in JSON
+     * @param token       Password reset token
+     * @param request     HTTP request
+     * @return            JSON response
+     */
+    @POST
+    @Path("passwordreset/{token}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    public String passwordReset(String requestJson, @PathParam("token") String token, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionuser != null) {
+            Log.error(TAG, "*** an already authenticated user tries to reset an user password");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        UserEntity user;
+        try {
+            JsonReader jreader = Json.createReader(new StringReader(requestJson));
+            JsonObject jobject = jreader.readObject();
+            String newpassword = jobject.getString("password", null);
+            if (newpassword == null) {
+                Log.error(TAG, "cannot process password reset request, invalid input");
+                return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
+            }
+            UserRegistrations register = new UserRegistrations(entityManager);
+            user = register.processPasswordReset(token, newpassword);
+        }
+        catch (Exception ex) {
+            Log.debug(TAG, "user password reset failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
         jsonresponse.add("userName", user.getName());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully activated.", ResponseResults.CODE_OK, jsonresponse.build().toString());

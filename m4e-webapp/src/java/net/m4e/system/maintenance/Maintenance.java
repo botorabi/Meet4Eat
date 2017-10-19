@@ -20,6 +20,7 @@ import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
 import net.m4e.app.event.Events;
 import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.UserRegistrations;
 import net.m4e.app.user.Users;
 import net.m4e.common.Entities;
 import net.m4e.system.core.AppInfoEntity;
@@ -76,6 +77,10 @@ public class Maintenance {
      */
     public int purgeResources() {
         int countpurges = purgeDeletedResources();
+
+        UserRegistrations regutils = new UserRegistrations(entityManager);
+        countpurges += regutils.purgeExpiredRequests();
+
         updateAppInfo();
         return countpurges;
     }
@@ -148,10 +153,10 @@ public class Maintenance {
      * updates the "last maintenance time".
      */
     public void updateAppInfo() {
-        // upate app info
+        // update app info
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
-        if (null == info) {
+        if (info == null) {
             Log.warning(TAG, "Could not update app info");
             return;
         }
