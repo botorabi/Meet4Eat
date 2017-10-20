@@ -126,15 +126,11 @@ public class SendEmailListener {
 
         try {
             String cfgfile = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
-            if (null == cfgfile) {
+            if (cfgfile == null) {
                 Log.error(TAG, "*** Missing mailer configuration file entry in application configuration!");
                 return null;
             }
             InputStream resourceContent = context.getResourceAsStream("/WEB-INF/" + cfgfile);
-            if (null == cfgfile) {
-                Log.error(TAG, "*** Missing mailer configuration file: " + "/WEB-INF/" + cfgfile);
-                return null;
-            }
             Properties cfg = new Properties();
             cfg.load(resourceContent);
             mailServerConfig = cfg;

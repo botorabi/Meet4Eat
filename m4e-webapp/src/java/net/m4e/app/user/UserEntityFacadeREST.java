@@ -299,7 +299,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
         catch (Exception ex) {
             Log.debug(TAG, "user password reset failed, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
         jsonresponse.add("userName", user.getName());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully activated.", ResponseResults.CODE_OK, jsonresponse.build().toString());

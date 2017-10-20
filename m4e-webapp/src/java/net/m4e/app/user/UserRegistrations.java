@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import javax.enterprise.event.Event;
 import javax.persistence.EntityManager;
+import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.SendEmailEvent;
 import net.m4e.common.Entities;
 import net.m4e.system.core.Log;
@@ -56,6 +57,28 @@ public class UserRegistrations {
     }
 
     /**
+     * Get the count of pending account registrations. The count includes
+     * also expired activations.
+     * 
+     * @return Count of pending account registrations
+     */
+    public int getCountPendingAccountActivations() {
+        Entities entities = new Entities(entityManager);
+        return entities.getEntityCount(UserRegistrationEntity.class);
+    }
+
+    /**
+     * Get count of pending password reset requests. The count contains also
+     * expired requests.
+     * 
+     * @return Count of pass word reset requests
+     */
+    public int getCountPendingPasswordResets() {
+        Entities entities = new Entities(entityManager);
+        return entities.getEntityCount(UserPasswordResetEntity.class);
+    }
+
+    /**
      * Purge all expired account registrations and password reset requests.
      * This method may be called priodically (e.g. every 24 hours) by the maintenance module.
      * 
@@ -67,6 +90,7 @@ public class UserRegistrations {
 
         Long now = (new Date()).getTime();
         Entities entities = new Entities(entityManager);
+        Users users = new Users(entityManager);
 
         // purge expired account registrations
         List<UserRegistrationEntity> regs = entities.findAllEntities(UserRegistrationEntity.class);
@@ -76,8 +100,16 @@ public class UserRegistrations {
             if (duration > REGISTER_EXPIRATION_HOURS) {
                 purgedregs++;
                 UserEntity user = reg.getUser();
-                entities.deleteEntity(user);
+                reg.setUser(null);
                 entities.deleteEntity(reg);
+                if (user != null) {
+                    try {
+                        users.markUserAsDeleted(user);
+                    }
+                    catch(Exception ex) {
+                        Log.warning(TAG, "could not mark the user as deleted, id: " + user.getId());
+                    }
+                }
             }
         }
         // purge expired password reset requests
@@ -194,15 +226,27 @@ public class UserRegistrations {
         Users users = new Users(entityManager);
         UserEntity user = users.findUserByEmail(email);
         if ((user == null) || (user.getStatus().getIsDeleted())) {
-            throw new Exception("There is no registered user with given E-Mail address!");
+            throw new Exception("There is no registered user with given email address!");
         }
 
-        // create a 'password reset' entry
-        UserPasswordResetEntity reset = new UserPasswordResetEntity();
+        UserPasswordResetEntity reset = null;
+        // if there is already a reset password entry then re-use it
+        Entities entities = new Entities(entityManager);
+        List<UserPasswordResetEntity> regs = entities.findAllEntities(UserPasswordResetEntity.class);
+        for (UserPasswordResetEntity reg : regs) {
+            if (user.equals(reg.getUser())) {
+                reset = reg;
+                break;
+            }
+        }
+        // create a 'password reset' entry if no one exists
+        if (reset == null) {
+            reset = new UserPasswordResetEntity();
+            reset.setUser(user);
+            entities.createEntity(reset);
+        }
         reset.setRequestDate((new Date()).getTime());
         String resettoken = reset.createResetToken();
-        Entities entities = new Entities(entityManager);
-        entities.createEntity(reset);
 
         // send an email to user
         String body = "";
@@ -263,6 +307,10 @@ public class UserRegistrations {
         duration /= (1000 * 60);
         if ( duration > PW_RESET_EXPIRATION_MINUTES) {
             throw new Exception("Cannot reset user password, reset code was expired.");            
+        }
+
+        if (AuthorityConfig.getInstance().createPassword("").equals(newPassword)) {
+            throw new Exception("Cannot reset user password, the password must not be empty.");            
         }
         // set the password
         user.setPassword(newPassword);

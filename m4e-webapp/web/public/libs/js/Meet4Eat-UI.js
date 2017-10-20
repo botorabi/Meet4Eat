@@ -214,7 +214,17 @@ function Meet4EatUI() {
 			obj[item.name] = item.value;
 			return obj;
 		}, {});
-		inputfields['password'] = self._m4eRESTAuth.createHash(inputfields['password']);
+		var passwd = inputfields['password'];
+		var passwdrepeat = inputfields['password-repeat'];
+		if (passwd !== passwdrepeat) {
+			self.showModalBox("The password and its repetition do not match!", "Invalid Input", "Dismiss");
+			return;
+		}
+		if (passwd.length < 8) {
+			self.showModalBox("The password must have at least 8 characters!", "Invalid Input", "Dismiss");
+			return;
+		}
+		inputfields['password'] = self._m4eRESTAuth.createHash(passwd);
 		self._m4eRESTUserReg.accountRegister({
 			success: function(res, resp) {
 				if (res.status === "ok") {
@@ -510,6 +520,8 @@ function Meet4EatUI() {
 				$('#sys_countuserspurge').text(stats.userCountPurge);
 				$('#sys_counteventspurge').text(stats.eventCountPurge);
 				$('#sys_counteventlocationspurge').text(stats.eventLocationCountPurge);
+				$('#sys_countpendingaccounts').text(stats.pendingAccountRegistration);
+				$('#sys_countpendingpasswords').text(stats.pendingPasswordResets);
 			},
 			error: function(err) {
 				self.showModalBox("Cannot retrieve server stats! Reason: " + err, "Connection Problem", "Dismiss");

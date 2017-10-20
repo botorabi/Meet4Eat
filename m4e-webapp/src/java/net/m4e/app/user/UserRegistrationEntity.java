@@ -42,7 +42,7 @@ public class UserRegistrationEntity implements Serializable {
     /**
      * User this activation is used for
      */
-    @OneToOne(optional=false, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private UserEntity user;
 
     /**

@@ -58,7 +58,7 @@ public class EventLocationEntity implements Serializable {
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = CascadeType.ALL)
+    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**

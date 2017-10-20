@@ -37,7 +37,7 @@ public class EventLocations {
     /**
      * Used for logging
      */
-    private final static String TAG = "EventLocationUtils";
+    private final static String TAG = "EventLocations";
 
     private final EntityManager entityManager;
 

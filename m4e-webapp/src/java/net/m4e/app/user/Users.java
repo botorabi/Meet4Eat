@@ -239,7 +239,7 @@ public class Users {
     public void markUserAsDeleted(UserEntity user) throws Exception {
         Entities eutils = new Entities(entityManager);
         StatusEntity status = user.getStatus();
-        if (null == status) {
+        if (status == null) {
             throw new Exception("User has no status field!");
         }
         status.setDateDeletion((new Date().getTime()));
@@ -248,7 +248,7 @@ public class Users {
         // update the app stats
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
-        if (null == appinfo) {
+        if (appinfo == null) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementUserCountPurge(1L);

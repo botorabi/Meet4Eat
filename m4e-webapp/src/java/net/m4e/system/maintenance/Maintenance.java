@@ -20,6 +20,7 @@ import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
 import net.m4e.app.event.Events;
 import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.UserPasswordResetEntity;
 import net.m4e.app.user.UserRegistrations;
 import net.m4e.app.user.Users;
 import net.m4e.common.Entities;
@@ -59,6 +60,10 @@ public class Maintenance {
      * @return          A JSON object containing builder the proper entity fields
      */
     public JsonObjectBuilder exportInfoJSON(AppInfoEntity entity) {
+        UserRegistrations regs = new UserRegistrations(entityManager);
+        int pendingaccounts = regs.getCountPendingAccountActivations();
+        int pendingpwresets = regs.getCountPendingPasswordResets();
+
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("version", entity.getVersion());
         json.add("dateLastMaintenance", entity.getDateLastMaintenance());
@@ -66,6 +71,8 @@ public class Maintenance {
         json.add("userCountPurge", entity.getUserCountPurge());
         json.add("eventCountPurge", entity.getEventCountPurge());
         json.add("eventLocationCountPurge", entity.getEventLocationCountPurge());
+        json.add("pendingAccountRegistration", pendingaccounts);
+        json.add("pendingPasswordResets", pendingpwresets);
         return json;
     }
 
@@ -76,11 +83,9 @@ public class Maintenance {
      * @return Count of purged resources
      */
     public int purgeResources() {
-        int countpurges = purgeDeletedResources();
-
         UserRegistrations regutils = new UserRegistrations(entityManager);
-        countpurges += regutils.purgeExpiredRequests();
-
+        int countpurges = regutils.purgeExpiredRequests();
+        countpurges += purgeDeletedResources();
         updateAppInfo();
         return countpurges;
     }
@@ -149,8 +154,8 @@ public class Maintenance {
     }
 
     /**
-     * Update the app info after purging. It resets the purge counters and
-     * updates the "last maintenance time".
+     * Update the app info. It updates the purge counters and
+     * the "last maintenance time".
      */
     public void updateAppInfo() {
         // update app info
