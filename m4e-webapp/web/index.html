@@ -5,6 +5,7 @@
 		<meta charset="UTF-8">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" href="public/images/favicon.ico">
 		<script src="public/libs/js/jquery.js"></script>
 		<script src="public/libs/js/bootstrap.js"></script>
 		<script src="public/libs/js/moment.js"></script>
@@ -59,6 +60,9 @@
 								<hr>
 								<div>
 									<a class="btn" href="register.html">You have no account? <strong>Register now</strong>.</a>
+								</div>
+								<div>
+									<a class="btn" href="requestpassword.html">Forgot your password?</a>
 								</div>
 							</div>
 						</div>
@@ -600,6 +604,14 @@
 								<tr>
 									<td>Count event locations to purge</td>
 									<td><span id="sys_counteventlocationspurge"></span></td>
+								</tr>
+								<tr>
+									<td>Count pending account registrations</td>
+									<td><span id="sys_countpendingaccounts"></span></td>
+								</tr>
+								<tr>
+									<td>Count pending password resets</td>
+									<td><span id="sys_countpendingpasswords"></span></td>
 								</tr>
 							</table>
 						</div>

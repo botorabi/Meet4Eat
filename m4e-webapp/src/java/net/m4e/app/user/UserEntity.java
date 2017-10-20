@@ -56,7 +56,7 @@ public class UserEntity implements Serializable {
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**

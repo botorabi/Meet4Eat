@@ -10,6 +10,7 @@ package net.m4e.app.user;
 
 import java.util.List;
 import javax.persistence.EntityManager;
+import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.common.Strings;
 
 /**
@@ -67,6 +68,10 @@ public class UserEntityInputValidator {
 
         if (!Strings.checkMinMaxLength(reqentity.getPassword(), USER_INPUT_MIN_LEN_PASSWD, USER_INPUT_MAX_LEN_PASSWD)) {
             throw new Exception(getLenRangeText("The password", USER_INPUT_MIN_LEN_PASSWD, USER_INPUT_MAX_LEN_PASSWD));
+        }
+
+        if (AuthorityConfig.getInstance().createPassword("").equals(reqentity.getPassword())) {
+            throw new Exception("The password must not be empty.");            
         }
 
         if (!Strings.checkMinMaxLength(reqentity.getEmail(), USER_INPUT_MIN_LEN_EMAIL, USER_INPUT_MAX_LEN_EMAIL)) {

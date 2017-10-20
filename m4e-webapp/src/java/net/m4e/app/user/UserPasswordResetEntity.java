@@ -19,13 +19,13 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
 /**
- * This entity is used for user registration. It provides an activation token.
+ * This entity is used for resetting user password.
  * 
  * @author boto
- * Date of creation Oct 1, 2017
+ * Date of creation Oct 19, 2017
  */
 @Entity
-public class UserRegistrationEntity implements Serializable {
+public class UserPasswordResetEntity implements Serializable {
 
     /**
      * Serialization version
@@ -42,17 +42,17 @@ public class UserRegistrationEntity implements Serializable {
     /**
      * User this activation is used for
      */
-    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(optional=false, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private UserEntity user;
 
     /**
-     * User activation token
+     * Password reset token
      */
     @Column(nullable=false)
-    private String activationToken;
+    private String resetToken;
 
     /**
-     * Timestamp of account registration request, used for checking the expiration period.
+     * Timestamp of password reset request, used for checking the expiration period.
      */
     private Long requestDate = 0L;
 
@@ -73,7 +73,7 @@ public class UserRegistrationEntity implements Serializable {
     }
 
     /**
-     * Get registering user.
+     * Get the user whos password is going to get reset.
      * 
      * @return User
      */
@@ -82,7 +82,7 @@ public class UserRegistrationEntity implements Serializable {
     }
 
     /**
-     * Set registering user.
+     * Set the user whos password we want to reset.
      * 
      * @param user 
      */
@@ -91,31 +91,31 @@ public class UserRegistrationEntity implements Serializable {
     }
 
     /**
-     * User activation needs this token.
+     * The password reset process needs this token.
      * 
-     * @return Activation token
+     * @return Password reset token
      */
-    public String getActivationToken() {
-        return activationToken;
+    public String getResetToken() {
+        return resetToken;
     }
 
     /**
-     * Set user activation token.
+     * Set password reset token.
      * 
-     * @param activationToken 
+     * @param resetToken 
      */
-    public void setActivationToken(String activationToken) {
-        this.activationToken = activationToken;
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
     }
 
     /**
-     * Create a new activation token and assign it to 'activationToken'.
+     * Create a new password reset token and assign it to 'resetToken'.
      * 
-     * @return A new created activation token
+     * @return A new password reset token
      */
-    public String createActivationToken() {
+    public String createResetToken() {
         String uuid = UUID.randomUUID().toString();
-        setActivationToken(uuid);
+        setResetToken(uuid);
         return uuid;
     }
 
@@ -146,10 +146,10 @@ public class UserRegistrationEntity implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof UserRegistrationEntity)) {
+        if (!(object instanceof UserPasswordResetEntity)) {
             return false;
         }
-        UserRegistrationEntity other = (UserRegistrationEntity) object;
+        UserPasswordResetEntity other = (UserPasswordResetEntity) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -158,6 +158,6 @@ public class UserRegistrationEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "user.UserRegistrationEntity[ id=" + id + " ]";
+        return "user.UserPasswordResetEntity[ id=" + id + " ]";
     }
 }

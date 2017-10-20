@@ -5,6 +5,7 @@
 		<meta charset="UTF-8">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" href="public/images/favicon.ico">
 		<script src="public/libs/js/jquery.js"></script>
 		<script src="public/libs/js/bootstrap.js"></script>
 		<script src="public/libs/js/Meet4Eat-REST.js"></script>
@@ -65,21 +66,13 @@
 			/* Get the query parameters out of the url. It contains the activation information. */
 			function getParams() {
 				var url = window.location.search.substring(1);
-				var parts = url.split('&');
-				if (parts < 2) {
-					return null;
-				}
-				var qparts = parts[0].split('=');
-				if (qparts[0] !== 'id') {
-					return null;
-				}
-				var id = qparts[1];
-				qparts = parts[1].split('=');
+				var qparts = url.split('=');
+				qparts = url.split('=');
 				if (qparts[0] !== 'token') {
 					return null;
 				}
 				var token = qparts[1];
-				return [id, token];
+				return token;
 			}
 
 			/* Try to activate the account */
@@ -102,7 +95,7 @@
 						error: function(err) {
 							self.showModalBox(err, "Connection Problem", "Dismiss");
 						}
-					}, queryparams[0], queryparams[1]);
+					}, queryparams);
 				}
 			});
 		</script>

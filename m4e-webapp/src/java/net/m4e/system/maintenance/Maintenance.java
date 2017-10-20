@@ -20,6 +20,7 @@ import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
 import net.m4e.app.event.Events;
 import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.UserRegistrations;
 import net.m4e.app.user.Users;
 import net.m4e.common.Entities;
 import net.m4e.system.core.AppInfoEntity;
@@ -58,6 +59,10 @@ public class Maintenance {
      * @return          A JSON object containing builder the proper entity fields
      */
     public JsonObjectBuilder exportInfoJSON(AppInfoEntity entity) {
+        UserRegistrations regs = new UserRegistrations(entityManager);
+        int pendingaccounts = regs.getCountPendingAccountActivations();
+        int pendingpwresets = regs.getCountPendingPasswordResets();
+
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("version", entity.getVersion());
         json.add("dateLastMaintenance", entity.getDateLastMaintenance());
@@ -65,17 +70,31 @@ public class Maintenance {
         json.add("userCountPurge", entity.getUserCountPurge());
         json.add("eventCountPurge", entity.getEventCountPurge());
         json.add("eventLocationCountPurge", entity.getEventLocationCountPurge());
+        json.add("pendingAccountRegistration", pendingaccounts);
+        json.add("pendingPasswordResets", pendingpwresets);
         return json;
     }
 
     /**
-     * Purge resources and update the app info by resetting the purge counters
+     * Purge all resources which are expired, such as account registrations or
+     * password reset requests which passed their expiration duration.
+     * 
+     * @return Count of purged resources
+     */
+    public int purgeExpiredResources() {
+        UserRegistrations regutils = new UserRegistrations(entityManager);
+        return regutils.purgeExpiredRequests();
+    }
+
+    /**
+     * Purge all resources and update the app info by resetting the purge counters
      * and updating "last maintenance time".
      * 
      * @return Count of purged resources
      */
-    public int purgeResources() {
-        int countpurges = purgeDeletedResources();
+    public int purgeAllResources() {
+        int countpurges = purgeExpiredResources();
+        countpurges += purgeDeletedResources();
         updateAppInfo();
         return countpurges;
     }
@@ -144,14 +163,14 @@ public class Maintenance {
     }
 
     /**
-     * Update the app info after purging. It resets the purge counters and
-     * updates the "last maintenance time".
+     * Update the app info. It updates the purge counters and
+     * the "last maintenance time".
      */
     public void updateAppInfo() {
-        // upate app info
+        // update app info
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
-        if (null == info) {
+        if (info == null) {
             Log.warning(TAG, "Could not update app info");
             return;
         }
