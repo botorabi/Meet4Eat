@@ -20,7 +20,6 @@ import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
 import net.m4e.app.event.Events;
 import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.UserPasswordResetEntity;
 import net.m4e.app.user.UserRegistrations;
 import net.m4e.app.user.Users;
 import net.m4e.common.Entities;
@@ -77,14 +76,24 @@ public class Maintenance {
     }
 
     /**
-     * Purge resources and update the app info by resetting the purge counters
+     * Purge all resources which are expired, such as account registrations or
+     * password reset requests which passed their expiration duration.
+     * 
+     * @return Count of purged resources
+     */
+    public int purgeExpiredResources() {
+        UserRegistrations regutils = new UserRegistrations(entityManager);
+        return regutils.purgeExpiredRequests();
+    }
+
+    /**
+     * Purge all resources and update the app info by resetting the purge counters
      * and updating "last maintenance time".
      * 
      * @return Count of purged resources
      */
-    public int purgeResources() {
-        UserRegistrations regutils = new UserRegistrations(entityManager);
-        int countpurges = regutils.purgeExpiredRequests();
+    public int purgeAllResources() {
+        int countpurges = purgeExpiredResources();
         countpurges += purgeDeletedResources();
         updateAppInfo();
         return countpurges;
