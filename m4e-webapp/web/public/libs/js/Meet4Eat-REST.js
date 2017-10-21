@@ -19,7 +19,7 @@ function Meet4EatREST() {
 	var self = this;
 
 	/* API version */
-	self._version = "0.7.0";
+	self._version = "0.8.0";
 
 	/* Root path of web service */
 	self._webRoot = "/m4e-webapp";
@@ -481,7 +481,7 @@ function Meet4EatUserRegREST() {
 	var self = this;
 
 	/* API version */
-	self._version = "1.0.0";
+	self._version = "1.1.0";
 
 	/* Root URL for REST requests */
 	self._rootPath = "";

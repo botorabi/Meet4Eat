@@ -19,6 +19,7 @@ import javax.persistence.EntityManager;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
 import net.m4e.app.event.Events;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.UserRegistrations;
 import net.m4e.app.user.Users;
@@ -105,9 +106,10 @@ public class Maintenance {
      * @return Count of purged resources
      */
     private int purgeDeletedResources() {
-        Users       userutils   = new Users(entityManager);
-        Events      eventutils  = new Events(entityManager);
-        Entities    entityutils = new Entities(entityManager);
+        Users        userutils   = new Users(entityManager);
+        Events       eventutils  = new Events(entityManager);
+        Entities     entityutils = new Entities(entityManager);
+        DocumentPool imagepool   = new DocumentPool(entityManager);
 
         int countpurges = 0;
 
@@ -118,9 +120,18 @@ public class Maintenance {
         for (EventEntity event: events) {
             try {
                 if (event.getStatus().getIsDeleted()) {
-                    // NOTE if we remove the entire event, then there is no need for selectively remove 
-                    //      event resources such as locations and members, see the else branch. they are
-                    //      are removed automatically (see the EventEntity).
+                    if (event.getPhoto() != null) {
+                        imagepool.releasePoolDocument(event.getPhoto());
+                    }
+                    Collection<EventLocationEntity> locs = event.getLocations();
+                    if (locs != null) {
+                        // delete the locations
+                        locs.stream()
+                            .filter((loc) -> (loc.getPhoto() != null))
+                            .forEachOrdered((loc) -> {
+                                imagepool.releasePoolDocument(loc.getPhoto());
+                            });
+                    }
                     eventutils.deleteEvent(event);
                     countpurges++;
                 }
@@ -151,6 +162,9 @@ public class Maintenance {
         // now remove all dead users
         for (UserEntity user: users) {
             try {
+                if (user.getPhoto() != null) {
+                    imagepool.releasePoolDocument(user.getPhoto());
+                }
                 userutils.deleteUser(user);
                 countpurges++;
             }
