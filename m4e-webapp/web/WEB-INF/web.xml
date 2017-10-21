@@ -23,7 +23,7 @@
         <filter-class>net.m4e.app.auth.AuthFilter</filter-class>
         <init-param>
             <param-name>basePath</param-name>
-            <param-value>m4e-webapp</param-value>
+            <param-value>m4e</param-value>
         </init-param>
         <init-param>
             <!-- this is relative to basePath -->

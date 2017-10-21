@@ -40,7 +40,7 @@
       <string notr="true">color: white;</string>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;@APP_NAME@&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Copyright @COPYRIGHT@&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Version @APP_VERSION@&lt;br/&gt;&lt;br/&gt;@URL@&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;@APP_NAME@&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Copyright @COPYRIGHT@&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Version @APP_VERSION@&lt;br/&gt;&lt;br/&gt;@URL@&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textInteractionFlags">
       <set>Qt::TextBrowserInteraction</set>

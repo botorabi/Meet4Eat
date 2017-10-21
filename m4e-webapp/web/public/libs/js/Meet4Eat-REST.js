@@ -22,7 +22,7 @@ function Meet4EatREST() {
 	self._version = "0.8.0";
 
 	/* Root path of web service */
-	self._webRoot = "/m4e-webapp";
+	self._webRoot = "/m4e";
 	
 	/* URL for accessing app information */
 	self._urlAppInfo  = self._webRoot + '/webresources/rest/appinfo';
