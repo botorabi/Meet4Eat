@@ -11,6 +11,7 @@
 #include <common/dialogmessage.h>
 #include <ui_widgetsettings.h>
 #include <settings/appsettings.h>
+#include <QDesktopServices>
 
 
 namespace m4e
@@ -68,6 +69,8 @@ void DialogSettings::setupUI()
 
     connect( _p_ui->pushButtonSignOut, SIGNAL( clicked() ), this, SLOT( onBtnSignOutClicked() ) );
     connect( _p_ui->pushButtonSignIn, SIGNAL( clicked() ), this, SLOT( onBtnSignInClicked() ) );
+    connect( _p_ui->labelCreateAccount, SIGNAL( linkActivated( QString ) ), this, SLOT( onLinkActivated( QString ) ) );
+    connect( _p_ui->labelForgotPassword, SIGNAL( linkActivated( QString ) ), this, SLOT( onLinkActivated( QString ) ) );
 
     QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
     QString login    = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
@@ -126,6 +129,20 @@ void DialogSettings::onBtnSignOutClicked()
     _p_ui->pushButtonSignOut->setEnabled( false );
 }
 
+void DialogSettings::onLinkActivated( QString link )
+{
+    if ( link == "REGISTER" )
+    {
+        log_verbose << TAG << "register new account" << std::endl;
+        QDesktopServices::openUrl( QUrl( M4E_URL_REGISTER_ACC ) );
+    }
+    else if ( link == "FORGOT_PW" )
+    {
+        log_verbose << TAG << "forgot password" << std::endl;
+        QDesktopServices::openUrl( QUrl( M4E_URL_FORGOT_PW ) );
+    }
+}
+
 void DialogSettings::onUserSignedIn( bool success, QString /*userId*/ )
 {
     _p_ui->pushButtonSignIn->setEnabled( !success );
@@ -133,7 +150,7 @@ void DialogSettings::onUserSignedIn( bool success, QString /*userId*/ )
 
     if ( success )
     {
-        log_debug << "successfully signed in user" << std::endl;
+        log_debug << TAG << "successfully signed in user" << std::endl;
         common::DialogMessage msg( this );
         msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
                      QApplication::translate( "DialogSettings", "You were successfully signed in." ),
@@ -142,7 +159,7 @@ void DialogSettings::onUserSignedIn( bool success, QString /*userId*/ )
     }
     else
     {
-        log_debug << "failed to sign in user" << std::endl;
+        log_debug << TAG << "failed to sign in user" << std::endl;
         common::DialogMessage msg( this );
         msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
                      QApplication::translate( "DialogSettings", "Could not sign in. Check your credentials and try again." ),

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>297</height>
+    <width>346</width>
+    <height>423</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -44,7 +44,7 @@
            <number>255</number>
           </property>
           <property name="placeholderText">
-           <string>&lt;Server Address&gt;:&lt;Port&gt;</string>
+           <string>[http:// or https://]&lt;Server Address&gt;:&lt;Port&gt;</string>
           </property>
          </widget>
         </item>
@@ -57,6 +57,9 @@
         <string>Credentials</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="spacing">
+         <number>10</number>
+        </property>
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
@@ -87,7 +90,7 @@
            <enum>QLineEdit::Password</enum>
           </property>
           <property name="placeholderText">
-           <string>Let empty to take stored password.</string>
+           <string>Let empty to take last stored password.</string>
           </property>
          </widget>
         </item>
@@ -101,6 +104,41 @@
           </property>
           <property name="text">
            <string>Sign in on application start</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelLine">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>1</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>1</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel {
+  background-color: rgb(131,147, 167);
+}</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelCreateAccount">
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You are new? &lt;a href=&quot;REGISTER&quot;&gt;&lt;span style=&quot; text-decoration: underline; color: white;&quot;&gt;Regisgter an account!&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelForgotPassword">
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;FORGOT_PW&quot;&gt;&lt;span style=&quot; text-decoration: underline; color: white;&quot;&gt;Forgot your password?&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>

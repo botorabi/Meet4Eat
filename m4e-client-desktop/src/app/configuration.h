@@ -23,6 +23,12 @@
 #define M4E_APP_COPYRIGHT       "(c) 2017"
 #define M4E_APP_URL             "http://m4e.org"
 
+/* Web site link for registering a new account */
+#define M4E_URL_REGISTER_ACC    "http://m4e.org/register"
+
+/* Web site link for resetting password */
+#define M4E_URL_FORGOT_PW      "http://m4e.org/resetpassword"
+
 /*
  * This define is used for accepting insecure SSL connections
  * for REST and WebSocket communication.
