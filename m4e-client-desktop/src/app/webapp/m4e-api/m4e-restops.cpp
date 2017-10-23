@@ -64,6 +64,12 @@ void Meet4EatRESTOperations::startRequest( const QUrl& url, enum QNetworkAccessM
     QNetworkRequest request( url );
     request.setHeader( QNetworkRequest::ContentTypeHeader, "application/json" );
 
+#if !M4E_DISALLOW_INSECURE_CONNECTION
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode( QSslSocket::VerifyNone );
+    request.setSslConfiguration( conf );
+#endif
+
     QNetworkReply* p_reply = nullptr;
 
     switch ( op )

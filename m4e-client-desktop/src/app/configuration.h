@@ -19,9 +19,18 @@
 /* App name and version */
 #define M4E_APP_NAME            "Meet4Eat"
 #define M4E_ORGANIZATION_NAME   "vr-fun"
-#define M4E_APP_VERSION         "0.7.1"
+#define M4E_APP_VERSION         "0.7.2"
 #define M4E_APP_COPYRIGHT       "(c) 2017"
 #define M4E_APP_URL             "http://m4e.org"
+
+/*
+ * This define is used for accepting insecure SSL connections
+ * for REST and WebSocket communication.
+ *
+ * Set it to 1 in order to validate server's SSL certificate.
+ * Set it to 0 in order to accept a self-signed server certificate.
+ */
+#define M4E_DISALLOW_INSECURE_CONNECTION    0
 
 /* App settings tokens */
 #define M4E_SETTINGS_KEY_WIN_GEOM    "WindowsGeom"

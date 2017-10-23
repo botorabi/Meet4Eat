@@ -69,7 +69,7 @@ public class SendEmailListener {
      */
     private void assembleMail(SendEmailEvent event) {
         Properties cfg = getMailerConfig();
-        if (null == cfg) {
+        if (cfg == null) {
             Log.warning(TAG, "Cannot send e-mail, invalid configuration");
             return;
         }
@@ -130,9 +130,13 @@ public class SendEmailListener {
                 Log.error(TAG, "*** Missing mailer configuration file entry in application configuration!");
                 return null;
             }
-            InputStream resourceContent = context.getResourceAsStream("/WEB-INF/" + cfgfile);
+            InputStream configcontent = context.getResourceAsStream("/WEB-INF/" + cfgfile);
+            if (configcontent == null) {
+                Log.error(TAG, "*** Missing mail config file in application!");
+                return null;
+            }
             Properties cfg = new Properties();
-            cfg.load(resourceContent);
+            cfg.load(configcontent);
             mailServerConfig = cfg;
         }
         catch (IOException ex) {

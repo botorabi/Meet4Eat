@@ -358,9 +358,6 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         if ((null != reqentity.getName()) && !reqentity.getName().isEmpty()) {
             user.setName(reqentity.getName());
         }
-        if ((null != reqentity.getEmail()) && !reqentity.getEmail().isEmpty()) {
-            user.setEmail(reqentity.getEmail());
-        }
         if ((null != reqentity.getPassword()) && !reqentity.getPassword().isEmpty()) {
             user.setPassword(reqentity.getPassword());
         }
