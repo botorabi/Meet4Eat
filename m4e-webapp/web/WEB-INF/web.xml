@@ -2,15 +2,21 @@
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
     <context-param>
         <param-name>AppVersion</param-name>
-        <param-value>0.8.1</param-value>
+        <param-value>0.8.2</param-value>
     </context-param>
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
         <param-value>Development</param-value>
     </context-param>
     <context-param>
+        <!-- This config file defines the seetings for javamailer -->
         <param-name>MailerConfigFile</param-name>
         <param-value>mailer.cfg</param-value>
+    </context-param>
+    <context-param>
+        <!-- This file defines registration related stuff such as account activation link -->
+        <param-name>AccountRegistrationConfigFile</param-name>
+        <param-value>accountregistration.cfg</param-value>
     </context-param>
     <!-- A listener for setting up the application on startup -->
     <listener>

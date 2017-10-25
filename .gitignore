@@ -2,5 +2,6 @@
 /m4e-webapp/build/
 /m4e-webapp/dist/
 /m4e-webapp/web/WEB-INF/mailer.cfg
+/m4e-webapp/web/WEB-INF/accountregistration.cfg
 /m4e-client-desktop/build/**/*.pro.user*
 /m4e-client-desktop/build/build-app-*

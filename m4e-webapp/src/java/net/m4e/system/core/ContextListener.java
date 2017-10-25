@@ -50,6 +50,8 @@ public class ContextListener implements ServletContextListener {
         AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_APP_VERSION, appversion);
         String mailercfg = ctx.getInitParameter(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
         AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE, mailercfg);
+        String userregcfg = ctx.getInitParameter(AppConfiguration.TOKEN_USER_REGISTRATION_CONFIG_FILE);
+        AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_USER_REGISTRATION_CONFIG_FILE, userregcfg);
 
         // handle a possible deployment update
         AppUpdateManager um = new AppUpdateManager(entityManager);

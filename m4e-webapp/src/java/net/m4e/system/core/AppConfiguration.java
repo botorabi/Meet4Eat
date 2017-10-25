@@ -47,6 +47,12 @@ public class AppConfiguration {
     public final static String TOKEN_MAILER_CONFIG_FILE = "MailerConfigFile";
 
     /**
+     * Configuration token name for user registration config file.
+     * This file is used for providing activation or password reset links in emails sent to users.
+     */
+    public final static String TOKEN_USER_REGISTRATION_CONFIG_FILE = "UserRegistrationURL";
+
+    /**
      * App configuration map holding environment parameters.
      */
     private final Map<String, String> configs = new HashMap<>();

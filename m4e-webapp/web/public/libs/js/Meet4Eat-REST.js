@@ -530,7 +530,7 @@ function Meet4EatUserRegREST() {
 		self._fcnRequestJson(self._rootPath + '/requestpasswordreset', fields, 'POST', resultsCallback);
 	};
 
-        /**
+    /**
 	 * Request for performing the password reset.
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
