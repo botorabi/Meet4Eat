@@ -67,7 +67,6 @@ void RESTEvent::deleteEvent( const QString& eventId )
 
 void RESTEvent::updateEvent( event::ModelEventPtr event )
 {
-    //! NOTE we do not request for setting the photo here!
     QJsonObject obj;
     obj.insert( "name",           event->getName() );
     obj.insert( "description",    event->getDescription() );
@@ -75,6 +74,13 @@ void RESTEvent::updateEvent( event::ModelEventPtr event )
     obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
     obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
     obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
+
+    // was the photo updated?
+    if ( event->getUpdatedPhoto().valid() )
+    {
+        obj.insert( "photo", QString( event->getUpdatedPhoto()->getContent() ) );
+    }
+
     QJsonDocument json( obj );
 
     QUrl url( getResourcePath() + "/rest/events/" + event->getId() );

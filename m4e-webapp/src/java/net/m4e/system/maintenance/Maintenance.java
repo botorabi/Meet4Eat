@@ -140,7 +140,7 @@ public class Maintenance {
                     eventutils.removeAnyMember(event, users);
                     // purge deleted event locations
                     Collection<EventLocationEntity> locs = event.getLocations();
-                    if (null != locs) {
+                    if (locs != null) {
                         Predicate<EventLocationEntity> pred = ev-> ev.getStatus().getIsDeleted();
                         List<EventLocationEntity> deadlocs = locs.stream().filter(pred).collect(Collectors.toList());
                         // update event's location list

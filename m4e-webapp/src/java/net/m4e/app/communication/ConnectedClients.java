@@ -65,7 +65,7 @@ public class ConnectedClients {
      */
     public UserEntity getConnectedUser(Long userId) {
         UserEntry entry = connections.get(userId);
-        if (null != entry) {
+        if (entry != null) {
             return entry.user;
         }
         return null;
@@ -117,7 +117,7 @@ public class ConnectedClients {
      */
     protected boolean addConnection(UserEntity user, Session session) {
         UserEntry entry = connections.get(user.getId());
-        if (null == entry) {
+        if (entry == null) {
             entry = new UserEntry();
             entry.user = user;
             connections.put(user.getId(), entry);
@@ -142,7 +142,7 @@ public class ConnectedClients {
      */
     protected boolean removeConnection(UserEntity user, Session session) {
         UserEntry entry = connections.get(user.getId());
-        if (null == entry) {
+        if (entry == null) {
             return false;
         }
         if (!entry.sessions.remove(session)) {

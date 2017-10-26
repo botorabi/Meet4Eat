@@ -175,7 +175,7 @@ public class AuthChecker {
 
             // first check for fix path match
             AuthAccessRuleChecker accrule = accessRulesFixPath.get(respath);
-            if (null != accrule) {
+            if (accrule != null) {
                 grantaccess = accrule.checkFixPath(respath, request.getMethod(), userRoles);
             }
             else {

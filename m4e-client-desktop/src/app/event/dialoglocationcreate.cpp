@@ -43,8 +43,38 @@ void DialogLocationCreate::setupUI( event::ModelEventPtr event )
     setupButtons( &okbtn, &cancelbtn, nullptr );
     setResizable( true );
 
+    connect( _p_ui->pushButtonPhoto, SIGNAL( clicked() ), this, SLOT( onBtnPhotoClicked() ) );
+
     _p_ui->textEditDescription->setPlainText( _location->getDescription() );
-    _defaultPhoto = *_p_ui->labelPhoto->pixmap();
+    _defaultPhoto = _p_ui->pushButtonPhoto->icon();
+}
+
+void DialogLocationCreate::onBtnPhotoClicked()
+{
+    QString     dir;
+    QString     format;
+    QPixmap     image;
+    QByteArray  imagecontent;
+    bool        aborted;
+    bool res = common::GuiUtils::createImageFromFile( this, dir, image, imagecontent, format, aborted );
+
+    if ( aborted )
+        return;
+
+    if ( !res )
+    {
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogEventSettings", "Set Image" ),
+                     QApplication::translate( "DialogEventSettings", "Cannot update the image. The file format is not supported!" ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+        return;
+    }
+
+    m4e::doc::ModelDocumentPtr doc = new m4e::doc::ModelDocument();
+    doc->setContent( imagecontent, "image", format );
+    _location->setUpdatedPhoto( doc );
+    _p_ui->pushButtonPhoto->setIcon( image );
 }
 
 void DialogLocationCreate::onResponseAddLocation( bool success, QString /*eventId*/, QString /*locationId*/ )
@@ -81,9 +111,6 @@ bool DialogLocationCreate::onButton1Clicked()
 {
     _location->setName( _p_ui->lineEditName->text() );
     _location->setDescription( _p_ui->textEditDescription->toPlainText() );
-
-    //! TODO photo
-
     // try to create the event location
     Events* p_events = _p_webApp->getEvents();
     p_events->requestAddLocation( _event->getId(), _location );
@@ -95,7 +122,7 @@ void DialogLocationCreate::resetDialog()
 {
     _p_ui->lineEditName->setText( "" );
     _p_ui->textEditDescription->setPlainText( "" );
-    _p_ui->labelPhoto->setPixmap( _defaultPhoto );
+    _p_ui->pushButtonPhoto->setIcon( _defaultPhoto );
 }
 
 } // namespace event

@@ -8,6 +8,8 @@
 
 #include "guiutils.h"
 #include <QGraphicsDropShadowEffect>
+#include <QApplication>
+#include <QFileDialog>
 #include <QPainter>
 
 
@@ -15,6 +17,11 @@ namespace m4e
 {
 namespace common
 {
+
+//! Max image size used in createImageFromFile
+static int MAX_IMG_WIDTH  = 512;
+static int MAX_IMG_HEIGHT = 512;
+
 
 QPixmap GuiUtils::createRoundIcon( const QPixmap& input )
 {
@@ -48,6 +55,44 @@ QPixmap GuiUtils::createRoundIcon( doc::ModelDocumentPtr input )
         }
     }
     return QPixmap();
+}
+
+bool GuiUtils::createImageFromFile( QWidget* p_parent, QString dir, QPixmap& image, QByteArray& imageContent, QString& format, bool& aborted )
+{
+    aborted = false;
+    if ( dir.isEmpty() )
+    {
+        QStringList dirs = QStandardPaths::standardLocations( QStandardPaths::DocumentsLocation );
+        if ( dirs.size() > 0 )
+            dir = dirs.at( 0 );
+    }
+
+    QString filename = QFileDialog::getOpenFileName( p_parent,
+                                                     QApplication::translate( "GuiUtils", "Open Image" ),
+                                                     dir,
+                                                     QApplication::translate( "GuiUtils", "Image Files (*.png *.jpg *.bmp *.svg)" ) );
+
+    if ( filename.isEmpty() )
+    {
+        aborted = true;
+        return false;
+    }
+
+    bool res = image.load( filename );
+    if ( !res )
+    {
+        return false;
+    }
+    // rescale if necessary
+    if ( ( image.width() > MAX_IMG_WIDTH ) || ( image.height() > MAX_IMG_HEIGHT) )
+        image = image.scaled( QSize( MAX_IMG_WIDTH, MAX_IMG_HEIGHT ), Qt::KeepAspectRatio );
+
+    QBuffer buffer( &imageContent );
+    buffer.open( QIODevice::WriteOnly );
+    image.save( &buffer, "PNG" );
+    format = "png";
+
+    return true;
 }
 
 void GuiUtils::createShadowEffect( QWidget* p_widget, const QColor& color, const QPoint& offset, int blurr )

@@ -25,6 +25,10 @@ QJsonDocument ModelLocation::toJSON()
     obj.insert( "description", getDescription() );
     obj.insert( "photoId", getPhotoId().toInt() );
     obj.insert( "photoETag", getPhotoETag() );
+    if ( getUpdatedPhoto().valid() )
+    {
+        obj.insert( "photo", QString( getUpdatedPhoto()->getContent() ) );
+    }
 
     QJsonDocument doc( obj );
     return doc;

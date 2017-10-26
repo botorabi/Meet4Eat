@@ -61,7 +61,7 @@ public class MaintenanceFacadeREST {
     public String stats() {
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
-        if (null == info) {
+        if (info == null) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
         Maintenance mutils = new Maintenance(entityManager);

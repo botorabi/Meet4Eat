@@ -177,13 +177,13 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         }
 
         // take over non-empty fields
-        if ((null != reqentity.getName()) && !reqentity.getName().isEmpty()) {
+        if ((reqentity.getName() != null) && !reqentity.getName().isEmpty()) {
             event.setName(reqentity.getName());
         }
-        if ((null != reqentity.getDescription()) && !reqentity.getDescription().isEmpty()) {
+        if ((reqentity.getDescription() != null) && !reqentity.getDescription().isEmpty()) {
             event.setDescription(reqentity.getDescription());
         }
-        if (null != reqentity.getPhoto()) {
+        if (reqentity.getPhoto() != null) {
             try {
                 getEvents().updateEventImage(event, reqentity.getPhoto());
             }
@@ -408,7 +408,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String removeMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        if ((null == eventId) || (null == memberId)) {
+        if ((eventId == null) || (memberId == null)) {
             Log.error(TAG, "*** Cannot remove member from event, no valid inputs!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
@@ -583,7 +583,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         EventLocations elutils = new EventLocations(entityManager);
         try {
             // add new location or update an existing one?
-            if ((null != inputlocation.getId()) && (inputlocation.getId() > 0)) {
+            if ((inputlocation.getId() != null) && (inputlocation.getId() > 0)) {
                 location = elutils.updateLocation(inputlocation);   
                 changetype = EventNotifications.ChangeType.Add;
             }
@@ -593,11 +593,6 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
                 }
                 location = elutils.createNewLocation(event, inputlocation, sessionuser.getId());
                 changetype = EventNotifications.ChangeType.Modify;
-            }
-            // is a photo given? if so update it, too
-            if (null != inputlocation.getPhoto()) {
-                elutils.updateEventLocationImage(location, inputlocation.getPhoto());
-                elutils.updateLocation(location);
             }
         }
         catch (Exception ex) {
@@ -691,7 +686,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * @return Event utils
      */
     private Events getEvents() {
-        if (null == eventUtils) {
+        if (eventUtils == null) {
             eventUtils = new Events(entityManager);
         }
         return eventUtils;
@@ -703,7 +698,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * @return User utils
      */
     private Users getUsers() {
-        if (null == userUtils) {
+        if (userUtils == null) {
             userUtils = new Users(entityManager);
         }
         return userUtils;

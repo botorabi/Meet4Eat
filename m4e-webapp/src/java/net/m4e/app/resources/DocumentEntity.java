@@ -261,7 +261,7 @@ public class DocumentEntity implements Serializable {
      * NOTE: Call this method whenever the content was changed.
      */
     public void updateETag() {
-        if (null == content) {
+        if (content == null) {
             eTag = "";
             return;
         }

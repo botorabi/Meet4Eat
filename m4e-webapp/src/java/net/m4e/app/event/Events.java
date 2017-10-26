@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import javax.enterprise.event.Event;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -24,7 +23,6 @@ import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
@@ -180,7 +178,7 @@ public class Events {
      */
     public boolean getUserIsEventOwnerOrMember(UserEntity user, EventEntity event) {
         boolean owner = Objects.equals(user.getId(), event.getStatus().getIdOwner());
-        if (!owner && (null != event.getMembers())) {
+        if (!owner && (event.getMembers() != null)) {
             if (event.getMembers().stream().anyMatch((u) -> (Objects.equals(u.getId(), user.getId())))) {
                 return true;
             } 
@@ -197,7 +195,7 @@ public class Events {
      */
     public void addMember(EventEntity event, UserEntity userToAdd) throws Exception {
         Collection<UserEntity> members = event.getMembers();
-        if (null == members) {
+        if (members == null) {
             members = new ArrayList<>();
             event.setMembers(members);
         }
@@ -220,7 +218,7 @@ public class Events {
      */
     public void removeMember(EventEntity event, UserEntity userToRemove) throws Exception {
         Collection<UserEntity> members = event.getMembers();
-        if (null == members) {
+        if (members == null) {
             throw new Exception("User is not member of event.");
         }
         if (!members.remove(userToRemove)) {
@@ -257,7 +255,7 @@ public class Events {
     public void markEventAsDeleted(EventEntity event) throws Exception {
         Entities eutils = new Entities(entityManager);
         StatusEntity status = event.getStatus();
-        if (null == status) {
+        if (status == null) {
             throw new Exception("Event has no status field!");
         }
         status.setDateDeletion((new Date().getTime()));
@@ -266,7 +264,7 @@ public class Events {
         // update the app stats
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
-        if (null == appinfo) {
+        if (appinfo == null) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementEventCountPurge(1L);
@@ -320,27 +318,27 @@ public class Events {
      */
     public JsonObjectBuilder exportEventJSON(EventEntity entity, ConnectedClients connections) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (null != entity.getId()) ? entity.getId() : 0);
-        json.add("name", (null != entity.getName()) ? entity.getName() : "");
-        json.add("description", (null != entity.getDescription()) ? entity.getDescription(): "");
+        json.add("id", (entity.getId() != null) ? entity.getId() : 0);
+        json.add("name", (entity.getName() != null) ? entity.getName() : "");
+        json.add("description", (entity.getDescription() != null) ? entity.getDescription(): "");
         json.add("public", entity.getIsPublic());
-        json.add("photoId", (null != entity.getPhoto()) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", (null != entity.getPhoto()) ? entity.getPhoto().getETag(): "");
-        json.add("eventStart", (null != entity.getEventStart()) ? entity.getEventStart(): 0);
-        json.add("repeatWeekDays", (null != entity.getRepeatWeekDays()) ? entity.getRepeatWeekDays(): 0);
-        json.add("repeatDayTime", (null != entity.getRepeatDayTime()) ? entity.getRepeatDayTime(): 0);
+        json.add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId(): 0);
+        json.add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
+        json.add("eventStart", (entity.getEventStart() != null) ? entity.getEventStart(): 0);
+        json.add("repeatWeekDays", (entity.getRepeatWeekDays() != null) ? entity.getRepeatWeekDays(): 0);
+        json.add("repeatDayTime", (entity.getRepeatDayTime() != null) ? entity.getRepeatDayTime(): 0);
 
         JsonArrayBuilder members = Json.createArrayBuilder();
-        if (null != entity.getMembers()) {
+        if (entity.getMembers() != null) {
             entity.getMembers()
                 .stream()
                 .filter((mem) -> (mem.getStatus().getIsActive()))
                 .map((mem) -> {
                     JsonObjectBuilder member = Json.createObjectBuilder();
                     member.add("id", mem.getId());
-                    member.add("name", (null != mem.getName()) ? mem.getName() : "");
-                    member.add("photoId", (null != mem.getPhoto()) ? mem.getPhoto().getId(): 0);
-                    member.add("photoETag", (null != mem.getPhoto()) ? mem.getPhoto().getETag() : "");
+                    member.add("name", (mem.getName() != null) ? mem.getName() : "");
+                    member.add("photoId", (mem.getPhoto() != null) ? mem.getPhoto().getId(): 0);
+                    member.add("photoETag", (mem.getPhoto() != null) ? mem.getPhoto().getETag() : "");
                     // set the online status
                     boolean online = (connections.getConnectedUser(mem.getId()) != null);
                     member.add("status", online ? "online" : "offline");
@@ -360,10 +358,10 @@ public class Events {
                 .map((location) -> {
                     JsonObjectBuilder loc = Json.createObjectBuilder();
                     loc.add("id", location.getId());
-                    loc.add("name", (null != location.getName()) ? location.getName() : "");
-                    loc.add("description", (null != location.getDescription()) ? location.getDescription() : "");
-                    loc.add("photoId", (null != location.getPhoto()) ? location.getPhoto().getId(): 0);
-                    loc.add("photoETag", (null != location.getPhoto()) ? location.getPhoto().getETag(): "");
+                    loc.add("name", (location.getName() != null) ? location.getName() : "");
+                    loc.add("description", (location.getDescription() != null) ? location.getDescription() : "");
+                    loc.add("photoId", (location.getPhoto() != null) ? location.getPhoto().getId(): 0);
+                    loc.add("photoETag", (location.getPhoto() != null) ? location.getPhoto().getETag(): "");
                     return loc;
                 })
                 .forEach((loc) -> {
@@ -378,7 +376,7 @@ public class Events {
         Users      userutils = new Users(entityManager);
         UserEntity owner     = userutils.findUser(ownerid);
         boolean    owneronline;
-        if ((null == owner) || !owner.getStatus().getIsActive()) {
+        if ((owner == null) || !owner.getStatus().getIsActive()) {
             owneronline = false;
             ownerid = 0L;
             ownername = "";
@@ -387,8 +385,8 @@ public class Events {
         }
         else {
             ownername = owner.getName();
-            ownerphotoid = (null != owner.getPhoto()) ? owner.getPhoto().getId() : 0L;
-            ownerphotoetag = (null != owner.getPhoto()) ? owner.getPhoto().getETag(): "";
+            ownerphotoid = (owner.getPhoto() != null) ? owner.getPhoto().getId() : 0L;
+            ownerphotoetag = (owner.getPhoto() != null) ? owner.getPhoto().getETag(): "";
             owneronline = (connections.getConnectedUser(owner.getId()) != null);
         }
         json.add("ownerId", ownerid);
@@ -408,7 +406,7 @@ public class Events {
      * @return            Event entity or null if the JSON string was not appropriate
      */
     public EventEntity importEventJSON(String jsonString) {
-        if (null == jsonString) {
+        if (jsonString == null) {
             return null;
         }
 
@@ -433,10 +431,10 @@ public class Events {
         }
 
         EventEntity entity = new EventEntity();
-        if (null != name) {
+        if (name != null) {
             entity.setName(Strings.limitStringLen(name, 32));
         }
-        if (null != description) {
+        if (description != null) {
             entity.setDescription(Strings.limitStringLen(description, 1000));
         }
         if (eventstart > 0L) {
@@ -446,7 +444,7 @@ public class Events {
         entity.setRepeatWeekDays(repeatweekdays);
         entity.setRepeatDayTime(repeatdaytime);
 
-        if (null != photo) {
+        if (photo != null) {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);

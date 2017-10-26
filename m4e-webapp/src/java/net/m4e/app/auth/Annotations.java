@@ -64,18 +64,18 @@ public class Annotations {
         for(Method method : cls.getDeclaredMethods()){
             javax.ws.rs.Path p = method.getDeclaredAnnotation(javax.ws.rs.Path.class);
             net.m4e.app.auth.AuthRole authrole = method.getDeclaredAnnotation(net.m4e.app.auth.AuthRole.class);
-            String path = (null == p) ? "" : p.value();
+            String path = (p == null) ? "" : p.value();
             String accessmethod = getAccessMethod(method);
-            String[] rolesgrant = (null == authrole) ? null : authrole.grantRoles();
+            String[] rolesgrant = (authrole == null) ? null : authrole.grantRoles();
 
-            if ((null != path) && (null != accessmethod) && (null != rolesgrant)) {
+            if ((path != null) && (accessmethod != null) && (rolesgrant != null)) {
                 Map<String /*access*/, List<String /*roles*/>> accessmethods = rules.get(path);
-                if (null == accessmethods) {
+                if (accessmethods == null) {
                     accessmethods = new HashMap<>();
                     rules.put(path, accessmethods);
                 }
                 List<String /*roles*/> accessroles = accessmethods.get(accessmethod);
-                if (null == accessroles) {
+                if (accessroles == null) {
                     accessroles = new ArrayList<>();
                     accessmethods.put(accessmethod, accessroles);
                 }
@@ -96,18 +96,18 @@ public class Annotations {
         for(Method method : cls.getDeclaredMethods()){
             javax.ws.rs.Path p  = method.getDeclaredAnnotation(javax.ws.rs.Path.class);
             net.m4e.app.auth.AuthRole authrole = method.getDeclaredAnnotation(net.m4e.app.auth.AuthRole.class);
-            String path = (null == p) ? "" : p.value();
+            String path = (p == null) ? "" : p.value();
             String accessmethod = getAccessMethod(method);
-            String[] permsgrant = (null == authrole) ? null : authrole.grantPermissions();
+            String[] permsgrant = (authrole == null) ? null : authrole.grantPermissions();
 
-            if ((null != path) && (null != accessmethod) && (null != permsgrant)) {
+            if ((path != null) && (accessmethod != null) && (permsgrant != null)) {
                 Map<String /*access*/, List<String /*perms*/>> accessmethods = rules.get(path);
-                if (null == accessmethods) {
+                if (accessmethods == null) {
                     accessmethods = new HashMap<>();
                     rules.put(path, accessmethods);
                 }
                 List<String /*perms*/> accessperms = accessmethods.get(accessmethod);
-                if (null == accessperms) {
+                if (accessperms == null) {
                     accessperms = new ArrayList<>();
                     accessmethods.put(accessmethod, accessperms);
                 }
@@ -130,16 +130,16 @@ public class Annotations {
         javax.ws.rs.PUT    put  = method.getDeclaredAnnotation(javax.ws.rs.PUT.class);
         javax.ws.rs.DELETE del  = method.getDeclaredAnnotation(javax.ws.rs.DELETE.class);
         
-        if (null != get) {
+        if (get != null) {
             return "GET";
         }
-        else if (null != post) {
+        else if (post != null) {
             return "POST";
         }
-        else if (null != put) {
+        else if (put != null) {
             return "PUT";
         }
-        else if (null != del) {
+        else if (del != null) {
             return "DELETE";
         }
 

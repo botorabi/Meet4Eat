@@ -72,7 +72,7 @@ public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id);
         DocumentEntity document = super.find(id);
-        if ((null == document) || !document.getStatus().getIsActive()) {
+        if ((document == null) || !document.getStatus().getIsActive()) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 

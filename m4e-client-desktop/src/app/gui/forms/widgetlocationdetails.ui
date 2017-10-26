@@ -82,7 +82,7 @@ QPushButton[enabled=&quot;false&quot;] {
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QLabel" name="labelPhoto">
+             <widget class="QPushButton" name="pushButtonPhoto">
               <property name="minimumSize">
                <size>
                 <width>64</width>
@@ -95,11 +95,21 @@ QPushButton[enabled=&quot;false&quot;] {
                 <height>64</height>
                </size>
               </property>
-              <property name="scaledContents">
-               <bool>true</bool>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+  border: 2px solid rgb(131, 147, 167);
+  border-radius: 3px;
+}</string>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              <property name="icon">
+               <iconset resource="../resources/application.qrc">
+                <normaloff>:/logo.png</normaloff>:/logo.png</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>60</width>
+                <height>60</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -265,7 +275,9 @@ QPushButton[enabled=&quot;false&quot;] {
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources/application.qrc"/>
+ </resources>
  <connections/>
  <slots>
   <slot>onBtnVoteDownClicked()</slot>

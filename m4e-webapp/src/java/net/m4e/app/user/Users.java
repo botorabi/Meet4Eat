@@ -82,7 +82,7 @@ public class Users {
      *                           is the owner of a resource, otherwise return false.
      */
     public boolean userIsOwnerOrAdmin(UserEntity user, StatusEntity resourceStatus) {
-        if ((null == user) || (null == resourceStatus)) {
+        if ((user == null) || (resourceStatus == null)) {
             return false;
         }
         return Objects.equals(user.getId(), resourceStatus.getIdOwner()) ||
@@ -119,7 +119,7 @@ public class Users {
         List<String> reqroles = requestingUser.getRolesAsString();
         boolean isadmin  = reqroles.contains(AuthRole.USER_ROLE_ADMIN);
         // check if any invalid role definitions exist, e.g. a normal user is not permitted to request for an admin role.
-        if (null != requestedRoles) {
+        if (requestedRoles != null) {
             for (RoleEntity role: requestedRoles) {
                 if (!allowedroles.contains(role.getName())) {
                     Log.warning(TAG, "*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
@@ -149,7 +149,7 @@ public class Users {
         newuser.setLogin(inputEntity.getLogin());
         newuser.setPassword(inputEntity.getPassword());
         newuser.setName(inputEntity.getName());
-        newuser.setEmail((null != inputEntity.getEmail()) ? inputEntity.getEmail() : "");
+        newuser.setEmail((inputEntity.getEmail() != null) ? inputEntity.getEmail() : "");
         newuser.setRoles(new ArrayList<>());
         addUserRoles(newuser, inputEntity.getRolesAsString());
 
@@ -162,7 +162,7 @@ public class Users {
         try {
             createUserEntity(newuser);
             status.setIdOwner(newuser.getId());
-            status.setIdCreator((null != creatorID) ? creatorID: newuser.getId());
+            status.setIdCreator((creatorID != null) ? creatorID: newuser.getId());
             newuser.setStatus(status);
             // NOTE this call updates the entity in database, no need to call users.updateUser!
             updateUserLastLogin(newuser);
@@ -415,20 +415,20 @@ public class Users {
      */
     public JsonObjectBuilder exportUserJSON(UserEntity entity, ConnectedClients connections) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (null != entity.getId()) ? entity.getId() : 0);
-        json.add("name", (null != entity.getName()) ? entity.getName() : "");
-        json.add("login", (null != entity.getLogin()) ? entity.getLogin() : "");
-        json.add("email", (null != entity.getEmail()) ? entity.getEmail() : "");
-        json.add("dateLastLogin", "" + ((null != entity.getDateLastLogin()) ? entity.getDateLastLogin() : 0));
-        json.add("dateCreation", "" + ((null != entity.getStatus()) ? entity.getStatus().getDateCreation() : 0));
+        json.add("id", (entity.getId() != null) ? entity.getId() : 0);
+        json.add("name", (entity.getName() != null) ? entity.getName() : "");
+        json.add("login", (entity.getLogin() != null) ? entity.getLogin() : "");
+        json.add("email", (entity.getEmail() != null) ? entity.getEmail() : "");
+        json.add("dateLastLogin", "" + ((entity.getDateLastLogin() != null) ? entity.getDateLastLogin() : 0));
+        json.add("dateCreation", "" + ((entity.getStatus() != null) ? entity.getStatus().getDateCreation() : 0));
         JsonArrayBuilder roles = Json.createArrayBuilder();
         entity.getRoles().forEach((r) -> {
             roles.add(r.getName());
         });
         json.add("roles", roles);
-        json.add("photoId", (null != entity.getPhoto()) ? entity.getPhoto().getId() : 0);
+        json.add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId() : 0);
         // the ETag can be used on a client for caching purpose
-        json.add("photoETag", (null != entity.getPhoto()) ? entity.getPhoto().getETag(): "");
+        json.add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
         // set the online status
         boolean online = (connections.getConnectedUser(entity.getId()) != null);
         json.add("status", online ? "online" : "offline");
@@ -442,7 +442,7 @@ public class Users {
      * @return           User entity or null if the JSON string was not appropriate
      */
     public UserEntity importUserJSON(String jsonString) {
-        if (null == jsonString) {
+        if (jsonString == null) {
             return null;
         }
 
@@ -459,7 +459,7 @@ public class Users {
             photo  = jobject.getString("photo", null);
             
             JsonArray r = jobject.getJsonArray("roles");
-            if (null != r) {
+            if (r != null) {
                 List<JsonString> roles = r.getValuesAs(JsonString.class);
                 for (int i = 0; i < roles.size(); i++) {
                     userroles.add(roles.get(i).getString());
@@ -478,7 +478,7 @@ public class Users {
         entity.setPassword(passwd);
         entity.setEmail(email);
 
-        if (null != photo) {
+        if (photo != null) {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);

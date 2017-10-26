@@ -188,7 +188,7 @@ public class UserEntity implements Serializable {
     @XmlTransient
     public List<String> getRolesAsString() {
         List<String> stringlist = new ArrayList<>();
-        if (null == roles) {
+        if (roles == null) {
             return stringlist;
         }
         roles.stream().forEach((role) -> {

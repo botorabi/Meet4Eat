@@ -10,6 +10,7 @@
 #define MODELBASE_H
 
 #include <configuration.h>
+#include <document/modeldocument.h>
 #include <QString>
 
 
@@ -88,7 +89,8 @@ class ModelBase
         void                                setPhotoId( const QString& id ) { _photoId = id; }
 
         /**
-         * @brief Get the photo ETag.
+         * @brief Get the photo ETag. The ETag is maintained by the application server.
+         *
          * @return The photo ETag
          */
         const QString&                      getPhotoETag() const { return _photoETag; }
@@ -99,6 +101,23 @@ class ModelBase
          * @param name  The photo ETag
          */
         void                                setPhotoETag( const QString& etag ) { _photoETag = etag; }
+
+        /**
+         * @brief If the photo was updated then return its containing document, otherwise return an empty document.
+         *
+         * @return Updated photo, or empty document if the photo was not updated
+         */
+        m4e::doc::ModelDocumentPtr          getUpdatedPhoto() { return _updatedPhoto; }
+
+        /**
+         * @brief Update the photo. This is used whenever the photo should be modified by client.
+         *
+         * NOTE: If the photo is updated by this method, then an exiting ETag will be invalidated. The ETag can be
+         *       retrieved only from server.
+         *
+         * @param photo The new photo
+         */
+        void                                setUpdatedPhoto( m4e::doc::ModelDocumentPtr photo ) { _updatedPhoto = photo; setPhotoETag( "" ); }
 
     protected:
 
@@ -112,6 +131,7 @@ class ModelBase
         QString                             _description;
         QString                             _photoId;
         QString                             _photoETag;
+        m4e::doc::ModelDocumentPtr          _updatedPhoto;
 };
 
 } // namespace common

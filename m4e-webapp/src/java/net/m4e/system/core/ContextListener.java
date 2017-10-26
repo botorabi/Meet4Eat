@@ -95,7 +95,7 @@ public class ContextListener implements ServletContextListener {
         InputStream configcontent = ctx.getResourceAsStream("/WEB-INF/" + accountregcfg);
         AppConfiguration.getInstance().setupAccountRegistrationConfig(configcontent);
         if (configcontent == null) {
-            Log.info(TAG, "No account registration config file was found, using defaults!");
+            Log.warning(TAG, "No account registration config file was found, using defaults!");
         }        
     }
 }

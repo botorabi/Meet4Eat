@@ -121,6 +121,11 @@ class DialogEventSettings : public common::BaseDialog
         void                        onResponseNewEvent( bool success, QString eventId );
 
         /**
+         * @brief Called when the photo icon was clicked.
+         */
+        void                        onBtnPhotoClicked();
+
+        /**
          * @brief Called to remove a member from event list.
          */
         void                        onBtnMemberRemoveClicked();

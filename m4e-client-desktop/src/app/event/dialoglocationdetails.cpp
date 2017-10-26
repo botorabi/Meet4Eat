@@ -68,7 +68,7 @@ void DialogLocationDetails::onDocumentReady( m4e::doc::ModelDocumentPtr document
     QString photoid = _location->getPhotoId();
     if ( !photoid.isEmpty() && document.valid() && ( document->getId() == photoid ) )
     {
-        _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
+        _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( document ) );
     }
 }
 

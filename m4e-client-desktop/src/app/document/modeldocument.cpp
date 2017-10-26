@@ -9,12 +9,21 @@
 #include <configuration.h>
 #include "modeldocument.h"
 #include <QJsonObject>
+#include <QList>
 
 
 namespace m4e
 {
 namespace doc
 {
+
+void ModelDocument::setContent( const QByteArray& payload, const QString& mimeType, const QString& format )
+{
+    QByteArray content = payload.toBase64( QByteArray::Base64Encoding );
+    QString head = "data:" + mimeType + "/" + format + ";base64,";
+    content.insert( 0, head );
+    setContent( content );
+}
 
 QString ModelDocument::toJSON()
 {

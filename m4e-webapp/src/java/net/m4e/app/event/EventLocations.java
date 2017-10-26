@@ -63,6 +63,9 @@ public class EventLocations {
         EventLocationEntity newlocation = new EventLocationEntity();
         newlocation.setName(inputEntity.getName());
         newlocation.setDescription(inputEntity.getDescription());
+        if (inputEntity.getPhoto() != null) {
+            updateEventLocationImage(newlocation, inputEntity.getPhoto());
+        }
 
         // setup the status
         StatusEntity status = new StatusEntity();
@@ -76,7 +79,7 @@ public class EventLocations {
         Entities eutils = new Entities(entityManager);
         eutils.createEntity(newlocation);
         Collection<EventLocationEntity> locs = event.getLocations();
-        if (null == locs) {
+        if (locs == null) {
             locs = new ArrayList<>();
             event.setLocations(locs);
         }
@@ -95,17 +98,17 @@ public class EventLocations {
     EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
         Entities entityutils = new Entities(entityManager);
         EventLocationEntity location = entityutils.findEntity(EventLocationEntity.class, inputLocation.getId());
-        if ((null == location) || !location.getStatus().getIsActive()) {
+        if ((location == null) || !location.getStatus().getIsActive()) {
             throw new Exception("Entity location does not exist.");
         }
 
-        if (null != inputLocation.getName()) {
+        if (inputLocation.getName() != null) {
             location.setName(inputLocation.getName());
         }
-        if (null != inputLocation.getDescription()) {
+        if (inputLocation.getDescription() != null) {
             location.setDescription(inputLocation.getDescription());
         }
-        if (null != inputLocation.getPhoto()) {
+        if (inputLocation.getPhoto() != null) {
             updateEventLocationImage(location, inputLocation.getPhoto());
         }
 
@@ -114,7 +117,9 @@ public class EventLocations {
     }
 
     /**
-     * Update the event location image with the content of given image.
+     * Update the event location image with the content of given image. The given image
+     * is checked in document pool and if there is no such image in pool then a new one
+     * will be created.
      * 
      * @param location      Event location entity
      * @param image         Image to set to given event
@@ -158,7 +163,7 @@ public class EventLocations {
             throw new Exception("Location is already deleted.");            
         }
         Collection<EventLocationEntity> locations = event.getLocations();
-        if ((null == locations) || !locations.contains(locationToRemove)) {
+        if ((locations == null) || !locations.contains(locationToRemove)) {
             throw new Exception("Location is not part of event.");
         }
         // mark the location entity as deleted
@@ -169,7 +174,7 @@ public class EventLocations {
         // update the app stats
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
-        if (null == appinfo) {
+        if (appinfo == null) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementEventLocationCountPurge(1L);
@@ -183,7 +188,7 @@ public class EventLocations {
      * @return            Event location entity or null if the JSON string was not appropriate
      */
     public EventLocationEntity importLocationJSON(String jsonString) {
-        if (null == jsonString) {
+        if (jsonString == null) {
             return null;
         }
 
@@ -211,14 +216,14 @@ public class EventLocations {
         if (id != 0) {
             entity.setId(id);
         }
-        if (null != name) {
+        if (name != null) {
             entity.setName(Strings.limitStringLen(name, 32));
         }
-        if (null != description) {
+        if (description != null) {
             entity.setDescription(Strings.limitStringLen(description, 1000));
         }
 
-        if (null != photo) {
+        if (photo != null) {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);
@@ -239,11 +244,11 @@ public class EventLocations {
      */
     public JsonObjectBuilder exportEventLocationJSON(EventLocationEntity entity) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (null != entity.getId()) ? entity.getId() : 0);
-        json.add("name", (null != entity.getName()) ? entity.getName() : "");
-        json.add("description", (null != entity.getDescription()) ? entity.getDescription(): "");
-        json.add("photoId", (null != entity.getPhoto()) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", (null != entity.getPhoto()) ? entity.getPhoto().getETag() : "");
+        json.add("id", (entity.getId() != null) ? entity.getId() : 0);
+        json.add("name", (entity.getName() != null) ? entity.getName() : "");
+        json.add("description", (entity.getDescription() != null) ? entity.getDescription(): "");
+        json.add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId(): 0);
+        json.add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag() : "");
         return json;
     }
 }

@@ -13,6 +13,7 @@
 #include <common/basedialog.h>
 #include <event/modellocation.h>
 #include <webapp/webapp.h>
+#include <QIcon>
 
 
 namespace Ui {
@@ -60,6 +61,11 @@ class DialogLocationCreate : public common::BaseDialog
     protected slots:
 
         /**
+         * @brief Called when the photo icon was clicked.
+         */
+        void                        onBtnPhotoClicked();
+
+        /**
          * @brief This signal notifies about he results of adding a new location.
          *
          * @param success    true if user data could successfully be retrieved, otherwise false
@@ -82,7 +88,7 @@ class DialogLocationCreate : public common::BaseDialog
 
         event::ModelLocationPtr     _location;
 
-        QPixmap                     _defaultPhoto;
+        QIcon                       _defaultPhoto;
 };
 
 } // namespace event
