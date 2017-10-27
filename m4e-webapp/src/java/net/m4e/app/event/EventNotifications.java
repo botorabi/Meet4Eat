@@ -125,8 +125,8 @@ public class EventNotifications {
             .add("type", changeType.value() + "location")
             .add("text", "Location was " + changeType.pastForm() + ".");
         JsonObjectBuilder data = Json.createObjectBuilder();
-        data.add("eventId", event.getId())
-            .add("locationId", locationId);
+        data.add("eventId", event.getId().toString())
+            .add("locationId", locationId.toString());
         json.add("data", data);
 
         notifyEventMembers(user, event, json.build());
@@ -146,8 +146,8 @@ public class EventNotifications {
             .add("type", changeType.value() + "member")
             .add("text", "Member was " + changeType.pastForm() + ".");
         JsonObjectBuilder data = Json.createObjectBuilder();
-        data.add("eventId", event.getId())
-            .add("memberId", memberId);
+        data.add("eventId", event.getId().toString())
+            .add("memberId", memberId.toString());
         json.add("data", data);
 
         notifyEventMembers(user, event, json.build());

@@ -446,7 +446,8 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         Entities utils = new Entities(entityManager);
         List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 10);
         for (UserEntity hit: hits) {
-            if (!hit.getStatus().getIsActive()) {
+            // exclude non-active users and admins from hit list
+            if (!hit.getStatus().getIsActive() || getUsers().checkUserRoles(hit, Arrays.asList(AuthRole.USER_ROLE_ADMIN)) ) {
                 continue;
             }
             JsonObjectBuilder json = Json.createObjectBuilder();

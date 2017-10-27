@@ -65,6 +65,8 @@ class MainWindow : public QMainWindow
 
         void                        onBtnLogoClicked();
 
+        void                        onBtnCollapseLogsClicked();
+
         void                        onBtnCloseClicked();
 
         void                        onBtnMinimizeClicked();

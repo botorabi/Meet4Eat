@@ -108,7 +108,7 @@ class WidgetEventItem : public QWidget
 
     protected slots:
 
-        void                        onBtnOptionsClicked();
+        void                        onBtnEditClicked();
 
         void                        onBtnDeleteClicked();
 

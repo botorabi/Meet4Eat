@@ -43,8 +43,9 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     _p_ui->labelHead->setText( _location->getName() );
     _p_ui->labelDescription->setText( _location->getDescription() );
 
-    // the button "delete" is only visible for event owner
+    // the buttons "delete" and "edit" are only visible for event owner
     _p_ui->pushButtonDelete->setHidden( !userIsOwner );
+    _p_ui->pushButtonEdit->setHidden( !userIsOwner );
 
     common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 80), QPoint( -4, 4 ), 6 );
 

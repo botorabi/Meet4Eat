@@ -34,7 +34,7 @@ MainWindow::MainWindow() :
     setAttribute( Qt::WA_NoSystemBackground );
     setAttribute( Qt::WA_TranslucentBackground );
 
-    _p_ui->setupUi(this);
+    _p_ui->setupUi( this );
     restoreWindowGeometry();
 
     // prepare the start of webapp, it connects the application to the webapp server
@@ -95,6 +95,12 @@ void MainWindow::onTimerInit()
 void MainWindow::onBtnLogoClicked()
 {
     QDesktopServices::openUrl(  QUrl( M4E_APP_URL ) );
+}
+
+void MainWindow::onBtnCollapseLogsClicked()
+{
+    _p_ui->textLogs->setVisible( !_p_ui->textLogs->isVisible() );
+    _p_ui->textLogs->parentWidget()->updateGeometry();
 }
 
 void MainWindow::storeWindowGeometry()
@@ -338,13 +344,16 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
 
 void MainWindow::addLogText( const QString& text )
 {
+    //! TODO we need a more confortable logs widget, it should support a max length of lines
+    //       but for now, the simple output is just ok.
+
     QDateTime timestamp = QDateTime::currentDateTime();
     QString ts = "[" + timestamp.toString( "yyyy-M-dd HH:mm:ss" ) + "]";
     QString logmsg = "<p>";
     logmsg += "<span style='color: gray;'>" + ts + "</span>";
     logmsg += " <span style='color: white;'>" + text + "</span>";
     logmsg += "</p>";
-    _p_ui->textNotify->appendHtml( logmsg );
+    _p_ui->textLogs->appendHtml( logmsg );
 }
 
 void MainWindow::clearClientWidget()

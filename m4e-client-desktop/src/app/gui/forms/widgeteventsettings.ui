@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>765</width>
-    <height>654</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -294,9 +294,11 @@ QPushButton::checked {
                  <enum>Qt::NoFocus</enum>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton {
-  border: 2px solid rgb(131, 147, 167);
-  border-radius: 3px;
+                 <string notr="true">#pushButtonPhoto {
+  background-color: transparent;
+}
+#pushButtonPhoto:hover {
+  background-color: transparent;
 }</string>
                 </property>
                 <property name="icon">

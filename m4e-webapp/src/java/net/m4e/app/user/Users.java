@@ -30,7 +30,6 @@ import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.system.core.AppInfoEntity;

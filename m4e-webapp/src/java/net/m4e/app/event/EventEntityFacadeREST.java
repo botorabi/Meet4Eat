@@ -355,8 +355,8 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
 
-        jsonresponse.add("eventId", eventId);
-        jsonresponse.add("memberId", memberId);
+        jsonresponse.add("eventId", eventId.toString());
+        jsonresponse.add("memberId", memberId.toString());
 
         // check if both, member and event exist
         UserEntity  user2add  = getUsers().findUser(memberId);
@@ -415,8 +415,8 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
 
-        jsonresponse.add("eventId", eventId);
-        jsonresponse.add("memberId", memberId);
+        jsonresponse.add("eventId", eventId.toString());
+        jsonresponse.add("memberId", memberId.toString());
 
         // check if both, member and event exist
         UserEntity  user2remove  = getUsers().findUser(memberId);
@@ -474,7 +474,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to notify event members, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
-        jsonresponse.add("eventId", eventId);
+        jsonresponse.add("eventId", eventId.toString());
 
         EventEntity event = super.find(eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
@@ -605,8 +605,8 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         notifications.sendNotifyLocationChanged(changetype, AuthorityConfig.getInstance().getSessionUser(request), event, location.getId());
 
         //! NOTE on successful entity location creation the new ID is sent back by results.data field.
-        jsonresponse.add("eventId", event.getId());
-        jsonresponse.add("locationId", location.getId());
+        jsonresponse.add("eventId", event.getId().toString());
+        jsonresponse.add("locationId", location.getId().toString());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Location was successfully added/update.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
@@ -631,8 +631,8 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
 
-        jsonresponse.add("eventId", eventId);
-        jsonresponse.add("locationId", locationId);
+        jsonresponse.add("eventId", eventId.toString());
+        jsonresponse.add("locationId", locationId.toString());
 
         // check if both, member and event exist
         EventLocations       locutils   = new EventLocations(entityManager);

@@ -51,6 +51,7 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     connect( _p_ui->pushButtonPhoto, SIGNAL( clicked() ), this, SLOT( onBtnPhotoClicked() ) );
     connect( _p_ui->pushButtonAddMember, SIGNAL( clicked() ), this, SLOT( onBtnAddMemberClicked() ) );
     connect( _p_ui->lineEditSearchMember, SIGNAL( returnPressed() ), this, SLOT( onLineEditSeachtReturnPressed() ) );
+    connect( _p_ui->lineEditSearchMember, SIGNAL( editingFinished() ), this, SLOT( onLineEditSeachtReturnPressed() ) );
 
     setTitle( QApplication::translate( "DialogEventSettings", "Event Settings" ) );
     if ( _userIsOwner )
@@ -82,6 +83,10 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     if ( !photoid.isEmpty() && ( photoid != "0" ) )
     {
         _p_webApp->requestDocument( photoid, event->getPhotoETag() );
+    }
+    else
+    {
+        _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( common::GuiUtils::getDefaultPixmap() ) );
     }
 }
 
