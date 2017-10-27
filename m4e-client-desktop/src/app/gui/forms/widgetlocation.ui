@@ -292,7 +292,13 @@ QPushButton[enabled=&quot;false&quot;] {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 10px;
   border-image: url(:/icon-thumbdown.png);
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
 }</string>
             </property>
            </widget>
@@ -322,7 +328,13 @@ QPushButton[enabled=&quot;false&quot;] {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 10px;
   border-image: url(:/icon-thumbup.png);
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
 }</string>
             </property>
            </widget>
@@ -365,9 +377,50 @@ QPushButton[enabled=&quot;false&quot;] {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-  border-image: url(:/icon-delete.png);
+  background-color: transparent;
+  border-radius: 10px;
+  border-image: url(:/icon-delete-small.png);
 }
-</string>
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
+}</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonEdit">
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Settings</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 10px;
+  border-image: url(:/icon-settings-small.png);
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
+}</string>
             </property>
            </widget>
           </item>
@@ -396,9 +449,14 @@ QPushButton[enabled=&quot;false&quot;] {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 10px;
   border-image: url(:/icon-info.png);
 }
-</string>
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 10px;
+}</string>
             </property>
            </widget>
           </item>
@@ -452,8 +510,8 @@ QPushButton[enabled=&quot;false&quot;] {
    <slot>onBtnDeleteClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>279</x>
-     <y>173</y>
+     <x>223</x>
+     <y>177</y>
     </hint>
     <hint type="destinationlabel">
      <x>250</x>
@@ -468,12 +526,28 @@ QPushButton[enabled=&quot;false&quot;] {
    <slot>onBtnInfoClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>241</x>
-     <y>163</y>
+     <x>279</x>
+     <y>177</y>
     </hint>
     <hint type="destinationlabel">
      <x>212</x>
      <y>196</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonEdit</sender>
+   <signal>clicked()</signal>
+   <receiver>WidgetLocation</receiver>
+   <slot>onBtnEditClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>241</x>
+     <y>168</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>297</x>
+     <y>60</y>
     </hint>
    </hints>
   </connection>
@@ -483,5 +557,6 @@ QPushButton[enabled=&quot;false&quot;] {
   <slot>onBtnVoteUpClicked()</slot>
   <slot>onBtnDeleteClicked()</slot>
   <slot>onBtnInfoClicked()</slot>
+  <slot>onBtnEditClicked()</slot>
  </slots>
 </ui>

@@ -17,7 +17,7 @@
 
 
 namespace Ui {
-  class WidgetLocationCreate;
+  class WidgetLocationEdit;
 }
 
 namespace m4e
@@ -26,12 +26,12 @@ namespace event
 {
 
 /**
- * @brief A dialog for creating new event locations.
+ * @brief A dialog for creating/updating event locations.
  *
  * @author boto
  * @date Oct 11, 2017
  */
-class DialogLocationCreate : public common::BaseDialog
+class DialogLocationEdit : public common::BaseDialog
 {
     Q_OBJECT
 
@@ -44,19 +44,27 @@ class DialogLocationCreate : public common::BaseDialog
          * @param p_webApp  Web application interface
          * @param p_parent  Parent widget
          */
-                                    DialogLocationCreate( webapp::WebApp* p_webApp, QWidget* p_parent );
+                                    DialogLocationEdit( webapp::WebApp* p_webApp, QWidget* p_parent );
 
         /**
          * @brief Destroy the instance.
          */
-        virtual                     ~DialogLocationCreate();
+        virtual                     ~DialogLocationEdit();
 
         /**
-         * @brief Setup the dialog.
+         * @brief Setup the dialog for creating a new location for given event.
          *
          * @param event  The event which should get a new location
          */
-        void                        setupUI( event::ModelEventPtr event );
+        void                        setupUINewLocation( event::ModelEventPtr event );
+
+        /**
+         * @brief Setup the dialog for editting an existing location.
+         *
+         * @param event     The event containing the location
+         * @param location  The location which is goind to be updated
+         */
+        void                        setupUIEditLocation( event::ModelEventPtr event, event::ModelLocationPtr location );
 
     protected slots:
 
@@ -64,6 +72,13 @@ class DialogLocationCreate : public common::BaseDialog
          * @brief Called when the photo icon was clicked.
          */
         void                        onBtnPhotoClicked();
+
+        /**
+         * @brief This signal is received from webapp when a requested document was arrived.
+         *
+         * @param document   Document
+         */
+        void                        onDocumentReady( m4e::doc::ModelDocumentPtr document );
 
         /**
          * @brief This signal notifies about he results of adding a new location.
@@ -74,13 +89,22 @@ class DialogLocationCreate : public common::BaseDialog
          */
         void                        onResponseAddLocation( bool success, QString eventId, QString locationId );
 
+        /**
+         * @brief This signal notifies about he results of updating a location.
+         *
+         * @param success    true if user data could successfully be retrieved, otherwise false
+         * @param eventId    ID of event
+         * @param locationId ID of location to update
+         */
+        void                        onResponseUpdateLocation( bool success, QString eventId, QString locationId );
+
     protected:
 
         virtual bool                onButton1Clicked();
 
         void                        resetDialog();
 
-        Ui::WidgetLocationCreate*   _p_ui     = nullptr;
+        Ui::WidgetLocationEdit*     _p_ui     = nullptr;
 
         webapp::WebApp*             _p_webApp = nullptr;
 

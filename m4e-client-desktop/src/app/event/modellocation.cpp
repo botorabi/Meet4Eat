@@ -20,10 +20,10 @@ namespace event
 QJsonDocument ModelLocation::toJSON()
 {
     QJsonObject obj;
-    obj.insert( "id", getId().toInt() );
+    obj.insert( "id", getId() );
     obj.insert( "name", getName() );
     obj.insert( "description", getDescription() );
-    obj.insert( "photoId", getPhotoId().toInt() );
+    obj.insert( "photoId", getPhotoId() );
     obj.insert( "photoETag", getPhotoETag() );
     if ( getUpdatedPhoto().valid() )
     {
@@ -47,10 +47,10 @@ bool ModelLocation::fromJSON( const QString& input )
 bool ModelLocation::fromJSON( const QJsonDocument& input )
 {
     QJsonObject data      = input.object();
-    QString     id        = QString::number( data.value( "id" ).toInt() );
+    QString     id        = data.value( "id" ).toString( "" );
     QString     name      = data.value( "name" ).toString( "" );
     QString     desc      = data.value( "description" ).toString( "" );
-    QString     photoid   = QString::number( data.value( "photoId" ).toInt() );
+    QString     photoid   = data.value( "photoId" ).toString( "" );
     QString     photoetag = data.value( "photoETag" ).toString( "" );
 
     setId( id );

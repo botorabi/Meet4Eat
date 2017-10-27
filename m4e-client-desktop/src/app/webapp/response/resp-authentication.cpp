@@ -71,7 +71,7 @@ void ResponseLogin::onRESTResponseSuccess( const QJsonDocument& results )
     }
 
     QJsonObject data = datadoc.object();
-    QString id = QString::number( data.value( "id" ).toInt() );
+    QString id = data.value( "id" ).toString( "" );
     emit _p_requester->onRESTAuthenticationLogin( id );
 }
 

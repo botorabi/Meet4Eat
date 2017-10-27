@@ -20,6 +20,7 @@ import javax.persistence.OneToOne;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.app.user.UserEntity;
+import net.m4e.common.EntityWithPhoto;
 
 /**
  * A class describing an event
@@ -28,7 +29,7 @@ import net.m4e.app.user.UserEntity;
  * Date of creation Aug 18, 2017
  */
 @Entity
-public class EventEntity implements Serializable {
+public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Serialization version

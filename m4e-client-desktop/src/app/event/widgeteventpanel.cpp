@@ -136,7 +136,7 @@ void WidgetEventPanel::setupLocations()
     {
         for ( auto location: _event->getLocations() )
         {
-            addLocation( location, userisowner );
+            addLocation( _event, location, userisowner );
         }
     }
     else
@@ -151,10 +151,10 @@ void WidgetEventPanel::setupNoLocationWidget()
     _p_clientArea->addItem( "Event has no location!" );
 }
 
-void WidgetEventPanel::addLocation( event::ModelLocationPtr location, bool userIsOwner )
+void WidgetEventPanel::addLocation( event::ModelEventPtr event, event::ModelLocationPtr location, bool userIsOwner )
 {
     WidgetLocation* p_widget = new WidgetLocation( _p_webApp, _p_clientArea );
-    p_widget->setupUI( location, userIsOwner );
+    p_widget->setupUI( event, location, userIsOwner );
     connect( p_widget, SIGNAL( onDeleteLocation( QString ) ), this, SLOT( onDeleteLocation( QString ) ) );
 
     QListWidgetItem* p_item = new QListWidgetItem( _p_clientArea );

@@ -209,24 +209,18 @@ public class Users {
     }
 
     /**
-     * Update the user image with the content of given image.
+     * Update the user image with the content of given image. Make sure that the
+     * document content and encoding are set properly.
      * 
      * @param user          User entity
      * @param image         Image to set to given event
      * @throws Exception    Throws exception if any problem occurred.
      */
     void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
-        DocumentPool imagepool = new DocumentPool(entityManager);
-        DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
-        if (!imagepool.compareETag(user.getPhoto(), img.getETag())) {
-            imagepool.releasePoolDocument(user.getPhoto());
-        }
-        img.setContent(image.getContent());
-        img.updateETag();
-        img.setType(DocumentEntity.TYPE_IMAGE);
-        img.setEncoding(image.getEncoding());
-        img.setResourceURL("/User/Image");
-        user.setPhoto(img);
+        Entities entities = new Entities(entityManager);
+        // make sure that the resource URL is set
+        image.setResourceURL("/User/Image");
+        entities.updateEntityPhoto(user, image);
     }
 
     /**
@@ -415,20 +409,20 @@ public class Users {
      */
     public JsonObjectBuilder exportUserJSON(UserEntity entity, ConnectedClients connections) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (entity.getId() != null) ? entity.getId() : 0);
-        json.add("name", (entity.getName() != null) ? entity.getName() : "");
-        json.add("login", (entity.getLogin() != null) ? entity.getLogin() : "");
-        json.add("email", (entity.getEmail() != null) ? entity.getEmail() : "");
-        json.add("dateLastLogin", "" + ((entity.getDateLastLogin() != null) ? entity.getDateLastLogin() : 0));
-        json.add("dateCreation", "" + ((entity.getStatus() != null) ? entity.getStatus().getDateCreation() : 0));
+        json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
+            .add("name", (entity.getName() != null) ? entity.getName() : "")
+            .add("login", (entity.getLogin() != null) ? entity.getLogin() : "")
+            .add("email", (entity.getEmail() != null) ? entity.getEmail() : "")
+            .add("dateLastLogin", "" + ((entity.getDateLastLogin() != null) ? entity.getDateLastLogin() : 0))
+            .add("dateCreation", "" + ((entity.getStatus() != null) ? entity.getStatus().getDateCreation() : 0));
         JsonArrayBuilder roles = Json.createArrayBuilder();
         entity.getRoles().forEach((r) -> {
             roles.add(r.getName());
         });
-        json.add("roles", roles);
-        json.add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId() : 0);
-        // the ETag can be used on a client for caching purpose
-        json.add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
+        json.add("roles", roles)
+            .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
+            // the ETag can be used on a client for caching purpose
+            .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
         // set the online status
         boolean online = (connections.getConnectedUser(entity.getId()) != null);
         json.add("status", online ? "online" : "offline");
@@ -482,9 +476,8 @@ public class Users {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);
-            image.setContent(photo.getBytes());
+            image.updateContent(photo.getBytes());
             image.setType(DocumentEntity.TYPE_IMAGE);
-            image.updateETag();
             entity.setPhoto(image);
         }
 

@@ -156,17 +156,27 @@ public class Events {
      * @throws Exception  Throws an exception if something goes wrong.
      */
     void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
+        Entities entities = new Entities(entityManager);
+        // make sure that the resource URL is set
+        image.setResourceURL("/Event/Image");
+        entities.updateEntityPhoto(event, image);
+/*
         DocumentPool imagepool = new DocumentPool(entityManager);
         DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
+        // check if the new image is the same
         if (!imagepool.compareETag(event.getPhoto(), img.getETag())) {
+            // release the old document
             imagepool.releasePoolDocument(event.getPhoto());
+            // did the pool create a new image or delivered an existing image?
+            if (img.getIsEmpty()) {
+                img.updateContent(image.getContent());
+                img.setType(DocumentEntity.TYPE_IMAGE);
+                img.setEncoding(image.getEncoding());
+                img.setResourceURL("/Event/Image");
+            }
+            event.setPhoto(img);
         }
-        img.setContent(image.getContent());
-        img.updateETag();
-        img.setType(DocumentEntity.TYPE_IMAGE);
-        img.setEncoding(image.getEncoding());
-        img.setResourceURL("/Event/Image");
-        event.setPhoto(img);
+*/
     }
 
     /**
@@ -318,15 +328,15 @@ public class Events {
      */
     public JsonObjectBuilder exportEventJSON(EventEntity entity, ConnectedClients connections) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (entity.getId() != null) ? entity.getId() : 0);
-        json.add("name", (entity.getName() != null) ? entity.getName() : "");
-        json.add("description", (entity.getDescription() != null) ? entity.getDescription(): "");
-        json.add("public", entity.getIsPublic());
-        json.add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
-        json.add("eventStart", (entity.getEventStart() != null) ? entity.getEventStart(): 0);
-        json.add("repeatWeekDays", (entity.getRepeatWeekDays() != null) ? entity.getRepeatWeekDays(): 0);
-        json.add("repeatDayTime", (entity.getRepeatDayTime() != null) ? entity.getRepeatDayTime(): 0);
+        json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
+            .add("name", (entity.getName() != null) ? entity.getName() : "")
+            .add("description", (entity.getDescription() != null) ? entity.getDescription(): "")
+            .add("public", entity.getIsPublic())
+            .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString(): "")
+            .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "")
+            .add("eventStart", (entity.getEventStart() != null) ? entity.getEventStart(): 0)
+            .add("repeatWeekDays", (entity.getRepeatWeekDays() != null) ? entity.getRepeatWeekDays(): 0)
+            .add("repeatDayTime", (entity.getRepeatDayTime() != null) ? entity.getRepeatDayTime(): 0);
 
         JsonArrayBuilder members = Json.createArrayBuilder();
         if (entity.getMembers() != null) {
@@ -335,10 +345,10 @@ public class Events {
                 .filter((mem) -> (mem.getStatus().getIsActive()))
                 .map((mem) -> {
                     JsonObjectBuilder member = Json.createObjectBuilder();
-                    member.add("id", mem.getId());
-                    member.add("name", (mem.getName() != null) ? mem.getName() : "");
-                    member.add("photoId", (mem.getPhoto() != null) ? mem.getPhoto().getId(): 0);
-                    member.add("photoETag", (mem.getPhoto() != null) ? mem.getPhoto().getETag() : "");
+                    member.add("id", mem.getId().toString())
+                          .add("name", (mem.getName() != null) ? mem.getName() : "")
+                          .add("photoId", (mem.getPhoto() != null) ? mem.getPhoto().getId().toString(): "")
+                          .add("photoETag", (mem.getPhoto() != null) ? mem.getPhoto().getETag() : "");
                     // set the online status
                     boolean online = (connections.getConnectedUser(mem.getId()) != null);
                     member.add("status", online ? "online" : "offline");
@@ -357,11 +367,11 @@ public class Events {
                 .filter((location) -> (location.getStatus().getIsActive()))
                 .map((location) -> {
                     JsonObjectBuilder loc = Json.createObjectBuilder();
-                    loc.add("id", location.getId());
-                    loc.add("name", (location.getName() != null) ? location.getName() : "");
-                    loc.add("description", (location.getDescription() != null) ? location.getDescription() : "");
-                    loc.add("photoId", (location.getPhoto() != null) ? location.getPhoto().getId(): 0);
-                    loc.add("photoETag", (location.getPhoto() != null) ? location.getPhoto().getETag(): "");
+                    loc.add("id", location.getId().toString())
+                       .add("name", (location.getName() != null) ? location.getName() : "")
+                       .add("description", (location.getDescription() != null) ? location.getDescription() : "")
+                       .add("photoId", (location.getPhoto() != null) ? location.getPhoto().getId().toString(): "")
+                       .add("photoETag", (location.getPhoto() != null) ? location.getPhoto().getETag(): "");
                     return loc;
                 })
                 .forEach((loc) -> {
@@ -389,11 +399,11 @@ public class Events {
             ownerphotoetag = (owner.getPhoto() != null) ? owner.getPhoto().getETag(): "";
             owneronline = (connections.getConnectedUser(owner.getId()) != null);
         }
-        json.add("ownerId", ownerid);
-        json.add("ownerName", ownername);
-        json.add("ownerPhotoId", ownerphotoid);
-        json.add("ownerPhotoETag", ownerphotoetag);
-        json.add("status", owneronline ? "online" : "offline");
+        json.add("ownerId", (ownerid > 0)? ownerid.toString() : "")
+            .add("ownerName", ownername)
+            .add("ownerPhotoId", (ownerphotoid > 0)? ownerphotoid.toString() : "")
+            .add("ownerPhotoETag", ownerphotoetag)
+            .add("status", owneronline ? "online" : "offline");
         return json;
     }
 
@@ -448,8 +458,7 @@ public class Events {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);
-            image.setContent(photo.getBytes());
-            image.updateETag();
+            image.updateContent(photo.getBytes());
             image.setType(DocumentEntity.TYPE_IMAGE);
             entity.setPhoto(image);
         }

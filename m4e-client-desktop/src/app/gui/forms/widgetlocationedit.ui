@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WidgetLocationCreate</class>
- <widget class="QWidget" name="WidgetLocationCreate">
+ <class>WidgetLocationEdit</class>
+ <widget class="QWidget" name="WidgetLocationEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -16,6 +16,7 @@
   <property name="styleSheet">
    <string notr="true">QWidget {
   color: white;
+  /*background-color: rgb(50,82,95);*/
 }
 QGroupBox {
   border-radius: 0px;
@@ -98,14 +99,30 @@ QPushButton::checked {
          <number>9</number>
         </property>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
+         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <property name="bottomMargin">
-             <number>6</number>
+             <number>0</number>
             </property>
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_9">
+              <item>
+               <spacer name="verticalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Preferred</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
               <item>
                <widget class="QLabel" name="label_4">
                 <property name="text">
@@ -125,19 +142,6 @@ QPushButton::checked {
                  <string>Location name</string>
                 </property>
                </widget>
-              </item>
-              <item>
-               <spacer name="verticalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
              </layout>
             </item>
@@ -178,9 +182,11 @@ QPushButton::checked {
                <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="styleSheet">
-               <string notr="true">QPushButton {
-  border: 2px solid rgb(131, 147, 167);
-  border-radius: 3px;
+               <string notr="true">#pushButtonPhoto {
+  background-color: transparent;
+}
+#pushButtonPhoto:hover {
+  background-color: transparent;
 }</string>
               </property>
               <property name="icon">

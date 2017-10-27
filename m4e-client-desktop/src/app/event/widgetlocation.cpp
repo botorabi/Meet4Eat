@@ -13,6 +13,7 @@
 #include <common/basedialog.h>
 #include <common/dialogmessage.h>
 #include "dialoglocationdetails.h"
+#include "dialoglocationedit.h"
 #include <ui_widgetlocation.h>
 
 
@@ -33,8 +34,9 @@ WidgetLocation::~WidgetLocation()
     delete _p_ui;
 }
 
-void WidgetLocation::setupUI( event::ModelLocationPtr location, bool userIsOwner )
+void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPtr location, bool userIsOwner )
 {
+    _event = event;
     _location = location;
 
     _p_ui->setupUi( this );
@@ -53,11 +55,23 @@ void WidgetLocation::setupUI( event::ModelLocationPtr location, bool userIsOwner
         connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
         _p_webApp->requestDocument( photoid, _location->getPhotoETag() );
     }
+    else
+    {
+        _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( common::GuiUtils::getDefaultPixmap() ) );
+    }
 
     // we need to handle mouse clicks manually
     _p_ui->labelHead->installEventFilter( this );
     _p_ui->labelDescription->installEventFilter( this );
     _p_ui->labelPhoto->installEventFilter( this );
+}
+
+void WidgetLocation::onBtnEditClicked()
+{
+    DialogLocationEdit* p_dlg = new DialogLocationEdit( _p_webApp, this );
+    p_dlg->setupUIEditLocation( _event, _location );
+    p_dlg->exec();
+    delete p_dlg;
 }
 
 void WidgetLocation::onBtnDeleteClicked()

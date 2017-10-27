@@ -11,7 +11,7 @@
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
 #include "dialogeventsettings.h"
-#include "dialoglocationcreate.h"
+#include "dialoglocationedit.h"
 #include <ui_widgeteventitem.h>
 
 
@@ -132,8 +132,8 @@ void WidgetEventItem::onBtnDeleteClicked()
 
 void WidgetEventItem::onBtnNewLocationClicked()
 {
-    DialogLocationCreate* p_dlg = new DialogLocationCreate( _p_webApp, this );
-    p_dlg->setupUI( _event );
+    DialogLocationEdit* p_dlg = new DialogLocationEdit( _p_webApp, this );
+    p_dlg->setupUINewLocation( _event );
     p_dlg->exec();
     delete p_dlg;
 

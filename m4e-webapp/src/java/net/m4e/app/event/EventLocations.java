@@ -18,7 +18,6 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.Strings;
@@ -126,17 +125,10 @@ public class EventLocations {
      * @throws Exception    Throws exception if any problem occurred.
      */
     void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) throws Exception {
-        DocumentPool imagepool = new DocumentPool(entityManager);
-        DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
-        if (!imagepool.compareETag(location.getPhoto(), img.getETag())) {
-            imagepool.releasePoolDocument(location.getPhoto());
-        }
-        img.setContent(image.getContent());
-        img.updateETag();
-        img.setType(DocumentEntity.TYPE_IMAGE);
-        img.setEncoding(image.getEncoding());
-        img.setResourceURL("/EventLoction/Image");
-        location.setPhoto(img);
+        Entities entities = new Entities(entityManager);
+        // make sure that the resource URL is set
+        image.setResourceURL("/EventLoction/Image");
+        entities.updateEntityPhoto(location, image);
     }
 
     /**
@@ -196,7 +188,7 @@ public class EventLocations {
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
             JsonObject jobject = jreader.readObject();
-            idstring    = jobject.getString("id", "0");
+            idstring    = jobject.getString("id", "");
             name        = jobject.getString("name", null);
             description = jobject.getString("description", null);
             photo       = jobject.getString("photo", null);
@@ -227,8 +219,7 @@ public class EventLocations {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);
-            image.setContent(photo.getBytes());
-            image.updateETag();
+            image.updateContent(photo.getBytes());
             image.setType(DocumentEntity.TYPE_IMAGE);
             entity.setPhoto(image);
         }
@@ -244,11 +235,11 @@ public class EventLocations {
      */
     public JsonObjectBuilder exportEventLocationJSON(EventLocationEntity entity) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (entity.getId() != null) ? entity.getId() : 0);
-        json.add("name", (entity.getName() != null) ? entity.getName() : "");
-        json.add("description", (entity.getDescription() != null) ? entity.getDescription(): "");
-        json.add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId(): 0);
-        json.add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag() : "");
+        json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
+            .add("name", (entity.getName() != null) ? entity.getName() : "")
+            .add("description", (entity.getDescription() != null) ? entity.getDescription(): "")
+            .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
+            .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag() : "");
         return json;
     }
 }

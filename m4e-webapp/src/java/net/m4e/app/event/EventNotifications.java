@@ -101,11 +101,11 @@ public class EventNotifications {
      */
     public void sendNotifyEventChanged(ChangeType changeType, UserEntity user, EventEntity event) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("subject", "Event");
-        json.add("type", changeType.value() + "event");
-        json.add("text", "Event was " + changeType.pastForm() + ".");
+        json.add("subject", "Event")
+            .add("type", changeType.value() + "event")
+            .add("text", "Event was " + changeType.pastForm() + ".");
         JsonObjectBuilder data = Json.createObjectBuilder();
-        data.add("eventId", event.getId());
+        data.add("eventId", event.getId().toString());
         json.add("data", data);
 
         notifyEventMembers(user, event, json.build());
@@ -121,12 +121,12 @@ public class EventNotifications {
      */
     public void sendNotifyLocationChanged(ChangeType changeType, UserEntity user, EventEntity event, Long locationId) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("subject", "Event Location");
-        json.add("type", changeType.value() + "location");
-        json.add("text", "Location was " + changeType.pastForm() + ".");
+        json.add("subject", "Event Location")
+            .add("type", changeType.value() + "location")
+            .add("text", "Location was " + changeType.pastForm() + ".");
         JsonObjectBuilder data = Json.createObjectBuilder();
-        data.add("eventId", event.getId());
-        data.add("locationId", locationId);
+        data.add("eventId", event.getId())
+            .add("locationId", locationId);
         json.add("data", data);
 
         notifyEventMembers(user, event, json.build());
@@ -142,12 +142,12 @@ public class EventNotifications {
      */
     public void sendNotifyMemberChanged(ChangeType changeType, UserEntity user, EventEntity event, Long memberId) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("subject", "Event Member");
-        json.add("type", changeType.value() + "member");
-        json.add("text", "Member was " + changeType.pastForm() + ".");
+        json.add("subject", "Event Member")
+            .add("type", changeType.value() + "member")
+            .add("text", "Member was " + changeType.pastForm() + ".");
         JsonObjectBuilder data = Json.createObjectBuilder();
-        data.add("eventId", event.getId());
-        data.add("memberId", memberId);
+        data.add("eventId", event.getId())
+            .add("memberId", memberId);
         json.add("data", data);
 
         notifyEventMembers(user, event, json.build());

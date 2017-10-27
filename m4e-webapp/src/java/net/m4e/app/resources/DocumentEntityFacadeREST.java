@@ -70,7 +70,7 @@ public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         DocumentEntity document = super.find(id);
         if ((document == null) || !document.getStatus().getIsActive()) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());

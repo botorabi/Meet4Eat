@@ -123,5 +123,13 @@ void RESTEvent::removeLocation( const QString& eventId, const QString& locationI
     getRESTOps()->POST( url, createResultsCallback( p_callback ) );
 }
 
+void RESTEvent::updateLocation(const QString& eventId, event::ModelLocationPtr location)
+{
+    //! NOTE the REST service is the same as for adding a new event location, but the location is expected to hava a valid ID here
+    QUrl url( getResourcePath() + "/rest/events/putlocation/" + eventId );
+    auto p_callback = new ResponseEventUpdateLocation( this );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ), location->toJSON() );
+}
+
 } // namespace webapp
 } // namespace m4e

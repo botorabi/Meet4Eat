@@ -21,9 +21,9 @@ namespace user
 QJsonDocument ModelUserInfo::toJSON()
 {
     QJsonObject obj;
-    obj.insert( "id", getId().toInt() );
+    obj.insert( "id", getId() );
     obj.insert( "name", getName() );
-    obj.insert( "photoId", getPhotoId().toInt() );
+    obj.insert( "photoId", getPhotoId() );
     obj.insert( "photoETag", getPhotoETag() );
     obj.insert( "status", getStatus() );
 
@@ -44,9 +44,9 @@ bool ModelUserInfo::fromJSON( const QString& input )
 bool ModelUserInfo::fromJSON( const QJsonDocument& input )
 {
     QJsonObject data      = input.object();
-    QString     id        = QString::number( data.value( "id" ).toInt() );
+    QString     id        = data.value( "id" ).toString( "" );
     QString     name      = data.value( "name" ).toString( "" );
-    QString     photoid   = QString::number( data.value( "photoId" ).toInt() );
+    QString     photoid   = data.value( "photoId" ).toString( "" );
     QString     photoetag = data.value( "photoETag" ).toString( "" );
     QString     status    = data.value( "status" ).toString( "" );
 

@@ -321,7 +321,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String edit(@PathParam("id") Long id, String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             Log.error(TAG, "*** Cannot update user, no user in session found!");
@@ -396,7 +396,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
@@ -428,6 +428,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
     /**
      * Search for users containing given keyword in their name.
+     * A maximal of 10 users are returned.
      * 
      * @param keyword  Keyword to search for
      * @return         JSON response
@@ -443,16 +444,16 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         Entities utils = new Entities(entityManager);
-        List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
+        List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 10);
         for (UserEntity hit: hits) {
             if (!hit.getStatus().getIsActive()) {
                 continue;
             }
             JsonObjectBuilder json = Json.createObjectBuilder();
-            json.add("id", hit.getId());
-            json.add("name", (hit.getName() != null) ? hit.getName() : "");
-            json.add("photoId", (hit.getPhoto() != null) ? hit.getPhoto().getId() : 0);
-            json.add("photoETag", (hit.getPhoto() != null) ? hit.getPhoto().getETag() : "");
+            json.add("id", hit.getId().toString())
+                .add("name", (hit.getName() != null) ? hit.getName() : "")
+                .add("photoId", (hit.getPhoto() != null) ? hit.getPhoto().getId().toString() : "")
+                .add("photoETag", (hit.getPhoto() != null) ? hit.getPhoto().getETag() : "");
             results.add(json);
         }
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());
@@ -471,7 +472,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         UserEntity user = super.find(id);
         if ((user == null) || !user.getStatus().getIsActive()) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "User was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());

@@ -139,7 +139,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         notifications.sendNotifyEventChanged(EventNotifications.ChangeType.Add, AuthorityConfig.getInstance().getSessionUser(request), newevent);
 
         //! NOTE on successful entity creation the new event ID is sent back by results.data field.
-        jsonresponse.add("id", newevent.getId());
+        jsonresponse.add("id", newevent.getId().toString());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
@@ -158,7 +158,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String edit(@PathParam("id") Long id, String eventJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         EventEntity reqentity = getEvents().importEventJSON(eventJson);
         if (reqentity == null) {
@@ -228,7 +228,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         EventEntity event = super.find(id);
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         if (event == null) {
             Log.warning(TAG, "*** User was attempting to delete non-existing event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
@@ -271,7 +271,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         EventEntity event = super.find(id);
         if ((event == null) || !event.getStatus().getIsActive()) {
             JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-            jsonresponse.add("id", id);
+            jsonresponse.add("id", id.toString());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Event was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
@@ -503,7 +503,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
     @Path("location/{eventId}/{locationId}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String putLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
+    public String getLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if ((eventId == null) || (locationId == null)) {
             Log.error(TAG, "*** Cannot get event location, no valid inputs!");

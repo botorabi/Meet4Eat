@@ -135,10 +135,11 @@ class WidgetEventPanel : public QWidget
         /**
          * @brief Add a new location for an event
          *
+         * @param event         The event
          * @param location      New location to add
          * @param userIsOwner   Is the user also the owner of the event?
          */
-        void                        addLocation( event::ModelLocationPtr location, bool userIsOwner );
+        void                        addLocation( event::ModelEventPtr event, event::ModelLocationPtr location, bool userIsOwner );
 
         /**
          * @brief Try to find the widget item of an event location given its ID.

@@ -69,12 +69,12 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         Object user = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (user != null) {
             UserEntity userentity = (UserEntity)user;
-            json.add("auth", "yes");
-            json.add("id", userentity.getId());
+            json.add("auth", "yes")
+                .add("id", userentity.getId());
         }
         else {
-            json.add("auth", "no");
-            json.add("id", "0");
+            json.add("auth", "no")
+                .add("id", "");
         }
 
         json.add("sid", session.getId());
@@ -139,8 +139,8 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         userutils.updateUserLastLogin(existinguser);
 
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", existinguser.getId());
-        json.add("sid", session.getId());
+        json.add("id", existinguser.getId().toString())
+            .add("sid", session.getId());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully logged in.", ResponseResults.CODE_OK, json.build().toString());
     }
 

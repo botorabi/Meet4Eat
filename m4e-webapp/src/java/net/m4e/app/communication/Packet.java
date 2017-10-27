@@ -77,9 +77,9 @@ public class Packet {
      */
     public String toJSON() {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("channel", ((channel != null) ? channel : ""));
-        json.add("source", ((source != null) ? source : ""));
-        json.add("time", (time == 0L) ? (new Date()).getTime() : time);
+        json.add("channel", ((channel != null) ? channel : ""))
+            .add("source", ((source != null) ? source : ""))
+            .add("time", (time == 0L) ? (new Date()).getTime() : time);
         if (data != null) {
             json.add("data", data);
         }

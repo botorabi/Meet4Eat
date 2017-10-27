@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
+import net.m4e.common.EntityWithPhoto;
 
 
 /**
@@ -33,7 +34,7 @@ import net.m4e.app.resources.StatusEntity;
  * Date of creation Aug 18, 2017
  */
 @Entity
-public class UserEntity implements Serializable {
+public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Serialization version

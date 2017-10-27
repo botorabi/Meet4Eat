@@ -52,7 +52,7 @@ bool ModelDocument::fromJSON( const QString& input )
 bool ModelDocument::fromJSON( const QJsonDocument& input )
 {
     QJsonObject data      = input.object();
-    QString     id        = QString::number( data.value( "id" ).toInt() );
+    QString     id        = data.value( "id" ).toString( "" );
     QString     name      = data.value( "name" ).toString( "" );
     QString     encoding  = data.value( "encoding" ).toString( "" );
     QString     type      = data.value( "type" ).toString( "" );

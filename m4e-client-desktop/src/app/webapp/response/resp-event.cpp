@@ -28,10 +28,10 @@ namespace webapp
  */
 static event::ModelEventPtr createEvent( const QJsonObject& json )
 {
-    QString    id             = QString::number( json.value( "id" ).toInt() );
+    QString    id             = json.value( "id" ).toString( "" );
     QString    name           = json.value( "name" ).toString( "" );
     QString    desc           = json.value( "description" ).toString( "" );
-    QString    photoid        = QString::number( json.value( "photoId" ).toInt() );
+    QString    photoid        = json.value( "photoId" ).toString( "" );
     QString    photoetag      = json.value( "photoETag" ).toString( "" );
     bool       ispublic       = json.value( "public" ).toBool();
     int        eventstart     = json.value( "eventStart" ).toInt( 0 );
@@ -39,9 +39,9 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
     int        repdaytime     = json.value( "repeatDayTime" ).toInt( 0 );
     QJsonArray locations      = json.value( "locations" ).toArray();
     QJsonArray members        = json.value( "members" ).toArray();
-    QString    ownerid        = QString::number( json.value( "ownerId" ).toInt() );
+    QString    ownerid        = json.value( "ownerId" ).toString( "" );
     QString    ownername      = json.value( "ownerName" ).toString( "" );
-    QString    ownerphotoid   = QString::number( json.value( "ownerPhotoId" ).toInt() );
+    QString    ownerphotoid   = json.value( "ownerPhotoId" ).toString( "" );
     QString    ownerphotoetag = json.value( "ownerPhotoETag" ).toString( "" );
     QString    ownerstatus    = json.value( "status" ).toString( "" );
 
@@ -70,10 +70,10 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
     for ( int i = 0; i < locations.size(); i++ )
     {
         QJsonObject obj = locations.at( i ).toObject();
-        QString id        = QString::number( obj.value( "id" ).toInt() );
+        QString id        = obj.value( "id" ).toString( "" );
         QString name      = obj.value( "name" ).toString( "" );
         QString desc      = obj.value( "description" ).toString( "" );
-        QString photoid   = QString::number( obj.value( "photoId" ).toInt() );
+        QString photoid   = obj.value( "photoId" ).toString( "" );
         QString photoetag = obj.value( "photoETag" ).toString( "" );
 
         event::ModelLocationPtr l = new event::ModelLocation();
@@ -173,7 +173,7 @@ void ResponseNewEvent::onRESTResponseSuccess( const QJsonDocument& results )
     }
 
     QJsonObject obj  = datadoc.object();
-    QString eventid  = QString::number( obj.value( "id" ).toInt() );
+    QString eventid  = obj.value( "id" ).toString( "" );
     emit _p_requester->onRESTEventNewEvent( eventid );
 }
 
@@ -203,7 +203,7 @@ void ResponseDeleteEvent::onRESTResponseSuccess( const QJsonDocument& results )
     }
 
     QJsonObject obj  = datadoc.object();
-    QString eventid  = QString::number( obj.value( "id" ).toInt() );
+    QString eventid  = obj.value( "id" ).toString( "" );
     emit _p_requester->onRESTEventDeleteEvent( eventid );
 }
 
@@ -233,7 +233,7 @@ void ResponseUpdateEvent::onRESTResponseSuccess( const QJsonDocument& results )
     }
 
     QJsonObject obj  = datadoc.object();
-    QString eventid  = QString::number( obj.value( "id" ).toInt() );
+    QString eventid  = obj.value( "id" ).toString( "" );
     emit _p_requester->onRESTEventUpdateEvent( eventid );
 }
 
@@ -291,8 +291,8 @@ void ResponseEventAddMember::onRESTResponseSuccess( const QJsonDocument& results
     }
 
     QJsonObject obj  = datadoc.object();
-    QString eventid  = QString::number( obj.value( "eventId" ).toInt() );
-    QString memberid = QString::number( obj.value( "memberId" ).toInt() );
+    QString eventid  = obj.value( "eventId" ).toString( "" );
+    QString memberid = obj.value( "memberId" ).toString( "" );
 
     emit _p_requester->onRESTEventAddMember( eventid, memberid );
 }
@@ -323,8 +323,8 @@ void ResponseEventRemoveMember::onRESTResponseSuccess( const QJsonDocument& resu
     }
 
     QJsonObject obj  = datadoc.object();
-    QString eventid  = QString::number( obj.value( "eventId" ).toInt() );
-    QString memberid = QString::number( obj.value( "memberId" ).toInt() );
+    QString eventid  = obj.value( "eventId" ).toString( "" );
+    QString memberid = obj.value( "memberId" ).toString( "" );
 
     emit _p_requester->onRESTEventRemoveMember( eventid, memberid );
 }
@@ -394,8 +394,8 @@ void ResponseEventAddLocation::onRESTResponseSuccess( const QJsonDocument& resul
     }
 
     QJsonObject obj    = datadoc.object();
-    QString eventid    = QString::number( obj.value( "eventId" ).toInt() );
-    QString locationid = QString::number( obj.value( "locationId" ).toInt() );
+    QString eventid    = obj.value( "eventId" ).toString( "" );
+    QString locationid = obj.value( "locationId" ).toString( "" );
 
     emit _p_requester->onRESTEventAddLocation( eventid, locationid );
 }
@@ -427,8 +427,8 @@ void ResponseEventRemoveLocation::onRESTResponseSuccess( const QJsonDocument& re
     }
 
     QJsonObject obj    = datadoc.object();
-    QString eventid    = QString::number( obj.value( "eventId" ).toInt() );
-    QString locationid = QString::number( obj.value( "locationId" ).toInt() );
+    QString eventid    = obj.value( "eventId" ).toString( "" );
+    QString locationid = obj.value( "locationId" ).toString( "" );
 
     emit _p_requester->onRESTEventRemoveLocation( eventid, locationid );
 }
@@ -436,6 +436,39 @@ void ResponseEventRemoveLocation::onRESTResponseSuccess( const QJsonDocument& re
 void ResponseEventRemoveLocation::onRESTResponseError( const QString& reason )
 {
     emit _p_requester->onRESTEventErrorRemoveLocation( "", reason );
+}
+
+/******************************************************/
+/************ ResponseEventUpdateLocation *************/
+/******************************************************/
+
+ResponseEventUpdateLocation::ResponseEventUpdateLocation( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventUpdateLocation::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorUpdateLocation( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj    = datadoc.object();
+    QString eventid    = obj.value( "eventId" ).toString( "" );
+    QString locationid = obj.value( "locationId" ).toString( "" );
+
+    emit _p_requester->onRESTEventUpdateLocation( eventid, locationid );
+}
+
+void ResponseEventUpdateLocation::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorUpdateLocation( "", reason );
 }
 
 } // namespace webapp

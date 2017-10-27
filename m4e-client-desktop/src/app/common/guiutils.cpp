@@ -57,6 +57,12 @@ QPixmap GuiUtils::createRoundIcon( doc::ModelDocumentPtr input )
     return QPixmap();
 }
 
+QPixmap GuiUtils::getDefaultPixmap()
+{
+    QPixmap pix( ":/logo.png" );
+    return pix;
+}
+
 bool GuiUtils::createImageFromFile( QWidget* p_parent, QString dir, QPixmap& image, QByteArray& imageContent, QString& format, bool& aborted )
 {
     aborted = false;

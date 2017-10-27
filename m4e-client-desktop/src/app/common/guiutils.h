@@ -49,6 +49,13 @@ class GuiUtils
         static QPixmap      createRoundIcon( doc::ModelDocumentPtr input );
 
         /**
+         * @brief Get a default pixmap which can be used for missing icons in resources.
+         *
+         * @return Default pixmap
+         */
+        static QPixmap      getDefaultPixmap();
+
+        /**
          * @brief Create an image in proper size by letting the user choos an image file. The image has a max size of 512x512.
          *
          * @param p_parent      Parent widget
