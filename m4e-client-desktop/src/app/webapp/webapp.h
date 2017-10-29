@@ -115,7 +115,7 @@ class WebApp : public QObject
         comm::Connection*               getConnection();
 
         /**
-         * @brief Get the Notifications instance, it handles all incoming notifications from app server.
+         * @brief Get the Notifications instance, it handles all incoming and outgoing notifications.
          *
          * @return Notifications instance
          */

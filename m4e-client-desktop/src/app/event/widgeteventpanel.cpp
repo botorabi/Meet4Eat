@@ -11,14 +11,12 @@
 #include <core/log.h>
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
+#include <chat/chatmessage.h>
 #include <ui_widgeteventpanel.h>
 #include "widgeteventitem.h"
 #include "widgetlocation.h"
-#include <chat/chatmessage.h>
-#include <QListWidget>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include "dialogbuzz.h"
+
 
 namespace m4e
 {
@@ -207,12 +205,10 @@ void WidgetEventPanel::setEventMembers()
 
 void WidgetEventPanel::onBtnBuzzClicked()
 {
-    log_verbose << TAG << "TODO onBtnBuzzClicked..." << std::endl;
-}
-
-void WidgetEventPanel::onBtnRemoveVotesClicked()
-{
-    log_verbose << TAG << "TODO onButtonRemoveVotesClicked..." << std::endl;
+    DialogBuzz* p_dlg = new DialogBuzz( _p_webApp, this );
+    p_dlg->setupUI( _event );
+    p_dlg->exec();
+    delete p_dlg;
 }
 
 void WidgetEventPanel::onDeleteLocation( QString id )

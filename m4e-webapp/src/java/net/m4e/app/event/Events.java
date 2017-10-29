@@ -13,8 +13,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -160,23 +162,6 @@ public class Events {
         // make sure that the resource URL is set
         image.setResourceURL("/Event/Image");
         entities.updateEntityPhoto(event, image);
-/*
-        DocumentPool imagepool = new DocumentPool(entityManager);
-        DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
-        // check if the new image is the same
-        if (!imagepool.compareETag(event.getPhoto(), img.getETag())) {
-            // release the old document
-            imagepool.releasePoolDocument(event.getPhoto());
-            // did the pool create a new image or delivered an existing image?
-            if (img.getIsEmpty()) {
-                img.updateContent(image.getContent());
-                img.setType(DocumentEntity.TYPE_IMAGE);
-                img.setEncoding(image.getEncoding());
-                img.setResourceURL("/Event/Image");
-            }
-            event.setPhoto(img);
-        }
-*/
     }
 
     /**
@@ -194,6 +179,31 @@ public class Events {
             } 
         }
         return owner;
+    }
+
+    /**
+     * Given an event ID return the IDs of all of its members (including the owner). If the event was not
+     * found then an empty set is returned.
+     * 
+     * @param eventId   Event ID
+     * @return          A set with member IDs
+     */
+    public Set<Long> getMembers(Long eventId) {
+        Set<Long> memberids = new HashSet();
+        EventEntity event = findEvent(eventId);
+        if ((event == null) || !event.getStatus().getIsActive()) {
+            return memberids;
+        }
+
+        Collection<UserEntity> members = event.getMembers();
+        // avoid duplicate IDs by using a set (the sender can be also the owner or part of the members)
+        memberids.add(event.getStatus().getIdOwner());
+        if (members != null) {
+            members.forEach((m) -> {
+                memberids.add(m.getId());
+            });
+        }
+        return memberids;
     }
 
     /**

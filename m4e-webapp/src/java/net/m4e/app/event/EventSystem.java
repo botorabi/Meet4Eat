@@ -5,7 +5,7 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.chat;
+package net.m4e.app.event;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,35 +15,34 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
-import net.m4e.app.communication.ChannelChatEvent;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import net.m4e.app.communication.ChannelEventEvent;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.communication.Packet;
-import net.m4e.app.event.EventEntity;
-import net.m4e.app.event.Events;
 import net.m4e.app.user.UserEntity;
 import net.m4e.system.core.Log;
 
 
 /**
- * Central chat functionality providing real-time messaging.
+ * Central place for handling event related real-time actions such as
+ * distributing messages or coordinating event member votes for locations.
  * 
  * @author boto
- * Date of creation Oct 07, 2017
+ * Date of creation Oct 29, 2017
  */
 @Singleton
 @ApplicationScoped
-public class ChatSystem {
+public class EventSystem {
 
     /**
      * Used for logging
      */
-    private final static String TAG = "ChatSystem";
+    private final static String TAG = "EventSystem";
 
     /**
      * Central place to hold all client connections
@@ -61,8 +60,8 @@ public class ChatSystem {
      * Called on post-construction of the instance.
      */
     @PostConstruct
-    public void chatSystemInit() {
-        Log.info(TAG, "Starting the chat system");
+    public void eventSystemInit() {
+        Log.info(TAG, "Starting the event system");
     }
 
     /**
@@ -70,7 +69,7 @@ public class ChatSystem {
      * 
      * @param event Chat event
      */
-    public void dispatchMessage(@ObservesAsync ChannelChatEvent event) {
+    public void dispatchMessage(@ObservesAsync ChannelEventEvent event) {
         Long senderid = event.getSenderId();
         UserEntity user = connections.getConnectedUser(senderid);
         if (user == null) {
@@ -78,62 +77,40 @@ public class ChatSystem {
             return;
         }
 
+        //! NOTE we may introduce some sort of package validation in future. 
+        //       for instance the type of the event notification could be validated.
+
         Packet packet = event.getPacket();
-        JsonObject data = packet.getData();
-        String receiveuser = data.getString("receiverUser", "");
-        String receiveevent = data.getString("receiverEvent", "");
-        if (receiveuser.isEmpty() && receiveevent.isEmpty()) {
-            Log.warning(TAG, "got invalid receiver from user " + senderid);
-            return;
-        }
+        JsonObject eventpkg = packet.getData();
+        JsonObject eventdata = eventpkg.getJsonObject("data");
+        String receiveevent = eventdata.getString("eventId", "");
         try {
             if (!receiveevent.isEmpty()) {
                 Long eventid = Long.parseLong(receiveevent);
                 sendMessageEvent(user, eventid, packet);
             }
             else {
-                Long userid = Long.parseLong(receiveuser);
-                sendMessageUser(user, userid, packet);
+                Log.warning(TAG, "invalid receiver event ID detected, ignoting the event message!");
             }
         }
         catch(NumberFormatException ex) {
-            Log.warning(TAG, "could not distribute chat message from sender " + senderid + ", reason: " + ex.getLocalizedMessage());
+            Log.warning(TAG, "could not distribute event notification from sender " + senderid + ", reason: " + ex.getLocalizedMessage());
         }
     }
 
     /**
-     * Send a chat message to all event members.
+     * Send a message to all event members.
      * 
      * @param sender        Message sender
-     * @param receiverId    Recipient ID (event ID)
+     * @param eventId       Event ID receiving the message
      * @param packet        Chat packet to send
      */
-    private void sendMessageEvent(UserEntity sender, Long receiverId, Packet packet) {
+    private void sendMessageEvent(UserEntity sender, Long eventId, Packet packet) {
         Events events = new Events(entityManager);
-        Set<Long> receiverids = events.getMembers(receiverId);
+        Set<Long> receiverids = events.getMembers(eventId);
         receiverids.add(sender.getId());
         packet.setSource(sender.getName());
         packet.setTime((new Date()).getTime());
         connections.sendPacket(packet, new ArrayList(receiverids));
-    }
-
-    /**
-     * Send a chat message to given user. This can be used for private messages.
-     * 
-     * @param sender        Message sender
-     * @param receiverId    Recipient ID (user ID)
-     * @param packet        Chat packet to send
-     */
-    private void sendMessageUser(UserEntity sender, Long receiverId, Packet packet) {
-        UserEntity recipient = connections.getConnectedUser(receiverId);
-        if (recipient == null) {
-            return;
-        }
-        List<Long> receiverids = new ArrayList();
-        receiverids.add(sender.getId());
-        receiverids.add(recipient.getId());
-        packet.setSource(sender.getName());
-        packet.setTime((new Date()).getTime());
-        connections.sendPacket(packet, receiverids);
     }
 }

@@ -27,5 +27,6 @@
         <file>icon-newevent.png</file>
         <file>icon.ico</file>
         <file>logo.png</file>
+        <file>LICENSE</file>
     </qresource>
 </RCC>

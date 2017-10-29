@@ -78,8 +78,6 @@ class WidgetEventPanel : public QWidget
 
         void                        onBtnBuzzClicked();
 
-        void                        onBtnRemoveVotesClicked();
-
         /**
          * @brief Emitted when the user clicks "location delete" button in location widget.
          *

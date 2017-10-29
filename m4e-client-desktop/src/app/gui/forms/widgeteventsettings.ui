@@ -86,7 +86,7 @@ QPushButton::checked {
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <property name="bottomMargin">
-               <number>6</number>
+               <number>2</number>
               </property>
               <item>
                <widget class="QWidget" name="widgetEventName" native="true">
