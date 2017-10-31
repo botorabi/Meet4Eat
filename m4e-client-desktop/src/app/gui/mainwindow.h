@@ -75,6 +75,8 @@ class MainWindow : public QMainWindow
 
         void                        onBtnUserProfileClicked();
 
+        void                        onBtnMailsClicked();
+
         void                        onBtnSettingsClicked();
 
         void                        onBtnAboutClicked();

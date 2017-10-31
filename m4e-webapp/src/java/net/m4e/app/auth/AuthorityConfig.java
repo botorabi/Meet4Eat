@@ -45,7 +45,8 @@ public class AuthorityConfig {
         net.m4e.app.user.UserEntityFacadeREST.class,
         net.m4e.app.user.UserAuthenticationFacadeREST.class,
         net.m4e.app.event.EventEntityFacadeREST.class,
-        net.m4e.app.resources.DocumentEntityFacadeREST.class
+        net.m4e.app.resources.DocumentEntityFacadeREST.class,
+        net.m4e.app.mailbox.MailEntityFacadeREST.class
     };
 
     /**

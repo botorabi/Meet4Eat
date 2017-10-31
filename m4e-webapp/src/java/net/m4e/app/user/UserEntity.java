@@ -141,6 +141,7 @@ public class UserEntity implements Serializable, EntityWithPhoto {
      * 
      * @return DocumentEntity containing the photo
      */
+    @Override
     public DocumentEntity getPhoto() {
         return photo;
     }
@@ -150,6 +151,7 @@ public class UserEntity implements Serializable, EntityWithPhoto {
      * 
      * @param photo DocumentEntity containing the photo
      */
+    @Override
     public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }
@@ -316,6 +318,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     @Override
     public String toString() {
-        return "user.UserEntity[ id=" + id + " ]";
+        return "net.m4e.app.user.UserEntity[ id=" + id + " ]";
     }
 }

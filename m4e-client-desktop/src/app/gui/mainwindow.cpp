@@ -182,6 +182,12 @@ void MainWindow::onBtnUserProfileClicked()
     log_verbose << TAG << "TODO user profile" << std::endl;
 }
 
+void MainWindow::onBtnMailsClicked()
+{
+    //! TODO
+    log_verbose << TAG << "TODO mails" << std::endl;
+}
+
 void MainWindow::onBtnSettingsClicked()
 {
     settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );

@@ -202,6 +202,7 @@ public class EventEntity implements Serializable, EntityWithPhoto {
      * 
      * @return DocumentEntity containing the photo
      */
+    @Override
     public DocumentEntity getPhoto() {
         return photo;
     }
@@ -211,6 +212,7 @@ public class EventEntity implements Serializable, EntityWithPhoto {
      * 
      * @param photo DocumentEntity containing the photo
      */
+    @Override
     public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }

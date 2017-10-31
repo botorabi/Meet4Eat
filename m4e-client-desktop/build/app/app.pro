@@ -134,3 +134,5 @@ RESOURCES += \
     ../../src/app/gui/resources/application.qrc
 
 DISTFILES +=
+
+RC_FILE = ../../src/app/gui/resources/app.rc
