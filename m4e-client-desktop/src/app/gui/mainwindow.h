@@ -65,6 +65,8 @@ class MainWindow : public QMainWindow
 
         void                        onBtnLogoClicked();
 
+        void                        onBtnCollapseLogsClicked();
+
         void                        onBtnCloseClicked();
 
         void                        onBtnMinimizeClicked();
@@ -76,6 +78,8 @@ class MainWindow : public QMainWindow
         void                        onBtnSettingsClicked();
 
         void                        onBtnAboutClicked();
+
+        void                        onAboutLinkActivated( QString link );
 
         void                        onBtnAddEvent();
 
@@ -131,6 +135,15 @@ class MainWindow : public QMainWindow
          * @param loactionId Event location ID
          */
         void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
+
+        /**
+         * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
+         *
+         * @param sender    Message sender Id (usually an user ID)
+         * @param eventId   ID of receiving event
+         * @param notify    Notification object containing the message content
+         */
+        void                        onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
 
     protected:
 

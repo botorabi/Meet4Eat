@@ -236,6 +236,27 @@ class ResponseEventRemoveLocation: public Meet4EatRESTResponse
         RESTEvent*  _p_requester;
 };
 
+/**
+ * @brief Response handler for UpdateLocation
+ *
+ * @author boto
+ * @date Oct 27, 2017
+ */
+class ResponseEventUpdateLocation: public Meet4EatRESTResponse
+{
+    public:
+
+        explicit    ResponseEventUpdateLocation( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
 } // namespace webapp
 } // namespace m4e
 

@@ -49,6 +49,26 @@ class GuiUtils
         static QPixmap      createRoundIcon( doc::ModelDocumentPtr input );
 
         /**
+         * @brief Get a default pixmap which can be used for missing icons in resources.
+         *
+         * @return Default pixmap
+         */
+        static QPixmap      getDefaultPixmap();
+
+        /**
+         * @brief Create an image in proper size by letting the user choos an image file. The image has a max size of 512x512.
+         *
+         * @param p_parent      Parent widget
+         * @param dir           Directory to search for files, let empty to take the system default for documents directory
+         * @param image         If successfull the image pixmap will be stored here
+         * @param imageContent  If successfull the image content will be stored here
+         * @param format        Image format such as "png"
+         * @param aborted       If the user aborted the image loading from file then 'aborted' will be set to true
+         * @return              Return true if successful, false if the user has selected an unsupported image file format
+         */
+        static bool         createImageFromFile( QWidget* p_parent, QString dir, QPixmap& image, QByteArray& imageContent, QString& format, bool& aborted );
+
+        /**
          * @brief Create and assign a ShadowEffect to given widget.
          *
          * @param p_widget Widget getting the effect

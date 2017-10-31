@@ -12,6 +12,7 @@
 #include <configuration.h>
 #include <core/smartptr.h>
 #include <communication/packet.h>
+#include <notification/notifyevent.h>
 #include <QObject>
 #include <QString>
 
@@ -26,7 +27,7 @@ namespace notify
 {
 
 /**
- * @brief This class handles incoming notifications and distributes them in the app.
+ * @brief This class handles incoming notifications and distributes them in the app. It also provides functionality to send notifications.
  *
  * @author boto
  * @date Aug 13, 2017
@@ -65,6 +66,16 @@ class Notifications : public QObject
          */
         virtual                 ~Notifications();
 
+        /**
+         * @brief Send a message to all event members. This can be used e.g. to buzz event members.
+         *
+         * @param eventId   ID of receiving event
+         * @param title     Message title
+         * @param text      Message text
+         * @return          Return true if the message was successfully sent, otherwise false
+         */
+        bool                    sendEventMessage( const QString& eventId,  const QString& title, const QString& text );
+
     signals:
 
         /**
@@ -84,6 +95,15 @@ class Notifications : public QObject
          */
         void                    onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
+        /**
+         * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
+         *
+         * @param sender    Message sender Id (usually an user ID)
+         * @param eventId   ID of receiving event
+         * @param notify    Notification object containing the message content
+         */
+        void                    onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
+
     protected slots:
 
         /**
@@ -92,6 +112,13 @@ class Notifications : public QObject
          * @param packet Arrived Notify channel packet
          */
         void                    onChannelNotifyPacket( m4e::comm::PacketPtr packet );
+
+        /**
+         * @brief This signal notifies about a new incoming network packet in channel 'Event'.
+         *
+         * @param packet Arrived Event channel packet
+         */
+        void                    onChannelEventPacket( m4e::comm::PacketPtr packet );
 
     protected:
 

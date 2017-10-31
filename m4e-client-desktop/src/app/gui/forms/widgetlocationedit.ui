@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WidgetLocationCreate</class>
- <widget class="QWidget" name="WidgetLocationCreate">
+ <class>WidgetLocationEdit</class>
+ <widget class="QWidget" name="WidgetLocationEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -16,6 +16,7 @@
   <property name="styleSheet">
    <string notr="true">QWidget {
   color: white;
+  /*background-color: rgb(50,82,95);*/
 }
 QGroupBox {
   border-radius: 0px;
@@ -98,14 +99,30 @@ QPushButton::checked {
          <number>9</number>
         </property>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
+         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <property name="bottomMargin">
-             <number>6</number>
+             <number>0</number>
             </property>
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_9">
+              <item>
+               <spacer name="verticalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Preferred</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
               <item>
                <widget class="QLabel" name="label_4">
                 <property name="text">
@@ -126,19 +143,6 @@ QPushButton::checked {
                 </property>
                </widget>
               </item>
-              <item>
-               <spacer name="verticalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
              </layout>
             </item>
             <item>
@@ -155,7 +159,13 @@ QPushButton::checked {
              </spacer>
             </item>
             <item>
-             <widget class="QLabel" name="labelPhoto">
+             <widget class="QPushButton" name="pushButtonPhoto">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>64</width>
@@ -171,14 +181,23 @@ QPushButton::checked {
               <property name="cursor">
                <cursorShape>PointingHandCursor</cursorShape>
               </property>
-              <property name="pixmap">
-               <pixmap resource="../resources/application.qrc">:/icon-location.png</pixmap>
+              <property name="styleSheet">
+               <string notr="true">#pushButtonPhoto {
+  background-color: transparent;
+}
+#pushButtonPhoto:hover {
+  background-color: transparent;
+}</string>
               </property>
-              <property name="scaledContents">
-               <bool>true</bool>
+              <property name="icon">
+               <iconset resource="../resources/application.qrc">
+                <normaloff>:/logo.png</normaloff>:/logo.png</iconset>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignHCenter|Qt::AlignTop</set>
+              <property name="iconSize">
+               <size>
+                <width>60</width>
+                <height>60</height>
+               </size>
               </property>
              </widget>
             </item>

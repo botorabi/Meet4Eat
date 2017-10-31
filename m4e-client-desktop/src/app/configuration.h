@@ -19,15 +19,18 @@
 /* App name and version */
 #define M4E_APP_NAME            "Meet4Eat"
 #define M4E_ORGANIZATION_NAME   "vr-fun"
-#define M4E_APP_VERSION         "0.7.2"
+#define M4E_APP_VERSION         "0.8.0"
 #define M4E_APP_COPYRIGHT       "(c) 2017"
 #define M4E_APP_URL             "http://m4e.org"
 
+/* Default app server address */
+#define M4E_DEFAULT_APP_SRV     "https://vr-fun.net:8185"
+
 /* Web site link for registering a new account */
-#define M4E_URL_REGISTER_ACC    "http://m4e.org/register"
+#define M4E_URL_REGISTER_ACC    "https://m4e.org/register"
 
 /* Web site link for resetting password */
-#define M4E_URL_FORGOT_PW      "http://m4e.org/resetpassword"
+#define M4E_URL_FORGOT_PW       "https://m4e.org/request-password"
 
 /*
  * This define is used for accepting insecure SSL connections

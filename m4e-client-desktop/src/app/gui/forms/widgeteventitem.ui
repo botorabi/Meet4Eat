@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>250</width>
-    <height>131</height>
+    <height>150</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>250</width>
-    <height>0</height>
+    <height>150</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>250</width>
-    <height>131</height>
+    <width>251</width>
+    <height>150</height>
    </size>
   </property>
   <property name="cursor">
@@ -202,7 +202,7 @@ QPushButton:hover {
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButtonOptions">
+           <widget class="QPushButton" name="pushButtonEdit">
             <property name="minimumSize">
              <size>
               <width>20</width>
@@ -312,10 +312,10 @@ QPushButton:hover {
  <resources/>
  <connections>
   <connection>
-   <sender>pushButtonOptions</sender>
+   <sender>pushButtonEdit</sender>
    <signal>clicked()</signal>
    <receiver>WidgetEventItem</receiver>
-   <slot>onBtnOptionsClicked()</slot>
+   <slot>onBtnEditClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>233</x>
@@ -377,7 +377,7 @@ QPushButton:hover {
   </connection>
  </connections>
  <slots>
-  <slot>onBtnOptionsClicked()</slot>
+  <slot>onBtnEditClicked()</slot>
   <slot>onBtnNewLocationClicked()</slot>
   <slot>onBtnNotificationClicked()</slot>
   <slot>onBtnDeleteClicked()</slot>

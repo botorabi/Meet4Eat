@@ -14,6 +14,7 @@
 #include <event/widgeteventpanel.h>
 #include <notification/notifyevent.h>
 #include <common/basedialog.h>
+#include <common/dialogmessage.h>
 #include <event/dialogeventsettings.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
@@ -34,7 +35,7 @@ MainWindow::MainWindow() :
     setAttribute( Qt::WA_NoSystemBackground );
     setAttribute( Qt::WA_TranslucentBackground );
 
-    _p_ui->setupUi(this);
+    _p_ui->setupUi( this );
     restoreWindowGeometry();
 
     // prepare the start of webapp, it connects the application to the webapp server
@@ -95,6 +96,12 @@ void MainWindow::onTimerInit()
 void MainWindow::onBtnLogoClicked()
 {
     QDesktopServices::openUrl(  QUrl( M4E_APP_URL ) );
+}
+
+void MainWindow::onBtnCollapseLogsClicked()
+{
+    _p_ui->textLogs->setVisible( !_p_ui->textLogs->isVisible() );
+    _p_ui->textLogs->parentWidget()->updateGeometry();
 }
 
 void MainWindow::storeWindowGeometry()
@@ -187,6 +194,7 @@ void MainWindow::onBtnAboutClicked()
     Ui::WidgetAbout about;
     common::BaseDialog* p_dlg = new common::BaseDialog( this );
     p_dlg->decorate( about );
+    connect( about.labelText, SIGNAL( linkActivated( QString ) ), this, SLOT( onAboutLinkActivated( QString ) ) );
 
     QString text = about.labelText->text();
     text.replace( "@APP_NAME@", M4E_APP_NAME );
@@ -201,6 +209,26 @@ void MainWindow::onBtnAboutClicked()
     p_dlg->setResizable( false );
     p_dlg->exec();
     delete p_dlg;
+}
+
+void MainWindow::onAboutLinkActivated( QString link )
+{
+    if ( link == "LICENSE" )
+    {
+        QString text;
+        QFile data( ":/LICENSE" );
+        data.open( QIODevice::ReadOnly );
+        text = data.readAll();
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "MainWindow", "License" ),
+                     text,
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+    }
+    else if ( link == "WEBSITE" )
+    {
+        QDesktopServices::openUrl(  QUrl( M4E_APP_URL ) );
+    }
 }
 
 void MainWindow::onBtnAddEvent()
@@ -251,6 +279,9 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ), this,
+                                            SLOT( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ) );
+
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
                                      SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
 
@@ -271,6 +302,16 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
         log_verbose << TAG << "user could not sign in: " << userId << std::endl;
         _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
         addLogText( "User failed to signed in!" );
+
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "MainWindow", "Connection Problem" ),
+                     QApplication::translate( "MainWindow", "Could not connect the application server. Please check the settings." ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+
+        settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );
+        dlg->exec();
+        delete dlg;
     }
 }
 
@@ -331,20 +372,36 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
     else if ( changeType == notify::Notifications::Removed )
         addLogText( QApplication::translate( "MainWindow", "An event location was removed" ) );
     else
-        addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: '" ) + eventname + "'" );
+        addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: " ) + "'" + eventname + "'" );
 
     _p_ui->pushButtonNotification->show();
 }
 
+void MainWindow::onEventMessage( QString /*senderId*/, QString eventId, notify::NotifyEventPtr notify )
+{
+    QString eventname;
+    event::ModelEventPtr event = _p_webApp->getEvents()->getUserEvent( eventId );
+
+    if ( event.valid() )
+        eventname = event->getName();
+
+    addLogText( QApplication::translate( "MainWindow", "New event message arrived: " ) + "'" + eventname + "', " + notify->getSubject() );
+
+    //! TODO: on buzz message, bring the application window with an own dialog to front and play a notification sound!
+}
+
 void MainWindow::addLogText( const QString& text )
 {
+    //! TODO we need a more confortable logs widget, it should support a max length of lines
+    //       but for now, the simple output is just ok.
+
     QDateTime timestamp = QDateTime::currentDateTime();
     QString ts = "[" + timestamp.toString( "yyyy-M-dd HH:mm:ss" ) + "]";
     QString logmsg = "<p>";
     logmsg += "<span style='color: gray;'>" + ts + "</span>";
     logmsg += " <span style='color: white;'>" + text + "</span>";
     logmsg += "</p>";
-    _p_ui->textNotify->appendHtml( logmsg );
+    _p_ui->textLogs->appendHtml( logmsg );
 }
 
 void MainWindow::clearClientWidget()

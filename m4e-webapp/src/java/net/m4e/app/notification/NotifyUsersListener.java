@@ -118,9 +118,9 @@ public class NotifyUsersListener {
         packet.setSource(sender.getName());
 
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("type", event.getType());
-        json.add("subject", event.getSubject());
-        json.add("text", event.getText());
+        json.add("type", event.getType())
+            .add("subject", event.getSubject())
+            .add("text", event.getText());
         if (event.getData() != null) {
             json.add("data", event.getData());
         }

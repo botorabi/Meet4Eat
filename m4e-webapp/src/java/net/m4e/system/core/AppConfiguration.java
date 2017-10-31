@@ -140,7 +140,6 @@ public class AppConfiguration {
     protected void setupAccountRegistrationConfig(InputStream configContent) {
         if (configContent == null) {
             accountRegistrationConfig = null;    
-            Log.info(TAG, "No account registration configuration file found!");
         }
         else {
             try {

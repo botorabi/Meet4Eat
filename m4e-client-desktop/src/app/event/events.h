@@ -165,6 +165,14 @@ class Events : public QObject
          */
         void                                requestRemoveLocation( const QString& eventId, const QString& locationId );
 
+        /**
+         * @brief Request for update an existing evebt location, the results are emitted by signal 'onResponseUpdateLocation'.
+         *
+         * @param eventId   ID of event containing the location
+         * @param location  The event location to update
+         */
+        void                                requestUpdateLocation( const QString& eventId, m4e::event::ModelLocationPtr location );
+
     signals:
 
         /**
@@ -250,6 +258,15 @@ class Events : public QObject
          * @param locationId ID of location to remove
          */
         void                                onResponseRemoveLocation( bool success, QString eventId, QString locationId );
+
+        /**
+         * @brief Results of update event location request.
+         *
+         * @param success    true if user data could successfully be retrieved, otherwise false
+         * @param eventId    ID of event
+         * @param locationId ID of location to update
+         */
+        void                                onResponseUpdateLocation( bool success, QString eventId, QString locationId );
 
     protected slots:
 
@@ -406,6 +423,22 @@ class Events : public QObject
          * @param reason    Error string
          */
         void                                onRESTEventErrorRemoveLocation( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of updateLocation request arrive.
+         *
+         * @param eventId     ID of event containing the location
+         * @param locationId  ID of updated location
+         */
+        void                                onRESTEventUpdateLocation( QString eventId, QString locationId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorUpdateLocation( QString errorCode, QString reason );
 
     protected:
 

@@ -225,43 +225,6 @@
          </spacer>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_7">
-          <item>
-           <widget class="QPushButton" name="pushButtonResetMyVotes">
-            <property name="minimumSize">
-             <size>
-              <width>32</width>
-              <height>32</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>32</width>
-              <height>32</height>
-             </size>
-            </property>
-            <property name="focusPolicy">
-             <enum>Qt::NoFocus</enum>
-            </property>
-            <property name="toolTip">
-             <string>Remove all my votes</string>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-  background-color: transparent;
-  border-radius: 16px;
-  border-image: url(:/icon-undo-small.png);
-}
-QPushButton:hover {
-  background-color: rgb(50,82,95);
-  border-radius: 16px;
-}</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
            <widget class="QPushButton" name="pushButtonBuzz">
@@ -343,22 +306,6 @@ QPushButton:hover {
  <resources/>
  <connections>
   <connection>
-   <sender>pushButtonResetMyVotes</sender>
-   <signal>clicked()</signal>
-   <receiver>WidgetEventPanel</receiver>
-   <slot>onBtnRemoveVotesClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>543</x>
-     <y>62</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>638</x>
-     <y>273</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButtonBuzz</sender>
    <signal>clicked()</signal>
    <receiver>WidgetEventPanel</receiver>
@@ -378,6 +325,5 @@ QPushButton:hover {
  <slots>
   <slot>onBtnBuzzClicked()</slot>
   <slot>onListItemClicked(QListWidgetItem*)</slot>
-  <slot>onBtnRemoveVotesClicked()</slot>
  </slots>
 </ui>

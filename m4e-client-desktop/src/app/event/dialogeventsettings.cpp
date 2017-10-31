@@ -48,8 +48,10 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     connect( _p_webApp->getEvents(), SIGNAL( onResponseAddMember( bool, QString, QString ) ), this, SLOT( onResponseAddMember( bool, QString, QString ) ) );
     connect( _p_webApp->getEvents(), SIGNAL( onResponseRemoveMember( bool, QString, QString ) ), this, SLOT( onResponseRemoveMember( bool, QString, QString ) ) );
 
+    connect( _p_ui->pushButtonPhoto, SIGNAL( clicked() ), this, SLOT( onBtnPhotoClicked() ) );
     connect( _p_ui->pushButtonAddMember, SIGNAL( clicked() ), this, SLOT( onBtnAddMemberClicked() ) );
     connect( _p_ui->lineEditSearchMember, SIGNAL( returnPressed() ), this, SLOT( onLineEditSeachtReturnPressed() ) );
+    connect( _p_ui->lineEditSearchMember, SIGNAL( editingFinished() ), this, SLOT( onLineEditSeachtReturnPressed() ) );
 
     setTitle( QApplication::translate( "DialogEventSettings", "Event Settings" ) );
     if ( _userIsOwner )
@@ -81,6 +83,10 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     if ( !photoid.isEmpty() && ( photoid != "0" ) )
     {
         _p_webApp->requestDocument( photoid, event->getPhotoETag() );
+    }
+    else
+    {
+        _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( common::GuiUtils::getDefaultPixmap() ) );
     }
 }
 
@@ -122,7 +128,7 @@ void DialogEventSettings::onDocumentReady( m4e::doc::ModelDocumentPtr document )
     QString photoid = _event->getPhotoId();
     if ( !photoid.isEmpty() && ( document->getId() == photoid ) )
     {
-        _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
+        _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( document ) );
     }
 
     // check if a member photo arrived
@@ -259,6 +265,34 @@ void DialogEventSettings::onResponseNewEvent( bool success, QString eventId )
                      common::DialogMessage::BtnOk );
         msg.exec();
     }
+}
+
+void DialogEventSettings::onBtnPhotoClicked()
+{
+    QString     dir;
+    QString     format;
+    QPixmap     image;
+    QByteArray  imagecontent;
+    bool        aborted;
+    bool res = common::GuiUtils::createImageFromFile( this, dir, image, imagecontent, format, aborted );
+
+    if ( aborted )
+        return;
+
+    if ( !res )
+    {
+        common::DialogMessage msg( this );
+        msg.setupUI( QApplication::translate( "DialogEventSettings", "Set Image" ),
+                     QApplication::translate( "DialogEventSettings", "Cannot update the image. The file format is not supported!" ),
+                     common::DialogMessage::BtnOk );
+        msg.exec();
+        return;
+    }
+
+    m4e::doc::ModelDocumentPtr doc = new m4e::doc::ModelDocument();
+    doc->setContent( imagecontent, "image", format );
+    _event->setUpdatedPhoto( doc );
+    _p_ui->pushButtonPhoto->setIcon( image );
 }
 
 void DialogEventSettings::onBtnMemberRemoveClicked()

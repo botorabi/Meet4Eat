@@ -105,7 +105,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         //! NOTE Acutally, this check should not be needed (see AuthFilter), but just to be on the safe side!
-        if (null == sessionuser) {
+        if (sessionuser == null) {
             Log.error(TAG, "*** Internal error, cannot create user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
@@ -153,7 +153,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String registerUser(String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (null != sessionuser) {
+        if (sessionuser != null) {
             Log.error(TAG, "*** an already authenticated user tries a user registration!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to register user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
@@ -206,9 +206,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String activateUser(@PathParam("token") String token, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (null != sessionuser) {
+        if (sessionuser != null) {
             Log.error(TAG, "*** an already authenticated user tries a user activation!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user account, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         Log.verbose(TAG, "activating user account, token: " + token);
@@ -219,7 +219,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
         catch (Exception ex) {
             Log.debug(TAG, "user activation failed, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user account! Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
         jsonresponse.add("userName", user.getName());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully activated.", ResponseResults.CODE_OK, jsonresponse.build().toString());
@@ -259,7 +259,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
         catch(Exception ex) {
             Log.error(TAG, "cannot process password reset request, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, null);           
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password! Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, null);           
         }
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Request for user password reset was successfully processed.", ResponseResults.CODE_OK, null);
     }
@@ -299,7 +299,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             user = register.processPasswordReset(token, newpassword);
         }
         catch (Exception ex) {
-            Log.debug(TAG, "user password reset failed, reason: " + ex.getLocalizedMessage());
+            Log.debug(TAG, "user password reset failed! Reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
         jsonresponse.add("userName", user.getName());
@@ -321,9 +321,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String edit(@PathParam("id") Long id, String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (null == sessionuser) {
+        if (sessionuser == null) {
             Log.error(TAG, "*** Cannot update user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.",
                                              ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
@@ -340,7 +340,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity user = super.find(id);
-        if ((null == user) || !user.getStatus().getIsActive()) {
+        if ((user == null) || !user.getStatus().getIsActive()) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for updating.",
                                              ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -356,13 +356,13 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         user.setRoles(getUsers().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
 
         // take over non-empty fields
-        if ((null != reqentity.getName()) && !reqentity.getName().isEmpty()) {
+        if ((reqentity.getName() != null) && !reqentity.getName().isEmpty()) {
             user.setName(reqentity.getName());
         }
-        if ((null != reqentity.getPassword()) && !reqentity.getPassword().isEmpty()) {
+        if ((reqentity.getPassword() != null) && !reqentity.getPassword().isEmpty()) {
             user.setPassword(reqentity.getPassword());
         }
-        if (null != reqentity.getPhoto()) {
+        if (reqentity.getPhoto() != null) {
             try {
                 getUsers().updateUserImage(user, reqentity.getPhoto());
             }
@@ -396,10 +396,10 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (null == sessionuser) {
+        if (sessionuser == null) {
             Log.error(TAG, "*** Cannot delete user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
@@ -410,7 +410,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity user = super.find(id);
-        if ((null == user) || !user.getStatus().getIsActive()) {
+        if ((user == null) || !user.getStatus().getIsActive()) {
             Log.warning(TAG, "*** User was attempting to delete non-existing user!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -428,6 +428,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
     /**
      * Search for users containing given keyword in their name.
+     * A maximal of 10 users are returned.
      * 
      * @param keyword  Keyword to search for
      * @return         JSON response
@@ -438,21 +439,22 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String search(@PathParam("keyword") String keyword) {
         JsonArrayBuilder results = Json.createArrayBuilder();
-        if (null == keyword) {
+        if (keyword == null) {
            return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());        
         }
 
         Entities utils = new Entities(entityManager);
-        List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
+        List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 10);
         for (UserEntity hit: hits) {
-            if (!hit.getStatus().getIsActive()) {
+            // exclude non-active users and admins from hit list
+            if (!hit.getStatus().getIsActive() || getUsers().checkUserRoles(hit, Arrays.asList(AuthRole.USER_ROLE_ADMIN)) ) {
                 continue;
             }
             JsonObjectBuilder json = Json.createObjectBuilder();
-            json.add("id", hit.getId());
-            json.add("name", (null != hit.getName()) ? hit.getName() : "");
-            json.add("photoId", (null != hit.getPhoto()) ? hit.getPhoto().getId() : 0);
-            json.add("photoETag", (null != hit.getPhoto()) ? hit.getPhoto().getETag() : "");
+            json.add("id", hit.getId().toString())
+                .add("name", (hit.getName() != null) ? hit.getName() : "")
+                .add("photoId", (hit.getPhoto() != null) ? hit.getPhoto().getId().toString() : "")
+                .add("photoETag", (hit.getPhoto() != null) ? hit.getPhoto().getETag() : "");
             results.add(json);
         }
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());
@@ -471,9 +473,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         UserEntity user = super.find(id);
-        if ((null == user) || !user.getStatus().getIsActive()) {
+        if ((user == null) || !user.getStatus().getIsActive()) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "User was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 

@@ -90,12 +90,12 @@ public class SendEmailListener {
             for (String rec: event.getRecipients()) {
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(rec));
             }
-            if (null != event.getRecipientsCC()) {
+            if (event.getRecipientsCC() != null) {
                 for (String rec: event.getRecipientsCC()) {
                     message.addRecipient(Message.RecipientType.CC, new InternetAddress(rec));
                 }                
             }
-            if (null != event.getRecipientsBCC()) {
+            if (event.getRecipientsBCC() != null) {
                 for (String rec: event.getRecipientsBCC()) {
                     message.addRecipient(Message.RecipientType.BCC, new InternetAddress(rec));
                 }                
@@ -120,7 +120,7 @@ public class SendEmailListener {
      * @return Mailer configuration
      */
     private Properties getMailerConfig() {
-        if (null != mailServerConfig) {
+        if (mailServerConfig != null) {
             return mailServerConfig;
         }
 

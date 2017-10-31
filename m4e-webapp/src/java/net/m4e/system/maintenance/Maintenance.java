@@ -65,14 +65,14 @@ public class Maintenance {
         int pendingpwresets = regs.getCountPendingPasswordResets();
 
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("version", entity.getVersion());
-        json.add("dateLastMaintenance", entity.getDateLastMaintenance());
-        json.add("dateLastUpdate", entity.getDateLastUpdate());
-        json.add("userCountPurge", entity.getUserCountPurge());
-        json.add("eventCountPurge", entity.getEventCountPurge());
-        json.add("eventLocationCountPurge", entity.getEventLocationCountPurge());
-        json.add("pendingAccountRegistration", pendingaccounts);
-        json.add("pendingPasswordResets", pendingpwresets);
+        json.add("version", entity.getVersion())
+            .add("dateLastMaintenance", entity.getDateLastMaintenance())
+            .add("dateLastUpdate", entity.getDateLastUpdate())
+            .add("userCountPurge", entity.getUserCountPurge())
+            .add("eventCountPurge", entity.getEventCountPurge())
+            .add("eventLocationCountPurge", entity.getEventLocationCountPurge())
+            .add("pendingAccountRegistration", pendingaccounts)
+            .add("pendingPasswordResets", pendingpwresets);
         return json;
     }
 
@@ -140,7 +140,7 @@ public class Maintenance {
                     eventutils.removeAnyMember(event, users);
                     // purge deleted event locations
                     Collection<EventLocationEntity> locs = event.getLocations();
-                    if (null != locs) {
+                    if (locs != null) {
                         Predicate<EventLocationEntity> pred = ev-> ev.getStatus().getIsDeleted();
                         List<EventLocationEntity> deadlocs = locs.stream().filter(pred).collect(Collectors.toList());
                         // update event's location list

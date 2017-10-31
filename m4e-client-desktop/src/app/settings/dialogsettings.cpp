@@ -72,9 +72,14 @@ void DialogSettings::setupUI()
     connect( _p_ui->labelCreateAccount, SIGNAL( linkActivated( QString ) ), this, SLOT( onLinkActivated( QString ) ) );
     connect( _p_ui->labelForgotPassword, SIGNAL( linkActivated( QString ) ), this, SLOT( onLinkActivated( QString ) ) );
 
-    QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
+    QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, M4E_DEFAULT_APP_SRV );
     QString login    = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
     QString remember = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
+
+    if ( server.isEmpty() )
+    {
+        server = M4E_DEFAULT_APP_SRV;
+    }
 
     _p_ui->lineEditServer->setText( server );
     _p_ui->lineEditLogin->setText( login );

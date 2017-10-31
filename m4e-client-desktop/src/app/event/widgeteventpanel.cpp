@@ -11,14 +11,12 @@
 #include <core/log.h>
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
+#include <chat/chatmessage.h>
 #include <ui_widgeteventpanel.h>
 #include "widgeteventitem.h"
 #include "widgetlocation.h"
-#include <chat/chatmessage.h>
-#include <QListWidget>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include "dialogbuzz.h"
+
 
 namespace m4e
 {
@@ -136,7 +134,7 @@ void WidgetEventPanel::setupLocations()
     {
         for ( auto location: _event->getLocations() )
         {
-            addLocation( location, userisowner );
+            addLocation( _event, location, userisowner );
         }
     }
     else
@@ -151,10 +149,10 @@ void WidgetEventPanel::setupNoLocationWidget()
     _p_clientArea->addItem( "Event has no location!" );
 }
 
-void WidgetEventPanel::addLocation( event::ModelLocationPtr location, bool userIsOwner )
+void WidgetEventPanel::addLocation( event::ModelEventPtr event, event::ModelLocationPtr location, bool userIsOwner )
 {
     WidgetLocation* p_widget = new WidgetLocation( _p_webApp, _p_clientArea );
-    p_widget->setupUI( location, userIsOwner );
+    p_widget->setupUI( event, location, userIsOwner );
     connect( p_widget, SIGNAL( onDeleteLocation( QString ) ), this, SLOT( onDeleteLocation( QString ) ) );
 
     QListWidgetItem* p_item = new QListWidgetItem( _p_clientArea );
@@ -207,12 +205,10 @@ void WidgetEventPanel::setEventMembers()
 
 void WidgetEventPanel::onBtnBuzzClicked()
 {
-    log_verbose << TAG << "TODO onBtnBuzzClicked..." << std::endl;
-}
-
-void WidgetEventPanel::onBtnRemoveVotesClicked()
-{
-    log_verbose << TAG << "TODO onButtonRemoveVotesClicked..." << std::endl;
+    DialogBuzz* p_dlg = new DialogBuzz( _p_webApp, this );
+    p_dlg->setupUI( _event );
+    p_dlg->exec();
+    delete p_dlg;
 }
 
 void WidgetEventPanel::onDeleteLocation( QString id )

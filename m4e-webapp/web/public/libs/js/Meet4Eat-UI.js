@@ -228,7 +228,7 @@ function Meet4EatUI() {
 		self._m4eRESTUserReg.accountRegister({
 			success: function(res, resp) {
 				if (res.status === "ok") {
-					self.showModalBox("You were successfully registered. An account activation email was sent to you. Please check your mailbox.", "Registration", "Dismiss", null, {
+					self.showModalBox("You were successfully registered. An activation link has been sent to the email address you supplied, along with instructions for activating your account.", "Registration", "Dismiss", null, {
 						 onClickBtn1: function() {
 							 window.location.href = "index.html";
 						 }

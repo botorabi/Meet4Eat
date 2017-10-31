@@ -189,7 +189,7 @@ public class UserRegistrations {
             throw new Exception("Internal Registration Failure!");
         }
         if (regs.size() < 1) {
-            throw new Exception("Cannot activate user account, invalid registration token.");
+            throw new Exception("Invalid registration code.");
         }
         UserRegistrationEntity registration = regs.get(0);
         UserEntity user = registration.getUser();
@@ -205,7 +205,7 @@ public class UserRegistrations {
         if ( duration > REGISTER_EXPIRATION_HOURS) {
             // delete the entity if it is expired
             entities.deleteEntity(user);
-            throw new Exception("Cannot activate user account, activation code was expired.");            
+            throw new Exception("Activation code was expired.");            
         }
         // activate the user
         user.getStatus().setEnabled(true);
@@ -293,7 +293,7 @@ public class UserRegistrations {
             throw new Exception("Internal Password Reset Failure!");
         }
         if (resets.size() < 1) {
-            throw new Exception("Cannot reset user password, invalid password reset code.");
+            throw new Exception("Invalid password reset code.");
         }
         UserPasswordResetEntity reset = resets.get(0);
         UserEntity user = reset.getUser();
@@ -306,7 +306,7 @@ public class UserRegistrations {
         Long duration = (new Date()).getTime() - reset.getRequestDate();
         duration /= (1000 * 60);
         if ( duration > PW_RESET_EXPIRATION_MINUTES) {
-            throw new Exception("Cannot reset user password, reset code was expired.");            
+            throw new Exception("Reset code was expired.");            
         }
 
         if (AuthorityConfig.getInstance().createPassword("").equals(newPassword)) {

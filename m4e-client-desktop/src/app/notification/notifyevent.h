@@ -101,6 +101,13 @@ class NotifyEvent : public core::RefCount< NotifyEvent >
         QString                 toJSON();
 
         /**
+         * @brief Create a JSON document out of the notification instance.
+         *
+         * @return JSON document representing this document
+         */
+        QJsonDocument           toJSONDocument();
+
+        /**
          * @brief Setup the notification given a JSON formatted string.
          *
          * @param input Input string in JSON format

@@ -23,7 +23,7 @@ bool Meet4EatRESTResponse::checkStatus( const QJsonDocument& results, QJsonDocum
     if ( status.toString( "" ) != "ok" )
     {
         QString description = jobject.value( "description" ).toString( "" );
-        errorCode = QString::number( jobject.value( "code" ).toInt() );
+        errorCode = jobject.value( "code" ).toString( "" );
         errorString = "Error (" + errorCode + "): " + description;
         return false;
     }

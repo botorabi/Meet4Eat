@@ -150,7 +150,7 @@ public class AuthFilter implements Filter {
                 // get the user roles out of the http session
                 UserEntity sessionuser = getSessionUser(httprequest);
                 List<String> userroles;
-                if (null != sessionuser) {
+                if (sessionuser != null) {
                     Log.verbose(TAG, "   User '" + sessionuser.getLogin() + "' accessing protected resource: " + path);
                     userroles = sessionuser.getRolesAsString();
                     // authenticated users get automatically the role USER
@@ -191,7 +191,7 @@ public class AuthFilter implements Filter {
     private UserEntity getSessionUser(HttpServletRequest request) {
         HttpSession  session   = request.getSession();
         Object       user      = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if (null != user) {
+        if (user != null) {
             if (user instanceof UserEntity) {
                 return (UserEntity)user;
             }

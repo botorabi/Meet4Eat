@@ -91,7 +91,7 @@ public class AuthAccessRuleChecker {
      */
     public boolean addAccessRoles(String accessMethod, List<String> accessRoles) {
         List<String /*role*/> roles = accessRules.get(accessMethod);
-        if (null == roles) {
+        if (roles == null) {
             roles = new ArrayList<>();
             accessRules.put(accessMethod, roles);
         }
@@ -149,7 +149,7 @@ public class AuthAccessRuleChecker {
      */
     private boolean checkRoles(String accessMethod, List<String> userRoles) {
         List<String /*role*/> roles = accessRules.get(accessMethod);
-        if (null == roles) {
+        if (roles == null) {
             return false;
         }
         // check for no-check and guest resource

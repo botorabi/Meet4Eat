@@ -11,8 +11,8 @@
 
 #include <configuration.h>
 #include <core/smartptr.h>
-#include <event/modellocation.h>
 #include <QJsonDocument>
+#include <QMetaType>
 #include <QString>
 
 
@@ -101,11 +101,20 @@ class ModelDocument : public m4e::core::RefCount< ModelDocument >
         const QByteArray&                   getContent() const { return _content; }
 
         /**
-         * @brief Set the document content.
+         * @brief Set the raw document content.
          *
          * @param name  Document content
          */
         void                                setContent( const QByteArray& content ) { _content = content; }
+
+        /**
+         * @brief Set the document content, this will encode the payload by using base64 and store the document with a leading "Data URL".
+         *
+         * @param payload       Document's binary which is base64 encoded
+         * @param mimeType      The mime type such as "image", "pdf", etc.
+         * @param format        The binary format such as "png" or "jpeg"
+         */
+        void                                setContent( const QByteArray& payload, const QString& mimeType, const QString& format );
 
         /**
          * @brief Get the document ETag.
