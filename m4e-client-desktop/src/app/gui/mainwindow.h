@@ -28,6 +28,8 @@ namespace m4e
 namespace gui
 {
 
+class MailboxWindow;
+
 /**
  * @brief Main application window class
  *
@@ -58,10 +60,19 @@ class MainWindow : public QMainWindow
 
     protected slots:
 
+        void                        onMailWindowClosed();
+
         /**
          * @brief Initial webapp setup happens in this slot.
          */
         void                        onTimerInit();
+
+        /**
+         * @brief Periodic update timer
+         */
+        void                        onTimerUpdate();
+
+        void                        onBtnStatusClicked();
 
         void                        onBtnLogoClicked();
 
@@ -90,6 +101,13 @@ class MainWindow : public QMainWindow
         void                        onEventSelection( QString id );
 
         /**
+         * @brief This signal is emitted to inform about the current authentication state.
+         *
+         * @param authenticated  True if the user is authenticated, otherwise false
+         */
+        void                        onAuthState( bool authenticated );
+
+        /**
          * @brief This signal is emitted when an update of user data was arrived.
          *        The user data model can also be empty (e.g. if there were server connection problems).
          *
@@ -112,6 +130,11 @@ class MainWindow : public QMainWindow
          * @param userId   User ID, valid if success is true
          */
         void                        onUserSignedOff( bool success );
+
+        /**
+         * @brief This signal is emitted when the connection to server was closed.
+         */
+        void                        onServerConnectionClosed();
 
         /**
          * @brief This signal is received when user events were arrived.
@@ -147,7 +170,19 @@ class MainWindow : public QMainWindow
          */
         void                        onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
 
+        /**
+         * @brief This signal is emitted when the results of unread mails count request arrive.
+         *
+         * @param success  true if the count of unread mails could successfully be retrieved, otherwise false
+         * @param count    Count of unread mails
+         */
+        void                        onResponseCountUnreadMails( bool success, int count );
+
     protected:
+
+        void                        customEvent( QEvent* p_event );
+
+        void                        updateStatus( const QString& text, bool offline );
 
         void                        addLogText( const QString& text );
 
@@ -165,25 +200,33 @@ class MainWindow : public QMainWindow
 
         void                        mouseMoveEvent( QMouseEvent* p_event );
 
-        void                        clearClientWidget();
+        void                        clearWidgetClientArea();
 
         void                        createWidgetMyEvents();
 
-        void                        clearMyEventsWidget();
+        void                        clearWidgetMyEvents();
 
-        void                        createWidgetEvent( const QString& groupId );
+        void                        createWidgetEvent( const QString& eventId );
 
         Ui::MainWindow*             _p_ui            = nullptr;
 
         QTimer*                     _p_initTimer     = nullptr;
 
+        QTimer*                     _p_updateTimer   = nullptr;
+
         webapp::WebApp*             _p_webApp        = nullptr;
 
         chat::ChatSystem*           _p_chatSystem    = nullptr;
 
+        MailboxWindow*              _p_mailWindow    = nullptr;
+
         bool                        _dragging        = false;
 
         QPoint                      _draggingPos;
+
+        bool                        _initialSignIn   = true;
+
+        bool                        _enableKeepAlive = false;
 };
 
 } // namespace gui

@@ -62,7 +62,7 @@ void Connection::onConnectionEstablished()
 
 void Connection::onConnectionClosed()
 {
-    emit onClose();
+    emit onClosedConnection();
 }
 
 void Connection::onReceivedPacket( PacketPtr packet )

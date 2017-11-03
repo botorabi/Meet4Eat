@@ -30,7 +30,7 @@ User::~User()
 {
 }
 
-void User::setServerURL(const QString &url)
+void User::setServerURL( const QString &url )
 {
     _p_restUser->setServerURL( url );
 }

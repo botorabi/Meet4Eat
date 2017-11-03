@@ -16,10 +16,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.user.UserEntity;
 
 /**
  * A class describing a mail
@@ -58,17 +56,17 @@ public class MailEntity implements Serializable {
     private Long receiverId = 0L;
 
     /**
-     * Time stamp of sending mail (in millisenods since epoche)
+     * Time stamp of sending mail (in milliseconds since epoch)
      */
     private Long sendDate = 0L;
 
     /**
-     * Mail's subject
+     * The mail subject
      */
     private String subject = "";
 
     /**
-     * Mail's content limited to 10k characters
+     * The mail content limited to 10k characters
      */
     @Column(length=MAX_CONTENT_LENGTH)
     private String content = "";
@@ -78,11 +76,6 @@ public class MailEntity implements Serializable {
      */
     @OneToMany(cascade = {CascadeType.ALL})
     private Collection<DocumentEntity> attachments;
-
-    /**
-     * The 'unread' state of the mail. Once the mail is read by user this flag will be set to false.
-     */
-    private boolean unread = true;
 
     /**
      * Get ID.
@@ -139,7 +132,7 @@ public class MailEntity implements Serializable {
     /**
      * Set the timestamp of the mail.
      * 
-     * @return Time stamp of sending in milliseconds since ecpoche
+     * @return Time stamp of sending in milliseconds since epoch
      */
     public Long getSendDate() {
         return sendDate;
@@ -148,14 +141,14 @@ public class MailEntity implements Serializable {
     /**
      * Get the timestamp of the mail.
      * 
-     * @param sendDate Time stamp of sending in milliseconds since ecpoche
+     * @param sendDate Time stamp of sending in milliseconds since epoch
      */
     public void setSendDate(Long sendDate) {
         this.sendDate = sendDate;
     }
 
     /**
-     * Get mail's subject.
+     * Get the mail subject.
      * 
      * @return The mail subject
      */
@@ -212,24 +205,6 @@ public class MailEntity implements Serializable {
      */
     public void setAttachments(Collection<DocumentEntity> attachments) {
         this.attachments = attachments;
-    }
-
-    /**
-     * Is the mail in state 'unread'?
-     * 
-     * @return 'unread' state
-     */
-    public boolean isUnread() {
-        return unread;
-    }
-
-    /**
-     * Set the 'unread' state.
-     * 
-     * @param unread Pass false once the mail was read
-     */
-    public void setUnread(boolean unread) {
-        this.unread = unread;
     }
 
     @Override

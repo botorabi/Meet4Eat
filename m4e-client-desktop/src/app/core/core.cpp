@@ -8,14 +8,12 @@
 
 
 #include <configuration.h>
-
 #include "core.h"
 #include "log.h"
 #include "utils.h"
-
+#include "singleproc.h"
 #include <settings/appsettings.h>
 #include <gui/mainwindow.h>
-
 #include <QDebug>
 #include <QApplication>
 #include <assert.h>
@@ -92,6 +90,14 @@ void Core::initialize( int &argc, char* argv[] )
 void Core::start()
 {
     assert( _p_mainWindow && "core was not initialized before" );
+
+    // check if an app instance is already running
+    if ( !checkOrSetupSingleProc( _p_mainWindow ) )
+    {
+        log_info << "an application instance is already running, quitting..." << std::endl;
+        return;
+    }
+
     _p_mainWindow->show();
     _p_app->exec();
 }
@@ -108,6 +114,28 @@ void Core::shutdown()
     if ( _p_app )
         delete _p_app;
     _p_app = nullptr;
+
+    if ( _p_singleProc )
+        delete _p_singleProc;
+    _p_singleProc = nullptr;
+}
+
+bool Core::checkOrSetupSingleProc( QObject* p_notifyObject )
+{
+    _p_singleProc = new SingleProc( M4E_APP_INSTANCE_KEY, p_notifyObject );
+    if ( _p_singleProc->isAnotherRunning() )
+    {
+        // notify the running instance to bring its window to front
+        _p_singleProc->notifyRunningInstance();
+        return false;
+    }
+    else
+    {
+        if ( !_p_singleProc->tryToRun() )
+            return false;
+    }
+
+    return true;
 }
 
 } // namespace core

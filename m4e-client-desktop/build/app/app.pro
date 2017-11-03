@@ -25,6 +25,7 @@ SOURCES += \
     ../../src/app/core/core.cpp \
     ../../src/app/core/log.cpp \
     ../../src/app/core/utils.cpp \
+    ../../src/app/core/singleproc.cpp \
     ../../src/app/chat/chatmessage.cpp \
     ../../src/app/chat/chatsystem.cpp \
     ../../src/app/chat/widgetchat.cpp \
@@ -42,6 +43,12 @@ SOURCES += \
     ../../src/app/event/widgeteventpanel.cpp \
     ../../src/app/event/widgetlocation.cpp \
     ../../src/app/gui/mainwindow.cpp \
+    ../../src/app/gui/mailboxwindow.cpp \
+    ../../src/app/mailbox/mailbox.cpp \
+    ../../src/app/mailbox/modelmail.cpp \
+    ../../src/app/mailbox/widgetmailedit.cpp \
+    ../../src/app/mailbox/widgetmailitem.cpp \
+    ../../src/app/mailbox/widgetmaillist.cpp \
     ../../src/app/notification/notifyevent.cpp \
     ../../src/app/notification/notifications.cpp \
     ../../src/app/settings/appsettings.cpp \
@@ -57,10 +64,12 @@ SOURCES += \
     ../../src/app/webapp/request/rest-authentication.cpp \
     ../../src/app/webapp/request/rest-event.cpp \
     ../../src/app/webapp/request/rest-document.cpp \
+    ../../src/app/webapp/request/rest-mailbox.cpp \
     ../../src/app/webapp/request/rest-user.cpp \
     ../../src/app/webapp/response/resp-authentication.cpp \
     ../../src/app/webapp/response/resp-document.cpp \
     ../../src/app/webapp/response/resp-event.cpp \
+    ../../src/app/webapp/response/resp-mailbox.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
     ../../src/app/webapp/webapp.cpp
 
@@ -75,6 +84,7 @@ HEADERS += \
     ../../src/app/core/core.h \
     ../../src/app/core/log.h \
     ../../src/app/core/utils.h \
+    ../../src/app/core/singleproc.h \
     ../../src/app/core/smartptr.h \
     ../../src/app/core/smartptr.inl \
     ../../src/app/chat/chatmessage.h \
@@ -94,6 +104,12 @@ HEADERS += \
     ../../src/app/event/widgetlocation.h \
     ../../src/app/event/widgeteventpanel.h \
     ../../src/app/gui/mainwindow.h \
+    ../../src/app/gui/mailboxwindow.h \
+    ../../src/app/mailbox/mailbox.h \
+    ../../src/app/mailbox/modelmail.h \
+    ../../src/app/mailbox/widgetmailedit.h \
+    ../../src/app/mailbox/widgetmailitem.h \
+    ../../src/app/mailbox/widgetmaillist.h \
     ../../src/app/notification/notifyevent.h \
     ../../src/app/notification/notifications.h \
     ../../src/app/settings/appsettings.h \
@@ -109,10 +125,12 @@ HEADERS += \
     ../../src/app/webapp/request/rest-authentication.h \
     ../../src/app/webapp/request/rest-document.h \
     ../../src/app/webapp/request/rest-event.h \
+    ../../src/app/webapp/request/rest-mailbox.h \
     ../../src/app/webapp/request/rest-user.h \
     ../../src/app/webapp/response/resp-authentication.h \
     ../../src/app/webapp/response/resp-document.h \
     ../../src/app/webapp/response/resp-event.h \
+    ../../src/app/webapp/response/resp-mailbox.h \
     ../../src/app/webapp/response/resp-user.h \
     ../../src/app/webapp/webapp.h
 
@@ -128,7 +146,10 @@ FORMS += \
     ../../src/app/gui/forms/widgetchat.ui \
     ../../src/app/gui/forms/widgeteventpanel.ui \
     ../../src/app/gui/forms/widgetlocationedit.ui \
-    ../../src/app/gui/forms/widgetbuzz.ui
+    ../../src/app/gui/forms/widgetbuzz.ui \
+    ../../src/app/gui/forms/mailboxwindow.ui \
+    ../../src/app/gui/forms/widgetmailedit.ui \
+    ../../src/app/gui/forms/widgetmailitem.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

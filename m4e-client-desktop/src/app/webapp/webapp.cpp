@@ -89,6 +89,11 @@ user::User* WebApp::getUser()
     return _p_user;
 }
 
+void WebApp::requestAuthState()
+{
+    getOrCreateUserAuth()->requestAuthState();
+}
+
 void WebApp::requestUserData()
 {
     if ( _userID.isEmpty() )
@@ -115,6 +120,11 @@ event::Events* WebApp::getEvents()
     return getOrCreateEvent();
 }
 
+mailbox::MailBox* WebApp::getMailBox()
+{
+    return getOrCreateMailBox();
+}
+
 void WebApp::requestDocument( const QString& id, const QString& eTag )
 {
     // document arrives with signal 'onCacheDocumentReady'
@@ -126,19 +136,35 @@ void WebApp::requestUserSearch( const QString& keyword )
     getOrCreateUser()->requestUserSearch( keyword );
 }
 
+void WebApp::onResponseAuthState( bool authenticated, QString /*userId*/ )
+{
+    _authState = authenticated ? AuthSuccessful : AuthNoConnection;
+    emit onAuthState( authenticated );
+}
+
+template< class T >
+void WebApp::setupServerURL( T* p_inst ) const
+{
+    QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
+    p_inst->setServerURL( server );
+}
+
 user::UserAuthentication* WebApp::getOrCreateUserAuth()
 {
     if ( !_p_userAuth )
     {
         _p_userAuth = new user::UserAuthentication( this );
+
+        connect( _p_userAuth, SIGNAL( onResponseAuthState( bool, QString ) ), this, SLOT( onResponseAuthState( bool, QString ) ) );
+
         connect( _p_userAuth, SIGNAL( onResponseSignInResult( bool, QString, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ),
                  this, SLOT( onResponseSignInResult( bool, QString, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ) );
 
         connect( _p_userAuth, SIGNAL( onResponseSignOutResult( bool, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ),
                  this, SLOT( onResponseSignOutResult( bool, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ) );
 
-        QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
-        _p_userAuth->setServerURL( server );
+
+        setupServerURL( _p_userAuth );
     }
     return _p_userAuth;
 }
@@ -148,8 +174,10 @@ comm::Connection* WebApp::getOrCreateConnection()
     if ( !_p_connection )
     {
         _p_connection = new comm::Connection( this );
-        QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
-        _p_connection->setServerURL( server );
+
+        connect( _p_connection, SIGNAL( onClosedConnection() ), this, SLOT( onClosedConnection() ) );
+
+        setupServerURL( _p_connection );
     }
     return _p_connection;
 }
@@ -174,8 +202,7 @@ user::User* WebApp::getOrCreateUser()
         connect( _p_user, SIGNAL( onResponseUserSearch( bool, QList< m4e::user::ModelUserInfoPtr > ) ),
                  this, SLOT( onResponseUserSearch( bool, QList< m4e::user::ModelUserInfoPtr > ) ) );
 
-        QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
-        _p_user->setServerURL( server );
+        setupServerURL( _p_user );
     }
     return _p_user;
 }
@@ -185,8 +212,7 @@ event::Events* WebApp::getOrCreateEvent()
     if ( !_p_events )
     {
         _p_events = new event::Events( this );
-        QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
-        _p_events->setServerURL( server );
+        setupServerURL( _p_events );
     }
     return _p_events;
 }
@@ -200,6 +226,16 @@ doc::DocumentCache* WebApp::getOrCreateDocumentCache()
                  this, SLOT( onCacheDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
     }
     return _p_documentCache;
+}
+
+mailbox::MailBox*WebApp::getOrCreateMailBox()
+{
+    if ( !_p_mailBox )
+    {
+        _p_mailBox = new mailbox::MailBox( this );
+        setupServerURL( _p_mailBox );
+    }
+    return _p_mailBox;
 }
 
 void WebApp::resetAllResources()
@@ -217,6 +253,8 @@ void WebApp::resetAllResources()
     _p_connection = nullptr;
     delete _p_notifications;
     _p_notifications = nullptr;
+    delete _p_mailBox;
+    _p_mailBox = nullptr;
 }
 
 void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::UserAuthentication::AuthResultsCode code, QString reason )
@@ -275,6 +313,12 @@ void WebApp::onResponseUserSearch( bool success, QList< m4e::user::ModelUserInfo
         log_warning << TAG << "could not get user search results!" << std::endl;
         emit onUserSearch( QList< user::ModelUserInfoPtr >() );
     }
+}
+
+void WebApp::onClosedConnection()
+{
+    log_debug << TAG << "closed server connection" << std::endl;
+    emit onServerConnectionClosed();
 }
 
 } // namespace webapp

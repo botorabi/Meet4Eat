@@ -8,8 +8,14 @@
 
 package net.m4e.app.mailbox;
 
+import java.io.StringReader;
+import java.math.BigDecimal;
 import javax.ejb.Stateless;
+import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
@@ -80,6 +86,30 @@ public class MailEntityFacadeREST extends net.m4e.common.AbstractFacade<MailEnti
     }
 
     /**
+     * Get the count of user's unread mails.
+     * 
+     * @param request    HTTP request
+     * @return           JSON response
+     */
+    @GET
+    @Path("countUnread")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    public String getCountUread(@Context HttpServletRequest request) {
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionuser == null) {
+            Log.error(TAG, "*** Internal error, cannot retrieve count of unread mails, no user in session found!");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count or unread mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
+        }
+
+        Mails mails = new Mails(entityManager);
+        long cnt = mails.getCountUnreadMails(sessionuser);
+        JsonObjectBuilder resp = Json.createObjectBuilder();
+        resp.add("unreadMails", cnt);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User mails were successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
+    }
+
+    /**
      * Send a mail to another user.
      * 
      * @param mailJson   Mail data in JSON format
@@ -91,7 +121,7 @@ public class MailEntityFacadeREST extends net.m4e.common.AbstractFacade<MailEnti
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String createUser(String mailJson, @Context HttpServletRequest request) {
+    public String send(String mailJson, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             Log.error(TAG, "*** Internal error, cannot create mail, no user in session found!");
@@ -111,10 +141,9 @@ public class MailEntityFacadeREST extends net.m4e.common.AbstractFacade<MailEnti
         //! NOTE we may implement a mechanism to limit the maximal count of user mails
 
         mail.setSenderId(sessionuser.getId());
-        mail.setUnread(true);
         Mails mails = new Mails(entityManager);
         try {
-            mails.createMailEntity(mail);
+            mails.createMail(mail);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not send mail, problem occurred while creating mail entity, reason: " + ex.getLocalizedMessage());
@@ -122,6 +151,53 @@ public class MailEntityFacadeREST extends net.m4e.common.AbstractFacade<MailEnti
         }
 
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Mail was successfully sent.", ResponseResults.CODE_OK, null);
+    }
+
+    /**
+     * Perform an operation on the mail with given ID.
+     * The JSON request must have a field called 'operation' with a value of 
+     * a supported operation:
+     * 
+     *   'trash'
+     *   'untrash'
+     *   'read'
+     *   'unread'
+     *   'countUnread'   This operation does not need a valid mail ID
+     * 
+     * @param id            The mail ID
+     * @param operationJson JSON containing the requested operation
+     * @param request       HTTP request
+     * @return              JSON response
+     */
+    @POST
+    @Path("operate/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    public String operate(@PathParam("id") Long id, String operationJson, @Context HttpServletRequest request) {
+        JsonObjectBuilder resp = Json.createObjectBuilder();
+        resp.add("id", id.toString());
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionuser == null) {
+            Log.error(TAG, "*** Internal error, cannot delete user mail, no user in session found!");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete the mail, no authentication.", ResponseResults.CODE_UNAUTHORIZED, resp.build().toString());
+        }
+
+        String op;
+        try {
+            Mails mails = new Mails(entityManager);
+            JsonReader jreader = Json.createReader(new StringReader(operationJson));
+            JsonObject jobject = jreader.readObject();
+            op = jobject.getString("operation", null);
+            mails.performMailOperation(sessionuser.getId(), id, op);
+        }
+        catch(Exception ex) {
+            Log.warning(TAG, "*** Could not perform mail operation, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to perform mail operation, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, resp.build().toString());
+        }
+
+        resp = resp.add("operation", op);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User mails were successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
     }
 
     /**

@@ -46,7 +46,7 @@ class ModelBase
          *
          * @param id    The ID
          */
-        void                                setId( const QString &id ) { _id = id; }
+        void                                setId( const QString& id ) { _id = id; }
 
         /**
          * @brief Get the name.

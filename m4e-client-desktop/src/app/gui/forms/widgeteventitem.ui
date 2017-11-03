@@ -41,10 +41,10 @@
     <number>9</number>
    </property>
    <property name="topMargin">
-    <number>9</number>
+    <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>9</number>
+    <number>0</number>
    </property>
    <property name="bottomMargin">
     <number>9</number>
@@ -53,8 +53,8 @@
     <widget class="QGroupBox" name="groupBoxMain">
      <property name="styleSheet">
       <string notr="true">#groupBoxMain {
-  border-radius: 10px;
-  border: 3px solid rgb(131, 147, 167);
+  border-radius: 0px;
+  border: 1px solid rgb(131, 147, 167);
   background-color: rgb(80,112,125);
 }</string>
      </property>
@@ -186,7 +186,7 @@ QPushButton:hover {
              <enum>Qt::NoFocus</enum>
             </property>
             <property name="toolTip">
-             <string>Event settings</string>
+             <string>Delete Event</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {

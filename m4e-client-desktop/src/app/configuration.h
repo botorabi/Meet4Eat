@@ -70,4 +70,17 @@
 /* Default user icon shown if no one is available */
 #define M4E_DEFAULT_USER_ICON        ":/icon-user.png"
 
+/* The period (in minutes) for updating the server status.
+ * The periodic server status update is used to avoid a server session
+ * expiration, so it must be less than the defined session expiration
+ * period on app server.
+ */
+#define M4E_PERIOD_SRV_UPDATE_STATUS 15
+
+/* Used for assuring one running instance of the application per user */
+#define  M4E_APP_INSTANCE_KEY        M4E_APP_NAME
+
+/* Qt custom event type for notifying about new application instances */
+#define  M4E_APP_INSTANCE_EVENT_TYPE 2103
+
 #endif // CONFIGURATION_H

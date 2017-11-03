@@ -19,6 +19,7 @@
 #include <document/documentcache.h>
 #include <communication/connection.h>
 #include <notification/notifications.h>
+#include <mailbox/mailbox.h>
 #include <QObject>
 
 
@@ -103,11 +104,6 @@ class WebApp : public QObject
         user::User*                     getUser();
 
         /**
-         * @brief Request for updating user data. If successful then the data will be notified by signal 'onUserDataReady';
-         */
-        void                            requestUserData();
-
-        /**
          * @brief Get the connection instance, it handles the real-time communication with the server.
          *
          * @return Connection instance
@@ -129,6 +125,23 @@ class WebApp : public QObject
         event::Events*                  getEvents();
 
         /**
+         * @brief Get user's mailbox.
+         *
+         * @return The mailbox
+         */
+        mailbox::MailBox*               getMailBox();
+
+        /**
+         * @brief Request for updating the authentication state. If successful then the state will be notified by signal 'onAuthState';
+         */
+        void                            requestAuthState();
+
+        /**
+         * @brief Request for updating user data. If successful then the data will be notified by signal 'onUserDataReady';
+         */
+        void                            requestUserData();
+
+        /**
          * @brief Request a document from server. If it is available in local cache, then no server request will be performed.
          *        The document is delivered by signal 'onDocumentReady'.
          *
@@ -145,6 +158,13 @@ class WebApp : public QObject
         void                            requestUserSearch( const QString& keyword );
 
     signals:
+
+        /**
+         * @brief This signal is emitted to inform about the current authentication state.
+         *
+         * @param authenticated  True if the user is authenticated, otherwise false
+         */
+        void                            onAuthState( bool authenticated );
 
         /**
          * @brief This signal is emitted to notify about user authentication results.
@@ -184,7 +204,20 @@ class WebApp : public QObject
          */
         void                            onUserSearch( QList< m4e::user::ModelUserInfoPtr > users );
 
+        /**
+         * @brief This signal is emitted when the connection to server was closed.
+         */
+        void                            onServerConnectionClosed();
+
     protected slots:
+
+        /**
+         * @brief Results of authentication state request.
+         *
+         * @param authenticated true if the user is already authenticated, otherwise false.
+         * @param userId        User ID, if the user is already authenticated, otherwise 0
+         */
+        void                            onResponseAuthState( bool authenticated, QString userId );
 
         /**
          * @brief Results of an authentication attempt are emitted by this signal.
@@ -228,7 +261,15 @@ class WebApp : public QObject
          */
         void                            onResponseUserSearch( bool success, QList< m4e::user::ModelUserInfoPtr > users );
 
+        /**
+         * @brief This signal is emitted when the WebSocket connection was closed.
+         */
+        void                            onClosedConnection();
+
     protected:
+
+        template< class T >
+        void                            setupServerURL( T* p_inst ) const;
 
         user::UserAuthentication*       getOrCreateUserAuth();
 
@@ -241,6 +282,8 @@ class WebApp : public QObject
         event::Events*                  getOrCreateEvent();
 
         doc::DocumentCache*             getOrCreateDocumentCache();
+
+        mailbox::MailBox*               getOrCreateMailBox();
 
         void                            resetAllResources();
 
@@ -257,6 +300,8 @@ class WebApp : public QObject
         event::Events*                  _p_events        = nullptr;
 
         doc::DocumentCache*             _p_documentCache = nullptr;
+
+        mailbox::MailBox*               _p_mailBox       = nullptr;
 
         AuthState                       _authState = AuthNoConnection;
 
