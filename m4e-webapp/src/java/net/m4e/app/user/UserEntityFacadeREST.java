@@ -9,6 +9,7 @@
 package net.m4e.app.user;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -444,7 +445,12 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         Entities utils = new Entities(entityManager);
-        List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 10);
+        List<String> searchfields = new ArrayList();
+        searchfields.add("name");
+        if (keyword.contains("@")) {
+            searchfields.add("email");
+        }
+        List<UserEntity> hits = utils.search(UserEntity.class, keyword, searchfields, 10);
         for (UserEntity hit: hits) {
             // exclude non-active users and admins from hit list
             if (!hit.getStatus().getIsActive() || getUsers().checkUserRoles(hit, Arrays.asList(AuthRole.USER_ROLE_ADMIN)) ) {
