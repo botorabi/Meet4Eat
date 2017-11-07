@@ -29,7 +29,12 @@ import javax.persistence.NamedQuery;
     /* Given a user ID return all its accociated mails */
     @NamedQuery(
       name="MailUserEntity.findMails",
-      query = "SELECT mail, mailuser.unread, mailuser.trashDate FROM MailEntity mail, MailUserEntity mailuser WHERE mail.id = mailuser.mailId AND mailuser.userId = :userId ORDER BY mail.sendDate DESC"
+      query = "SELECT mail, mailuser.unread, mailuser.trashDate FROM MailEntity mail, MailUserEntity mailuser WHERE mail.id = mailuser.mailId AND (mailuser.trashDate IS NULL or mailuser.trashDate = 0) AND mailuser.userId = :userId ORDER BY mail.sendDate DESC"
+    ),
+    /* Given a user ID get the total count of its mails */
+    @NamedQuery(
+      name="MailUserEntity.countMails",
+      query = "SELECT COUNT(mailuser) FROM MailUserEntity mailuser WHERE (mailuser.trashDate IS NULL or mailuser.trashDate = 0) AND mailuser.userId = :userId"
     ),
     /* Given a user ID get the count of its unread mails */
     @NamedQuery(

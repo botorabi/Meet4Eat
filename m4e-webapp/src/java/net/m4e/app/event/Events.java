@@ -25,9 +25,10 @@ import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.mailbox.MailEntity;
+import net.m4e.app.mailbox.Mails;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.Strings;
 import net.m4e.system.core.AppInfoEntity;
@@ -327,6 +328,54 @@ public class Events {
             });
 
         return deletedeventlocs;
+    }
+
+    /**
+     * Create a inbox message for a new event member.
+     * 
+     * @param event     The event
+     * @param member    The new member
+     */
+    void createEventJoiningMail(EventEntity event, UserEntity member) {
+        Mails mails = new Mails(entityManager);
+        MailEntity mail = new MailEntity();
+        mail.setSenderId(0L);
+        mail.setReceiverId(member.getId());
+        mail.setReceiverName(member.getName());
+        mail.setSendDate((new Date()).getTime());
+        mail.setSubject("You joined an event");
+        mail.setContent("Hi " + member.getName() + ",\n\nwe wanted to let you know that you joined the event '" +
+                                event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
+        try {
+            mails.createMail(mail);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** could not create mail, reason: " + ex.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Create a inbox message for a member who has left an event.
+     * 
+     * @param event     The event
+     * @param member    Member who left the event
+     */
+    void createEventLeavingMail(EventEntity event, UserEntity member) {
+        Mails mails = new Mails(entityManager);
+        MailEntity mail = new MailEntity();
+        mail.setSenderId(0L);
+        mail.setReceiverId(member.getId());
+        mail.setReceiverName(member.getName());
+        mail.setSendDate((new Date()).getTime());
+        mail.setSubject("You have left an event");
+        mail.setContent("Hi " + member.getName() + ",\n\nwe wanted to confirm that you have left the event '" +
+                                event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
+        try {
+            mails.createMail(mail);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** could not create mail, reason: " + ex.getLocalizedMessage());
+        }
     }
 
     /**

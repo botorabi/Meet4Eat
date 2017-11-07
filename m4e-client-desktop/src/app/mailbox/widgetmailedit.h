@@ -14,6 +14,7 @@
 #include <mailbox/modelmail.h>
 #include <QWidget>
 #include <QLabel>
+#include <QSet>
 
 
 namespace Ui {
@@ -73,11 +74,9 @@ class WidgetMailEdit : public QWidget
     signals:
 
         /**
-         * @brief Emitted when the was sent out.
-         *
-         * @param id   The mail ID
+         * @brief Emitted when a mail was sent out.
          */
-        void                        onMailSent( QString mailId);
+        void                        onMailSent();
 
     protected slots:
 
@@ -89,7 +88,7 @@ class WidgetMailEdit : public QWidget
         /**
          * @brief Address book button was clicked.
          */
-        void                        onBtnAddrBookClicked();
+        void                        onBtnSearchUserClicked();
 
         /**
          * @brief Results of mail sending
@@ -100,11 +99,15 @@ class WidgetMailEdit : public QWidget
 
     protected:
 
+        void                        setRecipient( user::ModelUserInfoPtr userInfo );
+
         webapp::WebApp*             _p_webApp = nullptr;
 
         Ui::WidgetMailEdit*         _p_ui     = nullptr;
 
         mailbox::ModelMailPtr       _mail;
+
+        user::ModelUserInfoPtr      _recipient;
 };
 
 } // namespace mailbox

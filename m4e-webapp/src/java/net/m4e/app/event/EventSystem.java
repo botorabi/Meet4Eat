@@ -8,10 +8,7 @@
 package net.m4e.app.event;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;

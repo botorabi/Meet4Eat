@@ -136,7 +136,7 @@ class DialogEventSettings : public common::BaseDialog
         void                        onBtnAddMemberClicked();
 
         /**
-         * @brief On memebr search field the enter key was pressed.
+         * @brief On member search field the enter key was pressed.
          */
         void                        onLineEditSeachtReturnPressed();
 

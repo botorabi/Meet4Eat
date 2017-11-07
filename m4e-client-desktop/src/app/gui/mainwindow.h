@@ -29,6 +29,7 @@ namespace gui
 {
 
 class MailboxWindow;
+class SystemTray;
 
 /**
  * @brief Main application window class
@@ -57,6 +58,10 @@ class MainWindow : public QMainWindow
          */
         virtual                     ~MainWindow();
 
+        /**
+         * @brief Request for teminating the application.
+         */
+        void                        terminate();
 
     protected slots:
 
@@ -174,7 +179,7 @@ class MainWindow : public QMainWindow
          * @brief This signal is emitted when the results of unread mails count request arrive.
          *
          * @param success  true if the count of unread mails could successfully be retrieved, otherwise false
-         * @param count    Count of unread mails
+         * @param count     Count of unread mails
          */
         void                        onResponseCountUnreadMails( bool success, int count );
 
@@ -220,6 +225,8 @@ class MainWindow : public QMainWindow
 
         MailboxWindow*              _p_mailWindow    = nullptr;
 
+        SystemTray*                 _p_systemTray    = nullptr;
+
         bool                        _dragging        = false;
 
         QPoint                      _draggingPos;
@@ -227,6 +234,8 @@ class MainWindow : public QMainWindow
         bool                        _initialSignIn   = true;
 
         bool                        _enableKeepAlive = false;
+
+        int                         _lastUnreadMails = 0;
 };
 
 } // namespace gui

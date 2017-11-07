@@ -21,6 +21,8 @@ MailBox::MailBox( QObject* p_parent ) :
  QObject( p_parent )
 {
     _p_restMailBox  = new webapp::RESTMailBox( this );
+    connect( _p_restMailBox, SIGNAL( onRESTMailCountMails( int, int ) ), this, SLOT( onRESTMailCountMails( int, int ) ) );
+    connect( _p_restMailBox, SIGNAL( onRESTMailErrorCountMails( QString, QString ) ), this, SLOT( onRESTMailErrorCountMails( QString, QString ) ) );
     connect( _p_restMailBox, SIGNAL( onRESTMailCountUnreadMails( int ) ), this, SLOT( onRESTMailCountUnreadMails( int ) ) );
     connect( _p_restMailBox, SIGNAL( onRESTMailErrorCountUnreadMails( QString, QString ) ), this, SLOT( onRESTMailErrorCountUnreadMails( QString, QString ) ) );
     connect( _p_restMailBox, SIGNAL( onRESTMailGetMails( QList< m4e::mailbox::ModelMailPtr > ) ), this, SLOT( onRESTMailGetMails( QList< m4e::mailbox::ModelMailPtr > ) ) );
@@ -62,6 +64,12 @@ QList< ModelMailPtr > MailBox::getAllMails()
     return _mails;
 }
 
+void MailBox::requestCountMails()
+{
+    setLastError();
+    _p_restMailBox->getCountMails();
+}
+
 void MailBox::requestCountUnreadMails()
 {
     setLastError();
@@ -98,9 +106,22 @@ void MailBox::requestMarkMail( const QString& mailId, bool read )
     _p_restMailBox->performMailOperation( mailId, read ? "read" : "unread" );
 }
 
+void MailBox::onRESTMailCountMails( int countTotal, int countUnread )
+{
+    log_verbose << TAG << "got count of mails: " << countTotal << ", unread: " << countUnread << std::endl;
+    emit onResponseCountMails( true, countTotal, countUnread );
+}
+
+void MailBox::onRESTMailErrorCountMails( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to get count of mails: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseCountMails( false, 0, 0 );
+}
+
 void MailBox::onRESTMailCountUnreadMails( int count )
 {
-    log_verbose << TAG << "got count of unread mails: " << count << std::endl;
+    log_verbose << TAG << "got count of unread mails: " << count<< std::endl;
     emit onResponseCountUnreadMails( true, count );
 }
 

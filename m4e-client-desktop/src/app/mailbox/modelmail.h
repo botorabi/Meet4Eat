@@ -67,6 +67,20 @@ class ModelMail : public m4e::core::RefCount< ModelMail >
         void                            setSenderId( const QString& senderId ) { _senderId = senderId; }
 
         /**
+         * @brief Get the sender name.
+         *
+         * @return The sender name
+         */
+        const QString&                  getSenderName() const { return _senderName; }
+
+        /**
+         * @brief Set the sender name.
+         *
+         * @param senderName   The sender name
+         */
+        void                            setSenderName( const QString& senderName ) { _senderName = senderName; }
+
+        /**
          * @brief Get the receiver ID.
          *
          * @return The receiver ID
@@ -79,6 +93,20 @@ class ModelMail : public m4e::core::RefCount< ModelMail >
          * @param receiverId   The receiver ID
          */
         void                            setReceiverId( const QString& receiverId ) { _receiverId = receiverId; }
+
+        /**
+         * @brief Get the receiver name.
+         *
+         * @return The receiver name
+         */
+        const QString&                  getReceiverName() const { return _receiverName; }
+
+        /**
+         * @brief Set the receiver name.
+         *
+         * @param receiverName   The receiver name
+         */
+        void                            setReceiverName( const QString& receiverName ) { _receiverName = receiverName; }
 
         /**
          * @brief Get the mail subject.
@@ -185,7 +213,9 @@ class ModelMail : public m4e::core::RefCount< ModelMail >
         QString                         _id;
         QDateTime                       _date;
         QString                         _senderId;
+        QString                         _senderName;
         QString                         _receiverId;
+        QString                         _receiverName;
         QString                         _subject;
         QString                         _content;
         bool                            _isUnread  = true;

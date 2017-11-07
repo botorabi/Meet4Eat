@@ -53,6 +53,7 @@ SOURCES += \
     ../../src/app/notification/notifications.cpp \
     ../../src/app/settings/appsettings.cpp \
     ../../src/app/settings/dialogsettings.cpp \
+    ../../src/app/user/dialogsearchuser.cpp \
     ../../src/app/user/modeluser.cpp \
     ../../src/app/user/modeluserinfo.cpp \
     ../../src/app/user/user.cpp \
@@ -71,7 +72,8 @@ SOURCES += \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-mailbox.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
-    ../../src/app/webapp/webapp.cpp
+    ../../src/app/webapp/webapp.cpp \
+    ../../src/app/gui/systemtray.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -114,6 +116,7 @@ HEADERS += \
     ../../src/app/notification/notifications.h \
     ../../src/app/settings/appsettings.h \
     ../../src/app/settings/dialogsettings.h \
+    ../../src/app/user/dialogsearchuser.h \
     ../../src/app/user/modeluser.h \
     ../../src/app/user/modeluserinfo.h \
     ../../src/app/user/user.h \
@@ -132,7 +135,8 @@ HEADERS += \
     ../../src/app/webapp/response/resp-event.h \
     ../../src/app/webapp/response/resp-mailbox.h \
     ../../src/app/webapp/response/resp-user.h \
-    ../../src/app/webapp/webapp.h
+    ../../src/app/webapp/webapp.h \
+    ../../src/app/gui/systemtray.h
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
@@ -149,7 +153,8 @@ FORMS += \
     ../../src/app/gui/forms/widgetbuzz.ui \
     ../../src/app/gui/forms/mailboxwindow.ui \
     ../../src/app/gui/forms/widgetmailedit.ui \
-    ../../src/app/gui/forms/widgetmailitem.ui
+    ../../src/app/gui/forms/widgetmailitem.ui \
+    ../../src/app/gui/forms/widgetsearchuser.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

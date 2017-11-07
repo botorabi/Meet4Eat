@@ -59,11 +59,14 @@ void WidgetMailItem::setupUI( ModelMailPtr mail )
     // we need to handle mouse clicks manually
     _p_ui->groupBoxMain->installEventFilter( this );
 
+   bool outgoing = mail->getSenderId() == _p_webApp->getUser()->getUserData()->getId();
+
+    QString sender = ( mail->getSenderId() != "0" )  ? mail->getSenderName() : M4E_MAIL_SENDER_SYSTEM_NAME;
     const QDateTime& timestamp = mail->getDate();
     _p_ui->labelDate->setText( timestamp.toString( "yyyy-MM-dd  HH:mm" ) );
-    QString shorttext = mail->getSubject();
-    if ( shorttext.length() > 29 )
-        shorttext = shorttext.mid( 0, 29 ) + "...";
+    QString shorttext = ( outgoing ? "↑ <strong>(me)</strong> - " : "↓ <strong>" + sender + "</strong> - " ) + mail->getSubject();
+    if ( shorttext.length() > 60 )
+        shorttext = shorttext.mid( 0, 60 ) + "...";
     _p_ui->labelShortText->setText( shorttext );
     _p_ui->pushButtonDelete->setChecked( _mail->isTrashed() );
     if ( _mail->isTrashed() )

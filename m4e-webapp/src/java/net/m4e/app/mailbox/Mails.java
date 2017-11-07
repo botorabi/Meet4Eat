@@ -23,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
+import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.common.Entities;
 import net.m4e.system.core.Log;
 
@@ -67,6 +68,31 @@ public class Mails {
     }
 
     /**
+     * Create mail for multiple recipients.
+     * 
+     * @param mail          Mail to create for recipients
+     * @param recipients    Recipients
+     */
+    public void createMails(MailEntity mail, List<Long> recipients) {
+        for (Long recv: recipients) {
+            MailEntity newmail = new MailEntity();
+            newmail.setSenderId(mail.getSenderId());
+            newmail.setSenderName(mail.getSenderName());
+            newmail.setReceiverId(recv);
+            newmail.setReceiverName("");
+            newmail.setSubject(mail.getSubject());
+            newmail.setContent(mail.getContent());
+            newmail.setSendDate((new Date()).getTime());
+            try {
+                createMail(newmail);
+            }
+            catch (Exception ex) {
+                Log.warning(TAG, "*** could not create mail, reason: " + ex.getLocalizedMessage());
+            }
+        }
+    }
+
+    /**
      * Create the join table MailUserEntity for given user and mail IDs.
      * 
      * @param entities  Entities utils
@@ -80,6 +106,19 @@ public class Mails {
         mailuser.setTrashDate(0L);
         mailuser.setUnread(true);
         entities.createEntity(mailuser);        
+    }
+
+    /**
+     * Get the total count of user's mails.
+     * 
+     * @param user  The user
+     * @return      Total count of mails
+     */
+    public long getCountTotalMails(UserEntity user) {
+        Query query = entityManager.createNamedQuery("MailUserEntity.countMails");
+        query.setParameter("userId", user.getId());
+        long count = (long)query.getSingleResult();
+        return count;
     }
 
     /**
@@ -109,7 +148,7 @@ public class Mails {
         query.setParameter("userId", user.getId());
         List<Object[]> results;
         // limit the max range
-        if (to > 0 && from > 0) {
+        if (to > 0 && from >= 0) {
             if (to - from > MAX_RANGE) {
                 to = from + MAX_RANGE;
             }
@@ -228,8 +267,10 @@ public class Mails {
         json.add("id", (mailentity.getId() != null) ? mailentity.getId().toString() : "")
             .add("subject", mailentity.getSubject())
             .add("content", mailentity.getContent())
-            .add("senderId", (mailentity.getSenderId() != null) ? "" + mailentity.getSenderId() : "<System>")
-            .add("receiverId", (mailentity.getReceiverId() != null) ? "" + mailentity.getReceiverId() : "<System>")
+            .add("senderId", (mailentity.getSenderId() != null) ? "" + mailentity.getSenderId() : "0")
+            .add("senderName", (mailentity.getSenderName() != null) ? mailentity.getSenderName() : "")
+            .add("receiverId", (mailentity.getReceiverId() != null) ? "" + mailentity.getReceiverId() : "0")
+            .add("receiverName", (mailentity.getReceiverName() != null) ? mailentity.getReceiverName() : "")
             .add("sendDate", (mailentity.getSendDate()!= null) ? mailentity.getSendDate() : 0)
             .add("unread", mail.isUnread())
             .add("trashDate", (mail.getTrashDate() != null) ? mail.getTrashDate() : 0);

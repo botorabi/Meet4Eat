@@ -100,7 +100,7 @@ class PerformMailOperation: public Meet4EatRESTResponse
 };
 
 /**
- * @brief Response handler for CountUnreadMails
+ * @brief Response handler for CountMails
  *
  * @author boto
  * @date Nov 3, 2017
@@ -124,6 +124,34 @@ class ResponseCountUnreadMails: public Meet4EatRESTResponse
 
         RESTMailBox*    _p_requester;
 };
+
+/**
+ * @brief Response handler for CountMails
+ *
+ * @author boto
+ * @date Nov 7, 2017
+ */
+class ResponseCountMails: public Meet4EatRESTResponse
+{
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(ResponseCountMails) ";
+
+    public:
+
+        explicit        ResponseCountMails( RESTMailBox* p_requester );
+
+        void            onRESTResponseSuccess( const QJsonDocument& results );
+
+        void            onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTMailBox*    _p_requester;
+};
+
+
 } // namespace webapp
 } // namespace m4e
 

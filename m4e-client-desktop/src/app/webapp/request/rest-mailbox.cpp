@@ -26,6 +26,13 @@ RESTMailBox::~RESTMailBox()
 {
 }
 
+void RESTMailBox::getCountMails()
+{
+    QUrl url( getResourcePath() + "/rest/mails/count" );
+    auto p_callback = new ResponseCountMails( this );
+    getRESTOps()->GET( url, createResultsCallback( p_callback ) );
+}
+
 void RESTMailBox::getCountUnreadMails()
 {
     QUrl url( getResourcePath() + "/rest/mails/countUnread" );

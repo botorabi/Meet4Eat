@@ -148,5 +148,36 @@ void ResponseCountUnreadMails::onRESTResponseError( const QString& reason )
     emit _p_requester->onRESTMailErrorCountUnreadMails( "", reason );
 }
 
+/******************************************************/
+/*************** ResponseCountMails *******************/
+/******************************************************/
+
+ResponseCountMails::ResponseCountMails( RESTMailBox* p_requester ) :
+ _p_requester( p_requester )
+{}
+
+void ResponseCountMails::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTMailErrorCountMails( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj = datadoc.object();
+    int total = obj.value( "totalMails" ).toInt( 0 );
+    int count = obj.value( "unreadMails" ).toInt( 0 );
+    emit _p_requester->onRESTMailCountMails( total, count );
+}
+
+void ResponseCountMails::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTMailErrorCountMails( "", reason );
+}
+
 } // namespace webapp
 } // namespace m4e

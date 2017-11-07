@@ -303,6 +303,14 @@ QPushButton:hover {
                     <height>30</height>
                    </size>
                   </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {
+	  color: rgb(181,197, 217);;
+}
+QLabel {
+	  color: rgb(181,197, 217);;
+}</string>
+                  </property>
                   <layout class="QVBoxLayout" name="verticalLayout_13">
                    <property name="leftMargin">
                     <number>0</number>
@@ -318,6 +326,9 @@ QPushButton:hover {
                    </property>
                    <item>
                     <layout class="QVBoxLayout" name="verticalLayout_11">
+                     <property name="spacing">
+                      <number>2</number>
+                     </property>
                      <property name="leftMargin">
                       <number>9</number>
                      </property>
@@ -348,11 +359,6 @@ QPushButton:hover {
                            <bold>true</bold>
                           </font>
                          </property>
-                         <property name="styleSheet">
-                          <string notr="true">QLabel#labelHead {
-  color: rgb(181,197, 217);;
-}</string>
-                         </property>
                          <property name="text">
                           <string>Your Mails</string>
                          </property>
@@ -368,7 +374,7 @@ QPushButton:hover {
                          </property>
                          <property name="sizeHint" stdset="0">
                           <size>
-                           <width>40</width>
+                           <width>10</width>
                            <height>20</height>
                           </size>
                          </property>
@@ -408,6 +414,105 @@ QPushButton:hover {
                      </item>
                      <item>
                       <widget class="QLabel" name="label_2">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>2</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>2</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QLabel {
+  background-color: rgb(151,167, 187);
+}</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QHBoxLayout" name="horizontalLayout">
+                       <item>
+                        <widget class="QPushButton" name="pushButtonPrev">
+                         <property name="minimumSize">
+                          <size>
+                           <width>32</width>
+                           <height>32</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>32</width>
+                           <height>32</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Previous mails</string>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 16px;
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 16px;
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>&lt;-</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="labelMailRange">
+                         <property name="text">
+                          <string>1-10</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="pushButtonNext">
+                         <property name="minimumSize">
+                          <size>
+                           <width>32</width>
+                           <height>32</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>32</width>
+                           <height>32</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Next mails</string>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton {
+  background-color: transparent;
+  border-radius: 16px;
+}
+QPushButton:hover {
+  background-color: rgb(50,82,95);
+  border-radius: 16px;
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>-&gt;</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_3">
                        <property name="minimumSize">
                         <size>
                          <width>0</width>
@@ -535,7 +640,7 @@ QPushButton:hover {
    <slot>onBtnCloseClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>980</x>
+     <x>787</x>
      <y>37</y>
     </hint>
     <hint type="destinationlabel">
@@ -551,7 +656,7 @@ QPushButton:hover {
    <slot>onBtnMinimizeClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>922</x>
+     <x>729</x>
      <y>37</y>
     </hint>
     <hint type="destinationlabel">
@@ -567,7 +672,7 @@ QPushButton:hover {
    <slot>onBtnMaximizeClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>951</x>
+     <x>758</x>
      <y>37</y>
     </hint>
     <hint type="destinationlabel">
@@ -583,7 +688,7 @@ QPushButton:hover {
    <slot>onBtnNewMailClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>293</x>
+     <x>273</x>
      <y>90</y>
     </hint>
     <hint type="destinationlabel">
@@ -599,5 +704,7 @@ QPushButton:hover {
   <slot>onBtnResizeReleased()</slot>
   <slot>onBtnMaximizeClicked()</slot>
   <slot>onBtnNewMailClicked()</slot>
+  <slot>onBtnNextClicked()</slot>
+  <slot>onBtnPrevClicked()</slot>
  </slots>
 </ui>

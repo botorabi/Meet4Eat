@@ -71,7 +71,16 @@ class MailboxWindow : public QMainWindow
          */
         void                        onMailSelection( QString mailId );
 
+        /**
+         * @brief Emitted when a mail was successfully sent out.
+         */
+        void                        onMailSent();
+
     protected:
+
+        void                        storeWindowGeometry();
+
+        void                        restoreWindowGeometry();
 
         void                        mouseDoubleClickEvent( QMouseEvent* p_event );
 

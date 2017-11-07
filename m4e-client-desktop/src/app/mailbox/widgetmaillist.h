@@ -17,6 +17,10 @@
 #include <QMap>
 
 
+namespace Ui {
+  class MailboxWindow;
+}
+
 namespace m4e
 {
 namespace mailbox
@@ -47,8 +51,9 @@ class WidgetMailList : public QListWidget
          *
          * @param p_webApp  Web application interface
          * @param p_parent  Parent widget
+         * @param p_ui      Ui decorator of parent widget
          */
-                                    WidgetMailList( webapp::WebApp* p_webApp, QWidget* p_parent = nullptr );
+                                    WidgetMailList( webapp::WebApp* p_webApp, QWidget* p_parent, Ui::MailboxWindow* p_ui );
 
         /**
          * @brief Visually select the mail widget with given mail ID.
@@ -67,6 +72,25 @@ class WidgetMailList : public QListWidget
         void                        onMailSelection( QString id );
 
     protected slots:
+
+        /**
+         * @brief Next mails page
+         */
+        void                        onBtnNextClicked();
+
+        /**
+         * @brief Previous mails page
+         */
+        void                        onBtnPrevClicked();
+
+        /**
+         * @brief Results of request of getting the count of mails.
+         *
+         * @param success   true if successfull
+         * @param countTotal    Total count of mails
+         * @param countUnread   Count of unread mails
+         */
+        void                        onResponseCountMails( bool success, int countTotal, int countUnread );
 
         /**
          * @brief Emitted when the user clicks on the widget.
@@ -116,9 +140,22 @@ class WidgetMailList : public QListWidget
          */
         void                        addMail( m4e::mailbox::ModelMailPtr mail );
 
+        /**
+         * @brief Destroy all items in list.
+         */
+        void                        clearMails();
+
         webapp::WebApp*             _p_webApp     = nullptr;
 
+        Ui::MailboxWindow*          _p_ui         = nullptr;
+
         QList< WidgetMailItem* >    _widgets;
+
+        int                         _countMails   = 0;
+
+        int                         _rangeFrom    = 0;
+
+        int                         _rangeTo      = 0;
 };
 
 } // namespace mailbox

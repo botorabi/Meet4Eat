@@ -93,6 +93,11 @@ class MailBox : public QObject
         QList< mailbox::ModelMailPtr >  getAllMails();
 
         /**
+         * @brief Request for the count of total and unread mails. The results are emitted by signal 'onReponseCountMail'.
+         */
+        void                            requestCountMails();
+
+        /**
          * @brief Request for the count of unread mails. The results are emitted by signal 'onReponseCountUnreadMail'.
          */
         void                            requestCountUnreadMails();
@@ -137,10 +142,19 @@ class MailBox : public QObject
     signals:
 
         /**
+         * @brief Results of mails count request.
+         *
+         * @param success       true if the count of unread mails could successfully be retrieved, otherwise false
+         * @param countTotal    Total count of mails
+         * @param countUnread   Count of unread mails
+         */
+        void                            onResponseCountMails( bool success, int countTotal, int countUnread );
+
+        /**
          * @brief Results of unread mails count request.
          *
-         * @param success  true if the count of unread mails could successfully be retrieved, otherwise false
-         * @param count    Count of unread mails
+         * @param success       true if the count of unread mails could successfully be retrieved, otherwise false
+         * @param count         Count of unread mails
          */
         void                            onResponseCountUnreadMails( bool success, int count );
 
@@ -169,6 +183,22 @@ class MailBox : public QObject
         void                            onResponsePerformOperation( bool success, QString mailId, QString operation );
 
     protected slots:
+
+        /**
+         * @brief Receive the results of requestCountMails request.
+         *
+         * @param countTotal     Total count of mails
+         * @param countUnread    The count of unread mails
+         */
+        void                            onRESTMailCountMails( int countTotal, int countUnread );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                            onRESTMailErrorCountMails( QString errorCode, QString reason );
 
         /**
          * @brief Receive the results of requestCountUnreadMails request.

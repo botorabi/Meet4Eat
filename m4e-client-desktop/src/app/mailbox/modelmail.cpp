@@ -22,7 +22,9 @@ QJsonDocument ModelMail::toJSON()
     QJsonObject obj;
     obj.insert( "id", getId() );
     obj.insert( "senderId", getSenderId() );
+    obj.insert( "senderName", getSenderName() );
     obj.insert( "receiverId", getReceiverId() );
+    obj.insert( "receiverName", getReceiverName() );
     obj.insert( "subject", getSubject() );
     obj.insert( "content", getContent() );
     obj.insert( "sendDate", getDate().toMSecsSinceEpoch() );
@@ -46,7 +48,9 @@ bool ModelMail::fromJSON( const QJsonDocument& input )
     QJsonObject data       = input.object();
     QString     id         = data.value( "id" ).toString( "" );
     QString     senderid   = data.value( "senderId" ).toString( "" );
-    QString     receiverid = data.value( "receiverId" ).toString( "" );
+    QString     sendername = data.value( "senderName" ).toString( "" );
+    QString     recvid     = data.value( "receiverId" ).toString( "" );
+    QString     recvname   = data.value( "receiverName" ).toString( "" );
     QString     subject    = data.value( "subject" ).toString( "" );
     QString     content    = data.value( "content" ).toString( "" );
     qint64      date       = ( qint64 )data.value( "sendDate" ).toDouble( 0.0 );
@@ -59,7 +63,9 @@ bool ModelMail::fromJSON( const QJsonDocument& input )
 
     setId( id );
     setSenderId( senderid );
-    setReceiverId( receiverid );
+    setSenderName( sendername );
+    setReceiverId( recvid );
+    setReceiverName( recvname );
     setSubject( subject );
     setContent( content );
 

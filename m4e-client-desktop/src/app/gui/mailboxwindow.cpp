@@ -10,6 +10,7 @@
 #include <core/log.h>
 #include <common/basedialog.h>
 #include <common/dialogmessage.h>
+#include <settings/appsettings.h>
 #include <mailbox/widgetmaillist.h>
 #include <mailbox/widgetmailedit.h>
 #include "ui_mailboxwindow.h"
@@ -25,9 +26,11 @@ MailboxWindow::MailboxWindow( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  _p_ui( new Ui::MailboxWindow ),
  _p_webApp( p_webApp )
 {
-    setWindowFlags( Qt::Window | /*Qt::FramelessWindowHint |*/ Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window | Qt::CustomizeWindowHint );
 
     _p_ui->setupUi( this );
+
+    restoreWindowGeometry();
 
     // center the window on the parent window if one exists
     if ( p_parent )
@@ -46,6 +49,21 @@ MailboxWindow::MailboxWindow( webapp::WebApp* p_webApp, QWidget* p_parent ) :
 MailboxWindow::~MailboxWindow()
 {
     delete _p_ui;
+    storeWindowGeometry();
+}
+
+void MailboxWindow::storeWindowGeometry()
+{
+    QSettings* p_settings = settings::AppSettings::get()->getSettings();
+    QByteArray geom = saveGeometry();
+    p_settings->setValue( M4E_SETTINGS_KEY_MAILBOX_GEOM, geom );
+}
+
+void MailboxWindow::restoreWindowGeometry()
+{
+    QSettings* p_settings = settings::AppSettings::get()->getSettings();
+    QByteArray geom =  p_settings->value( M4E_SETTINGS_KEY_MAILBOX_GEOM ).toByteArray();
+    restoreGeometry( geom );
 }
 
 void MailboxWindow::onBtnCloseClicked()
@@ -112,6 +130,8 @@ void MailboxWindow::onBtnNewMailClicked()
     mail->setSenderId( _p_webApp->getUser()->getUserData()->getId() );
     p_widget->setupUI( mail, false );
 
+    connect( p_widget, SIGNAL( onMailSent() ), this, SLOT( onMailSent() ) );
+
     _p_ui->widgetClientArea->layout()->addWidget( p_widget );
 }
 
@@ -139,11 +159,20 @@ void MailboxWindow::onMailSelection( QString mailId )
     _p_ui->widgetClientArea->layout()->addWidget( p_widget );
 }
 
+void MailboxWindow::onMailSent()
+{
+    //! NOTE we may implement a more resource friendly update of mail list in future. for now we just refresh the mymails list
+    clearWidgetClientArea();
+    clearWidgetMyMails();
+    createWidgetMyMails();
+    onMailSelection( "" );
+}
+
 void MailboxWindow::clearWidgetClientArea()
 {
     QLayoutItem* p_item;
     QLayout* p_layout = _p_ui->widgetClientArea->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = _p_ui->widgetClientArea->layout()->takeAt( 0 ) ) ) )
+    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
     {
         p_item->widget()->deleteLater();
         delete p_item;
@@ -154,7 +183,7 @@ void MailboxWindow::clearWidgetMyMails()
 {
     QLayoutItem* p_item;
     QLayout* p_layout = _p_ui->widgetMailItems->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = _p_ui->widgetMailItems->layout()->takeAt( 0 ) ) ) )
+    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
     {
         p_item->widget()->deleteLater();
         delete p_item;
@@ -165,7 +194,7 @@ void MailboxWindow::createWidgetMyMails()
 {
     clearWidgetClientArea();
 
-    mailbox::WidgetMailList* p_widget = new mailbox::WidgetMailList( _p_webApp, this );
+    mailbox::WidgetMailList* p_widget = new mailbox::WidgetMailList( _p_webApp, this, _p_ui );
     _p_ui->widgetMailItems->layout()->addWidget( p_widget );
     connect( p_widget, SIGNAL( onMailSelection( QString /*id*/ ) ), this, SLOT( onMailSelection( QString /*id*/ ) ) );
     p_widget->selectFirstMail();

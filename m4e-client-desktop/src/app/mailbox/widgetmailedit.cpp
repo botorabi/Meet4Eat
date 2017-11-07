@@ -10,6 +10,7 @@
 #include <core/log.h>
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
+#include <user/dialogsearchuser.h>
 #include <ui_widgetmailedit.h>
 
 
@@ -40,21 +41,21 @@ void WidgetMailEdit::setupUI( ModelMailPtr mail, bool readOnly )
     QString curruserid, currusername;
     curruserid   = _p_webApp->getUser()->getUserData()->getId();
     currusername = _p_webApp->getUser()->getUserData()->getName();
-    QString from = ( mail->getSenderId() == curruserid ) ? currusername : mail->getSenderId();
-    QString to   = ( mail->getReceiverId() == curruserid ) ? currusername : mail->getReceiverId();
+    // sender ID 0 means the sender was the system
+    QString from = ( mail->getSenderId() == curruserid ) ? currusername : ( mail->getSenderId() == "0" ) ? M4E_MAIL_SENDER_SYSTEM_NAME : mail->getSenderName();
+    QString to   = mail->getReceiverName();
 
     _p_ui->lineEditFrom->setText( from );
-    _p_ui->lineEditTo->setText( to );
+    _p_ui->listWidgetTo->addItem( to );
     _p_ui->lineEditSubject->setText( mail->getSubject() );
     _p_ui->textEditBody->setPlainText( mail->getContent() );
     const QDateTime& timestamp = mail->getDate();
     _p_ui->labelSendDate->setText( timestamp.toString( "yyyy-MM-dd  HH:mm" ) );
 
     _p_ui->lineEditFrom->setReadOnly( true );
-    _p_ui->lineEditTo->setReadOnly( readOnly );
     _p_ui->lineEditSubject->setReadOnly( readOnly );
     _p_ui->textEditBody->setReadOnly( readOnly );
-    _p_ui->pushButtonAddressBook->setVisible( !readOnly );
+    _p_ui->pushButtonSearchUser->setVisible( !readOnly );
     _p_ui->pushButtonSend->setVisible( !readOnly );
     _p_ui->labelDate->setVisible( readOnly );
     _p_ui->labelSendDate->setVisible( readOnly );
@@ -62,9 +63,7 @@ void WidgetMailEdit::setupUI( ModelMailPtr mail, bool readOnly )
 
 void WidgetMailEdit::onBtnSendClicked()
 {
-    log_verbose << TAG << "TODO onBtnSendClicked" << std::endl;
-
-    bool invalid = _p_ui->lineEditTo->text().isEmpty();
+    bool invalid = !_recipient.valid();
     invalid = invalid || _p_ui->lineEditSubject->text().isEmpty();
     invalid = invalid || _p_ui->textEditBody->toPlainText().isEmpty();
     if ( invalid )
@@ -78,15 +77,26 @@ void WidgetMailEdit::onBtnSendClicked()
         return;
     }
 
-    _mail->setReceiverId( _p_ui->lineEditTo->text() );
+    _mail->setReceiverId( _recipient->getId() );
     _mail->setSubject( _p_ui->lineEditSubject->text() );
     _mail->setContent( _p_ui->textEditBody->toPlainText() );
     _p_webApp->getMailBox()->requestSendMail( _mail );
 }
 
-void WidgetMailEdit::onBtnAddrBookClicked()
+void WidgetMailEdit::onBtnSearchUserClicked()
 {
     log_verbose << TAG << "TODO onBtnAddrBookClicked" << std::endl;
+
+    user::DialogSearchUser* p_dlg = new user::DialogSearchUser( _p_webApp, this );
+    if ( p_dlg->exec() == common::BaseDialog::Btn1 )
+    {
+        user::ModelUserInfoPtr userinfo = p_dlg->getUserInfo();
+        if ( userinfo.valid() )
+        {
+            setRecipient( userinfo );
+        }
+    }
+    delete p_dlg;
 }
 
 void WidgetMailEdit::onResponseSendMail( bool success )
@@ -100,6 +110,22 @@ void WidgetMailEdit::onResponseSendMail( bool success )
                  common::DialogMessage::BtnOk );
 
     msg.exec();
+
+    if ( success )
+    {
+        emit onMailSent();
+    }
+}
+
+void WidgetMailEdit::setRecipient( user::ModelUserInfoPtr userInfo )
+{
+    if ( _recipient.valid() && ( _recipient->getId() == userInfo->getId() ) )
+            return;
+
+    _recipient = userInfo;
+    // we consider a list of recipients in the gui for a possible future extention allowing more than one mail recipient
+    _p_ui->listWidgetTo->clear();
+    _p_ui->listWidgetTo->addItem( userInfo->getName() );
 }
 
 } // namespace mailbox

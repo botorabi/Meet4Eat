@@ -49,7 +49,12 @@ class RESTMailBox : public Meet4EatREST
         virtual                 ~RESTMailBox();
 
         /**
-         * @brief Get the count of user's unread mails. The results are emitted by signal 'onRESTMailCountUnreadMails'.
+         * @brief Get the count of user's mails. The results are emitted by signal 'onRESTMailCountMails'.
+         */
+        void                    getCountMails();
+
+        /**
+         * @brief Get the count of unread mails. The results are emitted by signal 'onRESTMailCountUnreadMails'.
          */
         void                    getCountUnreadMails();
 
@@ -78,6 +83,22 @@ class RESTMailBox : public Meet4EatREST
         void                    performMailOperation( const QString& mailId, const QString& operation );
 
     signals:
+
+        /**
+         * @brief Emit the results of getCountMails.
+         *
+         * @param countTotal     Total count of mails
+         * @param countUnread    The count of unread mails
+         */
+        void                    onRESTMailCountMails( int countTotal, int countUnread );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTMailErrorCountMails( QString errorCode, QString reason );
 
         /**
          * @brief Emit the results of getCountUnreadMails.

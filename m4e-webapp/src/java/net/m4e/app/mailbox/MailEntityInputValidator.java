@@ -60,6 +60,9 @@ public class MailEntityInputValidator {
             throw new Exception("Failed to send mail, recipient does not exist.");
         }
 
+        // set the recipient name
+        mail.setReceiverName(recipient.getName());
+
         if (!Strings.checkMinMaxLength(mail.getSubject(), USER_INPUT_MIN_LEN_SUBJECT, USER_INPUT_MAX_LEN_SUBJECT)) {
             throw new Exception("Mail subject must be at least " + USER_INPUT_MIN_LEN_SUBJECT + " characters long and have maximal " + USER_INPUT_MAX_LEN_SUBJECT + " characters.");
         }

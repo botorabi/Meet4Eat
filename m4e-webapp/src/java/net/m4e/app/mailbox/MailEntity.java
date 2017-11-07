@@ -51,9 +51,19 @@ public class MailEntity implements Serializable {
     private Long senderId = 0L;
 
     /**
+     * Mail sender's user name
+     */
+    private String senderName = "";
+
+    /**
      * Mail receiver.
      */
     private Long receiverId = 0L;
+
+    /**
+     * Mail receiver's user name
+     */
+    private String receiverName = "";
 
     /**
      * Time stamp of sending mail (in milliseconds since epoch)
@@ -105,16 +115,34 @@ public class MailEntity implements Serializable {
     /**
      * Set the mail sender.
      * 
-     * @param senderId Mail Sender
+     * @param senderId Mail sender ID
      */
     public void setSenderId(Long senderId) {
         this.senderId = senderId;
     }
 
     /**
-     * Get the mail receiver.
+     * Get the mail sender name.
      * 
-     * @return Receiver
+     * @return Mail sender name
+     */
+    public String getSenderName() {
+        return senderName;
+    }
+
+    /**
+     * Set the mail sender name.
+     * 
+     * @param senderName Mail sender name
+     */
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+    /**
+     * Get the mail receiver ID.
+     * 
+     * @return Receiver ID
      */
     public Long getReceiverId() {
         return receiverId;
@@ -127,6 +155,24 @@ public class MailEntity implements Serializable {
      */
     public void setReceiverId(Long receiverId) {
         this.receiverId = receiverId;
+    }
+
+    /**
+     * Get the mail receiver name.
+     * 
+     * @return Receiver name
+     */
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    /**
+     * Set the mail receiver name.
+     * 
+     * @param receiverName The receiver name
+     */
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
     }
 
     /**

@@ -86,7 +86,33 @@ public class MailEntityFacadeREST extends net.m4e.common.AbstractFacade<MailEnti
     }
 
     /**
-     * Get the count of user's unread mails.
+     * Get the count of total and unread mails.
+     * 
+     * @param request    HTTP request
+     * @return           JSON response
+     */
+    @GET
+    @Path("count")
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
+    public String getCount(@Context HttpServletRequest request) {
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionuser == null) {
+            Log.error(TAG, "*** Internal error, cannot retrieve count of mails, no user in session found!");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count of mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
+        }
+
+        Mails mails = new Mails(entityManager);
+        long total  = mails.getCountTotalMails(sessionuser);
+        long unread = mails.getCountUnreadMails(sessionuser);
+        JsonObjectBuilder resp = Json.createObjectBuilder();
+        resp.add("totalMails", total);
+        resp.add("unreadMails", unread);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of mails was successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
+    }
+
+    /**
+     * Get the count of unread mails.
      * 
      * @param request    HTTP request
      * @return           JSON response
@@ -95,18 +121,18 @@ public class MailEntityFacadeREST extends net.m4e.common.AbstractFacade<MailEnti
     @Path("countUnread")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String getCountUread(@Context HttpServletRequest request) {
+    public String getCountUnread(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             Log.error(TAG, "*** Internal error, cannot retrieve count of unread mails, no user in session found!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count or unread mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count of unread mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
         Mails mails = new Mails(entityManager);
-        long cnt = mails.getCountUnreadMails(sessionuser);
+        long unread = mails.getCountUnreadMails(sessionuser);
         JsonObjectBuilder resp = Json.createObjectBuilder();
-        resp.add("unreadMails", cnt);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User mails were successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
+        resp.add("unreadMails", unread);
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of unread mails was successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
     }
 
     /**
@@ -141,6 +167,7 @@ public class MailEntityFacadeREST extends net.m4e.common.AbstractFacade<MailEnti
         //! NOTE we may implement a mechanism to limit the maximal count of user mails
 
         mail.setSenderId(sessionuser.getId());
+        mail.setSenderName(sessionuser.getName());
         Mails mails = new Mails(entityManager);
         try {
             mails.createMail(mail);

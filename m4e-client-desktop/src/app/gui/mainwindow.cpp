@@ -8,6 +8,7 @@
 
 #include "mainwindow.h"
 #include "mailboxwindow.h"
+#include "systemtray.h"
 #include <core/log.h>
 #include <settings/appsettings.h>
 #include <settings/dialogsettings.h>
@@ -62,6 +63,9 @@ MainWindow::MainWindow() :
     connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
     connect( _p_webApp, SIGNAL( onServerConnectionClosed() ), this, SLOT( onServerConnectionClosed() ) );
 
+    // create the try icon
+    _p_systemTray = new SystemTray( _p_webApp, this );
+
     // create the chat system
     _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
 
@@ -86,6 +90,15 @@ MainWindow::MainWindow() :
 MainWindow::~MainWindow()
 {
     delete _p_ui;
+}
+
+void MainWindow::terminate()
+{
+    // first exec the closeEvent handler
+    QCloseEvent event;
+    closeEvent( &event );
+
+    QApplication::quit();
 }
 
 void MainWindow::customEvent( QEvent* p_event )
@@ -182,11 +195,22 @@ void MainWindow::restoreWindowGeometry()
 
 void MainWindow::onBtnCloseClicked()
 {
-    // first exe the closeEvent handler
-    QCloseEvent event;
-    closeEvent( &event );
+    QString quitmsg = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_QUIT_MSG, "" );
+    if ( quitmsg.isEmpty() )
+    {
+        common::DialogMessage msg( this );
+        QString text = QApplication::translate( "MainWindow", "The application will be running in the background.\nQuit the application by using the system tray menu."
+                                                              "\n\nShould this message be displayed next time?" );
+        msg.setupUI( QApplication::translate( "MainWindow", "Quit Application" ),
+                     text,
+                     common::DialogMessage::BtnYes |  common::DialogMessage::BtnNo );
 
-    QApplication::quit();
+        if ( msg.exec() == common::DialogMessage::BtnNo )
+        {
+            settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_QUIT_MSG, "no" );
+        }
+    }
+    hide();
 }
 
 void MainWindow::mouseDoubleClickEvent( QMouseEvent* p_event )
@@ -409,6 +433,7 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
     }
 
     _initialSignIn = false;
+    _lastUnreadMails = 0;
 }
 
 void MainWindow::onUserSignedOff( bool success )
@@ -501,17 +526,19 @@ void MainWindow::onEventMessage( QString /*senderId*/, QString eventId, notify::
     //! TODO: on buzz message, bring the application window with an own dialog to front and play a notification sound!
 }
 
-void MainWindow::onResponseCountUnreadMails( bool success, int count )
+void MainWindow::onResponseCountUnreadMails( bool success, int coun )
 {
     if ( success )
     {
         QString btnstyle = MAIL_BTN_STYLE;
-        btnstyle.replace("@MAIL_BTN_ICON@", ( count > 0 ) ? MAIL_BTN_ICON_NEWMAILS : MAIL_BTN_ICON_NONEWMAILS );
+        btnstyle.replace("@MAIL_BTN_ICON@", ( coun > 0 ) ? MAIL_BTN_ICON_NEWMAILS : MAIL_BTN_ICON_NONEWMAILS );
         _p_ui->pushButtonUserMails->setStyleSheet( btnstyle );
-        if ( count > 0 )
+        if ( coun > _lastUnreadMails )
         {
-            log_debug << "user has unread mails: " << count << std::endl;
+            log_debug << "user has unread mails: " << coun << std::endl;
+            addLogText( QApplication::translate( "MainWindow", "New mails have arrived." ) );
         }
+        _lastUnreadMails = coun;
     }
 }
 
@@ -541,7 +568,7 @@ void MainWindow::clearWidgetClientArea()
 {
     QLayoutItem* p_item;
     QLayout* p_layout = _p_ui->widgetClientArea->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = _p_ui->widgetClientArea->layout()->takeAt( 0 ) ) ) )
+    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
     {
         p_item->widget()->deleteLater();
         delete p_item;
@@ -552,7 +579,7 @@ void MainWindow::clearWidgetMyEvents()
 {
     QLayoutItem* p_item;
     QLayout* p_layout = _p_ui->widgetEventItems->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = _p_ui->widgetEventItems->layout()->takeAt( 0 ) ) ) )
+    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
     {
         p_item->widget()->deleteLater();
         delete p_item;
