@@ -98,6 +98,10 @@ public class EventEntity implements Serializable, EntityWithPhoto {
      */
     private Long repeatDayTime = 0L;
 
+    /**
+     * Time for alarming before the event time was reached (in seconds)
+     */
+    private Long alarmTime = 0L;
 
     /**
      * Create an event entity.
@@ -269,6 +273,25 @@ public class EventEntity implements Serializable, EntityWithPhoto {
      */
     public void setRepeatDayTime(Long repeatDayTime) {
         this.repeatDayTime = repeatDayTime;
+    }
+
+    /**
+     * Get the alarm time. This is the time offset before the event takes place
+     * and can be used to remid users about an upcoming event.
+     * 
+     * @return Alarm time in seconds
+     */
+    public Long getAlarmTime() {
+        return alarmTime;
+    }
+
+    /**
+     * Set the alarm time.
+     * 
+     * @param alarmTime Alarm time in seconds
+     */
+    public void setAlarmTime(Long alarmTime) {
+        this.alarmTime = alarmTime;
     }
 
     /**

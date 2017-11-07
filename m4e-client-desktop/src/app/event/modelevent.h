@@ -75,7 +75,7 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
          *
          * @return Event start date
          */
-        QDateTime                           getStartDate() const { return _startDate; }
+        const QDateTime&                    getStartDate() const { return _startDate; }
 
         /**
          * @brief Set event's start date.
@@ -96,7 +96,7 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
          *
          * @return Repetetion's day time
          */
-        QTime                               getRepeatDayTime() const { return _repeatDayTime; }
+        const QTime&                        getRepeatDayTime() const { return _repeatDayTime; }
 
         /**
          * @brief Set repetetion's day time.
@@ -104,6 +104,20 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
          * @param repeatDayTime Repetetion's day time.
          */
         void                                setRepeatDayTime( const QTime& repeatDayTime ) { _repeatDayTime = repeatDayTime; }
+
+        /**
+         * @brief Get the alarm time, a time offset before the event takes place.
+         *
+         * @return Alarm time
+         */
+        const QDateTime&                    getAlarmTime() const { return _alarmTime; }
+
+        /**
+         * @brief Set the alarm time.
+         *
+         * @param alarmTime Alarm time
+         */
+        void                                setAlarmTime( const QDateTime& alarmTime ) { _alarmTime = alarmTime; }
 
         /**
          * @brief Repetetion's week days if this is a repeated event.
@@ -212,6 +226,7 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                _isPublic = false;
         QDateTime                           _startDate;
         QTime                               _repeatDayTime;
+        QDateTime                           _alarmTime;
         unsigned int                        _repeatWeekDays = 0;
         QList< ModelLocationPtr >           _locations;
         user::ModelUserInfoPtr              _owner;

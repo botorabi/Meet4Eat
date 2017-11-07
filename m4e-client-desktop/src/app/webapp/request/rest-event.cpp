@@ -50,6 +50,7 @@ void RESTEvent::createEvent( event::ModelEventPtr event )
     obj.insert( "public",         event->getIsPublic() );
     obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
     obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
+    obj.insert( "alarmTime",      event->getAlarmTime().toSecsSinceEpoch() );
     obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
     QJsonDocument json( obj );
 
@@ -73,6 +74,7 @@ void RESTEvent::updateEvent( event::ModelEventPtr event )
     obj.insert( "public",         event->getIsPublic() );
     obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
     obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
+    obj.insert( "alarmTime",      event->getAlarmTime().toSecsSinceEpoch() );
     obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
 
     // was the photo updated?

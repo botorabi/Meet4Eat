@@ -37,6 +37,7 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
     int        eventstart     = json.value( "eventStart" ).toInt( 0 );
     int        repweekdays    = json.value( "repeatWeekDays" ).toInt( 0 );
     int        repdaytime     = json.value( "repeatDayTime" ).toInt( 0 );
+    int        alarmtime      = json.value( "alarmTime" ).toInt( 0 );
     QJsonArray locations      = json.value( "locations" ).toArray();
     QJsonArray members        = json.value( "members" ).toArray();
     QString    ownerid        = json.value( "ownerId" ).toString( "" );
@@ -57,9 +58,16 @@ static event::ModelEventPtr createEvent( const QJsonObject& json )
     {
         QDateTime start;
         //! NOTE the eventStart is in seconds, not in milliseconds!
-        start.setTime_t( static_cast< uint >( eventstart ) );
+        start.setSecsSinceEpoch( static_cast< uint >( eventstart ) );
         ev->setStartDate( start );
     }
+    if ( alarmtime > 0 )
+    {
+        QDateTime alarm;
+        alarm.setSecsSinceEpoch( static_cast< uint >( alarmtime ) );
+        ev->setAlarmTime( alarm );
+    }
+
     uint hour = static_cast< uint >( repdaytime / ( 60 * 60 ) );
     uint min = static_cast< uint >( repdaytime / 60 ) - hour * 60;
     QTime reptime( hour, min, 0 );
