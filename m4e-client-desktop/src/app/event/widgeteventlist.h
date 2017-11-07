@@ -114,7 +114,7 @@ class WidgetEventList : public QListWidget
         void                        setupListView();
 
         /**
-         * @brief Add a new group to widget
+         * @brief Add a new event to widget
          *
          * @param event       Event model
          */

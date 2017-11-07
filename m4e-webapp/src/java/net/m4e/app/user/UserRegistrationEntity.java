@@ -158,6 +158,6 @@ public class UserRegistrationEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "user.UserRegistrationEntity[ id=" + id + " ]";
+        return "net.m4e.app.user.UserRegistrationEntity[ id=" + id + " ]";
     }
 }

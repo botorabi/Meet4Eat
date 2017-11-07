@@ -23,8 +23,8 @@ namespace event
 //! Event Box style
 static const QString boxStyle = \
      "#groupBoxMain { \
-        border-radius: 10px; \
-        border: 3px solid @BORDERCOLOR@; \
+        border-radius: 0px; \
+        border: 1px solid @BORDERCOLOR@; \
         background-color: rgb(80,112,125); \
       }";
 

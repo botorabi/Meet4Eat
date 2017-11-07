@@ -158,6 +158,6 @@ public class UserPasswordResetEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "user.UserPasswordResetEntity[ id=" + id + " ]";
+        return "net.m4e.app.user.UserPasswordResetEntity[ id=" + id + " ]";
     }
 }

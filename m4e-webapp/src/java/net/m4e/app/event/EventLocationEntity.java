@@ -146,6 +146,7 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
      * 
      * @return DocumentEntity containing the photo
      */
+    @Override
     public DocumentEntity getPhoto() {
         return photo;
     }
@@ -155,6 +156,7 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
      * 
      * @param photo DocumentEntity containing the photo
      */
+    @Override
     public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }

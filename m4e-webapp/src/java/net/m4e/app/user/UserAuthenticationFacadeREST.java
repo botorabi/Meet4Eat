@@ -70,7 +70,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<
         if (user != null) {
             UserEntity userentity = (UserEntity)user;
             json.add("auth", "yes")
-                .add("id", userentity.getId());
+                .add("id", userentity.getId().toString());
         }
         else {
             json.add("auth", "no")

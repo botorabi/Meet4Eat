@@ -89,6 +89,13 @@ class GuiUtils
          * @return          Return true if user is the owner, otherwise false.
          */
         static bool         userIsOwner( const QString& ownerId, webapp::WebApp* p_webApp );
+
+        /**
+         * @brief Bring the given widget to front on desktop.
+         *
+         * @param p_widget Widget to bring to front
+         */
+        static void         widgetToFront( QWidget* p_widget );
 };
 
 } // namespace common

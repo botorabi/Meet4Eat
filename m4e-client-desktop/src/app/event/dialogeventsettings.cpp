@@ -251,7 +251,7 @@ void DialogEventSettings::onResponseNewEvent( bool success, QString eventId )
 
         common::DialogMessage msg( this );
         msg.setupUI( QApplication::translate( "DialogEventSettings", "New Event" ),
-                     QApplication::translate( "DialogEventSettings", "New event was successfully created." ),
+                     QApplication::translate( "DialogEventSettings", "New event was successfully created.\nPlease don't forget to edit the event for adding your friends as event members." ),
                      common::DialogMessage::BtnOk );
         msg.exec();
         done( common::BaseDialog::Btn1 );
@@ -431,7 +431,7 @@ void DialogEventSettings::setupMembers( event::ModelEventPtr event )
     _p_ui->tableWidgetMembers->resizeColumnsToContents();
 }
 
-QWidget *DialogEventSettings::createRemoveMemberButton( const QString& memberId )
+QWidget* DialogEventSettings::createRemoveMemberButton( const QString& memberId )
 {
     QWidget* p_widget = new QWidget( this );
     p_widget->setStyleSheet( "background: transparent;" );

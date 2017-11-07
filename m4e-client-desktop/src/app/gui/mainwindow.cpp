@@ -7,6 +7,8 @@
  */
 
 #include "mainwindow.h"
+#include "mailboxwindow.h"
+#include "systemtray.h"
 #include <core/log.h>
 #include <settings/appsettings.h>
 #include <settings/dialogsettings.h>
@@ -15,6 +17,7 @@
 #include <notification/notifyevent.h>
 #include <common/basedialog.h>
 #include <common/dialogmessage.h>
+#include <common/guiutils.h>
 #include <event/dialogeventsettings.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
@@ -26,6 +29,20 @@ namespace m4e
 {
 namespace gui
 {
+
+const QString MAIL_BTN_STYLE = \
+"QPushButton {\
+ background-color: transparent;\
+ border-radius: 2px;\
+ border-image: url(@MAIL_BTN_ICON@);\
+}\
+QPushButton:hover {\
+ background-color: rgb(50,82,95);\
+ border-radius: 2px;\
+}";
+const QString MAIL_BTN_ICON_NONEWMAILS = ":/icon-mail.png";
+const QString MAIL_BTN_ICON_NEWMAILS   = ":/icon-mail-notify.png";
+
 
 MainWindow::MainWindow() :
  QMainWindow( nullptr ),
@@ -40,9 +57,14 @@ MainWindow::MainWindow() :
 
     // prepare the start of webapp, it connects the application to the webapp server
     _p_webApp = new webapp::WebApp( this );
+    connect( _p_webApp, SIGNAL( onAuthState( bool ) ), this, SLOT( onAuthState( bool ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
     connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
+    connect( _p_webApp, SIGNAL( onServerConnectionClosed() ), this, SLOT( onServerConnectionClosed() ) );
+
+    // create the try icon
+    _p_systemTray = new SystemTray( _p_webApp, this );
 
     // create the chat system
     _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
@@ -52,10 +74,17 @@ MainWindow::MainWindow() :
     connect( _p_initTimer, SIGNAL( timeout() ), this, SLOT( onTimerInit() ) );
     _p_initTimer->start( 1000 );
 
-    _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
+    int keepaliveperiod = M4E_PERIOD_SRV_UPDATE_STATUS * 1000 * 60;
+    _p_updateTimer = new QTimer();
+    _p_updateTimer->setSingleShot( false );
+    _p_updateTimer->setInterval( keepaliveperiod );
+    connect( _p_updateTimer, SIGNAL( timeout() ), this, SLOT( onTimerUpdate() ) );
+    _p_updateTimer->start( keepaliveperiod );
+
+    updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), false );
     _p_ui->pushButtonNotification->hide();
 
-    clearClientWidget();
+    clearWidgetClientArea();
 }
 
 MainWindow::~MainWindow()
@@ -63,10 +92,38 @@ MainWindow::~MainWindow()
     delete _p_ui;
 }
 
+void MainWindow::terminate()
+{
+    // first exec the closeEvent handler
+    QCloseEvent event;
+    closeEvent( &event );
+
+    QApplication::quit();
+}
+
+void MainWindow::customEvent( QEvent* p_event )
+{
+    // this event arrives when the user tries to start another application instance.
+    if ( p_event->type() == M4E_APP_INSTANCE_EVENT_TYPE )
+    {
+        // then bring the main window on top.
+        common::GuiUtils::widgetToFront( this );
+    }
+}
+
+void MainWindow::onMailWindowClosed()
+{
+    _p_mailWindow = nullptr;
+    _p_webApp->getMailBox()->requestCountUnreadMails();
+}
+
 void MainWindow::closeEvent( QCloseEvent* p_event )
 {
     // hide the window immediately, the dying gasp below takes a few seconds and we don't want a dangling window in that time
     hide();
+
+    if ( _p_mailWindow )
+        _p_mailWindow->hide();
 
     // store back the window gemo
     storeWindowGeometry();
@@ -89,6 +146,24 @@ void MainWindow::onTimerInit()
     QString remember = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
     if ( remember == "yes" )
     {
+        _p_webApp->establishConnection();
+    }
+}
+
+void MainWindow::onTimerUpdate()
+{
+    if ( _enableKeepAlive )
+    {
+        _p_webApp->requestAuthState();
+        _p_webApp->getMailBox()->requestCountUnreadMails();
+    }
+}
+
+void MainWindow::onBtnStatusClicked()
+{
+    if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
+    {
+        updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), true );
         _p_webApp->establishConnection();
     }
 }
@@ -120,11 +195,22 @@ void MainWindow::restoreWindowGeometry()
 
 void MainWindow::onBtnCloseClicked()
 {
-    // first exe the closeEvent handler
-    QCloseEvent event;
-    closeEvent( &event );
+    QString quitmsg = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_QUIT_MSG, "" );
+    if ( quitmsg.isEmpty() )
+    {
+        common::DialogMessage msg( this );
+        QString text = QApplication::translate( "MainWindow", "The application will be running in the background.\nQuit the application by using the system tray menu."
+                                                              "\n\nShould this message be displayed next time?" );
+        msg.setupUI( QApplication::translate( "MainWindow", "Quit Application" ),
+                     text,
+                     common::DialogMessage::BtnYes |  common::DialogMessage::BtnNo );
 
-    QApplication::quit();
+        if ( msg.exec() == common::DialogMessage::BtnNo )
+        {
+            settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_QUIT_MSG, "no" );
+        }
+    }
+    hide();
 }
 
 void MainWindow::mouseDoubleClickEvent( QMouseEvent* p_event )
@@ -180,6 +266,20 @@ void MainWindow::onBtnUserProfileClicked()
 {
     //! TODO
     log_verbose << TAG << "TODO user profile" << std::endl;
+}
+
+void MainWindow::onBtnMailsClicked()
+{
+    if ( _p_mailWindow )
+    {
+        common::GuiUtils::widgetToFront( _p_mailWindow );
+    }
+    else
+    {
+        _p_mailWindow = new MailboxWindow( _p_webApp, this );
+        connect( _p_mailWindow, SIGNAL( onMailWindowClosed() ), this, SLOT( onMailWindowClosed() ) );
+        _p_mailWindow->show();
+    }
 }
 
 void MainWindow::onBtnSettingsClicked()
@@ -238,11 +338,7 @@ void MainWindow::onBtnAddEvent()
     event->setStartDate( QDateTime::currentDateTime() );
 
     p_dlg->setupNewEventUI( event );
-
-    if ( p_dlg->exec() == event::DialogEventSettings::Btn1 )
-    {
-        //! TODO
-    }
+    p_dlg->exec();
     delete p_dlg;
 }
 
@@ -256,8 +352,17 @@ void MainWindow::onBtnNotificationClicked()
 
 void MainWindow::onEventSelection( QString id )
 {
-    clearClientWidget();
+    clearWidgetClientArea();
     createWidgetEvent( id );
+}
+
+void MainWindow::onAuthState( bool authenticated )
+{
+    if ( !authenticated )
+    {
+        log_debug << TAG << "attempt to connect the server..." << std::endl;
+        _p_webApp->establishConnection();
+    }
 }
 
 void MainWindow::onUserDataReady( user::ModelUserPtr user )
@@ -271,7 +376,8 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     {
         text = QApplication::translate( "MainWindow", "No Connection!" );
     }
-    _p_ui->labelStatus->setText( text );
+
+    updateStatus( text, false );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ), this,
                                             SLOT( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ) );
@@ -285,7 +391,11 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
                                      SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
 
+    connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountUnreadMails( bool, int ) ), this,
+                                      SLOT( onResponseCountUnreadMails( bool, int ) ) );
+
     _p_webApp->getEvents()->requestGetEvents();
+    _p_webApp->getMailBox()->requestCountUnreadMails();
 }
 
 void MainWindow::onUserSignedIn( bool success, QString userId )
@@ -295,45 +405,71 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
         log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
         // create the chat system
         _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
+        // start the keep alive updates
+        _enableKeepAlive = true;
         addLogText( "User has successfully signed in" );
     }
     else
     {
         log_verbose << TAG << "user could not sign in: " << userId << std::endl;
-        _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
-        addLogText( "User failed to signed in!" );
+        updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+        addLogText( "User failed to sign in!" );
 
-        common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "MainWindow", "Connection Problem" ),
-                     QApplication::translate( "MainWindow", "Could not connect the application server. Please check the settings." ),
-                     common::DialogMessage::BtnOk );
-        msg.exec();
+        // show the dialog only on initial sign in
+        if ( _initialSignIn )
+        {
+            common::DialogMessage msg( this );
+            msg.setupUI( QApplication::translate( "MainWindow", "Connection Problem" ),
+                         QApplication::translate( "MainWindow", "Could not connect the application server. Please check the settings." ),
+                         common::DialogMessage::BtnOk );
+            msg.exec();
 
-        settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );
-        dlg->exec();
-        delete dlg;
+            settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );
+            dlg->exec();
+            delete dlg;
+
+            _enableKeepAlive = true;
+        }
     }
+
+    _initialSignIn = false;
+    _lastUnreadMails = 0;
 }
 
 void MainWindow::onUserSignedOff( bool success )
 {
-    _p_ui->labelStatus->setText( QApplication::translate( "MainWindow", "Offline" ) );
+    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+
+    _enableKeepAlive = false;
 
     delete _p_chatSystem;
     _p_chatSystem = nullptr;
 
     if ( success )
     {
-        clearMyEventsWidget();
+        clearWidgetMyEvents();
         createWidgetMyEvents();
     }
 
     addLogText( "User has signed off" );
 }
 
+void MainWindow::onServerConnectionClosed()
+{
+    log_debug << TAG << "server connection was closed" << std::endl;
+
+    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+    delete _p_chatSystem;
+    _p_chatSystem = nullptr;
+    clearWidgetMyEvents();
+    createWidgetMyEvents();
+
+    addLogText( "Server connection was closed" );
+}
+
 void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEventPtr > /*events*/ )
 {
-    clearMyEventsWidget();
+    clearWidgetMyEvents();
     createWidgetMyEvents();
 }
 
@@ -390,9 +526,33 @@ void MainWindow::onEventMessage( QString /*senderId*/, QString eventId, notify::
     //! TODO: on buzz message, bring the application window with an own dialog to front and play a notification sound!
 }
 
+void MainWindow::onResponseCountUnreadMails( bool success, int coun )
+{
+    if ( success )
+    {
+        QString btnstyle = MAIL_BTN_STYLE;
+        btnstyle.replace("@MAIL_BTN_ICON@", ( coun > 0 ) ? MAIL_BTN_ICON_NEWMAILS : MAIL_BTN_ICON_NONEWMAILS );
+        _p_ui->pushButtonUserMails->setStyleSheet( btnstyle );
+        if ( coun > _lastUnreadMails )
+        {
+            log_debug << "user has unread mails: " << coun << std::endl;
+            addLogText( QApplication::translate( "MainWindow", "New mails have arrived." ) );
+        }
+        _lastUnreadMails = coun;
+    }
+}
+
+void MainWindow::updateStatus( const QString& text, bool offline )
+{
+    _p_ui->pushButtonStatus->setText( text );
+    _p_ui->pushButtonStatus->setEnabled( offline );
+    QString tooltip = offline ? QApplication::translate( "MainWindow", "Click to connect the server" ) : "";
+    _p_ui->pushButtonStatus->setToolTip( tooltip );
+}
+
 void MainWindow::addLogText( const QString& text )
 {
-    //! TODO we need a more confortable logs widget, it should support a max length of lines
+    //! NOTE we need a more confortable logs widget, it should support a max length of lines
     //       but for now, the simple output is just ok.
 
     QDateTime timestamp = QDateTime::currentDateTime();
@@ -404,22 +564,22 @@ void MainWindow::addLogText( const QString& text )
     _p_ui->textLogs->appendHtml( logmsg );
 }
 
-void MainWindow::clearClientWidget()
+void MainWindow::clearWidgetClientArea()
 {
     QLayoutItem* p_item;
     QLayout* p_layout = _p_ui->widgetClientArea->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = _p_ui->widgetClientArea->layout()->takeAt( 0 ) ) ) )
+    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
     {
         p_item->widget()->deleteLater();
         delete p_item;
     }
 }
 
-void MainWindow::clearMyEventsWidget()
+void MainWindow::clearWidgetMyEvents()
 {
     QLayoutItem* p_item;
     QLayout* p_layout = _p_ui->widgetEventItems->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = _p_ui->widgetEventItems->layout()->takeAt( 0 ) ) ) )
+    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
     {
         p_item->widget()->deleteLater();
         delete p_item;
@@ -428,7 +588,7 @@ void MainWindow::clearMyEventsWidget()
 
 void MainWindow::createWidgetMyEvents()
 {
-    clearClientWidget();
+    clearWidgetClientArea();
 
     event::WidgetEventList* p_widget = new event::WidgetEventList( _p_webApp, this );
     _p_ui->widgetEventItems->layout()->addWidget( p_widget );

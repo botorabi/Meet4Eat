@@ -63,7 +63,7 @@ class WidgetEventItem : public QWidget
         void                        updateEvent( event::ModelEventPtr event );
 
         /**
-         * @brief Get the ID which was defined on setup.
+         * @brief Get the event ID.
          *
          * @return ID
          */

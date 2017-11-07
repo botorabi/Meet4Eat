@@ -85,7 +85,7 @@ public class NotifyUsersListener {
     }
 
     /**
-     * Event observer for sending a notification from a user all its related users.
+     * Event observer for sending a notification from a user to all its related users.
      * 
      * @param event NotifyUser event, for this event 'recipient IDs' are not used.
      */

@@ -19,7 +19,7 @@
 /* App name and version */
 #define M4E_APP_NAME            "Meet4Eat"
 #define M4E_ORGANIZATION_NAME   "vr-fun"
-#define M4E_APP_VERSION         "0.8.0"
+#define M4E_APP_VERSION         "0.8.1"
 #define M4E_APP_COPYRIGHT       "(c) 2017"
 #define M4E_APP_URL             "http://m4e.org"
 
@@ -42,7 +42,8 @@
 #define M4E_DISALLOW_INSECURE_CONNECTION    0
 
 /* App settings tokens */
-#define M4E_SETTINGS_KEY_WIN_GEOM    "WindowsGeom"
+#define M4E_SETTINGS_KEY_WIN_GEOM     "WindowsGeom"
+#define M4E_SETTINGS_KEY_MAILBOX_GEOM "MailBoxGeom2"
 
 /* App settings category for user */
 #define M4E_SETTINGS_CAT_USER        "User"
@@ -54,6 +55,9 @@
 #define M4E_SETTINGS_CAT_SRV         "Server"
 #define M4E_SETTINGS_KEY_SRV_URL     "address"
 
+/* App settings category for server */
+#define M4E_SETTINGS_CAT_APP          "App"
+#define M4E_SETTINGS_KEY_APP_QUIT_MSG "quitmsg"
 
 /* Resource path to base REST services on the web application server */
 #define M4E_REST_SRV_RESOURCE_PATH   "/m4e/webresources"
@@ -69,5 +73,21 @@
 
 /* Default user icon shown if no one is available */
 #define M4E_DEFAULT_USER_ICON        ":/icon-user.png"
+
+/* Some mails come from system, define the sender name for those mails */
+#define M4E_MAIL_SENDER_SYSTEM_NAME "[Meet4Eat Team]"
+
+/* The period (in minutes) for updating the server status.
+ * The periodic server status update is used to avoid a server session
+ * expiration, so it must be less than the defined session expiration
+ * period on app server.
+ */
+#define M4E_PERIOD_SRV_UPDATE_STATUS 15
+
+/* Used for assuring one running instance of the application per user */
+#define  M4E_APP_INSTANCE_KEY        M4E_APP_NAME
+
+/* Qt custom event type for notifying about new application instances */
+#define  M4E_APP_INSTANCE_EVENT_TYPE 2103
 
 #endif // CONFIGURATION_H

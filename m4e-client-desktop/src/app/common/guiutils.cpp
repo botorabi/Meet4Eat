@@ -117,5 +117,21 @@ bool GuiUtils::userIsOwner( const QString& ownerId, webapp::WebApp* p_webApp )
     return user.valid() &&  ( user->getId() == ownerId );
 }
 
+void GuiUtils::widgetToFront( QWidget* p_widget )
+{
+    if ( p_widget->windowState() & Qt::WindowMinimized )
+        p_widget->setWindowState( ( p_widget->windowState() & ~Qt::WindowMinimized ) | Qt::WindowActive );
+
+    Qt::WindowFlags flags = p_widget->windowFlags();
+    flags |= Qt::WindowStaysOnTopHint;
+    p_widget->setWindowFlags( flags );
+    p_widget->show();
+    flags &= ~Qt::WindowStaysOnTopHint;
+    p_widget->setWindowFlags( flags );
+    p_widget->raise();
+    p_widget->show();
+    p_widget->activateWindow();
+}
+
 } // namespace common
 } // namespace m4e

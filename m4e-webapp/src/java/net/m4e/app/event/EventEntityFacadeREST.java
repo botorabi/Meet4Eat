@@ -10,6 +10,7 @@ package net.m4e.app.event;
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.Objects;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
@@ -390,6 +391,8 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
         notifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Add, AuthorityConfig.getInstance().getSessionUser(request), event, memberId);
 
+        getEvents().createEventJoiningMail(event, user2add);
+
         jsonresponse.add("memberName", user2add.getName());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Member was added to event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
@@ -432,8 +435,8 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
-        // check if the event owner or a user with higher privilege is trying to modify the event
-        if (!getUsers().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        // check if the member himself, event owner, or a user with higher privilege is trying to modify the event
+        if ((!Objects.equals(memberId, sessionuser.getId())) && !getUsers().userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
             Log.warning(TAG, "*** User was attempting to modify (remove member) an event without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -450,6 +453,8 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         // notify all event members about removing a member
         EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
         notifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event, memberId);
+
+        getEvents().createEventLeavingMail(event, user2remove);
 
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Member was removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }

@@ -187,6 +187,16 @@ void Events::onRESTEventErrorGetEvent( QString errorCode, QString reason )
 void Events::onRESTEventDeleteEvent( QString eventId )
 {
     log_verbose << TAG << "event was deleted: " << eventId << std::endl;
+    // remove the event from internal event container
+    for ( int i = 0; i < _events.size(); i++ )
+    {
+        ModelEventPtr ev = _events[ i ];
+        if ( ev->getId() == eventId )
+        {
+            _events.removeAt( i );
+            break;
+        }
+    }
     emit onResponseDeleteEvent( true, eventId );
 }
 
