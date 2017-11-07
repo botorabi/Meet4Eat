@@ -25,7 +25,7 @@ function Meet4EatUI() {
 	var self = this;
 
 	/* UI version */
-	self._version              = "0.7.1";
+	self._version              = "0.8.3";
 
 	self._m4eAppInfo           = {'clientVersion' : '0.0.0', 'serverVersion' : '0.0.0', 'viewVersion' : '0'};
 	self._m4eAuthUser          = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
