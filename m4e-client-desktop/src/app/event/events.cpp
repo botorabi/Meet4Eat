@@ -8,6 +8,7 @@
 
 #include "events.h"
 #include <core/log.h>
+#include <assert.h>
 
 
 namespace m4e
@@ -146,6 +147,7 @@ void Events::onRESTEventGetEvents( QList< event::ModelEventPtr > events )
 {
     log_verbose << TAG << "got events: " << QString::number( events.size() ) << std::endl;
     _events = events;
+    updateAlarms();
     emit onResponseGetEvents( true, events );
 }
 
@@ -174,6 +176,7 @@ void Events::onRESTEventGetEvent( ModelEventPtr event )
     }
     log_verbose << TAG << "  add new event to local copy of events" << std::endl;
     _events.append( event );
+    updateAlarms();
     emit onResponseGetEvent( true, event );
 }
 
@@ -194,6 +197,7 @@ void Events::onRESTEventDeleteEvent( QString eventId )
         if ( ev->getId() == eventId )
         {
             _events.removeAt( i );
+            updateAlarms();
             break;
         }
     }
@@ -315,6 +319,107 @@ void Events::setLastError( const QString& error, const QString& errorCode )
 {
     _lastError = error;
     _lastErrorCode = errorCode;
+}
+
+void Events::onAlarm()
+{
+    QTimer* p_timer = dynamic_cast< QTimer* >( sender() );
+    assert( p_timer && "invalid event sender type!" );
+
+    QString eventid = p_timer->property( "id" ).toString();
+    ModelEventPtr event = getUserEvent( eventid );
+    if ( !event.valid() )
+        return;
+
+    log_verbose << "handling alarm for event: " << event->getName() << std::endl;
+
+    // if the timer needs no re-scheduling then destroy it
+    if ( !scheduleAlarmTimer( event, p_timer ) )
+    {
+        log_verbose << "  removing alarm for event: " << event->getName() << std::endl;
+        _alarms.remove( eventid );
+        p_timer->deleteLater();
+    }
+
+    // for repeated events checke the day in addition to day time
+    if ( event->isRepeated() )
+    {
+        if ( !event->checkIsRepeatedDay( QDate::currentDate().dayOfWeek() - 1 ) )
+            return;
+    }
+
+    emit onEventAlarm( event );
+}
+
+void Events::destroyAlarms()
+{
+    QMap< QString/*id*/, QTimer* >::iterator iter = _alarms.begin(), iterend = _alarms.end();
+    for ( ; iter != iterend; ++iter )
+    {
+        iter.value()->stop();
+        delete iter.value();
+    }
+    _alarms.clear();
+}
+
+void Events::updateAlarms()
+{
+    log_verbose << TAG << "updating event alarms" << std::endl;
+
+    destroyAlarms();
+
+    for ( ModelEventPtr event: _events )
+    {
+        if ( event->getAlarmOffset() == 0 )
+            continue;
+
+        QTimer* p_timer = new QTimer();
+        // check if the timer needed a schedule at all
+        if ( !scheduleAlarmTimer( event, p_timer ) )
+        {
+            delete p_timer;
+            continue;
+        }
+
+        connect( p_timer, SIGNAL( timeout() ), this, SLOT( onAlarm() ) );
+        _alarms.insert( event->getId(), p_timer );
+    }
+}
+
+bool Events::scheduleAlarmTimer( ModelEventPtr event, QTimer* p_timer )
+{
+    qint64 alarmoffset = event->getAlarmOffset() * 1000;
+    // check if an alarm is enabled at all
+    if ( alarmoffset == 0 )
+        return false;
+
+    // there is a difference between repeated events and one-shot events
+    qint64 msec2alarm;
+    if ( event->isRepeated() )
+    {
+        qint64 currtime  = QTime::currentTime().msecsSinceStartOfDay();
+        qint64 alarmtime = event->getRepeatDayTime().msecsSinceStartOfDay() - alarmoffset;
+        msec2alarm = alarmtime - currtime;
+        // missed the time for today? do we have to schedule for next day?
+        if ( msec2alarm < 0 )
+            msec2alarm += ( 24 * 60 * 60 * 1000 );
+    }
+    else
+    {
+        qint64 currtime  = QDateTime::currentMSecsSinceEpoch();
+        qint64 alarmtime = event->getStartDate().toMSecsSinceEpoch() - alarmoffset;
+        msec2alarm = alarmtime - currtime;
+        // the event date&time is in the past, no need for alarm anymore
+        if ( msec2alarm < 0 )
+            return false;
+    }
+
+    p_timer->stop();
+    p_timer->setSingleShot( true );
+    p_timer->setInterval( msec2alarm );
+    p_timer->setProperty( "id", QVariant( event->getId() ) );
+    p_timer->start();
+    return true;
 }
 
 } // namespace event

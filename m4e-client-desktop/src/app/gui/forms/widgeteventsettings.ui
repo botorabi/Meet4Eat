@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>765</width>
-    <height>700</height>
+    <height>817</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
 }
 QGroupBox {
   border-radius: 0px;
-  border: 3px solid rgb(131, 147, 167);
+  border: 0px solid rgb(131, 147, 167);
   background-color: transparent; /*rgb(80,112,125);*/
 }
 QLineEdit {
@@ -82,7 +82,7 @@ QPushButton::checked {
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1,0,0,0,0,0,0">
+           <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1,0,0,0,0,0,0,0,0,0">
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <property name="bottomMargin">
@@ -294,16 +294,11 @@ QPushButton::checked {
                  <enum>Qt::NoFocus</enum>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">#pushButtonPhoto {
-  background-color: transparent;
+                 <string notr="true">QPushButton {
+  background: transparent;
+  border: 0;
 }
-#pushButtonPhoto:hover {
-  background-color: transparent;
-}</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../resources/application.qrc">
-                  <normaloff>:/logo.png</normaloff>:/logo.png</iconset>
+</string>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -330,154 +325,324 @@ QPushButton::checked {
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="labelStart">
+             <widget class="QLabel" name="labelRepeat_2">
               <property name="text">
-               <string>Event Start</string>
+               <string>Date &amp; Time</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QDateTimeEdit" name="dateTimeEditStart">
-              <property name="displayFormat">
-               <string>dd.MM.yyyy - HH:mm</string>
+             <widget class="QLabel" name="labelLine">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>1</height>
+               </size>
               </property>
-              <property name="calendarPopup">
-               <bool>true</bool>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>1</height>
+               </size>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="labelRepeat">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+  background-color: rgb(131,147, 167);
+}</string>
+              </property>
               <property name="text">
-               <string>Repeated Event</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGroupBox" name="groupBox">
-              <property name="title">
                <string/>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_8">
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="horizontalGroupBox">
+              <layout class="QVBoxLayout" name="verticalLayout_13">
                <item>
-                <layout class="QVBoxLayout" name="verticalLayout_7">
+                <layout class="QHBoxLayout" name="horizontalLayout_6">
                  <item>
-                  <widget class="QLabel" name="label_6">
-                   <property name="text">
-                    <string>Week Days</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <layout class="QVBoxLayout" name="verticalLayout_12">
                    <item>
-                    <widget class="QPushButton" name="pushButtonWDMon">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
+                    <widget class="QLabel" name="labelStart">
                      <property name="text">
-                      <string>Mon</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
+                      <string>Event Start</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="pushButtonWDTue">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                     <property name="text">
-                      <string>Tue</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButtonWDWed">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                     <property name="text">
-                      <string>Wed</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButtonWDThu">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                     <property name="text">
-                      <string>Thu</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButtonWDFri">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                     <property name="text">
-                      <string>Fri</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButtonWDSat">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                     <property name="text">
-                      <string>Sat</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButtonWDSun">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                     <property name="text">
-                      <string>Sun</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
+                    <layout class="QHBoxLayout" name="horizontalLayout_5">
+                     <item>
+                      <widget class="QDateTimeEdit" name="dateTimeEditStart">
+                       <property name="maximumSize">
+                        <size>
+                         <width>180</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="displayFormat">
+                        <string>dd.MM.yyyy - HH:mm</string>
+                       </property>
+                       <property name="calendarPopup">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labelStart_5">
+                       <property name="text">
+                        <string>Don't need if the event should be repeated!</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
                    </item>
                   </layout>
                  </item>
                 </layout>
                </item>
                <item>
-                <widget class="QLabel" name="label_8">
+                <widget class="QLabel" name="labelRepeat">
                  <property name="text">
-                  <string>Day Time</string>
+                  <string>Repeated Event</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QTimeEdit" name="timeEditDayTime">
-                 <property name="calendarPopup">
-                  <bool>true</bool>
+                <widget class="QLabel" name="labelLine_2">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>1</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>1</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">QLabel {
+  background-color: rgb(131,147, 167);
+}</string>
+                 </property>
+                 <property name="text">
+                  <string/>
                  </property>
                 </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox">
+                 <property name="title">
+                  <string/>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_8">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_7">
+                    <item>
+                     <widget class="QLabel" name="label_6">
+                      <property name="text">
+                       <string>Week Days</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="horizontalLayout_2">
+                      <item>
+                       <widget class="QPushButton" name="pushButtonWDMon">
+                        <property name="focusPolicy">
+                         <enum>Qt::NoFocus</enum>
+                        </property>
+                        <property name="text">
+                         <string>Mon</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="pushButtonWDTue">
+                        <property name="focusPolicy">
+                         <enum>Qt::NoFocus</enum>
+                        </property>
+                        <property name="text">
+                         <string>Tue</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="pushButtonWDWed">
+                        <property name="focusPolicy">
+                         <enum>Qt::NoFocus</enum>
+                        </property>
+                        <property name="text">
+                         <string>Wed</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="pushButtonWDThu">
+                        <property name="focusPolicy">
+                         <enum>Qt::NoFocus</enum>
+                        </property>
+                        <property name="text">
+                         <string>Thu</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="pushButtonWDFri">
+                        <property name="focusPolicy">
+                         <enum>Qt::NoFocus</enum>
+                        </property>
+                        <property name="text">
+                         <string>Fri</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="pushButtonWDSat">
+                        <property name="focusPolicy">
+                         <enum>Qt::NoFocus</enum>
+                        </property>
+                        <property name="text">
+                         <string>Sat</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="pushButtonWDSun">
+                        <property name="focusPolicy">
+                         <enum>Qt::NoFocus</enum>
+                        </property>
+                        <property name="text">
+                         <string>Sun</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_8">
+                    <property name="text">
+                     <string>Day Time</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QTimeEdit" name="timeEditDayTime">
+                    <property name="maximumSize">
+                     <size>
+                      <width>170</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="calendarPopup">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelRepeat_3">
+              <property name="text">
+               <string>Alarm</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelLine_3">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>1</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>1</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+  background-color: rgb(131,147, 167);
+}</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="horizontalGroupBox_2">
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_15">
+                 <item>
+                  <widget class="QCheckBox" name="checkBoxEnableAlarm">
+                   <property name="toolTip">
+                    <string>Enable event alarm</string>
+                   </property>
+                   <property name="text">
+                    <string>Enable Alarm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_8">
+                   <item>
+                    <widget class="QTimeEdit" name="timeEditAlarmOffset">
+                     <property name="maximumSize">
+                      <size>
+                       <width>170</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
+                     </property>
+                     <property name="calendarPopup">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="labelStart_4">
+                     <property name="text">
+                      <string>Time in hours/minutes before the event</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -486,6 +651,30 @@ QPushButton::checked {
              <widget class="QLabel" name="labelMembers">
               <property name="text">
                <string>Members</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelLine_4">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>1</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>1</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+  background-color: rgb(131,147, 167);
+}</string>
+              </property>
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -631,12 +820,6 @@ QPushButton::checked {
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../resources/application.qrc"/>
- </resources>
+ <resources/>
  <connections/>
- <slots>
-  <slot>onBtnAddMemberClicked()</slot>
-  <slot>onLineEditSeachtReturnPressed()</slot>
- </slots>
 </ui>

@@ -46,7 +46,16 @@ WidgetEventList::WidgetEventList( webapp::WebApp* p_webApp, QWidget* p_parent ) 
 
 void WidgetEventList::selectEvent( const QString& eventId )
 {
-    onClicked( eventId );
+    // check if the event exists at all
+    for ( WidgetEventItem* p_item: _widgets )
+    {
+        if ( p_item->getId() == eventId )
+        {
+            onClicked( eventId );
+            return;
+        }
+    }
+    selectFirstEvent();
 }
 
 void WidgetEventList::selectFirstEvent()

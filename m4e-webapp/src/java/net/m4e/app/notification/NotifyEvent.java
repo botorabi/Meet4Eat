@@ -76,7 +76,8 @@ public abstract class NotifyEvent {
 
     /**
      * Set the notification type
-     * @param type 
+     * 
+     * @param type Notification type
      */
     public void setType(String type) {
         this.type = type;

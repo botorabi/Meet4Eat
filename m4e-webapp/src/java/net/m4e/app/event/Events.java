@@ -77,7 +77,7 @@ public class Events {
         newevent.setEventStart(inputEntity.getEventStart());
         newevent.setRepeatWeekDays(inputEntity.getRepeatWeekDays());
         newevent.setRepeatDayTime(inputEntity.getRepeatDayTime());
-        newevent.setAlarmTime(inputEntity.getAlarmTime());
+        newevent.setAlarmOffset(inputEntity.getAlarmOffset());
 
         // setup the status
         StatusEntity status = new StatusEntity();
@@ -397,7 +397,7 @@ public class Events {
             .add("eventStart", (entity.getEventStart() != null) ? entity.getEventStart(): 0)
             .add("repeatWeekDays", (entity.getRepeatWeekDays() != null) ? entity.getRepeatWeekDays(): 0)
             .add("repeatDayTime", (entity.getRepeatDayTime() != null) ? entity.getRepeatDayTime(): 0)
-            .add("alarmTime", (entity.getAlarmTime() != null) ? entity.getAlarmTime(): 0);
+            .add("alarmOffset", (entity.getAlarmOffset() != null) ? entity.getAlarmOffset(): 0);
 
         JsonArrayBuilder members = Json.createArrayBuilder();
         if (entity.getMembers() != null) {
@@ -482,7 +482,7 @@ public class Events {
         }
 
         String name, description, photo;
-        Long eventstart, repeatweekdays, repeatdaytime, alarmtime;
+        Long eventstart, repeatweekdays, repeatdaytime, alarmoffset;
         boolean ispublic;
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
@@ -495,7 +495,7 @@ public class Events {
             eventstart     = new Long(jobject.getInt("eventStart", 0));
             repeatweekdays = new Long(jobject.getInt("repeatWeekDays", 0));
             repeatdaytime  = new Long(jobject.getInt("repeatDayTime", 0));
-            alarmtime      = new Long(jobject.getInt("alarmTime", 0));
+            alarmoffset    = new Long(jobject.getInt("alarmOffset", 0));
         }
         catch(Exception ex) {
             Log.warning(TAG, "Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
@@ -515,7 +515,7 @@ public class Events {
         entity.setIsPublic(ispublic);
         entity.setRepeatWeekDays(repeatweekdays);
         entity.setRepeatDayTime(repeatdaytime);
-        entity.setAlarmTime(alarmtime);
+        entity.setAlarmOffset(alarmoffset);
 
         if (photo != null) {
             DocumentEntity image = new DocumentEntity();

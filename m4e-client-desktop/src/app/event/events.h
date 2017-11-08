@@ -176,6 +176,13 @@ class Events : public QObject
     signals:
 
         /**
+         * @brief An event alarm was triggered.
+         *
+         * @param event     The event which triggered its alarm
+         */
+        void                                onEventAlarm( m4e::event::ModelEventPtr event );
+
+        /**
          * @brief Results of user events request.
          *
          * @param success  true if user events could successfully be retrieved, otherwise false
@@ -440,9 +447,27 @@ class Events : public QObject
          */
         void                                onRESTEventErrorUpdateLocation( QString errorCode, QString reason );
 
+        /**
+         * @brief Called when an event alarm was reached.
+         */
+        void                                onAlarm();
+
     protected:
 
         void                                setLastError( const QString& error ="", const QString& errorCode ="" );
+
+        void                                destroyAlarms();
+
+        void                                updateAlarms();
+
+        /**
+         * @brief Schedule the alarm timer. Return false if no need for alarm anymore (e.g. because the alarm time lies in the past).
+         *
+         * @param event     The event
+         * @param p_timer   The timer to schedule
+         * @return          Return true if the timer was scheduled
+         */
+        bool                                scheduleAlarmTimer( event::ModelEventPtr event, QTimer* p_timer );
 
         webapp::RESTEvent*                  _p_restEvent = nullptr;
 
@@ -451,6 +476,8 @@ class Events : public QObject
         QString                             _lastError;
 
         QString                             _lastErrorCode;
+
+        QMap< QString/*id*/, QTimer* >      _alarms;
 };
 
 } // namespace event

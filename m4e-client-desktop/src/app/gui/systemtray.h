@@ -49,7 +49,6 @@ class SystemTray : QObject
          */
         virtual                     ~SystemTray();
 
-
     protected slots:
 
         /**
@@ -73,7 +72,7 @@ class SystemTray : QObject
 
         /**
          * @brief This signal is emitted to notify about user authentication results.
-         *QSystemTrayIcon
+         *
          * @param success  true if the user was successfully authenticated, otherwise false
          * @param userId   User ID, valid if success is true
          */

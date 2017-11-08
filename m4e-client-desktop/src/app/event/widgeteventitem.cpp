@@ -117,6 +117,10 @@ void WidgetEventItem::onBtnEditClicked()
     p_dlg->setupUI( _event );
     p_dlg->exec();
     delete p_dlg;
+
+    // update event data
+    onBtnNotificationClicked();
+    emit onClicked( _event->getId() );
 }
 
 void WidgetEventItem::onBtnDeleteClicked()

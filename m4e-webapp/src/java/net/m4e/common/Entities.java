@@ -44,7 +44,7 @@ public class Entities {
     /**
      * Create the entity in persistence layer.
      * 
-     * @param <T>
+     * @param <T>           Entity class type
      * @param entity        Entity instance which is created in database
      */
     public <T> void createEntity(T entity) {
@@ -54,7 +54,7 @@ public class Entities {
     /**
      * Delete the entity from persistence layer.
      * 
-     * @param <T>
+     * @param <T>           Entity class type
      * @param entity        Entity instance which is deleted in database
      */
     public <T> void deleteEntity(T entity) {
@@ -64,7 +64,7 @@ public class Entities {
     /**
      * Update the entity in persistence layer.
      * 
-     * @param <T>
+     * @param <T>           Entity class type
      * @param entity        Entity instance which is updated in database
      */
     public <T> void updateEntity(T entity)  {

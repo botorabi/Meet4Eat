@@ -35,6 +35,11 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
 {
     SMARTPTR_DEFAULTS( ModelEvent )
 
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(ModelEvent) ";
+
     public:
 
         /**
@@ -92,6 +97,15 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                isRepeated() const { return _repeatWeekDays != 0; }
 
         /**
+         * @brief Given the current day in range 0..6 (Monday..Sunday) return true if it maches to one of
+         * event's repeated days.
+         *
+         * @param currentDay    The current day in range 0..6
+         * @return              Return true if it mached one of event's repeated days
+         */
+        bool                                checkIsRepeatedDay( unsigned int currentDay ) const;
+
+        /**
          * @brief Get repetetion's day time, only valid for repeated events.
          *
          * @return Repetetion's day time
@@ -106,18 +120,34 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         void                                setRepeatDayTime( const QTime& repeatDayTime ) { _repeatDayTime = repeatDayTime; }
 
         /**
-         * @brief Get the alarm time, a time offset before the event takes place.
+         * @brief Get the alarm offset in seconds before the event takes place.
          *
-         * @return Alarm time
+         * @return Alarm time offset in seconds
          */
-        const QDateTime&                    getAlarmTime() const { return _alarmTime; }
+        qint64                              getAlarmOffset() const { return _alarmOffset; }
 
         /**
-         * @brief Set the alarm time.
+         * @brief Set the alarm offset.
          *
-         * @param alarmTime Alarm time
+         * @param alarmTime Alarm time offset in seconds
          */
-        void                                setAlarmTime( const QDateTime& alarmTime ) { _alarmTime = alarmTime; }
+        void                                setAlarmOffset( qint64 alarmOffset ) { _alarmOffset = alarmOffset; }
+
+        /**
+         * @brief Calculate the alarm time for event start.
+         * If no alarm offset is set then an invalid QDateTime object will be returned.
+         *
+         * @return Event start alarm time
+         */
+        QDateTime                           getStartDateAlarm() const;
+
+        /**
+         * @brief Calculate the alarm time for repeated events.
+         * If no alarm offset is set then an invalid QDateTime object will be returned.
+         *
+         * @return  Alarm time for repeated event
+         */
+        QTime                               getRepeatDayTimeAlarm() const;
 
         /**
          * @brief Repetetion's week days if this is a repeated event.
@@ -206,6 +236,29 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         void                                setMembers( const QList< user::ModelUserInfoPtr >& members ) { _members = members; }
 
         /**
+         * @brief Create a JSON string out of the event model. Note that this method exports only the event data without owner, locations, and members.
+         *
+         * @return JSON document representing the event
+         */
+        QJsonDocument                       toJSON();
+
+        /**
+         * @brief Setup the event given a JSON formatted string. This method imports event data and its owner, locations, and members.
+         *
+         * @param input Input string in JSON format
+         * @return Return false if the input was not in proper format.
+         */
+        bool                                fromJSON( const QString& input );
+
+        /**
+         * @brief Setup the event given a JSON document.
+         *
+         * @param input Input in JSON document
+         * @return Return false if the input was not in proper format.
+         */
+        bool                                fromJSON( const QJsonDocument& input );
+
+        /**
          * @brief Comparison operator which considers the event ID.
          *
          * @param right     Right hand of operation.
@@ -226,7 +279,7 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                _isPublic = false;
         QDateTime                           _startDate;
         QTime                               _repeatDayTime;
-        QDateTime                           _alarmTime;
+        qint64                              _alarmOffset;
         unsigned int                        _repeatWeekDays = 0;
         QList< ModelLocationPtr >           _locations;
         user::ModelUserInfoPtr              _owner;

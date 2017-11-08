@@ -50,7 +50,7 @@ class WidgetEventList : public QListWidget
                                     WidgetEventList( webapp::WebApp* p_webApp, QWidget* p_parent = nullptr );
 
         /**
-         * @brief Visually select the event widget with given event ID.
+         * @brief Visually select the event widget with given event ID. If the ID was not found then try to select the first event.
          *
          * @param eventId  Event ID
          */

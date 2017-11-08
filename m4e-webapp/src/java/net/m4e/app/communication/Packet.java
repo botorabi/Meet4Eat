@@ -153,7 +153,7 @@ public class Packet {
     /**
      * Set packet's source
      *
-     * @param source
+     * @param source Packet source
      */
     public void setSource(String source) {
         this.source = source;

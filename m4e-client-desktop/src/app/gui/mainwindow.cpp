@@ -82,7 +82,7 @@ MainWindow::MainWindow() :
     _p_updateTimer->start( keepaliveperiod );
 
     updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), false );
-    _p_ui->pushButtonNotification->hide();
+    _p_ui->pushButtonRefreshEvents->hide();
 
     clearWidgetClientArea();
 }
@@ -148,6 +148,27 @@ void MainWindow::onTimerInit()
     {
         _p_webApp->establishConnection();
     }
+}
+
+void MainWindow::onEventAlarm( event::ModelEventPtr event )
+{
+    common::GuiUtils::widgetToFront( this );
+
+    common::DialogMessage msg( this );
+    QString text = QApplication::translate( "MainWindow", "An event alarm was reached."
+                                                          "\n\nEvent: @EVENTNAME@"
+                                                          "\nTime: @TIME@");
+    text.replace( "@EVENTNAME@", event->getName() );
+    if ( event->isRepeated() )
+        text.replace( "@TIME@", event->getRepeatDayTime().toString() );
+    else
+        text.replace( "@TIME@", event->getStartDate().toString() );
+
+    msg.setupUI( QApplication::translate( "MainWindow", "Event Alarm " ) + QDateTime::currentDateTime().toString(),
+                 text,
+                 common::DialogMessage::BtnOk );
+
+    msg.exec();
 }
 
 void MainWindow::onTimerUpdate()
@@ -342,11 +363,11 @@ void MainWindow::onBtnAddEvent()
     delete p_dlg;
 }
 
-void MainWindow::onBtnNotificationClicked()
+void MainWindow::onBtnRefreshEvents()
 {
     addLogText( QApplication::translate( "MainWindow", "Refreshing all events" ) );
 
-    _p_ui->pushButtonNotification->hide();
+    _p_ui->pushButtonRefreshEvents->hide();
     _p_webApp->getEvents()->requestGetEvents();
 }
 
@@ -354,6 +375,7 @@ void MainWindow::onEventSelection( QString id )
 {
     clearWidgetClientArea();
     createWidgetEvent( id );
+    _currentEventSelection = id;
 }
 
 void MainWindow::onAuthState( bool authenticated )
@@ -390,6 +412,9 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
 
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
                                      SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onEventAlarm( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onEventAlarm( m4e::event::ModelEventPtr ) ) );
 
     connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountUnreadMails( bool, int ) ), this,
                                       SLOT( onResponseCountUnreadMails( bool, int ) ) );
@@ -490,7 +515,7 @@ void MainWindow::onEventChanged( notify::Notifications::ChangeType changeType, Q
     else
         addLogText( QApplication::translate( "MainWindow", "Event settings have changed: '" ) + eventname + "'" );
 
-    _p_ui->pushButtonNotification->show();
+    _p_ui->pushButtonRefreshEvents->show();
 }
 
 void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType changeType, QString eventId, QString locationId )
@@ -510,7 +535,7 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
     else
         addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: " ) + "'" + eventname + "'" );
 
-    _p_ui->pushButtonNotification->show();
+    _p_ui->pushButtonRefreshEvents->show();
 }
 
 void MainWindow::onEventMessage( QString /*senderId*/, QString eventId, notify::NotifyEventPtr notify )
@@ -593,8 +618,7 @@ void MainWindow::createWidgetMyEvents()
     event::WidgetEventList* p_widget = new event::WidgetEventList( _p_webApp, this );
     _p_ui->widgetEventItems->layout()->addWidget( p_widget );
     connect( p_widget, SIGNAL( onEventSelection( QString /*id*/ ) ), this, SLOT( onEventSelection( QString /*id*/ ) ) );
-    // auto-select the first event
-    p_widget->selectFirstEvent();
+    p_widget->selectEvent( _currentEventSelection );
 }
 
 void MainWindow::createWidgetEvent( const QString& eventId )

@@ -73,6 +73,13 @@ class MainWindow : public QMainWindow
         void                        onTimerInit();
 
         /**
+         * @brief Received when an event alarm was triggered.
+         *
+         * @param event     The event which triggered its alarm
+         */
+        void                        onEventAlarm( m4e::event::ModelEventPtr event );
+
+        /**
          * @brief Periodic update timer
          */
         void                        onTimerUpdate();
@@ -101,7 +108,7 @@ class MainWindow : public QMainWindow
 
         void                        onBtnAddEvent();
 
-        void                        onBtnNotificationClicked();
+        void                        onBtnRefreshEvents();
 
         void                        onEventSelection( QString id );
 
@@ -236,6 +243,8 @@ class MainWindow : public QMainWindow
         bool                        _enableKeepAlive = false;
 
         int                         _lastUnreadMails = 0;
+
+        QString                     _currentEventSelection;
 };
 
 } // namespace gui

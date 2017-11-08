@@ -59,7 +59,7 @@ public class EventNotifications {
         /**
          * Get the past form of the verb such as 'added' or 'modified'.
          * 
-         * @return 
+         * @return The past form of the verb
          */
         public String pastForm() {
             String text;

@@ -56,6 +56,7 @@ public class EventLocations {
      * @param inputEntity  Entity containing the new location data
      * @param creatorID    Creator ID
      * @return             A new created event location entity if successfully, otherwise null.
+     * @throws Exception   Throws an exception if something goes wrong.
      */
     public EventLocationEntity createNewLocation(EventEntity event, EventLocationEntity inputEntity, Long creatorID) throws Exception {
         // setup the new entity

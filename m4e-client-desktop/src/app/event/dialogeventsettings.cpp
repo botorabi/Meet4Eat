@@ -52,6 +52,7 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     connect( _p_ui->pushButtonAddMember, SIGNAL( clicked() ), this, SLOT( onBtnAddMemberClicked() ) );
     connect( _p_ui->lineEditSearchMember, SIGNAL( returnPressed() ), this, SLOT( onLineEditSeachtReturnPressed() ) );
     connect( _p_ui->lineEditSearchMember, SIGNAL( editingFinished() ), this, SLOT( onLineEditSeachtReturnPressed() ) );
+    connect( _p_ui->checkBoxEnableAlarm, SIGNAL( toggled( bool ) ), this, SLOT( onChkboxAlarmToggled( bool ) ) );
 
     setTitle( QApplication::translate( "DialogEventSettings", "Event Settings" ) );
     if ( _userIsOwner )
@@ -67,16 +68,9 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     }
 
     setResizable( false );
-
-    _p_ui->lineEditOwner->setText( event->getOwner()->getName() );
-    _p_ui->lineEditName->setText( event->getName() );
-    _p_ui->textEditDescription->setPlainText( event->getDescription() );
-    _p_ui->checkBoxIsPublic->setChecked( event->getIsPublic() );
-    _p_ui->dateTimeEditStart->setDateTime( event->getStartDate() );
-    _p_ui->timeEditDayTime->setTime( event->getRepeatDayTime() );
-
+    setupCommonElements( event );
     setupMembers( event );
-    setupWeekDays( _event->getRepeatWeekDays() );
+    _p_ui->lineEditOwner->setText( event->getOwner()->getName() );
 
     // load  the image only if a valid photo id exits
     QString photoid = event->getPhotoId();
@@ -111,6 +105,11 @@ void DialogEventSettings::setupNewEventUI( event::ModelEventPtr event )
     _p_ui->labelMembers->hide();
     _p_ui->groupBoxMembers->hide();
 
+    setupCommonElements( event );
+}
+
+void DialogEventSettings::setupCommonElements( event::ModelEventPtr event )
+{
     _p_ui->lineEditName->setText( event->getName() );
     _p_ui->textEditDescription->setPlainText( event->getDescription() );
     _p_ui->checkBoxIsPublic->setChecked( event->getIsPublic() );
@@ -118,6 +117,22 @@ void DialogEventSettings::setupNewEventUI( event::ModelEventPtr event )
     _p_ui->timeEditDayTime->setTime( event->getRepeatDayTime() );
 
     setupWeekDays( event->getRepeatWeekDays() );
+
+    qint64 alarmoffset = event->getAlarmOffset();
+    if ( alarmoffset == 0 )
+    {
+        _p_ui->timeEditAlarmOffset->setTime( QTime( 0, 0 ) );
+        _p_ui->timeEditAlarmOffset->setReadOnly( true );
+        _p_ui->checkBoxEnableAlarm->setChecked( false );
+    }
+    else
+    {
+        int hours = alarmoffset / ( 60 * 60 );
+        int mins  = ( alarmoffset % ( 60 * 60 ) ) / 60;
+        _p_ui->timeEditAlarmOffset->setTime( QTime( hours, mins ) );
+        _p_ui->timeEditAlarmOffset->setReadOnly( false );
+        _p_ui->checkBoxEnableAlarm->setChecked( true );
+    }
 }
 
 void DialogEventSettings::onDocumentReady( m4e::doc::ModelDocumentPtr document )
@@ -343,6 +358,16 @@ void DialogEventSettings::onLineEditSeachtReturnPressed()
     _p_webApp->requestUserSearch( keyword );
 }
 
+void DialogEventSettings::onChkboxAlarmToggled( bool checked )
+{
+    if ( !checked )
+    {
+        _p_ui->timeEditAlarmOffset->setTime( QTime( 0, 0 ) );
+        _p_ui->timeEditAlarmOffset->update();
+    }
+    _p_ui->timeEditAlarmOffset->setReadOnly( !checked );
+}
+
 bool DialogEventSettings::onButton1Clicked()
 {
     if ( !_userIsOwner )
@@ -354,6 +379,7 @@ bool DialogEventSettings::onButton1Clicked()
     _event->setStartDate( _p_ui->dateTimeEditStart->dateTime() );
     _event->setRepeatDayTime( _p_ui->timeEditDayTime->time() );
     _event->setRepeatWeekDays( getWeekDays() );
+    _event->setAlarmOffset( _p_ui->timeEditAlarmOffset->time().msecsSinceStartOfDay() / 1000 );
 
     if ( _editNewEvent )
         _p_webApp->getEvents()->requestNewEvent( _event );

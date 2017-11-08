@@ -42,21 +42,9 @@ void RESTEvent::getEvent( const QString& eventId )
 
 void RESTEvent::createEvent( event::ModelEventPtr event )
 {
-    //! TODO move the json related conversion to the event model
-
-    QJsonObject obj;
-    obj.insert( "name",           event->getName() );
-    obj.insert( "description",    event->getDescription() );
-    obj.insert( "public",         event->getIsPublic() );
-    obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
-    obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
-    obj.insert( "alarmTime",      event->getAlarmTime().toSecsSinceEpoch() );
-    obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
-    QJsonDocument json( obj );
-
     QUrl url( getResourcePath() + "/rest/events/create" );
     auto p_callback = new ResponseNewEvent( this );
-    getRESTOps()->POST( url, createResultsCallback( p_callback ), json );
+    getRESTOps()->POST( url, createResultsCallback( p_callback ), event->toJSON() );
 }
 
 void RESTEvent::deleteEvent( const QString& eventId )
@@ -68,26 +56,9 @@ void RESTEvent::deleteEvent( const QString& eventId )
 
 void RESTEvent::updateEvent( event::ModelEventPtr event )
 {
-    QJsonObject obj;
-    obj.insert( "name",           event->getName() );
-    obj.insert( "description",    event->getDescription() );
-    obj.insert( "public",         event->getIsPublic() );
-    obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
-    obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
-    obj.insert( "alarmTime",      event->getAlarmTime().toSecsSinceEpoch() );
-    obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
-
-    // was the photo updated?
-    if ( event->getUpdatedPhoto().valid() )
-    {
-        obj.insert( "photo", QString( event->getUpdatedPhoto()->getContent() ) );
-    }
-
-    QJsonDocument json( obj );
-
     QUrl url( getResourcePath() + "/rest/events/" + event->getId() );
     auto p_callback = new ResponseUpdateEvent( this );
-    getRESTOps()->PUT( url, createResultsCallback( p_callback ), json );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ), event->toJSON() );
 }
 
 void RESTEvent::addMember( const QString& eventId, const QString& memberId )

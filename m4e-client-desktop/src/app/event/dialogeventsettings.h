@@ -140,6 +140,13 @@ class DialogEventSettings : public common::BaseDialog
          */
         void                        onLineEditSeachtReturnPressed();
 
+        /**
+         * @brief Called when the checkbox for enabling/disabling the alarm was toggled.
+         *
+         * @param checked The checkbox state
+         */
+        void                        onChkboxAlarmToggled( bool checked );
+
     protected:
 
         /**
@@ -151,6 +158,8 @@ class DialogEventSettings : public common::BaseDialog
          * @brief Overridden method for handling Cancel button click
          */
         virtual bool                onButton2Clicked();
+
+        void                        setupCommonElements( event::ModelEventPtr event );
 
         void                        setupWeekDays( unsigned int weekDays );
 
