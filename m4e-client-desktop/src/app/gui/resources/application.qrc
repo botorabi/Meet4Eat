@@ -31,6 +31,7 @@
         <file>icon-refresh.png</file>
         <file>icon-refresh-alert.png</file>
         <file>icon.ico</file>
+        <file>icon-tray.ico</file>
         <file>logo.png</file>
         <file>LICENSE</file>
     </qresource>

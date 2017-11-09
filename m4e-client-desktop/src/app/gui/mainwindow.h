@@ -13,6 +13,7 @@
 #include <webapp/webapp.h>
 #include <chat/chatsystem.h>
 #include <event/events.h>
+#include <event/widgeteventlist.h>
 #include <notification/notifications.h>
 #include <QMainWindow>
 #include <QMouseEvent>
@@ -233,6 +234,8 @@ class MainWindow : public QMainWindow
         MailboxWindow*              _p_mailWindow    = nullptr;
 
         SystemTray*                 _p_systemTray    = nullptr;
+
+        event::WidgetEventList*     _p_eventList     = nullptr;
 
         bool                        _dragging        = false;
 

@@ -1,1 +1,31 @@
 IDI_ICON1  ICON    DISCARDABLE     "icon.ico"
+
+1 VERSIONINFO
+FILEVERSION     0,8,3,0
+PRODUCTVERSION  0,8,3,0
+FILEFLAGSMASK   0X3FL
+FILEFLAGS       0L
+FILEOS          0X40004L
+FILETYPE        0X2
+FILESUBTYPE     0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileVersion", "0.8.3"
+            VALUE "ProductVersion", "0.8.3"
+            VALUE "OriginalFilename", "Meet4Eat.exe"
+            VALUE "InternalName", "Meet4Eat"
+            VALUE "FileDescription", "Meet4Eat, A Social Collaboration App"
+            VALUE "CompanyName", ""
+            VALUE "LegalCopyright", "(c) 2017 A. Botorabi"
+            VALUE "ProductName", "Meet4Eat"
+            VALUE "PrivateBuild", ""
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+            VALUE "Translation", 0x0409, 0x04B0
+    END
+END

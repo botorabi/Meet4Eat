@@ -30,6 +30,7 @@ namespace m4e
 namespace gui
 {
 
+/** Mail button styling */
 const QString MAIL_BTN_STYLE = \
 "QPushButton {\
  background-color: transparent;\
@@ -48,7 +49,7 @@ MainWindow::MainWindow() :
  QMainWindow( nullptr ),
  _p_ui( new Ui::MainWindow )
 {
-    setWindowFlags( Qt::Window | /*Qt::FramelessWindowHint |*/ Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint );
     setAttribute( Qt::WA_NoSystemBackground );
     setAttribute( Qt::WA_TranslucentBackground );
 
@@ -152,12 +153,12 @@ void MainWindow::onTimerInit()
 
 void MainWindow::onEventAlarm( event::ModelEventPtr event )
 {
-    common::GuiUtils::widgetToFront( this );
-
-    common::DialogMessage msg( this );
-    QString text = QApplication::translate( "MainWindow", "An event alarm was reached."
+    common::DialogMessage msg( nullptr );
+    QString text = QApplication::translate( "MainWindow", "It's time to prepare for an event!"
                                                           "\n\nEvent: @EVENTNAME@"
-                                                          "\nTime: @TIME@");
+                                                          "\nTime: @TIME@"
+                                                          "\n\nDisplay the event now?"
+                                            );
     text.replace( "@EVENTNAME@", event->getName() );
     if ( event->isRepeated() )
         text.replace( "@TIME@", event->getRepeatDayTime().toString() );
@@ -166,9 +167,18 @@ void MainWindow::onEventAlarm( event::ModelEventPtr event )
 
     msg.setupUI( QApplication::translate( "MainWindow", "Event Alarm " ) + QDateTime::currentDateTime().toString(),
                  text,
-                 common::DialogMessage::BtnOk );
+                 common::DialogMessage::BtnYes | common::DialogMessage::BtnNo );
 
-    msg.exec();
+    common::GuiUtils::widgetToFront( &msg );
+    if ( msg.exec()  == common::DialogMessage::BtnYes )
+    {
+        common::GuiUtils::widgetToFront( this );
+        _currentEventSelection = event->getId();
+        if ( _p_eventList )
+        {
+            _p_eventList->selectEvent( _currentEventSelection );
+        }
+    }
 }
 
 void MainWindow::onTimerUpdate()
@@ -602,6 +612,11 @@ void MainWindow::clearWidgetClientArea()
 
 void MainWindow::clearWidgetMyEvents()
 {
+    if ( _p_eventList )
+        _p_eventList->deleteLater();
+
+    _p_eventList = nullptr;
+#if 0
     QLayoutItem* p_item;
     QLayout* p_layout = _p_ui->widgetEventItems->layout();
     while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
@@ -609,16 +624,16 @@ void MainWindow::clearWidgetMyEvents()
         p_item->widget()->deleteLater();
         delete p_item;
     }
+#endif
 }
 
 void MainWindow::createWidgetMyEvents()
 {
     clearWidgetClientArea();
-
-    event::WidgetEventList* p_widget = new event::WidgetEventList( _p_webApp, this );
-    _p_ui->widgetEventItems->layout()->addWidget( p_widget );
-    connect( p_widget, SIGNAL( onEventSelection( QString /*id*/ ) ), this, SLOT( onEventSelection( QString /*id*/ ) ) );
-    p_widget->selectEvent( _currentEventSelection );
+    _p_eventList = new event::WidgetEventList( _p_webApp, this );
+    _p_ui->widgetEventItems->layout()->addWidget( _p_eventList );
+    connect( _p_eventList, SIGNAL( onEventSelection( QString /*id*/ ) ), this, SLOT( onEventSelection( QString /*id*/ ) ) );
+    _p_eventList->selectEvent( _currentEventSelection );
 }
 
 void MainWindow::createWidgetEvent( const QString& eventId )

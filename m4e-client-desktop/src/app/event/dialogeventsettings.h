@@ -44,6 +44,15 @@ class DialogEventSettings : public common::BaseDialog
     public:
 
         /**
+         * @brief Dialog buttons
+         */
+        enum Buttons
+        {
+            BtnApply  = common::BaseDialog::Btn1,
+            BtnCancel = common::BaseDialog::Btn2
+        };
+
+        /**
          * @brief Create a dialog instance.
          *
          * @param p_webApp  Web application interface

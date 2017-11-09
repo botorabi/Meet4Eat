@@ -26,7 +26,7 @@ MailboxWindow::MailboxWindow( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  _p_ui( new Ui::MailboxWindow ),
  _p_webApp( p_webApp )
 {
-    setWindowFlags( Qt::Window | Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint );
 
     _p_ui->setupUi( this );
 
@@ -102,6 +102,17 @@ void MailboxWindow::mouseMoveEvent( QMouseEvent* p_event )
     {
         move( p_event->globalPos() - _draggingPos );
     }
+}
+
+void MailboxWindow::keyPressEvent( QKeyEvent* p_event )
+{
+    if ( p_event->key() == Qt::Key_Escape )
+    {
+        onBtnCloseClicked();
+        return;
+    }
+
+    QMainWindow::keyPressEvent( p_event );
 }
 
 void MailboxWindow::onBtnMinimizeClicked()

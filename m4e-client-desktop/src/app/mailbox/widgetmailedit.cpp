@@ -85,18 +85,15 @@ void WidgetMailEdit::onBtnSendClicked()
 
 void WidgetMailEdit::onBtnSearchUserClicked()
 {
-    log_verbose << TAG << "TODO onBtnAddrBookClicked" << std::endl;
-
-    user::DialogSearchUser* p_dlg = new user::DialogSearchUser( _p_webApp, this );
-    if ( p_dlg->exec() == common::BaseDialog::Btn1 )
+    user::DialogSearchUser dlg( _p_webApp, this );
+    if ( dlg.exec() == common::BaseDialog::Btn1 )
     {
-        user::ModelUserInfoPtr userinfo = p_dlg->getUserInfo();
+        user::ModelUserInfoPtr userinfo = dlg.getUserInfo();
         if ( userinfo.valid() )
         {
             setRecipient( userinfo );
         }
     }
-    delete p_dlg;
 }
 
 void WidgetMailEdit::onResponseSendMail( bool success )

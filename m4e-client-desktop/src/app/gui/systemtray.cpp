@@ -20,6 +20,8 @@ namespace m4e
 namespace gui
 {
 
+static const QString M4E_SYSTRAY_ICON = ":/icon-tray.ico";
+
 enum MenuIDs
 {
     MenuOpen                = 100,
@@ -55,6 +57,7 @@ void SystemTray::onActivated( QSystemTrayIcon::ActivationReason reason )
 {
     switch ( reason )
     {
+        case QSystemTrayIcon::Trigger:
         case QSystemTrayIcon::DoubleClick:
             common::GuiUtils::widgetToFront( _p_mainWindow );
         break;
@@ -97,7 +100,7 @@ void SystemTray::onMessageClicked()
 
 void SystemTray::setupSystemTray()
 {
-    _p_systemTray = new QSystemTrayIcon( QIcon( ":/icon.ico" ), this );
+    _p_systemTray = new QSystemTrayIcon( QIcon( M4E_SYSTRAY_ICON ), this );
     connect( _p_systemTray, SIGNAL( activated( QSystemTrayIcon::ActivationReason ) ), this, SLOT( onActivated( QSystemTrayIcon::ActivationReason ) ) );
     connect( _p_systemTray, SIGNAL( messageClicked() ), this, SLOT( onMessageClicked() ) );
 

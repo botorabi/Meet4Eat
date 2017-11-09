@@ -113,10 +113,10 @@ void WidgetEventItem::notifyUpdate( const QString& text )
 
 void WidgetEventItem::onBtnEditClicked()
 {
-    DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, this );
-    p_dlg->setupUI( _event );
-    p_dlg->exec();
-    delete p_dlg;
+    DialogEventSettings dlg( _p_webApp, this );
+    dlg.setupUI( _event );
+    if ( dlg.exec() != DialogEventSettings::BtnApply )
+        return;
 
     // update event data
     onBtnNotificationClicked();

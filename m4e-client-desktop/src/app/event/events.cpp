@@ -197,10 +197,10 @@ void Events::onRESTEventDeleteEvent( QString eventId )
         if ( ev->getId() == eventId )
         {
             _events.removeAt( i );
-            updateAlarms();
             break;
         }
     }
+    updateAlarms();
     emit onResponseDeleteEvent( true, eventId );
 }
 
@@ -227,6 +227,7 @@ void Events::onRESTEventErrorNewEvent( QString errorCode, QString reason )
 void Events::onRESTEventUpdateEvent( QString eventId )
 {
     log_verbose << TAG << "event was updated: " << eventId << std::endl;
+    updateAlarms();
     emit onResponseUpdateEvent( true, eventId );
 }
 
@@ -401,7 +402,7 @@ bool Events::scheduleAlarmTimer( ModelEventPtr event, QTimer* p_timer )
         qint64 alarmtime = event->getRepeatDayTime().msecsSinceStartOfDay() - alarmoffset;
         msec2alarm = alarmtime - currtime;
         // missed the time for today? do we have to schedule for next day?
-        if ( msec2alarm < 0 )
+        if ( ( msec2alarm - 10000 ) < 0 ) // consider a threshold
             msec2alarm += ( 24 * 60 * 60 * 1000 );
     }
     else
@@ -410,7 +411,7 @@ bool Events::scheduleAlarmTimer( ModelEventPtr event, QTimer* p_timer )
         qint64 alarmtime = event->getStartDate().toMSecsSinceEpoch() - alarmoffset;
         msec2alarm = alarmtime - currtime;
         // the event date&time is in the past, no need for alarm anymore
-        if ( msec2alarm < 0 )
+        if ( ( msec2alarm - 10000 ) < 0 ) // consider a threshold
             return false;
     }
 

@@ -90,6 +90,8 @@ class MailboxWindow : public QMainWindow
 
         void                        mouseMoveEvent( QMouseEvent* p_event );
 
+        void                        keyPressEvent( QKeyEvent* p_event );
+
         void                        clearWidgetClientArea();
 
         void                        createWidgetMyMails();

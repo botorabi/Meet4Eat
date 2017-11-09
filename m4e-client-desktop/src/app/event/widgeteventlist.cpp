@@ -106,7 +106,7 @@ void WidgetEventList::addEvent( m4e::event::ModelEventPtr event )
     connect( p_itemwidget, SIGNAL( onRequestDeleteEvent( QString ) ), this, SLOT( onRequestDeleteEvent( QString ) ) );
 
     QListWidgetItem* p_listitem = new QListWidgetItem( this );
-    p_listitem->setSizeHint( p_itemwidget->sizeHint() );
+    p_listitem->setSizeHint( p_itemwidget->size() );
     p_listitem->setFlags( Qt::NoItemFlags );
 
     addItem( p_listitem );
