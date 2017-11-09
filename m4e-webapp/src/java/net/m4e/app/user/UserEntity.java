@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
+import net.m4e.common.EntityWithPhoto;
 
 
 /**
@@ -33,7 +34,7 @@ import net.m4e.app.resources.StatusEntity;
  * Date of creation Aug 18, 2017
  */
 @Entity
-public class UserEntity implements Serializable {
+public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Serialization version
@@ -56,7 +57,7 @@ public class UserEntity implements Serializable {
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**
@@ -140,6 +141,7 @@ public class UserEntity implements Serializable {
      * 
      * @return DocumentEntity containing the photo
      */
+    @Override
     public DocumentEntity getPhoto() {
         return photo;
     }
@@ -149,6 +151,7 @@ public class UserEntity implements Serializable {
      * 
      * @param photo DocumentEntity containing the photo
      */
+    @Override
     public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }
@@ -188,7 +191,7 @@ public class UserEntity implements Serializable {
     @XmlTransient
     public List<String> getRolesAsString() {
         List<String> stringlist = new ArrayList<>();
-        if (null == roles) {
+        if (roles == null) {
             return stringlist;
         }
         roles.stream().forEach((role) -> {
@@ -315,6 +318,6 @@ public class UserEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "user.UserEntity[ id=" + id + " ]";
+        return "net.m4e.app.user.UserEntity[ id=" + id + " ]";
     }
 }

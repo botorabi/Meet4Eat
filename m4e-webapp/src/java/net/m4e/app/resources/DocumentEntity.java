@@ -92,7 +92,7 @@ public class DocumentEntity implements Serializable {
     /**
      * Document's resource URL
      */
-    private String resourceURL;
+    private String resourceURL = "";
 
     /**
      * Content encoding, e.g. base64
@@ -183,7 +183,7 @@ public class DocumentEntity implements Serializable {
     }
 
     /**
-     * Get the resouce URL.
+     * Get the resource URL.
      *
      * @return Resource URL
      */
@@ -216,6 +216,16 @@ public class DocumentEntity implements Serializable {
      */
     public void setEncoding(String encoding) {
         this.encoding = encoding;
+    }
+
+    /**
+     * Update the document's content. The ETag will be updated, too.
+     * 
+     * @param content The new document content
+     */
+    public void updateContent(byte[] content) {
+        setContent(content);
+        updateETag();
     }
 
     /**
@@ -261,7 +271,7 @@ public class DocumentEntity implements Serializable {
      * NOTE: Call this method whenever the content was changed.
      */
     public void updateETag() {
-        if (null == content) {
+        if (content == null) {
             eTag = "";
             return;
         }
@@ -284,6 +294,15 @@ public class DocumentEntity implements Serializable {
         } catch (NoSuchAlgorithmException ex) {
             Log.error(TAG, "Problem occurred while hashing an document content, reason: " + ex.getLocalizedMessage());
         }
+    }
+
+    /**
+     * Check if the document is empty, i.e. it has no content.
+     * 
+     * @return Return true if the document is empty, otherwise false.
+     */
+    public boolean getIsEmpty() {
+        return content == null;
     }
 
     @Override
@@ -317,13 +336,14 @@ public class DocumentEntity implements Serializable {
      */
     public String toJsonString() {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", getOrDefault(id, 0L));
-        json.add("name", getOrDefault(name, ""));
-        json.add("type", getOrDefault(type, ""));
-        json.add("content", content == null ? "" : new String(content));
-        json.add("eTag", getOrDefault(eTag, ""));
-        json.add("encoding", getOrDefault(encoding, ""));
-        return json.build().toString();
+        json.add("id", getOrDefault(id.toString(), ""))
+            .add("name", getOrDefault(name, ""))
+            .add("type", getOrDefault(type, ""))
+            .add("content", (content == null) ? "" : new String(content))
+            .add("eTag", getOrDefault(eTag, ""))
+            .add("encoding", getOrDefault(encoding, ""));
+
+            return json.build().toString();
     }
 
     /**

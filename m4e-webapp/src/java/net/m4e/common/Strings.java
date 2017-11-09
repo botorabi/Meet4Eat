@@ -24,7 +24,7 @@ public class Strings {
      * @return          Return length limited string, or null if the input was null.
      */
     public static String limitStringLen(String input, int maxLen) {
-        if (null != input) {
+        if (input != null) {
             if (input.length() > maxLen) {
                 input = input.substring(0, maxLen);
             }
@@ -41,7 +41,7 @@ public class Strings {
      * @return         Return true if the string has a length in given range, otherwise return false.
      */
     public static boolean checkMinMaxLength(String input, int minLen, int maxLen) {
-        if (null == input) {
+        if (input == null) {
             return false;
         }
         int len = input.length();

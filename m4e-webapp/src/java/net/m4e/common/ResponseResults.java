@@ -145,10 +145,10 @@ public class ResponseResults {
      */
     public String toJSON() {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("status", ((status != null) ? status : ""));
-        json.add("description", ((description != null) ? description : ""));
-        json.add("code", code);
-        json.add("data", ((data != null) ? data : ""));
+        json.add("status", ((status != null) ? status : ""))
+            .add("description", ((description != null) ? description : ""))
+            .add("code", code)
+            .add("data", ((data != null) ? data : ""));
         return json.build().toString();
     }
 

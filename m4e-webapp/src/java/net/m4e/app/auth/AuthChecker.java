@@ -155,7 +155,7 @@ public class AuthChecker {
 
         // check for no-restriction access
         if (grantAlwaysRoles.stream().anyMatch((r) -> userRoles.contains(r))) {
-            Log.debug(TAG, "Access granted to Grant-Always roles");
+            Log.verbose(TAG, "Access granted to Grant-Always roles");
             return true;
         }
 
@@ -171,11 +171,11 @@ public class AuthChecker {
             }
 
             String respath = path.substring(basePath.length());
-            Log.debug(TAG, "Checking resource path [" + request.getMethod() + "]: " + respath);
+            Log.verbose(TAG, "Checking resource path [" + request.getMethod() + "]: " + respath);
 
             // first check for fix path match
             AuthAccessRuleChecker accrule = accessRulesFixPath.get(respath);
-            if (null != accrule) {
+            if (accrule != null) {
                 grantaccess = accrule.checkFixPath(respath, request.getMethod(), userRoles);
             }
             else {

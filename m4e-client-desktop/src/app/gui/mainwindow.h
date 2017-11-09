@@ -28,6 +28,9 @@ namespace m4e
 namespace gui
 {
 
+class MailboxWindow;
+class SystemTray;
+
 /**
  * @brief Main application window class
  *
@@ -55,15 +58,30 @@ class MainWindow : public QMainWindow
          */
         virtual                     ~MainWindow();
 
+        /**
+         * @brief Request for teminating the application.
+         */
+        void                        terminate();
 
     protected slots:
+
+        void                        onMailWindowClosed();
 
         /**
          * @brief Initial webapp setup happens in this slot.
          */
         void                        onTimerInit();
 
+        /**
+         * @brief Periodic update timer
+         */
+        void                        onTimerUpdate();
+
+        void                        onBtnStatusClicked();
+
         void                        onBtnLogoClicked();
+
+        void                        onBtnCollapseLogsClicked();
 
         void                        onBtnCloseClicked();
 
@@ -73,15 +91,26 @@ class MainWindow : public QMainWindow
 
         void                        onBtnUserProfileClicked();
 
+        void                        onBtnMailsClicked();
+
         void                        onBtnSettingsClicked();
 
         void                        onBtnAboutClicked();
+
+        void                        onAboutLinkActivated( QString link );
 
         void                        onBtnAddEvent();
 
         void                        onBtnNotificationClicked();
 
         void                        onEventSelection( QString id );
+
+        /**
+         * @brief This signal is emitted to inform about the current authentication state.
+         *
+         * @param authenticated  True if the user is authenticated, otherwise false
+         */
+        void                        onAuthState( bool authenticated );
 
         /**
          * @brief This signal is emitted when an update of user data was arrived.
@@ -108,6 +137,11 @@ class MainWindow : public QMainWindow
         void                        onUserSignedOff( bool success );
 
         /**
+         * @brief This signal is emitted when the connection to server was closed.
+         */
+        void                        onServerConnectionClosed();
+
+        /**
          * @brief This signal is received when user events were arrived.
          *
          * @param success  true for successful access
@@ -132,7 +166,28 @@ class MainWindow : public QMainWindow
          */
         void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
+        /**
+         * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
+         *
+         * @param sender    Message sender Id (usually an user ID)
+         * @param eventId   ID of receiving event
+         * @param notify    Notification object containing the message content
+         */
+        void                        onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
+
+        /**
+         * @brief This signal is emitted when the results of unread mails count request arrive.
+         *
+         * @param success  true if the count of unread mails could successfully be retrieved, otherwise false
+         * @param count     Count of unread mails
+         */
+        void                        onResponseCountUnreadMails( bool success, int count );
+
     protected:
+
+        void                        customEvent( QEvent* p_event );
+
+        void                        updateStatus( const QString& text, bool offline );
 
         void                        addLogText( const QString& text );
 
@@ -150,25 +205,37 @@ class MainWindow : public QMainWindow
 
         void                        mouseMoveEvent( QMouseEvent* p_event );
 
-        void                        clearClientWidget();
+        void                        clearWidgetClientArea();
 
         void                        createWidgetMyEvents();
 
-        void                        clearMyEventsWidget();
+        void                        clearWidgetMyEvents();
 
-        void                        createWidgetEvent( const QString& groupId );
+        void                        createWidgetEvent( const QString& eventId );
 
         Ui::MainWindow*             _p_ui            = nullptr;
 
         QTimer*                     _p_initTimer     = nullptr;
 
+        QTimer*                     _p_updateTimer   = nullptr;
+
         webapp::WebApp*             _p_webApp        = nullptr;
 
         chat::ChatSystem*           _p_chatSystem    = nullptr;
 
+        MailboxWindow*              _p_mailWindow    = nullptr;
+
+        SystemTray*                 _p_systemTray    = nullptr;
+
         bool                        _dragging        = false;
 
         QPoint                      _draggingPos;
+
+        bool                        _initialSignIn   = true;
+
+        bool                        _enableKeepAlive = false;
+
+        int                         _lastUnreadMails = 0;
 };
 
 } // namespace gui

@@ -45,7 +45,8 @@ public class AuthorityConfig {
         net.m4e.app.user.UserEntityFacadeREST.class,
         net.m4e.app.user.UserAuthenticationFacadeREST.class,
         net.m4e.app.event.EventEntityFacadeREST.class,
-        net.m4e.app.resources.DocumentEntityFacadeREST.class
+        net.m4e.app.resources.DocumentEntityFacadeREST.class,
+        net.m4e.app.mailbox.MailEntityFacadeREST.class
     };
 
     /**
@@ -76,7 +77,7 @@ public class AuthorityConfig {
      */
     public UserEntity getSessionUser(HttpSession session) {
         Object sessionuser = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if ((null == sessionuser) || !(sessionuser instanceof UserEntity)) {
+        if ((sessionuser == null) || !(sessionuser instanceof UserEntity)) {
             return null;
         }
         return (UserEntity)sessionuser;
@@ -128,7 +129,7 @@ public class AuthorityConfig {
         String pw = "" + string;
         for (int i = 0; i < PW_HASH_ITERATOIN; i++) {
             pw = createHash(pw);
-            if (null == pw) {
+            if (pw == null) {
                 return null;
             }
         }

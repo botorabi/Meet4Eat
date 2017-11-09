@@ -299,6 +299,7 @@ function Meet4EatUI_User(baseModule) {
 	self._setupUiUserEdit = function(userId) {
 		$('#page_users_edit_title').text("Edit existing user");
 		$('#page_users_edit_form_login').prop("disabled", true);
+		$('#page_users_edit_form_email').prop("disabled", true);
 		$("#page_users_edit_form input[name='password']").val("");
 		$("#page_users_edit_form input[name='password-repeat']").val("");
 

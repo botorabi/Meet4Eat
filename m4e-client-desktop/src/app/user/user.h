@@ -52,14 +52,14 @@ class User : public QObject
         virtual                 ~User();
 
         /**
-         * @brief Set webapp server's URL including port number. Set this URL before using any services below.
+         * @brief Set the server URL including port number. Set this URL before using any services below.
          *
          * @param url Server's URL
          */
         void                    setServerURL( const QString& url );
 
         /**
-         * @brief Get webapp's server URL.
+         * @brief Get server's URL.
          *
          * @return Server URL
          */

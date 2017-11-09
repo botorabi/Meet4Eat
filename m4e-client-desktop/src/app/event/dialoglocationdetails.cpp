@@ -61,6 +61,10 @@ void DialogLocationDetails::setupUI( event::ModelLocationPtr location )
         connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
         _p_webApp->requestDocument( photoid, location->getPhotoETag() );
     }
+    else
+    {
+        _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( common::GuiUtils::getDefaultPixmap() ) );
+    }
 }
 
 void DialogLocationDetails::onDocumentReady( m4e::doc::ModelDocumentPtr document )
@@ -68,7 +72,7 @@ void DialogLocationDetails::onDocumentReady( m4e::doc::ModelDocumentPtr document
     QString photoid = _location->getPhotoId();
     if ( !photoid.isEmpty() && document.valid() && ( document->getId() == photoid ) )
     {
-        _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
+        _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( document ) );
     }
 }
 

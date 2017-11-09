@@ -39,6 +39,8 @@ Events::Events( QObject* p_parent ) :
     connect( _p_restEvent, SIGNAL( onRESTEventErrorAddLocation( QString, QString ) ), this, SLOT( onRESTEventErrorAddLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventRemoveLocation( QString, QString ) ), this, SLOT( onRESTEventRemoveLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorRemoveLocation( QString, QString ) ), this, SLOT( onRESTEventErrorRemoveLocation( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventUpdateLocation( QString, QString ) ), this, SLOT( onRESTEventUpdateLocation( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorUpdateLocation( QString, QString ) ), this, SLOT( onRESTEventErrorUpdateLocation( QString, QString ) ) );
 }
 
 Events::~Events()
@@ -132,6 +134,12 @@ void Events::requestRemoveLocation( const QString& eventId, const QString& locat
     _p_restEvent->removeLocation( eventId, locationId );
 }
 
+void Events::requestUpdateLocation( const QString& eventId, ModelLocationPtr location )
+{
+    setLastError();
+    _p_restEvent->updateLocation( eventId, location );
+}
+
 //######### Responses ############//
 
 void Events::onRESTEventGetEvents( QList< event::ModelEventPtr > events )
@@ -179,6 +187,16 @@ void Events::onRESTEventErrorGetEvent( QString errorCode, QString reason )
 void Events::onRESTEventDeleteEvent( QString eventId )
 {
     log_verbose << TAG << "event was deleted: " << eventId << std::endl;
+    // remove the event from internal event container
+    for ( int i = 0; i < _events.size(); i++ )
+    {
+        ModelEventPtr ev = _events[ i ];
+        if ( ev->getId() == eventId )
+        {
+            _events.removeAt( i );
+            break;
+        }
+    }
     emit onResponseDeleteEvent( true, eventId );
 }
 
@@ -278,6 +296,19 @@ void Events::onRESTEventErrorRemoveLocation( QString errorCode, QString reason )
     log_verbose << TAG << "failed to remove location from event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseRemoveLocation( false, "", "" );
+}
+
+void Events::onRESTEventUpdateLocation( QString eventId, QString locationId )
+{
+    log_verbose << TAG << "location was updated event: " << eventId << "/" << locationId << std::endl;
+    emit onResponseUpdateLocation( true, eventId, locationId );
+}
+
+void Events::onRESTEventErrorUpdateLocation( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to update location of event: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseUpdateLocation( false, "", "" );
 }
 
 void Events::setLastError( const QString& error, const QString& errorCode )

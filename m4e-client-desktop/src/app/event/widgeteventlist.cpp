@@ -83,8 +83,8 @@ void WidgetEventList::setupListView()
     setViewMode( QListView::IconMode );
     setDragEnabled( false );
     QVBoxLayout* p_layout = new QVBoxLayout( this );
-    p_layout->setSpacing( 16 );
-    p_layout->setContentsMargins( 9, 9, 9, 9 );
+    p_layout->setSpacing( 8 );
+    p_layout->setContentsMargins( 0, 0, 0, 0 );
     setLayout( p_layout );
 }
 

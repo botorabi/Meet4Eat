@@ -11,7 +11,7 @@
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
 #include "dialogeventsettings.h"
-#include "dialoglocationcreate.h"
+#include "dialoglocationedit.h"
 #include <ui_widgeteventitem.h>
 
 
@@ -23,8 +23,8 @@ namespace event
 //! Event Box style
 static const QString boxStyle = \
      "#groupBoxMain { \
-        border-radius: 10px; \
-        border: 3px solid @BORDERCOLOR@; \
+        border-radius: 0px; \
+        border: 1px solid @BORDERCOLOR@; \
         background-color: rgb(80,112,125); \
       }";
 
@@ -72,6 +72,7 @@ void WidgetEventItem::updateEvent( ModelEventPtr event )
     _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
     _p_ui->labelHead->setText( event->getName() );
     _p_ui->labelDescription->setText( event->getDescription() );
+    _p_ui->pushButtonEdit->setHidden( !_userIsOwner );
     _p_ui->pushButtonDelete->setHidden( !_userIsOwner );
     _p_ui->pushButtonNewLocation->setHidden( !_userIsOwner );
     _p_ui->pushButtonNotification->hide();
@@ -87,6 +88,10 @@ void WidgetEventItem::updateEvent( ModelEventPtr event )
     if ( !photoid.isEmpty() && ( photoid != "0" ) )
     {
         _p_webApp->requestDocument( photoid, event->getPhotoETag() );
+    }
+    else
+    {
+        _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( common::GuiUtils::getDefaultPixmap() ) );
     }
 }
 
@@ -106,7 +111,7 @@ void WidgetEventItem::notifyUpdate( const QString& text )
     _p_ui->pushButtonNotification->setToolTip( text );
 }
 
-void WidgetEventItem::onBtnOptionsClicked()
+void WidgetEventItem::onBtnEditClicked()
 {
     DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, this );
     p_dlg->setupUI( _event );
@@ -132,8 +137,8 @@ void WidgetEventItem::onBtnDeleteClicked()
 
 void WidgetEventItem::onBtnNewLocationClicked()
 {
-    DialogLocationCreate* p_dlg = new DialogLocationCreate( _p_webApp, this );
-    p_dlg->setupUI( _event );
+    DialogLocationEdit* p_dlg = new DialogLocationEdit( _p_webApp, this );
+    p_dlg->setupUINewLocation( _event );
     p_dlg->exec();
     delete p_dlg;
 

@@ -51,7 +51,7 @@ public class UserProfileEntity implements Serializable {
     /**
      * Photo, a photo may be a sharable icon
      */
-    @OneToOne(optional=true, cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**

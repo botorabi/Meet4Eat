@@ -10,6 +10,7 @@ package net.m4e.app.user;
 
 import java.util.List;
 import javax.persistence.EntityManager;
+import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.common.Strings;
 
 /**
@@ -69,15 +70,21 @@ public class UserEntityInputValidator {
             throw new Exception(getLenRangeText("The password", USER_INPUT_MIN_LEN_PASSWD, USER_INPUT_MAX_LEN_PASSWD));
         }
 
+        if (AuthorityConfig.getInstance().createPassword("").equals(reqentity.getPassword())) {
+            throw new Exception("The password must not be empty.");            
+        }
+
         if (!Strings.checkMinMaxLength(reqentity.getEmail(), USER_INPUT_MIN_LEN_EMAIL, USER_INPUT_MAX_LEN_EMAIL)) {
             throw new Exception(getLenRangeText("The E-Mail address", USER_INPUT_MIN_LEN_EMAIL, USER_INPUT_MAX_LEN_EMAIL));
         }
 
-        if (null != users.findUserByEmail(reqentity.getEmail())) {
+        // check if a user with given login or email addresss exists
+        //! NOTE for this check also users marked as deleted are considered! the login name and email address must be
+        //       unique in the database, it is.
+        if (users.findUserByEmail(reqentity.getEmail()) != null) {
             throw new Exception("A user with given email already exists.");
         }
-
-        if (null != users.findUser(reqentity.getLogin())) {
+        if (users.findUser(reqentity.getLogin()) != null) {
             throw new Exception("Login name is not available.");
         }
 
@@ -96,6 +103,9 @@ public class UserEntityInputValidator {
      * Given a JSON string as input containing data for updating an existing user, validate 
      * all fields and return an UserEntity, or throw an exception if the validation failed.
      * 
+     * Note that some user data is not meant to be modified (such as login or e-mail), so those
+     * fields are not validated here!
+     * 
      * @param userJson       Data for creating a new user in JSON format
      * @return               A UserEntity created out of given input
      * @throws Exception     Throws an exception if the validation fails.
@@ -108,20 +118,12 @@ public class UserEntityInputValidator {
         }
 
         // NOTE: for updating an entity, the some fields may not exist. those fields do not get changed, it is.
-        if ((null != reqentity.getLogin()) && !Strings.checkMinMaxLength(reqentity.getLogin(), USER_INPUT_MIN_LEN_LOGIN, USER_INPUT_MAX_LEN_LOGIN)) {
-            throw new Exception(getLenRangeText("User's login name", USER_INPUT_MIN_LEN_LOGIN, USER_INPUT_MAX_LEN_LOGIN));
-        }
-
-        if ((null != reqentity.getName()) && !Strings.checkMinMaxLength(reqentity.getName(), USER_INPUT_MIN_LEN_NAME, USER_INPUT_MAX_LEN_NAME)) {
+        if ((reqentity.getName() != null) && !Strings.checkMinMaxLength(reqentity.getName(), USER_INPUT_MIN_LEN_NAME, USER_INPUT_MAX_LEN_NAME)) {
             throw new Exception(getLenRangeText("User name", USER_INPUT_MIN_LEN_NAME, USER_INPUT_MAX_LEN_NAME));
         }
 
-        if ((null != reqentity.getPassword()) && !Strings.checkMinMaxLength(reqentity.getPassword(), USER_INPUT_MIN_LEN_PASSWD, USER_INPUT_MAX_LEN_PASSWD)) {
+        if ((reqentity.getPassword() != null) && !Strings.checkMinMaxLength(reqentity.getPassword(), USER_INPUT_MIN_LEN_PASSWD, USER_INPUT_MAX_LEN_PASSWD)) {
             throw new Exception(getLenRangeText("The password", USER_INPUT_MIN_LEN_PASSWD, USER_INPUT_MAX_LEN_PASSWD));
-        }
-
-        if ((null != reqentity.getEmail()) && !Strings.checkMinMaxLength(reqentity.getEmail(), USER_INPUT_MIN_LEN_EMAIL, USER_INPUT_MAX_LEN_EMAIL)) {
-            throw new Exception(getLenRangeText("The E-Mail address", USER_INPUT_MIN_LEN_EMAIL, USER_INPUT_MAX_LEN_EMAIL));
         }
 
         // validate the roles

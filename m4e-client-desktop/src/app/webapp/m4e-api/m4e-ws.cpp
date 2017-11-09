@@ -26,6 +26,12 @@ Meet4EatWebSocket::Meet4EatWebSocket( QObject* p_parent ) :
     _p_webSocket = new QWebSocket();
     _p_webSocket->setParent( this );
 
+#if !M4E_DISALLOW_INSECURE_CONNECTION
+    QSslConfiguration conf = _p_webSocket->sslConfiguration();
+    conf.setPeerVerifyMode( QSslSocket::VerifyNone );
+    _p_webSocket->setSslConfiguration( conf );
+#endif
+
     connect( _p_webSocket, SIGNAL( connected() ), this, SLOT( onConnected() ) );
     connect( _p_webSocket, SIGNAL( error( QAbstractSocket::SocketError) ), this, SLOT( onError( QAbstractSocket::SocketError ) ) );
     connect( _p_webSocket, SIGNAL( disconnected() ), this, SLOT( onDisconnected() ) );
@@ -44,7 +50,7 @@ const QString& Meet4EatWebSocket::getWsURL() const
 void Meet4EatWebSocket::setWsURL( const QString& wsURL )
 {
     QString url = wsURL;
-    if ( !url.startsWith( "http://" ) || !url.startsWith( "https://" ) )
+    if ( !url.startsWith( "http://" ) && !url.startsWith( "https://" ) )
     {
         url = "http://" + url;
     }

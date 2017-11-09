@@ -103,6 +103,11 @@ void UserAuthentication::onRESTAuthenticationAuthState( bool authenticated, QStr
 void UserAuthentication::onRESTAuthenticationErrorAuthState( QString errorCode, QString reason )
 {
     log_verbose << TAG << "failed to get auth state: " << errorCode << ", reason: " << reason << std::endl;
+    if ( _userName.isEmpty() && _password.isEmpty() )
+    {
+        emit onResponseAuthState( false, "" );
+        return;
+    }
     _userName.clear();
     _password.clear();
     emit onResponseSignInResult( false, "", AuthCodeServerNotReachable, QApplication::translate( "UserAuthentication", "Server is not reachable." ) );

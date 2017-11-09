@@ -17,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
+import net.m4e.common.EntityWithPhoto;
 
 /**
  * This entity describes an event location.
@@ -25,7 +26,7 @@ import net.m4e.app.resources.StatusEntity;
  * Date of creation Aug 31, 2017
  */
 @Entity
-public class EventLocationEntity implements Serializable {
+public class EventLocationEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Serialization version
@@ -58,7 +59,7 @@ public class EventLocationEntity implements Serializable {
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = CascadeType.ALL)
+    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**
@@ -145,6 +146,7 @@ public class EventLocationEntity implements Serializable {
      * 
      * @return DocumentEntity containing the photo
      */
+    @Override
     public DocumentEntity getPhoto() {
         return photo;
     }
@@ -154,6 +156,7 @@ public class EventLocationEntity implements Serializable {
      * 
      * @param photo DocumentEntity containing the photo
      */
+    @Override
     public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }

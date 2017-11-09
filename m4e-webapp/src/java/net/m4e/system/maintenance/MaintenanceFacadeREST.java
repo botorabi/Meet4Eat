@@ -61,7 +61,7 @@ public class MaintenanceFacadeREST {
     public String stats() {
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
-        if (null == info) {
+        if (info == null) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
         Maintenance mutils = new Maintenance(entityManager);
@@ -81,7 +81,7 @@ public class MaintenanceFacadeREST {
     public String purgeResources() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         Maintenance mutils = new Maintenance(entityManager);
-        int countpurges = mutils.purgeResources();
+        int countpurges = mutils.purgeAllResources();
         Log.info(TAG, "total count of " + countpurges + " resources were purged");
         jsonresponse.add("countPurges", countpurges);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "" +  countpurges + " resources were purged.", ResponseResults.CODE_OK, jsonresponse.build().toString());

@@ -94,7 +94,7 @@ class Connection : public QObject
         /**
          * @brief Notify about closing the connection.
          */
-        void                    onClose();
+        void                    onClosedConnection();
 
         /**
          * @brief This signal notifies about a new incoming network packet in channel 'System'.

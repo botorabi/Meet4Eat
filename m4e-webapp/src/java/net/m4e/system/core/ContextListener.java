@@ -7,6 +7,7 @@
  */
 package net.m4e.system.core;
 
+import java.io.InputStream;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -46,15 +47,13 @@ public class ContextListener implements ServletContextListener {
 
         // save the context parameters in app configuration
         ServletContext ctx = sce.getServletContext();
-        String appversion = ctx.getInitParameter(AppConfiguration.TOKEN_APP_VERSION);
-        AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_APP_VERSION, appversion);
-        String mailercfg = ctx.getInitParameter(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
-        AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE, mailercfg);
+        setupConfiguration(ctx);
 
         // handle a possible deployment update
         AppUpdateManager um = new AppUpdateManager(entityManager);
         Throwable problem = null;
         try {
+            String appversion = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_APP_VERSION);
             // embed the update tasks in user transaction
             userTransaction.begin();
             um.checkForUpdate(appversion);
@@ -63,13 +62,13 @@ public class ContextListener implements ServletContextListener {
         catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             problem = ex;
         }
-        if (null != problem) {
+        if (problem != null) {
             Log.error( TAG, "problem occurred while update checking, reason: " + problem.getLocalizedMessage());
             try {
                 userTransaction.rollback();
             }
             catch(SystemException ex) {
-                Log.error( TAG, "problem occurred while rolling back any transaction, reason: " + ex.getLocalizedMessage());                
+                Log.error( TAG, "problem occurred while rolling back transaction, reason: " + ex.getLocalizedMessage());                
             }
         }
     }
@@ -77,5 +76,26 @@ public class ContextListener implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         Log.info(TAG, "Destroying the servlet container");
+    }
+
+    /**
+     * Setup the app configuration.
+     * 
+     * @param ctx Servlet context
+     */
+    private void setupConfiguration(ServletContext ctx) {
+        // save the context parameters in app configuration
+        String appversion = ctx.getInitParameter(AppConfiguration.TOKEN_APP_VERSION);
+        AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_APP_VERSION, appversion);
+        String mailercfg = ctx.getInitParameter(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
+        AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE, mailercfg);
+
+        // setup the user registration configuration
+        String accountregcfg = ctx.getInitParameter(AppConfiguration.TOKEN_ACC_REGISTRATION_CONFIG_FILE);
+        InputStream configcontent = ctx.getResourceAsStream("/WEB-INF/" + accountregcfg);
+        AppConfiguration.getInstance().setupAccountRegistrationConfig(configcontent);
+        if (configcontent == null) {
+            Log.warning(TAG, "No account registration config file was found, using defaults!");
+        }        
     }
 }

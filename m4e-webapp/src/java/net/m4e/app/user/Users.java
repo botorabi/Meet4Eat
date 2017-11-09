@@ -30,7 +30,6 @@ import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.system.core.AppInfoEntity;
@@ -82,7 +81,7 @@ public class Users {
      *                           is the owner of a resource, otherwise return false.
      */
     public boolean userIsOwnerOrAdmin(UserEntity user, StatusEntity resourceStatus) {
-        if ((null == user) || (null == resourceStatus)) {
+        if ((user == null) || (resourceStatus == null)) {
             return false;
         }
         return Objects.equals(user.getId(), resourceStatus.getIdOwner()) ||
@@ -119,7 +118,7 @@ public class Users {
         List<String> reqroles = requestingUser.getRolesAsString();
         boolean isadmin  = reqroles.contains(AuthRole.USER_ROLE_ADMIN);
         // check if any invalid role definitions exist, e.g. a normal user is not permitted to request for an admin role.
-        if (null != requestedRoles) {
+        if (requestedRoles != null) {
             for (RoleEntity role: requestedRoles) {
                 if (!allowedroles.contains(role.getName())) {
                     Log.warning(TAG, "*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
@@ -149,7 +148,7 @@ public class Users {
         newuser.setLogin(inputEntity.getLogin());
         newuser.setPassword(inputEntity.getPassword());
         newuser.setName(inputEntity.getName());
-        newuser.setEmail((null != inputEntity.getEmail()) ? inputEntity.getEmail() : "");
+        newuser.setEmail((inputEntity.getEmail() != null) ? inputEntity.getEmail() : "");
         newuser.setRoles(new ArrayList<>());
         addUserRoles(newuser, inputEntity.getRolesAsString());
 
@@ -162,7 +161,7 @@ public class Users {
         try {
             createUserEntity(newuser);
             status.setIdOwner(newuser.getId());
-            status.setIdCreator((null != creatorID) ? creatorID: newuser.getId());
+            status.setIdCreator((creatorID != null) ? creatorID: newuser.getId());
             newuser.setStatus(status);
             // NOTE this call updates the entity in database, no need to call users.updateUser!
             updateUserLastLogin(newuser);
@@ -209,24 +208,18 @@ public class Users {
     }
 
     /**
-     * Update the user image with the content of given image.
+     * Update the user image with the content of given image. Make sure that the
+     * document content and encoding are set properly.
      * 
      * @param user          User entity
      * @param image         Image to set to given event
      * @throws Exception    Throws exception if any problem occurred.
      */
     void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
-        DocumentPool imagepool = new DocumentPool(entityManager);
-        DocumentEntity img = imagepool.getOrCreatePoolDocument(image.getETag());
-        if (!imagepool.compareETag(user.getPhoto(), img.getETag())) {
-            imagepool.releasePoolDocument(user.getPhoto());
-        }
-        img.setContent(image.getContent());
-        img.updateETag();
-        img.setType(DocumentEntity.TYPE_IMAGE);
-        img.setEncoding(image.getEncoding());
-        img.setResourceURL("/User/Image");
-        user.setPhoto(img);
+        Entities entities = new Entities(entityManager);
+        // make sure that the resource URL is set
+        image.setResourceURL("/User/Image");
+        entities.updateEntityPhoto(user, image);
     }
 
     /**
@@ -239,7 +232,7 @@ public class Users {
     public void markUserAsDeleted(UserEntity user) throws Exception {
         Entities eutils = new Entities(entityManager);
         StatusEntity status = user.getStatus();
-        if (null == status) {
+        if (status == null) {
             throw new Exception("User has no status field!");
         }
         status.setDateDeletion((new Date().getTime()));
@@ -248,7 +241,7 @@ public class Users {
         // update the app stats
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
-        if (null == appinfo) {
+        if (appinfo == null) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementUserCountPurge(1L);
@@ -415,20 +408,20 @@ public class Users {
      */
     public JsonObjectBuilder exportUserJSON(UserEntity entity, ConnectedClients connections) {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (null != entity.getId()) ? entity.getId() : 0);
-        json.add("name", (null != entity.getName()) ? entity.getName() : "");
-        json.add("login", (null != entity.getLogin()) ? entity.getLogin() : "");
-        json.add("email", (null != entity.getEmail()) ? entity.getEmail() : "");
-        json.add("dateLastLogin", "" + ((null != entity.getDateLastLogin()) ? entity.getDateLastLogin() : 0));
-        json.add("dateCreation", "" + ((null != entity.getStatus()) ? entity.getStatus().getDateCreation() : 0));
+        json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
+            .add("name", (entity.getName() != null) ? entity.getName() : "")
+            .add("login", (entity.getLogin() != null) ? entity.getLogin() : "")
+            .add("email", (entity.getEmail() != null) ? entity.getEmail() : "")
+            .add("dateLastLogin", "" + ((entity.getDateLastLogin() != null) ? entity.getDateLastLogin() : 0))
+            .add("dateCreation", "" + ((entity.getStatus() != null) ? entity.getStatus().getDateCreation() : 0));
         JsonArrayBuilder roles = Json.createArrayBuilder();
         entity.getRoles().forEach((r) -> {
             roles.add(r.getName());
         });
-        json.add("roles", roles);
-        json.add("photoId", (null != entity.getPhoto()) ? entity.getPhoto().getId() : 0);
-        // the ETag can be used on a client for caching purpose
-        json.add("photoETag", (null != entity.getPhoto()) ? entity.getPhoto().getETag(): "");
+        json.add("roles", roles)
+            .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
+            // the ETag can be used on a client for caching purpose
+            .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
         // set the online status
         boolean online = (connections.getConnectedUser(entity.getId()) != null);
         json.add("status", online ? "online" : "offline");
@@ -442,7 +435,7 @@ public class Users {
      * @return           User entity or null if the JSON string was not appropriate
      */
     public UserEntity importUserJSON(String jsonString) {
-        if (null == jsonString) {
+        if (jsonString == null) {
             return null;
         }
 
@@ -459,7 +452,7 @@ public class Users {
             photo  = jobject.getString("photo", null);
             
             JsonArray r = jobject.getJsonArray("roles");
-            if (null != r) {
+            if (r != null) {
                 List<JsonString> roles = r.getValuesAs(JsonString.class);
                 for (int i = 0; i < roles.size(); i++) {
                     userroles.add(roles.get(i).getString());
@@ -478,13 +471,12 @@ public class Users {
         entity.setPassword(passwd);
         entity.setEmail(email);
 
-        if (null != photo) {
+        if (photo != null) {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);
-            image.setContent(photo.getBytes());
+            image.updateContent(photo.getBytes());
             image.setType(DocumentEntity.TYPE_IMAGE);
-            image.updateETag();
             entity.setPhoto(image);
         }
 

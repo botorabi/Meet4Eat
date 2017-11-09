@@ -8,14 +8,19 @@
 
 package net.m4e.app.user;
 
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
@@ -101,7 +106,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         //! NOTE Acutally, this check should not be needed (see AuthFilter), but just to be on the safe side!
-        if (null == sessionuser) {
+        if (sessionuser == null) {
             Log.error(TAG, "*** Internal error, cannot create user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
@@ -149,7 +154,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     public String registerUser(String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (null != sessionuser) {
+        if (sessionuser != null) {
             Log.error(TAG, "*** an already authenticated user tries a user registration!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to register user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
@@ -178,8 +183,8 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to register a new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
-        // create the activation URL
-        String activationurl = AppConfiguration.getInstance().getHTMLBaseURL(request) + "/activate.html";
+        // get the activation URL
+        String activationurl = getLinkURL("url.activation", request, "/activate.html");
         UserRegistrations register = new UserRegistrations(entityManager);
         register.registerUserAccount(newuser, activationurl, sendMailEvent);
 
@@ -191,32 +196,112 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     /**
      * Activate a user by given its activation token. This is usually used during the registration process.
      * 
-     * @param id        User ID
      * @param token     Activation token
      * @param request   HTTP request
      * @return          JSON response
      */
     @GET
-    @Path("activate/{id}/{token}")
+    @Path("activate/{token}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
-    public String activateUser(@PathParam("id") Long id, @PathParam("token") String token, @Context HttpServletRequest request) {
+    public String activateUser(@PathParam("token") String token, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (null != sessionuser) {
+        if (sessionuser != null) {
             Log.error(TAG, "*** an already authenticated user tries a user activation!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user account, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
-        Log.verbose(TAG, "activating user account: user id: " + id + ", token: " + token);
+        Log.verbose(TAG, "activating user account, token: " + token);
         UserEntity user;
         try {
             UserRegistrations register = new UserRegistrations(entityManager);
-            user = register.activateUserAccount(id, token);
+            user = register.activateUserAccount(token);
         }
         catch (Exception ex) {
             Log.debug(TAG, "user activation failed, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user account! Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+        jsonresponse.add("userName", user.getName());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully activated.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Request for resetting a user password. Only guests can use this service.
+     * 
+     * @param requestJson  Request data such as user email address in JSON format
+     * @param request      HTTP request
+     * @return             JSON response
+     */
+    @POST
+    @Path("requestpasswordreset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    public String requestPasswordReset(String requestJson, @Context HttpServletRequest request) {
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionuser != null) {
+            Log.error(TAG, "*** an already authenticated user tries to reset the password!");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
+        }
+
+        try {
+            JsonReader jreader = Json.createReader(new StringReader(requestJson));
+            JsonObject jobject = jreader.readObject();
+            String email = jobject.getString("email", null);
+            if (email == null) {
+                Log.error(TAG, "cannot process password reset request, invalid input");
+                return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
+            }
+            // create the activation URL
+            String url = getLinkURL("url.passwordReset", request, "/resetpassword.html");
+            UserRegistrations register = new UserRegistrations(entityManager);
+            register.requestPasswordReset(email, url, sendMailEvent);
+        }
+        catch(Exception ex) {
+            Log.error(TAG, "cannot process password reset request, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password! Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, null);           
+        }
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Request for user password reset was successfully processed.", ResponseResults.CODE_OK, null);
+    }
+
+    /**
+     * Try to set a new password for an user account. The password reset token is validated,
+     * on success the user password is reset to the given one in 'requestJason'.
+     * 
+     * @param requestJson Request in JSON
+     * @param token       Password reset token
+     * @param request     HTTP request
+     * @return            JSON response
+     */
+    @POST
+    @Path("passwordreset/{token}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    public String passwordReset(String requestJson, @PathParam("token") String token, @Context HttpServletRequest request) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionuser != null) {
+            Log.error(TAG, "*** an already authenticated user tries to reset an user password");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+        }
+
+        UserEntity user;
+        try {
+            JsonReader jreader = Json.createReader(new StringReader(requestJson));
+            JsonObject jobject = jreader.readObject();
+            String newpassword = jobject.getString("password", null);
+            if (newpassword == null) {
+                Log.error(TAG, "cannot process password reset request, invalid input");
+                return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
+            }
+            UserRegistrations register = new UserRegistrations(entityManager);
+            user = register.processPasswordReset(token, newpassword);
+        }
+        catch (Exception ex) {
+            Log.debug(TAG, "user password reset failed! Reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
         jsonresponse.add("userName", user.getName());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully activated.", ResponseResults.CODE_OK, jsonresponse.build().toString());
@@ -237,9 +322,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String edit(@PathParam("id") Long id, String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (null == sessionuser) {
+        if (sessionuser == null) {
             Log.error(TAG, "*** Cannot update user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.",
                                              ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
@@ -256,7 +341,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity user = super.find(id);
-        if ((null == user) || !user.getStatus().getIsActive()) {
+        if ((user == null) || !user.getStatus().getIsActive()) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for updating.",
                                              ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -272,16 +357,13 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         user.setRoles(getUsers().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
 
         // take over non-empty fields
-        if ((null != reqentity.getName()) && !reqentity.getName().isEmpty()) {
+        if ((reqentity.getName() != null) && !reqentity.getName().isEmpty()) {
             user.setName(reqentity.getName());
         }
-        if ((null != reqentity.getEmail()) && !reqentity.getEmail().isEmpty()) {
-            user.setEmail(reqentity.getEmail());
-        }
-        if ((null != reqentity.getPassword()) && !reqentity.getPassword().isEmpty()) {
+        if ((reqentity.getPassword() != null) && !reqentity.getPassword().isEmpty()) {
             user.setPassword(reqentity.getPassword());
         }
-        if (null != reqentity.getPhoto()) {
+        if (reqentity.getPhoto() != null) {
             try {
                 getUsers().updateUserImage(user, reqentity.getPhoto());
             }
@@ -315,10 +397,10 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (null == sessionuser) {
+        if (sessionuser == null) {
             Log.error(TAG, "*** Cannot delete user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
@@ -329,7 +411,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         UserEntity user = super.find(id);
-        if ((null == user) || !user.getStatus().getIsActive()) {
+        if ((user == null) || !user.getStatus().getIsActive()) {
             Log.warning(TAG, "*** User was attempting to delete non-existing user!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -347,6 +429,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
 
     /**
      * Search for users containing given keyword in their name.
+     * A maximal of 10 users are returned.
      * 
      * @param keyword  Keyword to search for
      * @return         JSON response
@@ -357,21 +440,27 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String search(@PathParam("keyword") String keyword) {
         JsonArrayBuilder results = Json.createArrayBuilder();
-        if (null == keyword) {
+        if (keyword == null) {
            return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());        
         }
 
         Entities utils = new Entities(entityManager);
-        List<UserEntity> hits = utils.search(UserEntity.class, keyword, Arrays.asList("name"), 20);
+        List<String> searchfields = new ArrayList();
+        searchfields.add("name");
+        if (keyword.contains("@")) {
+            searchfields.add("email");
+        }
+        List<UserEntity> hits = utils.search(UserEntity.class, keyword, searchfields, 10);
         for (UserEntity hit: hits) {
-            if (!hit.getStatus().getIsActive()) {
+            // exclude non-active users and admins from hit list
+            if (!hit.getStatus().getIsActive() || getUsers().checkUserRoles(hit, Arrays.asList(AuthRole.USER_ROLE_ADMIN)) ) {
                 continue;
             }
             JsonObjectBuilder json = Json.createObjectBuilder();
-            json.add("id", hit.getId());
-            json.add("name", (null != hit.getName()) ? hit.getName() : "");
-            json.add("photoId", (null != hit.getPhoto()) ? hit.getPhoto().getId() : 0);
-            json.add("photoETag", (null != hit.getPhoto()) ? hit.getPhoto().getETag() : "");
+            json.add("id", hit.getId().toString())
+                .add("name", (hit.getName() != null) ? hit.getName() : "")
+                .add("photoId", (hit.getPhoto() != null) ? hit.getPhoto().getId().toString() : "")
+                .add("photoETag", (hit.getPhoto() != null) ? hit.getPhoto().getETag() : "");
             results.add(json);
         }
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Search results", ResponseResults.CODE_OK, results.build().toString());
@@ -390,9 +479,9 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id);
+        jsonresponse.add("id", id.toString());
         UserEntity user = super.find(id);
-        if ((null == user) || !user.getStatus().getIsActive()) {
+        if ((user == null) || !user.getStatus().getIsActive()) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "User was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
@@ -474,9 +563,29 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      * @return User utils
      */
     private Users getUsers() {
-        if (null == userUtils) {
+        if (userUtils == null) {
             userUtils = new Users(entityManager);
         }
         return userUtils;
+    }
+
+    /**
+     * Get the link URL used in emails. If a valid account configuration file exists in app then the link is retrieved
+     * from that file, otherwise the current request URL is used to create a link.
+     * 
+     * @param configName    If a valid account registration config was found in app then this is the config settings name
+     * @param request       Used to create an URL basing on current http request if no valid configuration exists in app
+     * @param defaultPage   Last part of the URL if no valid configuration exists in app
+     * @return 
+     */
+    private String getLinkURL(String configName, HttpServletRequest request, String defaultPage) {
+        // first try to get the link from account registration config
+        Properties props = AppConfiguration.getInstance().getAccountRegistrationConfig();
+        String link = (props != null) ? props.getProperty(configName) : null;
+        // need to fall back to current server url?
+        if (link ==  null) {
+            return AppConfiguration.getInstance().getHTMLBaseURL(request) + defaultPage;
+        }
+        return link;
     }
 }

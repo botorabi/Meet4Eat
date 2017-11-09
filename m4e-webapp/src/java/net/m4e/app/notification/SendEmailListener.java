@@ -69,7 +69,7 @@ public class SendEmailListener {
      */
     private void assembleMail(SendEmailEvent event) {
         Properties cfg = getMailerConfig();
-        if (null == cfg) {
+        if (cfg == null) {
             Log.warning(TAG, "Cannot send e-mail, invalid configuration");
             return;
         }
@@ -90,12 +90,12 @@ public class SendEmailListener {
             for (String rec: event.getRecipients()) {
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(rec));
             }
-            if (null != event.getRecipientsCC()) {
+            if (event.getRecipientsCC() != null) {
                 for (String rec: event.getRecipientsCC()) {
                     message.addRecipient(Message.RecipientType.CC, new InternetAddress(rec));
                 }                
             }
-            if (null != event.getRecipientsBCC()) {
+            if (event.getRecipientsBCC() != null) {
                 for (String rec: event.getRecipientsBCC()) {
                     message.addRecipient(Message.RecipientType.BCC, new InternetAddress(rec));
                 }                
@@ -120,23 +120,23 @@ public class SendEmailListener {
      * @return Mailer configuration
      */
     private Properties getMailerConfig() {
-        if (null != mailServerConfig) {
+        if (mailServerConfig != null) {
             return mailServerConfig;
         }
 
         try {
             String cfgfile = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
-            if (null == cfgfile) {
+            if (cfgfile == null) {
                 Log.error(TAG, "*** Missing mailer configuration file entry in application configuration!");
                 return null;
             }
-            InputStream resourceContent = context.getResourceAsStream("/WEB-INF/" + cfgfile);
-            if (null == cfgfile) {
-                Log.error(TAG, "*** Missing mailer configuration file: " + "/WEB-INF/" + cfgfile);
+            InputStream configcontent = context.getResourceAsStream("/WEB-INF/" + cfgfile);
+            if (configcontent == null) {
+                Log.error(TAG, "*** Missing mail config file in application!");
                 return null;
             }
             Properties cfg = new Properties();
-            cfg.load(resourceContent);
+            cfg.load(configcontent);
             mailServerConfig = cfg;
         }
         catch (IOException ex) {

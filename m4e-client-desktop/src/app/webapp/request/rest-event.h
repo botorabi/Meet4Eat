@@ -124,6 +124,14 @@ class RESTEvent : public Meet4EatREST
          */
         void                    removeLocation( const QString& eventId, const QString& locationId );
 
+        /**
+         * @brief Update event location.
+         *
+         * @param eventId     Event ID
+         * @param locationId  ID of location to update
+         */
+        void                    updateLocation( const QString& eventId, event::ModelLocationPtr location );
+
     signals:
 
         /**
@@ -280,6 +288,22 @@ class RESTEvent : public Meet4EatREST
          * @param reason    Error string
          */
         void                    onRESTEventErrorRemoveLocation( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of updateLocation request.
+         *
+         * @param eventId     ID of event containing the location
+         * @param locationId  ID of updated location
+         */
+        void                    onRESTEventUpdateLocation( QString eventId, QString locationId );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorUpdateLocation( QString errorCode, QString reason );
 };
 
 } // namespace webapp

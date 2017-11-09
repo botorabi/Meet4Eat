@@ -23,6 +23,11 @@ NotifyEvent::NotifyEvent()
 
 QString NotifyEvent::toJSON()
 {
+    return QString( toJSONDocument().toJson() );
+}
+
+QJsonDocument NotifyEvent::toJSONDocument()
+{
     QJsonObject obj;
     obj.insert( "type", getType() );
     obj.insert( "subject", getSubject() );
@@ -30,7 +35,7 @@ QString NotifyEvent::toJSON()
     obj.insert( "data",  getData().object() );
 
     QJsonDocument doc( obj );
-    return QString( doc.toJson() );
+    return doc;
 }
 
 bool NotifyEvent::fromJSON( const QString& input )

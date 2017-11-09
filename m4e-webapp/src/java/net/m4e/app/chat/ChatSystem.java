@@ -70,7 +70,7 @@ public class ChatSystem {
      * 
      * @param event Chat event
      */
-    public void dispatchMessge(@ObservesAsync ChannelChatEvent event) {
+    public void dispatchMessage(@ObservesAsync ChannelChatEvent event) {
         Long senderid = event.getSenderId();
         UserEntity user = connections.getConnectedUser(senderid);
         if (user == null) {
@@ -110,22 +110,8 @@ public class ChatSystem {
      */
     private void sendMessageEvent(UserEntity sender, Long receiverId, Packet packet) {
         Events events = new Events(entityManager);
-        EventEntity event = events.findEvent(receiverId);
-        if (event == null) {
-            Log.warning(TAG, "cannot distribute event message, invalid event id " + receiverId);
-            return;
-        }
-
-        Collection<UserEntity> members = event.getMembers();
-        // avoid duplicate IDs by using a set (the sender can be also the owner or part of the members)
-        Set<Long> receiverids = new HashSet();
+        Set<Long> receiverids = events.getMembers(receiverId);
         receiverids.add(sender.getId());
-        receiverids.add(event.getStatus().getIdOwner());
-        if (members != null) {
-            members.forEach((m) -> {
-                receiverids.add(m.getId());
-            });
-        }
         packet.setSource(sender.getName());
         packet.setTime((new Date()).getTime());
         connections.sendPacket(packet, new ArrayList(receiverids));

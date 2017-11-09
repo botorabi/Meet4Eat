@@ -23,10 +23,37 @@ Notifications::Notifications( webapp::WebApp* p_webApp, QObject* p_parent ) :
  _p_webApp( p_webApp )
 {
     connect( _p_webApp->getConnection(), SIGNAL( onChannelNotifyPacket( m4e::comm::PacketPtr ) ), this, SLOT( onChannelNotifyPacket( m4e::comm::PacketPtr ) ) );
+    connect( _p_webApp->getConnection(), SIGNAL( onChannelEventPacket( m4e::comm::PacketPtr ) ), this, SLOT( onChannelEventPacket( m4e::comm::PacketPtr ) ) );
 }
 
 Notifications::~Notifications()
 {
+}
+
+bool Notifications::sendEventMessage( const QString& eventId,  const QString& title, const QString& text )
+{
+    if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
+    {
+        log_error << TAG << "cannot send event message, no server connection!" << std::endl;
+        return false;
+    }
+
+    comm::PacketPtr packet = new comm::Packet();
+    packet->setChannel( comm::Packet::CHANNEL_EVENT );
+    packet->setSource( _p_webApp->getUser()->getUserData()->getId() );
+    NotifyEventPtr notify = new NotifyEvent();
+    notify->setType( "message" );
+    notify->setSubject( title );
+    notify->setText( text );
+    // the event id is placed into notify data
+    QJsonObject obj;
+    obj.insert( "eventId", eventId );
+    QJsonDocument doc( obj );
+    notify->setData( doc );
+
+    packet->setData( notify->toJSONDocument() );
+
+    return _p_webApp->getConnection()->sendPacket( packet );
 }
 
 void Notifications::onChannelNotifyPacket( m4e::comm::PacketPtr packet )
@@ -44,15 +71,34 @@ void Notifications::onChannelNotifyPacket( m4e::comm::PacketPtr packet )
     if ( ( notifytype == "addevent" ) || ( notifytype == "removeevent"  ) || ( notifytype == "modifyevent"  ) )
     {
         Notifications::ChangeType changetype = ( notifytype == "addevent" ) ? Notifications::Added : ( notifytype == "removeevent" ) ? Notifications::Removed : Notifications::Modified;
-        QString eventid = QString::number( obj.value( "eventId" ).toInt( 0 ) );
+        QString eventid = obj.value( "eventId" ).toString( "" );
         emit onEventChanged( changetype, eventid );
     }
     else if ( ( notifytype == "addlocation" ) || ( notifytype == "removelocation"  ) || ( notifytype == "modifylocation"  ) )
     {
         Notifications::ChangeType changetype = ( notifytype == "addlocation" ) ? Notifications::Added : ( notifytype == "removelocation" ) ? Notifications::Removed : Notifications::Modified;
-        QString eventid = QString::number( obj.value( "eventId" ).toInt( 0 ) );
-        QString locationid = QString::number(  obj.value( "locationId" ).toInt( 0 ) );
+        QString eventid = obj.value( "eventId" ).toString( "" );
+        QString locationid = obj.value( "locationId" ).toString( "" );
         emit onEventLocationChanged( changetype, eventid, locationid );
+    }
+}
+
+void Notifications::onChannelEventPacket( m4e::comm::PacketPtr packet )
+{
+    notify::NotifyEventPtr notify = new notify::NotifyEvent();
+    notify->setPacket( packet );
+    notify->fromJSON( packet->getData() );
+
+    log_verbose << TAG << "new notification arrived: " << notify->getSubject() << std::endl;
+
+    const QJsonDocument& doc = notify->getData();
+    QJsonObject obj = doc.object();
+    QString notifytype = notify->getType();
+
+    if ( ( notifytype == "message" ) )
+    {
+        QString eventid = obj.value( "eventId" ).toString( "" );
+        emit onEventMessage( packet->getSource(), eventid, notify );
     }
 }
 

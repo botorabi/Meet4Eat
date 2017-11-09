@@ -31,6 +31,11 @@ namespace settings
  */
 class DialogSettings : public common::BaseDialog
 {
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(DialogSettings) ";
+
     Q_OBJECT
 
     public:
@@ -58,6 +63,8 @@ class DialogSettings : public common::BaseDialog
         void                        onBtnSignInClicked();
 
         void                        onBtnSignOutClicked();
+
+        void                        onLinkActivated( QString link );
 
         /**
          * @brief This signal is received to notify about user authentication results.

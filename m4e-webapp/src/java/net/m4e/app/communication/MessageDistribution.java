@@ -32,7 +32,13 @@ public class MessageDistribution {
      * Used for firing chat channel events
      */
     @Inject
-    Event<ChannelChatEvent> channelEvent;
+    Event<ChannelChatEvent> channelChatEvent;
+
+    /**
+     * Used for firing event channel events
+     */
+    @Inject
+    Event<ChannelEventEvent> channelEventEvent;
 
     @Inject
     ConnectedClients connections;
@@ -52,6 +58,9 @@ public class MessageDistribution {
         if (packet.getChannel().equals(Packet.CHANNEL_CHAT)) {
             distributeToChannelChat(packet, session);
         }
+        else if (packet.getChannel().equals(Packet.CHANNEL_EVENT)) {
+            distributeToChannelEvent(packet, session);
+        }
         //! TODO cover all other channel types
     }
 
@@ -66,6 +75,20 @@ public class MessageDistribution {
         ChannelChatEvent ev = new ChannelChatEvent();
         ev.setSenderId(user.getId());
         ev.setPacket(packet);
-        channelEvent.fireAsync(ev);
+        channelChatEvent.fireAsync(ev);
+    }
+
+    /**
+     * Send an asynchronous event to listeners of communication channel 'Event'.
+     * 
+     * @param packet    Incoming event packet
+     * @param session   WebSocket session receiving the packet
+     */
+    private void distributeToChannelEvent(Packet packet, Session session) {
+        UserEntity user = connections.getUser(session);
+        ChannelEventEvent ev = new ChannelEventEvent();
+        ev.setSenderId(user.getId());
+        ev.setPacket(packet);
+        channelEventEvent.fireAsync(ev);
     }
 }

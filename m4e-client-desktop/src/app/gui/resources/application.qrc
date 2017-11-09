@@ -23,9 +23,13 @@
         <file>icon-maximize.png</file>
         <file>icon-buzz-64.png</file>
         <file>icon-undo-small.png</file>
+        <file>icon-mail.png</file>
+        <file>icon-mail-notify.png</file>
+        <file>icon-mail-small.png</file>
         <file>icon-notify.png</file>
         <file>icon-newevent.png</file>
         <file>icon.ico</file>
         <file>logo.png</file>
+        <file>LICENSE</file>
     </qresource>
 </RCC>

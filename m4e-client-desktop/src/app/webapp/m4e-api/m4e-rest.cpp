@@ -37,7 +37,7 @@ const QString& Meet4EatREST::getServerURL() const
 void Meet4EatREST::setServerURL( const QString& serverURL )
 {
     _urlServer = serverURL;
-    if ( !_urlServer.startsWith( "http://" ) || !_urlServer.startsWith( "https://" ) )
+    if ( !_urlServer.startsWith( "http://" ) && !_urlServer.startsWith( "https://" ) )
     {
         _urlServer = "http://" + _urlServer;
     }

@@ -345,8 +345,8 @@ QScrollBar::vertical {
    <slot>onBtnSendClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>377</x>
-     <y>214</y>
+     <x>371</x>
+     <y>225</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>

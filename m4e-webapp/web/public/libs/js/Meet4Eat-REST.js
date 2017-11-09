@@ -19,10 +19,10 @@ function Meet4EatREST() {
 	var self = this;
 
 	/* API version */
-	self._version = "0.7.0";
+	self._version = "0.8.3";
 
 	/* Root path of web service */
-	self._webRoot = "/m4e-webapp";
+	self._webRoot = "/m4e";
 	
 	/* URL for accessing app information */
 	self._urlAppInfo  = self._webRoot + '/webresources/rest/appinfo';
@@ -481,7 +481,7 @@ function Meet4EatUserRegREST() {
 	var self = this;
 
 	/* API version */
-	self._version = "1.0.0";
+	self._version = "1.1.0";
 
 	/* Root URL for REST requests */
 	self._rootPath = "";
@@ -514,11 +514,31 @@ function Meet4EatUserRegREST() {
 	 * Request for activating an user account.
 	 * 
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 * @param {integer}  id               User id
 	 * @param {integer}  token            Activation token
 	 */
-	self.accountActivate = function(resultsCallback, id, token) {
-		self._fcnRequestJson(self._rootPath + '/activate/' + id + '/' + token, null, 'GET', resultsCallback);
+	self.accountActivate = function(resultsCallback, token) {
+		self._fcnRequestJson(self._rootPath + '/activate/' + token, null, 'GET', resultsCallback);
+	};
+
+	/**
+	 * Request for resetting a password.
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 * @param {array}    fields           User email
+	 */
+	self.requestResetPassword = function(resultsCallback, fields) {
+		self._fcnRequestJson(self._rootPath + '/requestpasswordreset', fields, 'POST', resultsCallback);
+	};
+
+    /**
+	 * Request for performing the password reset.
+	 * 
+	 * @param {function} resultsCallback  Callback which is used when the results arrive.
+	 * @param {integer}  token            Activation token
+	 * @param {array}    fields           User's new pasword
+	 */
+	self.resetPassword = function(resultsCallback, token, fields) {
+		self._fcnRequestJson(self._rootPath + '/passwordreset/' + token, fields, 'POST', resultsCallback);
 	};
 }
 

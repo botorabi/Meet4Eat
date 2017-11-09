@@ -5,6 +5,7 @@
 		<meta charset="UTF-8">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" href="public/images/favicon.ico">
 		<script src="public/libs/js/jquery.js"></script>
 		<script src="public/libs/js/bootstrap.js"></script>
 		<script src="public/libs/js/moment.js"></script>
@@ -30,8 +31,8 @@
 	</head>
 	<body>
 		<div class="container hide" id="main_login">
-			<h1 class="text-center">Welcome to Meet4Eat Admin Panel</h1>
-			<div class="row">
+			<h2 class="text-center">Welcome to Meet4Eat Admin Panel</h2>
+			<div class="">
 				<div class="col-md-4 col-md-offset-4">
 					<div class="login-panel panel panel-default">
 						<div class="panel-heading">
@@ -46,20 +47,14 @@
 									<div class="form-group">
 										<input class="form-control" placeholder="Password" name="password" type="password" value="">
 									</div>
-									<!--div class="checkbox">
-										<label>
-											<input name="remember" type="checkbox" value="Remember Me">Remember Me
-										</label>
-									</div-->
 									<input type="submit" hidden onclick="getMeet4EatUI().onBtnLogin(); event.preventDefault();">
 									<a class="btn btn-lg btn-primary btn-block" onclick="getMeet4EatUI().onBtnLogin()">Login</a>
 								</fieldset>
 							</form>
-							<div style="margin-top: 30px;">
-								<hr>
-								<div>
-									<a class="btn" href="register.html">You have no account? <strong>Register now</strong>.</a>
-								</div>
+							<hr>
+							<div>
+								<a class="small" href="register.html">You have no account? <strong>Register now!</strong>.</a>
+								<br><a class="small" href="requestpassword.html">Forgot your password?</a>
 							</div>
 						</div>
 					</div>
@@ -255,7 +250,7 @@
 										</div>
 										<div class="form-group">
 											<label>Email</label>
-											<input class="form-control" maxlength="64" name="email" placeholder="yourmail@dot.com">
+											<input id="page_users_edit_form_email" class="form-control" maxlength="64" name="email" placeholder="yourmail@dot.com">
 											<p class="help-block">Your email address</p>
 										</div>
 										<div id="page_users_edit_form_grp_passwd" class="form-group">
@@ -601,6 +596,14 @@
 									<td>Count event locations to purge</td>
 									<td><span id="sys_counteventlocationspurge"></span></td>
 								</tr>
+								<tr>
+									<td>Count pending account registrations</td>
+									<td><span id="sys_countpendingaccounts"></span></td>
+								</tr>
+								<tr>
+									<td>Count pending password resets</td>
+									<td><span id="sys_countpendingpasswords"></span></td>
+								</tr>
 							</table>
 						</div>
 					</div>
@@ -628,7 +631,7 @@
 							<div class="panel panel-default info-box">					
 								<h1>Meet4Eat</h1>
 								<p>Copyright 2017</p>
-								<p>Web site <a href='https://github.com/botorabi/Meet4Eat'>https://github.com/botorabi/Meet4Eat</a></p>
+								<p>Web site <a href='http://m4e.org'>http://m4e.org</a></p>
 								<br>
 								<p>Admin panel version <span id="info_viewversion"></span></p>							
 								<p>Web service version <span id="info_serverversion"></span></p>

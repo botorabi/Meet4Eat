@@ -42,7 +42,7 @@ public class UserRegistrationEntity implements Serializable {
     /**
      * User this activation is used for
      */
-    @OneToOne(optional=false, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private UserEntity user;
 
     /**
@@ -50,6 +50,11 @@ public class UserRegistrationEntity implements Serializable {
      */
     @Column(nullable=false)
     private String activationToken;
+
+    /**
+     * Timestamp of account registration request, used for checking the expiration period.
+     */
+    private Long requestDate = 0L;
 
     /**
      * Get ID.
@@ -114,6 +119,24 @@ public class UserRegistrationEntity implements Serializable {
         return uuid;
     }
 
+    /**
+     * Get the request timestamp in milliseconds.
+     * 
+     * @return Timestamp of requesting the password reset
+     */
+    public Long getRequestDate() {
+        return requestDate;
+    }
+
+    /**
+     * Set the request timestamp in milliseconds.
+     * 
+     * @param requestDate Request timestamp
+     */
+    public void setRequestDate(Long requestDate) {
+        this.requestDate = requestDate;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -135,6 +158,6 @@ public class UserRegistrationEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "user.UserRegistrationEntity[ id=" + id + " ]";
+        return "net.m4e.app.user.UserRegistrationEntity[ id=" + id + " ]";
     }
 }

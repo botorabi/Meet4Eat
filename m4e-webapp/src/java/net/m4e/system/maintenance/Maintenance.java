@@ -19,7 +19,9 @@ import javax.persistence.EntityManager;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
 import net.m4e.app.event.Events;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.UserRegistrations;
 import net.m4e.app.user.Users;
 import net.m4e.common.Entities;
 import net.m4e.system.core.AppInfoEntity;
@@ -58,24 +60,42 @@ public class Maintenance {
      * @return          A JSON object containing builder the proper entity fields
      */
     public JsonObjectBuilder exportInfoJSON(AppInfoEntity entity) {
+        UserRegistrations regs = new UserRegistrations(entityManager);
+        int pendingaccounts = regs.getCountPendingAccountActivations();
+        int pendingpwresets = regs.getCountPendingPasswordResets();
+
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("version", entity.getVersion());
-        json.add("dateLastMaintenance", entity.getDateLastMaintenance());
-        json.add("dateLastUpdate", entity.getDateLastUpdate());
-        json.add("userCountPurge", entity.getUserCountPurge());
-        json.add("eventCountPurge", entity.getEventCountPurge());
-        json.add("eventLocationCountPurge", entity.getEventLocationCountPurge());
+        json.add("version", entity.getVersion())
+            .add("dateLastMaintenance", entity.getDateLastMaintenance())
+            .add("dateLastUpdate", entity.getDateLastUpdate())
+            .add("userCountPurge", entity.getUserCountPurge())
+            .add("eventCountPurge", entity.getEventCountPurge())
+            .add("eventLocationCountPurge", entity.getEventLocationCountPurge())
+            .add("pendingAccountRegistration", pendingaccounts)
+            .add("pendingPasswordResets", pendingpwresets);
         return json;
     }
 
     /**
-     * Purge resources and update the app info by resetting the purge counters
+     * Purge all resources which are expired, such as account registrations or
+     * password reset requests which passed their expiration duration.
+     * 
+     * @return Count of purged resources
+     */
+    public int purgeExpiredResources() {
+        UserRegistrations regutils = new UserRegistrations(entityManager);
+        return regutils.purgeExpiredRequests();
+    }
+
+    /**
+     * Purge all resources and update the app info by resetting the purge counters
      * and updating "last maintenance time".
      * 
      * @return Count of purged resources
      */
-    public int purgeResources() {
-        int countpurges = purgeDeletedResources();
+    public int purgeAllResources() {
+        int countpurges = purgeExpiredResources();
+        countpurges += purgeDeletedResources();
         updateAppInfo();
         return countpurges;
     }
@@ -86,9 +106,10 @@ public class Maintenance {
      * @return Count of purged resources
      */
     private int purgeDeletedResources() {
-        Users       userutils   = new Users(entityManager);
-        Events      eventutils  = new Events(entityManager);
-        Entities    entityutils = new Entities(entityManager);
+        Users        userutils   = new Users(entityManager);
+        Events       eventutils  = new Events(entityManager);
+        Entities     entityutils = new Entities(entityManager);
+        DocumentPool imagepool   = new DocumentPool(entityManager);
 
         int countpurges = 0;
 
@@ -99,9 +120,18 @@ public class Maintenance {
         for (EventEntity event: events) {
             try {
                 if (event.getStatus().getIsDeleted()) {
-                    // NOTE if we remove the entire event, then there is no need for selectively remove 
-                    //      event resources such as locations and members, see the else branch. they are
-                    //      are removed automatically (see the EventEntity).
+                    if (event.getPhoto() != null) {
+                        imagepool.releasePoolDocument(event.getPhoto());
+                    }
+                    Collection<EventLocationEntity> locs = event.getLocations();
+                    if (locs != null) {
+                        // delete the locations
+                        locs.stream()
+                            .filter((loc) -> (loc.getPhoto() != null))
+                            .forEachOrdered((loc) -> {
+                                imagepool.releasePoolDocument(loc.getPhoto());
+                            });
+                    }
                     eventutils.deleteEvent(event);
                     countpurges++;
                 }
@@ -110,7 +140,7 @@ public class Maintenance {
                     eventutils.removeAnyMember(event, users);
                     // purge deleted event locations
                     Collection<EventLocationEntity> locs = event.getLocations();
-                    if (null != locs) {
+                    if (locs != null) {
                         Predicate<EventLocationEntity> pred = ev-> ev.getStatus().getIsDeleted();
                         List<EventLocationEntity> deadlocs = locs.stream().filter(pred).collect(Collectors.toList());
                         // update event's location list
@@ -132,6 +162,9 @@ public class Maintenance {
         // now remove all dead users
         for (UserEntity user: users) {
             try {
+                if (user.getPhoto() != null) {
+                    imagepool.releasePoolDocument(user.getPhoto());
+                }
                 userutils.deleteUser(user);
                 countpurges++;
             }
@@ -144,14 +177,14 @@ public class Maintenance {
     }
 
     /**
-     * Update the app info after purging. It resets the purge counters and
-     * updates the "last maintenance time".
+     * Update the app info. It updates the purge counters and
+     * the "last maintenance time".
      */
     public void updateAppInfo() {
-        // upate app info
+        // update app info
         AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity info = autils.getAppInfoEntity();
-        if (null == info) {
+        if (info == null) {
             Log.warning(TAG, "Could not update app info");
             return;
         }

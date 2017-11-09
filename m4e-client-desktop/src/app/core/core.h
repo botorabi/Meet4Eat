@@ -10,6 +10,8 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <QObject>
+
 
 class QApplication;
 
@@ -22,6 +24,8 @@ namespace gui {
 
 namespace core
 {
+
+class SingleProc;
 
 /**
  * @brief The application core functionality is implemented in this class.
@@ -45,9 +49,13 @@ class Core
 
     protected:
 
+        bool                        checkOrSetupSingleProc( QObject* p_notifyObject );
+
         QApplication*               _p_app          = nullptr;
 
         m4e::gui::MainWindow*       _p_mainWindow   = nullptr;
+
+        SingleProc*                 _p_singleProc   = nullptr;
 };
 
 } // namespace core
