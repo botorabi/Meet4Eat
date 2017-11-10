@@ -19,6 +19,7 @@
 #include <common/dialogmessage.h>
 #include <common/guiutils.h>
 #include <event/dialogeventsettings.h>
+#include <gui/alarmwindow.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
 #include <QDesktopServices>
@@ -93,6 +94,15 @@ MainWindow::~MainWindow()
     delete _p_ui;
 }
 
+void MainWindow::selectEvent( const QString& eventId )
+{
+    _currentEventSelection = eventId;
+    if ( _p_eventList )
+    {
+        _p_eventList->selectEvent( _currentEventSelection );
+    }
+}
+
 void MainWindow::terminate()
 {
     // first exec the closeEvent handler
@@ -153,32 +163,9 @@ void MainWindow::onTimerInit()
 
 void MainWindow::onEventAlarm( event::ModelEventPtr event )
 {
-    common::DialogMessage msg( nullptr );
-    QString text = QApplication::translate( "MainWindow", "It's time to prepare for an event!"
-                                                          "\n\nEvent: @EVENTNAME@"
-                                                          "\nTime: @TIME@"
-                                                          "\n\nDisplay the event now?"
-                                            );
-    text.replace( "@EVENTNAME@", event->getName() );
-    if ( event->isRepeated() )
-        text.replace( "@TIME@", event->getRepeatDayTime().toString() );
-    else
-        text.replace( "@TIME@", event->getStartDate().toString() );
-
-    msg.setupUI( QApplication::translate( "MainWindow", "Event Alarm " ) + QDateTime::currentDateTime().toString(),
-                 text,
-                 common::DialogMessage::BtnYes | common::DialogMessage::BtnNo );
-
-    common::GuiUtils::widgetToFront( &msg );
-    if ( msg.exec()  == common::DialogMessage::BtnYes )
-    {
-        common::GuiUtils::widgetToFront( this );
-        _currentEventSelection = event->getId();
-        if ( _p_eventList )
-        {
-            _p_eventList->selectEvent( _currentEventSelection );
-        }
-    }
+    gui::AlarmWindow* p_dlg = new gui::AlarmWindow( this );
+    p_dlg->setupUI( event );
+    p_dlg->show();
 }
 
 void MainWindow::onTimerUpdate()

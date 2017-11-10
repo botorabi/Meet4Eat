@@ -90,4 +90,7 @@
 /* Qt custom event type for notifying about new application instances */
 #define  M4E_APP_INSTANCE_EVENT_TYPE 2103
 
+/* Alarm animation period in seconds */
+#define M4E_ALARM_ANIM_PERIOD       20
+
 #endif // CONFIGURATION_H

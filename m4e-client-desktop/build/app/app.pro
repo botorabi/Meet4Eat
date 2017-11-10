@@ -42,8 +42,10 @@ SOURCES += \
     ../../src/app/event/widgeteventlist.cpp \
     ../../src/app/event/widgeteventpanel.cpp \
     ../../src/app/event/widgetlocation.cpp \
+    ../../src/app/gui/alarmwindow.cpp \
     ../../src/app/gui/mainwindow.cpp \
     ../../src/app/gui/mailboxwindow.cpp \
+    ../../src/app/gui/systemtray.cpp \
     ../../src/app/mailbox/mailbox.cpp \
     ../../src/app/mailbox/modelmail.cpp \
     ../../src/app/mailbox/widgetmailedit.cpp \
@@ -72,8 +74,7 @@ SOURCES += \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-mailbox.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
-    ../../src/app/webapp/webapp.cpp \
-    ../../src/app/gui/systemtray.cpp
+    ../../src/app/webapp/webapp.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -105,8 +106,10 @@ HEADERS += \
     ../../src/app/event/widgeteventlist.h \
     ../../src/app/event/widgetlocation.h \
     ../../src/app/event/widgeteventpanel.h \
+    ../../src/app/gui/alarmwindow.h \
     ../../src/app/gui/mainwindow.h \
     ../../src/app/gui/mailboxwindow.h \
+    ../../src/app/gui/systemtray.h \
     ../../src/app/mailbox/mailbox.h \
     ../../src/app/mailbox/modelmail.h \
     ../../src/app/mailbox/widgetmailedit.h \
@@ -135,8 +138,7 @@ HEADERS += \
     ../../src/app/webapp/response/resp-event.h \
     ../../src/app/webapp/response/resp-mailbox.h \
     ../../src/app/webapp/response/resp-user.h \
-    ../../src/app/webapp/webapp.h \
-    ../../src/app/gui/systemtray.h
+    ../../src/app/webapp/webapp.h
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
@@ -154,7 +156,9 @@ FORMS += \
     ../../src/app/gui/forms/mailboxwindow.ui \
     ../../src/app/gui/forms/widgetmailedit.ui \
     ../../src/app/gui/forms/widgetmailitem.ui \
-    ../../src/app/gui/forms/widgetsearchuser.ui
+    ../../src/app/gui/forms/widgetsearchuser.ui \
+    ../../src/app/gui/forms/dialogalarm.ui \
+    ../../src/app/gui/forms/alarmwindow.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

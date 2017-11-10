@@ -57,8 +57,6 @@ class DialogBuzz : public common::BaseDialog
          */
         void                        setupUI( event::ModelEventPtr event );
 
-    protected slots:
-
     protected:
 
         virtual bool                onButton1Clicked();

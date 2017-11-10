@@ -60,6 +60,13 @@ class MainWindow : public QMainWindow
         virtual                     ~MainWindow();
 
         /**
+         * @brief Select the given event in event list.
+         *
+         * @param eventId ID of event to select
+         */
+        void                        selectEvent( const QString& eventId );
+
+        /**
          * @brief Request for teminating the application.
          */
         void                        terminate();
