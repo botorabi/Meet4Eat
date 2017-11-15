@@ -42,6 +42,12 @@ Events::Events( QObject* p_parent ) :
     connect( _p_restEvent, SIGNAL( onRESTEventErrorRemoveLocation( QString, QString ) ), this, SLOT( onRESTEventErrorRemoveLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventUpdateLocation( QString, QString ) ), this, SLOT( onRESTEventUpdateLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorUpdateLocation( QString, QString ) ), this, SLOT( onRESTEventErrorUpdateLocation( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventSetLocationVote( QString, QString, QString, bool ) ), this, SLOT( onRESTEventSetLocationVote( QString, QString, QString, bool ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorSetLocationVote( QString, QString ) ), this, SLOT( onRESTEventErrorSetLocationVote( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventGetLocationVotesByTime( QList< m4e::event::ModelLocationVotesPtr > ) ), this, SLOT( onRESTEventGetLocationVotesByTime( QList< m4e::event::ModelLocationVotesPtr > ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorGetLocationVotesByTime( QString, QString ) ), this, SLOT( onRESTEventErrorGetLocationVotesByTime( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventGetLocationVotesById( m4e::event::ModelLocationVotesPtr ) ), this, SLOT( onRESTEventGetLocationVotesById( m4e::event::ModelLocationVotesPtr ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorGetLocationVotesById( QString, QString ) ), this, SLOT( onRESTEventErrorGetLocationVotesById( QString, QString ) ) );
 }
 
 Events::~Events()
@@ -139,6 +145,68 @@ void Events::requestUpdateLocation( const QString& eventId, ModelLocationPtr loc
 {
     setLastError();
     _p_restEvent->updateLocation( eventId, location );
+}
+
+bool Events::getVotingTimeWindow( const QString& eventId, QDateTime& timeBegin, QDateTime& timeEnd )
+{
+    ModelEventPtr event = getUserEvent( eventId );
+    if ( !event.valid() )
+        return false;
+
+    if ( event->isRepeated() )
+    {
+        // calculate the next event time considering the week days
+        int today = QDate::currentDate().dayOfWeek() - 1;
+        int daystonextmatch = 0;
+        for ( int i = 0; i < 7; i++ )
+        {
+            if ( event->checkIsRepeatedDay( ( today + i ) % 7 ) )
+            {
+                daystonextmatch = i;
+                break;
+            }
+        }
+
+        timeEnd   = QDateTime::currentDateTime();
+        timeEnd   = timeEnd.addDays( daystonextmatch );
+        timeBegin = timeEnd;
+        timeEnd.setTime( event->getRepeatDayTime() );
+        // if no voting time window is set then take the day time as time-end
+        if ( event->getRepeatDayVotingBegin().isValid() )
+            timeBegin.setTime( event->getRepeatDayVotingBegin() );
+        else
+            timeBegin.setTime( event->getRepeatDayTime() );
+    }
+    else
+    {
+        timeEnd   = event->getStartDate();
+        timeBegin = event->getStartDateVotingBegin();
+    }
+    qint64 secscurr = QDateTime::currentDateTime().toSecsSinceEpoch();
+    qint64 secsbeg  = timeBegin.toSecsSinceEpoch();
+    qint64 secsend  = timeEnd.toSecsSinceEpoch();
+    if ( (secscurr < secsbeg ) || ( secscurr > secsend ) )
+        return false;
+
+    return true;
+}
+
+void Events::requestSetLocationVote( const QString& eventId, const QString& locationId, bool vote )
+{
+    setLastError();
+    _p_restEvent->setLocationVote( eventId, locationId, vote );
+}
+
+void Events::requestGetLocationVotesByTime( const QString& eventId, const QDateTime& timeBegin, const QDateTime& timeEnd )
+{
+    setLastError();
+    _p_restEvent->getLocationVotesByTime( eventId, timeBegin, timeEnd );
+}
+
+void Events::requestGetLocationVotesById( const QString& locationVotesId )
+{
+    setLastError();
+    _p_restEvent->getLocationVotesById( locationVotesId );
 }
 
 //######### Responses ############//
@@ -316,6 +384,45 @@ void Events::onRESTEventErrorUpdateLocation( QString errorCode, QString reason )
     emit onResponseUpdateLocation( false, "", "" );
 }
 
+void Events::onRESTEventSetLocationVote( QString eventId, QString locationId, QString votesId, bool vote )
+{
+    log_verbose << TAG << "location vote was set: " << eventId << "/" << locationId << "/" << ( vote ? "vote" : "unvote" ) << std::endl;
+    emit onResponseSetLocationVote( true, eventId, locationId, votesId, vote );
+}
+
+void Events::onRESTEventErrorSetLocationVote( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to set the location vote: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseSetLocationVote( false, "", "", "", false );
+}
+
+void Events::onRESTEventGetLocationVotesByTime( QList< ModelLocationVotesPtr > votes )
+{
+    log_verbose << TAG << "location votes were received (by time)" << std::endl;
+    emit onResponseGetLocationVotesByTime( true, votes );
+}
+
+void Events::onRESTEventErrorGetLocationVotesByTime( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to get location votes (by time): " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseGetLocationVotesByTime( true, QList< ModelLocationVotesPtr >() );
+}
+
+void Events::onRESTEventGetLocationVotesById( ModelLocationVotesPtr votes )
+{
+    log_verbose << TAG << "location votes were received (by id)" << std::endl;
+    emit onResponseGetLocationVotesById( true, votes );
+}
+
+void Events::onRESTEventErrorGetLocationVotesById( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to get location votes (by id): " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseGetLocationVotesById( true, ModelLocationVotesPtr() );
+}
+
 void Events::setLastError( const QString& error, const QString& errorCode )
 {
     _lastError = error;
@@ -371,9 +478,6 @@ void Events::updateAlarms()
 
     for ( ModelEventPtr event: _events )
     {
-        if ( event->getAlarmOffset() == 0 )
-            continue;
-
         QTimer* p_timer = new QTimer();
         // check if the timer needed a schedule at all
         if ( !scheduleAlarmTimer( event, p_timer ) )
@@ -389,35 +493,19 @@ void Events::updateAlarms()
 
 bool Events::scheduleAlarmTimer( ModelEventPtr event, QTimer* p_timer )
 {
-    qint64 alarmoffset = event->getAlarmOffset() * 1000;
-    // check if an alarm is enabled at all
-    if ( alarmoffset == 0 )
+    // get the next voting begin time window. if it's begin time is in the past (no repeated event) then we
+    //  need no timer anymore, otherwise setup an alarm timer for begin of event's voting time
+    QDateTime tbegin, tend;
+    getVotingTimeWindow( event->getId(), tbegin, tend );
+    qint64 currtime  = QDateTime::currentMSecsSinceEpoch();
+    qint64 nextalarm = tbegin.toMSecsSinceEpoch();
+    qint64 alarm     = nextalarm - currtime;
+    if ( ( alarm - 10000 ) < 0 )
         return false;
-
-    // there is a difference between repeated events and one-shot events
-    qint64 msec2alarm;
-    if ( event->isRepeated() )
-    {
-        qint64 currtime  = QTime::currentTime().msecsSinceStartOfDay();
-        qint64 alarmtime = event->getRepeatDayTime().msecsSinceStartOfDay() - alarmoffset;
-        msec2alarm = alarmtime - currtime;
-        // missed the time for today? do we have to schedule for next day?
-        if ( ( msec2alarm - 10000 ) < 0 ) // consider a threshold
-            msec2alarm += ( 24 * 60 * 60 * 1000 );
-    }
-    else
-    {
-        qint64 currtime  = QDateTime::currentMSecsSinceEpoch();
-        qint64 alarmtime = event->getStartDate().toMSecsSinceEpoch() - alarmoffset;
-        msec2alarm = alarmtime - currtime;
-        // the event date&time is in the past, no need for alarm anymore
-        if ( ( msec2alarm - 10000 ) < 0 ) // consider a threshold
-            return false;
-    }
 
     p_timer->stop();
     p_timer->setSingleShot( true );
-    p_timer->setInterval( msec2alarm );
+    p_timer->setInterval( alarm );
     p_timer->setProperty( "id", QVariant( event->getId() ) );
     p_timer->start();
     return true;

@@ -38,6 +38,7 @@ SOURCES += \
     ../../src/app/event/events.cpp \
     ../../src/app/event/modelevent.cpp \
     ../../src/app/event/modellocation.cpp \
+    ../../src/app/event/modellocationvotes.cpp \
     ../../src/app/event/widgeteventitem.cpp \
     ../../src/app/event/widgeteventlist.cpp \
     ../../src/app/event/widgeteventpanel.cpp \
@@ -102,6 +103,7 @@ HEADERS += \
     ../../src/app/event/events.h \
     ../../src/app/event/modelevent.h \
     ../../src/app/event/modellocation.h \
+    ../../src/app/event/modellocationvotes.h \
     ../../src/app/event/widgeteventitem.h \
     ../../src/app/event/widgeteventlist.h \
     ../../src/app/event/widgetlocation.h \

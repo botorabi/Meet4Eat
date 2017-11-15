@@ -77,7 +77,7 @@ public class Events {
         newevent.setEventStart(inputEntity.getEventStart());
         newevent.setRepeatWeekDays(inputEntity.getRepeatWeekDays());
         newevent.setRepeatDayTime(inputEntity.getRepeatDayTime());
-        newevent.setAlarmOffset(inputEntity.getAlarmOffset());
+        newevent.setVotingTimeBegin(inputEntity.getVotingTimeBegin());
 
         // setup the status
         StatusEntity status = new StatusEntity();
@@ -150,6 +150,33 @@ public class Events {
         Entities eutils = new Entities(entityManager);
         EventEntity event = eutils.findEntity(EventEntity.class, id);
         return event;
+    }
+
+    /**
+     * Try to find a location in an event. If the location was not found or is not active
+     * then return null.
+     * 
+     * @param eventId       ID of the event to search for locations
+     * @param locationId    ID of the location to find
+     * @return              Return the location entity if it was found and it is active, otherwise null.
+     */
+    public EventLocationEntity findEventLocation(Long eventId, Long locationId) {
+        Entities eutils = new Entities(entityManager);
+        EventEntity event = eutils.findEntity(EventEntity.class, eventId);
+        if ((event == null) || !event.getStatus().getIsActive()){
+            return null;
+        }
+        // go throuh the event locations and check if the given locationId is found among the event locations and is active
+        EventLocationEntity loc = null;
+        if (event.getLocations() != null) {
+            for(EventLocationEntity l: event.getLocations()) {
+                if (l.getStatus().getIsActive() && (Objects.equals(l.getId(), locationId))) {
+                    loc = l;
+                    break;
+                }
+            }
+        }
+        return loc;
     }
 
     /**
@@ -397,7 +424,7 @@ public class Events {
             .add("eventStart", (entity.getEventStart() != null) ? entity.getEventStart(): 0)
             .add("repeatWeekDays", (entity.getRepeatWeekDays() != null) ? entity.getRepeatWeekDays(): 0)
             .add("repeatDayTime", (entity.getRepeatDayTime() != null) ? entity.getRepeatDayTime(): 0)
-            .add("alarmOffset", (entity.getAlarmOffset() != null) ? entity.getAlarmOffset(): 0);
+            .add("votingTimeBegin", (entity.getVotingTimeBegin() != null) ? entity.getVotingTimeBegin(): 0);
 
         JsonArrayBuilder members = Json.createArrayBuilder();
         if (entity.getMembers() != null) {
@@ -482,7 +509,7 @@ public class Events {
         }
 
         String name, description, photo;
-        Long eventstart, repeatweekdays, repeatdaytime, alarmoffset;
+        Long eventstart, repeatweekdays, repeatdaytime, votingbegin;
         boolean ispublic;
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
@@ -495,7 +522,7 @@ public class Events {
             eventstart     = new Long(jobject.getInt("eventStart", 0));
             repeatweekdays = new Long(jobject.getInt("repeatWeekDays", 0));
             repeatdaytime  = new Long(jobject.getInt("repeatDayTime", 0));
-            alarmoffset    = new Long(jobject.getInt("alarmOffset", 0));
+            votingbegin    = new Long(jobject.getInt("votingTimeBegin", 0));
         }
         catch(Exception ex) {
             Log.warning(TAG, "Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
@@ -515,7 +542,7 @@ public class Events {
         entity.setIsPublic(ispublic);
         entity.setRepeatWeekDays(repeatweekdays);
         entity.setRepeatDayTime(repeatdaytime);
-        entity.setAlarmOffset(alarmoffset);
+        entity.setVotingTimeBegin(votingbegin);
 
         if (photo != null) {
             DocumentEntity image = new DocumentEntity();

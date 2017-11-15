@@ -111,6 +111,11 @@ void WidgetEventItem::notifyUpdate( const QString& text )
     _p_ui->pushButtonNotification->setToolTip( text );
 }
 
+void WidgetEventItem::createNewLocation()
+{
+    onBtnNewLocationClicked();
+}
+
 void WidgetEventItem::onBtnEditClicked()
 {
     DialogEventSettings dlg( _p_webApp, this );

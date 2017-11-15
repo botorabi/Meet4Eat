@@ -12,6 +12,7 @@
 #include <configuration.h>
 #include <webapp/request/rest-event.h>
 #include <event/modelevent.h>
+#include <event/modellocationvotes.h>
 #include <QObject>
 
 
@@ -173,6 +174,41 @@ class Events : public QObject
          */
         void                                requestUpdateLocation( const QString& eventId, m4e::event::ModelLocationPtr location );
 
+        /**
+         * @brief Given an event return its next voting time window. Return false if the current system time is outside the voting time or the event ID was not found.
+         *
+         * @param eventId       The event ID
+         * @param timeBegin     Begin of next voting time
+         * @param timeEnd       End of next voting time
+         * @return              Return false if the current system time is outside voting time window defined in given event.
+         */
+        bool                                getVotingTimeWindow( const QString& eventId, QDateTime& timeBegin, QDateTime& timeEnd );
+
+        /**
+         * @brief Request for voting/unvoting an event location, the results are emitted by signal 'onResponseSetLocationVote'.
+         *
+         * @param eventId       The event ID the location belongs to
+         * @param locationId    The location ID
+         * @param vote          Pass true for voting for location, false for unvoting the location
+         */
+        void                                requestSetLocationVote( const QString& eventId, const QString& locationId, bool vote );
+
+        /**
+         * @brief Request for getting all location votes for a given event and time range, the results are emitted by signal 'onResponseGetLocationVotesByTime'.
+         *
+         * @param eventId       Event ID
+         * @param timeBegin     Begin of time range
+         * @param timeEnd       End of time range
+         */
+        void                                requestGetLocationVotesByTime( const QString& eventId, const QDateTime& timeBegin, const QDateTime& timeEnd );
+
+        /**
+         * @brief Request for getting location votes given its ID, the results are emitted by signal 'onResponseGetLocationVotesById'.
+         *
+         * @param locationVotesId Votes ID
+         */
+        void                                requestGetLocationVotesById( const QString& locationVotesId );
+
     signals:
 
         /**
@@ -275,6 +311,33 @@ class Events : public QObject
          */
         void                                onResponseUpdateLocation( bool success, QString eventId, QString locationId );
 
+        /**
+         * @brief Results of location voting.
+         *
+         * @param success    true if user data could successfully be retrieved, otherwise false
+         * @param eventId    ID of event
+         * @param locationId ID of location to update
+         * @param votesId    ID of location vote entry
+         * @param vote       true for voted for location, false for unvoted location
+         */
+        void                                onResponseSetLocationVote( bool success, QString eventId, QString locationId, QString votesId, bool vote );
+
+        /**
+         * @brief Results of location votes request by time range.
+         *
+         * @param success   true if user votes could successfully be retrieved, otherwise false
+         * @param votes     The event location votes list
+         */
+        void                                onResponseGetLocationVotesByTime( bool success, QList< m4e::event::ModelLocationVotesPtr > votes );
+
+        /**
+         * @brief Results of location votes request by votes ID.
+         *
+         * @param success   true if user votes could successfully be retrieved, otherwise false
+         * @param votes     The event location votes
+         */
+        void                                onResponseGetLocationVotesById( bool success, m4e::event::ModelLocationVotesPtr votes );
+
     protected slots:
 
         /**
@@ -330,7 +393,7 @@ class Events : public QObject
         void                                onRESTEventNewEvent( QString eventId );
 
         /**
-         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
          *
          * @param errorCode Error code if any exits
          * @param reason    Error string
@@ -361,7 +424,7 @@ class Events : public QObject
         void                                onRESTEventAddMember( QString eventId, QString memberId );
 
         /**
-         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
          *
          * @param errorCode Error code if any exits
          * @param reason    Error string
@@ -377,7 +440,7 @@ class Events : public QObject
         void                                onRESTEventRemoveMember( QString eventId, QString memberId );
 
         /**
-         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
          *
          * @param errorCode Error code if any exits
          * @param reason    Error string
@@ -392,7 +455,7 @@ class Events : public QObject
         void                                onRESTEventGetLocation( m4e::event::ModelLocationPtr location );
 
         /**
-         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
          *
          * @param errorCode Error code if any exits
          * @param reason    Error string
@@ -408,7 +471,7 @@ class Events : public QObject
         void                                onRESTEventAddLocation( QString eventId, QString locationId );
 
         /**
-         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
          *
          * @param errorCode Error code if any exits
          * @param reason    Error string
@@ -424,7 +487,7 @@ class Events : public QObject
         void                                onRESTEventRemoveLocation( QString eventId, QString locationId );
 
         /**
-         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
          *
          * @param errorCode Error code if any exits
          * @param reason    Error string
@@ -440,12 +503,60 @@ class Events : public QObject
         void                                onRESTEventUpdateLocation( QString eventId, QString locationId );
 
         /**
-         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
          *
          * @param errorCode Error code if any exits
          * @param reason    Error string
          */
         void                                onRESTEventErrorUpdateLocation( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of setLocationVote request arrive.
+         *
+         * @param eventId     ID of event containing the location
+         * @param locationId  ID of updated location
+         * @param votesId     ID of the votes entry
+         * @param vote        true for vote, false for unvote
+         */
+        void                                onRESTEventSetLocationVote( QString eventId, QString locationId, QString votesId, bool vote );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorSetLocationVote( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of getLocationVotesByTime request arrive.
+         *
+         * @param votes     The location votes list
+         */
+        void                                onRESTEventGetLocationVotesByTime( QList< m4e::event::ModelLocationVotesPtr > votes );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorGetLocationVotesByTime( QString errorCode, QString reason );
+
+        /**
+         * @brief Signal is received when the results of getLocationVotesById request arrive.
+         *
+         * @param votes     The location votes for the requested location
+         */
+        void                                onRESTEventGetLocationVotesById( m4e::event::ModelLocationVotesPtr votes );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                                onRESTEventErrorGetLocationVotesById( QString errorCode, QString reason );
 
         /**
          * @brief Called when an event alarm was reached.

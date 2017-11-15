@@ -198,7 +198,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         event.setIsPublic(reqentity.getIsPublic());
         event.setRepeatWeekDays(reqentity.getRepeatWeekDays());
         event.setRepeatDayTime(reqentity.getRepeatDayTime());
-        event.setAlarmOffset(reqentity.getAlarmOffset());
+        event.setVotingTimeBegin(reqentity.getVotingTimeBegin());
 
         try {
             getEvents().updateEvent(event);

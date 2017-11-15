@@ -61,6 +61,13 @@ class WidgetEventList : public QListWidget
          */
         void                        selectFirstEvent();
 
+        /**
+         * @brief Start creating a new event location.
+         *
+         * @param eventId  ID of the event which should get a new location.
+         */
+        void                        createNewLocation( const QString& eventId );
+
     signals:
 
         void                        onEventSelection( QString id );
@@ -119,6 +126,14 @@ class WidgetEventList : public QListWidget
          * @param event       Event model
          */
         void                        addEvent( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief Given an event ID try to find its list item.
+         *
+         * @param eventId   The event ID
+         * @return          List item, or null if the ID was not found in current list item.
+         */
+        WidgetEventItem*            findEventItem( const QString& eventId );
 
         webapp::WebApp*             _p_webApp     = nullptr;
 

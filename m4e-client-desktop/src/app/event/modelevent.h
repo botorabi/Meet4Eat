@@ -106,48 +106,46 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                checkIsRepeatedDay( unsigned int currentDay ) const;
 
         /**
-         * @brief Get repetetion's day time, only valid for repeated events.
+         * @brief Get repetetion's day time, only valid for repeated events. The returned time is in your local time zone.
          *
          * @return Repetetion's day time
          */
-        const QTime&                        getRepeatDayTime() const { return _repeatDayTime; }
+        QTime                               getRepeatDayTime() const;
 
         /**
-         * @brief Set repetetion's day time.
+         * @brief Set repetetion's day time. Use a local time, the method will convert the time to UTC as expected by application server.
          *
-         * @param repeatDayTime Repetetion's day time.
+         * @param repeatDayTime Repetetion's day time in your local time zone.
          */
-        void                                setRepeatDayTime( const QTime& repeatDayTime ) { _repeatDayTime = repeatDayTime; }
+        void                                setRepeatDayTime( const QTime& repeatDayTime );
 
         /**
-         * @brief Get the alarm offset in seconds before the event takes place.
+         * @brief Get the begin of voting time in seconds before the event takes place. An event location voting is accepted only in this time window.
          *
-         * @return Alarm time offset in seconds
+         * @return Begin of voting time in seconds
          */
-        qint64                              getAlarmOffset() const { return _alarmOffset; }
+        qint64                              getVotingTimeBegin() const { return _votingTimeBegin; }
 
         /**
-         * @brief Set the alarm offset.
+         * @brief Set the begin of voting time.
          *
-         * @param alarmTime Alarm time offset in seconds
+         * @param votingTimeBegin Begin of voting time offset in seconds
          */
-        void                                setAlarmOffset( qint64 alarmOffset ) { _alarmOffset = alarmOffset; }
+        void                                setVotingTimeBegin( qint64 votingTimeBegin ) { _votingTimeBegin = votingTimeBegin; }
 
         /**
-         * @brief Calculate the alarm time for event start.
-         * If no alarm offset is set then an invalid QDateTime object will be returned.
+         * @brief Calculate the voting begin time for event start.
          *
-         * @return Event start alarm time
+         * @return Event voting begin time
          */
-        QDateTime                           getStartDateAlarm() const;
+        QDateTime                           getStartDateVotingBegin() const;
 
         /**
-         * @brief Calculate the alarm time for repeated events.
-         * If no alarm offset is set then an invalid QDateTime object will be returned.
+         * @brief Calculate the begin of voting time for repeated events.
          *
-         * @return  Alarm time for repeated event
+         * @return  Event voting time for repeated event
          */
-        QTime                               getRepeatDayTimeAlarm() const;
+        QTime                               getRepeatDayVotingBegin() const;
 
         /**
          * @brief Repetetion's week days if this is a repeated event.
@@ -279,7 +277,7 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                _isPublic = false;
         QDateTime                           _startDate;
         QTime                               _repeatDayTime;
-        qint64                              _alarmOffset;
+        qint64                              _votingTimeBegin;
         unsigned int                        _repeatWeekDays = 0;
         QList< ModelLocationPtr >           _locations;
         user::ModelUserInfoPtr              _owner;

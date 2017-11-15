@@ -83,6 +83,11 @@ class WidgetEventItem : public QWidget
          */
         void                        notifyUpdate( const QString& text );
 
+        /**
+         * @brief Start creating a new location.
+         */
+        void                        createNewLocation();
+
     signals:
 
         /**

@@ -104,5 +104,29 @@ void RESTEvent::updateLocation(const QString& eventId, event::ModelLocationPtr l
     getRESTOps()->PUT( url, createResultsCallback( p_callback ), location->toJSON() );
 }
 
+void RESTEvent::setLocationVote( const QString& eventId, const QString& locationId, bool vote )
+{
+    QUrl url( getResourcePath() + "/rest/locationvoting/setvote/" + eventId + "/" + locationId + "/" + ( vote ? "1" : "0" ) );
+    auto p_callback = new ResponseEventSetLocationVote( this );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ) );
+}
+
+void RESTEvent::getLocationVotesByTime( const QString& eventId, const QDateTime& timeBegin, const QDateTime& timeEnd )
+{
+    QString tbegin = QString::number( timeBegin.toSecsSinceEpoch() );
+    QString tend   = QString::number( timeEnd.toSecsSinceEpoch() );
+
+    QUrl url( getResourcePath() + "/rest/locationvoting/getvotes/" + eventId + "/" + tbegin + "/" + tend );
+    auto p_callback = new ResponseEventGetLocationVotesByTime( this );
+    getRESTOps()->GET( url, createResultsCallback( p_callback ) );
+}
+
+void RESTEvent::getLocationVotesById( const QString& votesId )
+{
+    QUrl url( getResourcePath() + "/rest/locationvoting/getvotes/" + votesId );
+    auto p_callback = new ResponseEventGetLocationVotesById( this );
+    getRESTOps()->GET( url, createResultsCallback( p_callback ) );
+}
+
 } // namespace webapp
 } // namespace m4e

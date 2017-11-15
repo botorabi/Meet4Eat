@@ -12,6 +12,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QTimeZone>
 
 
 namespace m4e
@@ -24,15 +25,16 @@ QJsonDocument ModelEvent::toJSON()
     QJsonObject obj;
 
     if ( !getId().isEmpty() )
-        obj.insert( "id",             getId() );
+        obj.insert( "id", getId() );
 
-    obj.insert( "name",           getName() );
-    obj.insert( "description",    getDescription() );
-    obj.insert( "public",         getIsPublic() );
-    obj.insert( "eventStart",     getStartDate().toSecsSinceEpoch() );
-    obj.insert( "repeatDayTime",  getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
-    obj.insert( "alarmOffset",    getAlarmOffset() );
-    obj.insert( "repeatWeekDays", int( getRepeatWeekDays() ) );
+    obj.insert( "name",            getName() );
+    obj.insert( "description",     getDescription() );
+    obj.insert( "public",          getIsPublic() );
+    obj.insert( "eventStart",      getStartDate().toSecsSinceEpoch() );
+    //! NOTE dont use getRepeatedDayTime() here as we need the UTC time for the server
+    obj.insert( "repeatDayTime",   _repeatDayTime.msecsSinceStartOfDay() / 1000 );
+    obj.insert( "votingTimeBegin", getVotingTimeBegin() );
+    obj.insert( "repeatWeekDays",  int( getRepeatWeekDays() ) );
 
     // is there a photo update?
     if ( getUpdatedPhoto().valid() )
@@ -67,7 +69,7 @@ bool ModelEvent::fromJSON( const QJsonDocument& input )
     qint64     eventstart     = ( qint64 )data.value( "eventStart" ).toDouble( 0.0 );
     int        repweekdays    = data.value( "repeatWeekDays" ).toInt( 0 );
     int        repdaytime     = data.value( "repeatDayTime" ).toInt( 0 );
-    qint64     alarmoffset    = ( qint64 )data.value( "alarmOffset" ).toDouble( 0.0 );
+    qint64     votingtime     = ( qint64 )data.value( "votingTimeBegin" ).toDouble( 0.0 );
     QJsonArray locations      = data.value( "locations" ).toArray();
     QJsonArray members        = data.value( "members" ).toArray();
     QString    ownerid        = data.value( "ownerId" ).toString( "" );
@@ -88,12 +90,13 @@ bool ModelEvent::fromJSON( const QJsonDocument& input )
     start.setSecsSinceEpoch( eventstart );
     setStartDate( start );
 
-    setAlarmOffset( alarmoffset );
+    setVotingTimeBegin( votingtime );
 
     int hour = static_cast< int >( repdaytime / ( 60 * 60 ) );
     int min = static_cast< int >( repdaytime / 60 ) - hour * 60;
     QTime reptime( hour, min, 0 );
-    setRepeatDayTime( reptime );
+    //! NOTE dont use setRepeatedDayTime() here as we need to store the UTC time
+    _repeatDayTime = reptime;
 
     // extract the locations
     QList< event::ModelLocationPtr > locs;
@@ -151,34 +154,47 @@ bool ModelEvent::checkIsRepeatedDay( unsigned int currentDay ) const
     return ( d & _repeatWeekDays ) != 0;
 }
 
-QDateTime ModelEvent::getStartDateAlarm() const
+QTime ModelEvent::getRepeatDayTime() const
 {
-    QDateTime alarm;
-    if ( _startDate.isValid() && ( _alarmOffset > 0 ) )
-    {
-        alarm.setSecsSinceEpoch( _startDate.toSecsSinceEpoch() - _alarmOffset );
-    }
-
-    return alarm;
+    QTime time;
+    int utcoffset = QTimeZone::systemTimeZone().offsetFromUtc( QDateTime::currentDateTime() );
+    time = _repeatDayTime.addSecs( utcoffset );
+    return time;
 }
 
-QTime ModelEvent::getRepeatDayTimeAlarm() const
+void ModelEvent::setRepeatDayTime( const QTime& repeatDayTime )
 {
-    QTime alarm;
-    if ( _repeatDayTime.isValid() && ( _alarmOffset > 0 ) )
+    int utcoffset = QTimeZone::systemTimeZone().offsetFromUtc( QDateTime::currentDateTime() );
+    _repeatDayTime = repeatDayTime.addSecs( -utcoffset );
+}
+
+QDateTime ModelEvent::getStartDateVotingBegin() const
+{
+    QDateTime begintime;
+    if ( _startDate.isValid() && ( _votingTimeBegin > 0 ) )
+    {
+        begintime.setSecsSinceEpoch( _startDate.toSecsSinceEpoch() - _votingTimeBegin );
+    }
+
+    return begintime;
+}
+
+QTime ModelEvent::getRepeatDayVotingBegin() const
+{
+    QTime begintime;
+    if ( _repeatDayTime.isValid() && ( _votingTimeBegin > 0 ) )
     {
         // we take only the inner day offset for repeated events
-        qint64 offset = _alarmOffset % ( 60 * 60 * 24 );
+        qint64 offset = _votingTimeBegin % ( 60 * 60 * 24 );
         qint64 secs = _repeatDayTime.msecsSinceStartOfDay() / 1000;
         qint64 t = secs - offset;
         //! NOTE absolute no idea why Qt has nothing like setSecsSinceStartOfDay
         int hour = static_cast< int >( t / ( 60 * 60 ) );
         int min  = static_cast< int >( t / 60 ) - hour * 60;
-        QTime alarmtime( hour, min, 0 );
-        alarm = alarmtime;
+        begintime = QTime( hour, min, 0 );
     }
 
-    return alarm;
+    return begintime;
 }
 
 ModelLocationPtr ModelEvent::getLocation( const QString &id )

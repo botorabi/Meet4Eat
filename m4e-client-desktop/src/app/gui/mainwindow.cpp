@@ -375,6 +375,12 @@ void MainWindow::onEventSelection( QString id )
     _currentEventSelection = id;
 }
 
+void MainWindow::onCreateNewLocation( QString eventId )
+{
+    if ( _p_eventList )
+        _p_eventList->createNewLocation( eventId );
+}
+
 void MainWindow::onAuthState( bool authenticated )
 {
     if ( !authenticated )
@@ -603,15 +609,6 @@ void MainWindow::clearWidgetMyEvents()
         _p_eventList->deleteLater();
 
     _p_eventList = nullptr;
-#if 0
-    QLayoutItem* p_item;
-    QLayout* p_layout = _p_ui->widgetEventItems->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
-    {
-        p_item->widget()->deleteLater();
-        delete p_item;
-    }
-#endif
 }
 
 void MainWindow::createWidgetMyEvents()
@@ -625,13 +622,13 @@ void MainWindow::createWidgetMyEvents()
 
 void MainWindow::createWidgetEvent( const QString& eventId )
 {
-    event::WidgetEventPanel* p_widget = new event::WidgetEventPanel( _p_webApp, _p_ui->widgetClientArea );
-    p_widget->setEvent( eventId );
-
+    event::WidgetEventPanel* p_eventpanel = new event::WidgetEventPanel( _p_webApp, _p_ui->widgetClientArea );
+    connect( p_eventpanel, SIGNAL( onCreateNewLocation( QString /*eventId*/) ), this, SLOT( onCreateNewLocation( QString ) ) );
+    p_eventpanel->setEvent( eventId );
     if ( _p_chatSystem )
-        p_widget->setChatSystem( _p_chatSystem );
+        p_eventpanel->setChatSystem( _p_chatSystem );
 
-    _p_ui->widgetClientArea->layout()->addWidget( p_widget );
+    _p_ui->widgetClientArea->layout()->addWidget( p_eventpanel );
 }
 
 } // namespace gui

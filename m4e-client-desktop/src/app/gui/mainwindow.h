@@ -120,6 +120,8 @@ class MainWindow : public QMainWindow
 
         void                        onEventSelection( QString id );
 
+        void                        onCreateNewLocation( QString eventId );
+
         /**
          * @brief This signal is emitted to inform about the current authentication state.
          *

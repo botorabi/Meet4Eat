@@ -11,6 +11,7 @@
 #include "resp-event.h"
 #include <webapp/request/rest-event.h>
 #include <event/modelevent.h>
+#include <event/modellocationvotes.h>
 #include <QJsonObject>
 #include <QJsonArray>
 
@@ -383,6 +384,122 @@ void ResponseEventUpdateLocation::onRESTResponseSuccess( const QJsonDocument& re
 void ResponseEventUpdateLocation::onRESTResponseError( const QString& reason )
 {
     emit _p_requester->onRESTEventErrorUpdateLocation( "", reason );
+}
+
+/******************************************************/
+/************ ResponseEventSetLocationVote ************/
+/******************************************************/
+
+ResponseEventSetLocationVote::ResponseEventSetLocationVote( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventSetLocationVote::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorSetLocationVote( errcode, errstring );
+        return;
+    }
+    QJsonObject obj     = datadoc.object();
+    QString votesid     = obj.value( "votesId" ).toString( "" );
+    QString eventid     = obj.value( "eventId" ).toString( "" );
+    QString locationid  = obj.value( "locationId" ).toString( "" );
+    bool    vote        = obj.value( "vote" ).toBool( false );
+
+    emit _p_requester->onRESTEventSetLocationVote( eventid, locationid, votesid, vote );
+}
+
+void ResponseEventSetLocationVote::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorSetLocationVote( "", reason );
+}
+
+/******************************************************/
+/******** ResponseEventGetLocationVotesByTime *********/
+/******************************************************/
+
+ResponseEventGetLocationVotesByTime::ResponseEventGetLocationVotesByTime( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventGetLocationVotesByTime::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorGetLocationVotesByTime( errcode, errstring );
+        return;
+    }
+
+    QList< event::ModelLocationVotesPtr > votes;
+    QJsonArray votelist = datadoc.array();
+    for ( int i = 0; i < votelist.size(); i++ )
+    {
+        event::ModelLocationVotesPtr v = new event::ModelLocationVotes();
+        QJsonObject obj = votelist.at( i ).toObject();
+        if ( v->fromJSON( QJsonDocument( obj ) ) )
+        {
+           votes.append( v );
+        }
+        else
+        {
+            log_warning << TAG << "cannot import votes, invalid format!" << std::endl;
+        }
+    }
+    emit _p_requester->onRESTEventGetLocationVotesByTime( votes );
+}
+
+void ResponseEventGetLocationVotesByTime::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorGetLocationVotesByTime( "", reason );
+}
+
+/******************************************************/
+/********* ResponseEventGetLocationVotesById **********/
+/******************************************************/
+
+ResponseEventGetLocationVotesById::ResponseEventGetLocationVotesById( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventGetLocationVotesById::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorGetLocationVotesById( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj = datadoc.object();
+    event::ModelLocationVotesPtr votes = new event::ModelLocationVotes();
+    if ( votes->fromJSON( QJsonDocument( obj ) ) )
+    {
+        emit _p_requester->onRESTEventGetLocationVotesById( votes );
+    }
+    else
+    {
+        log_warning << TAG << "cannot import votes, invalid format!" << std::endl;
+    }
+}
+
+void ResponseEventGetLocationVotesById::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorGetLocationVotesById( "", reason );
 }
 
 } // namespace webapp

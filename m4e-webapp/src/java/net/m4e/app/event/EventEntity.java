@@ -99,9 +99,9 @@ public class EventEntity implements Serializable, EntityWithPhoto {
     private Long repeatDayTime = 0L;
 
     /**
-     * Time offset used for alarming before the event time was reached (in seconds)
+     * Time offset used for beginning the voting before the event time was reached (in seconds)
      */
-    private Long alarmOffset = 0L;
+    private Long votingTimeBegin = 0L;
 
     /**
      * Create an event entity.
@@ -259,6 +259,7 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get day time for a repeating event.
+     * The returned time is in UTC in order to avoid time zone conflicts!
      * 
      * @return Day time in seconds
      */
@@ -268,6 +269,7 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set day time for a repeating event.
+     * This time must be in UTC in order to avoid time zone conflicts!
      * 
      * @param repeatDayTime Day time in seconds
      */
@@ -276,22 +278,23 @@ public class EventEntity implements Serializable, EntityWithPhoto {
     }
 
     /**
-     * Get the alarm time offset. This is the time offset before the event takes place
-     * and can be used to remind users about an upcoming event.
+     * Get the begin of voting time. This is the time offset before the event takes place
+     * and can be used to remind users about an upcoming event. Votes are accepted only
+     * during the time window: [(event start) .. (event start - voting time begin)]
      * 
-     * @return Alarm time in seconds
+     * @return Begin of voting time in seconds
      */
-    public Long getAlarmOffset() {
-        return alarmOffset;
+    public Long getVotingTimeBegin() {
+        return votingTimeBegin;
     }
 
     /**
-     * Set the alarm time offset.
+     * Set the begin of voting time. This is an offset to event start.
      * 
-     * @param alarmOffset Alarm time in seconds
+     * @param votingTimeBegin Begin of voting time in seconds
      */
-    public void setAlarmOffset(Long alarmOffset) {
-        this.alarmOffset = alarmOffset;
+    public void setVotingTimeBegin(Long votingTimeBegin) {
+        this.votingTimeBegin = votingTimeBegin;
     }
 
     /**

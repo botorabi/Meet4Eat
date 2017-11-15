@@ -75,6 +75,21 @@ void WidgetEventPanel::setChatSystem( chat::ChatSystem* p_chatSystem )
     }
 }
 
+void WidgetEventPanel::onLinkActivated( QString link )
+{
+    if ( link == "CREATE_LOCATION" )
+    {
+        if ( _event.valid() )
+        {
+            emit onCreateNewLocation( _event->getId() );
+        }
+        else
+        {
+            log_error << TAG << "cannot requesr for creating new location, invalid event!" << std::endl;
+        }
+    }
+}
+
 void WidgetEventPanel::setupUI()
 {
     _p_ui = new Ui::WidgetEventPanel;
@@ -83,6 +98,8 @@ void WidgetEventPanel::setupUI()
     _p_ui->widgetChat->setupUI( _p_webApp );
     connect( _p_ui->widgetChat, SIGNAL( onSendMessage( m4e::chat::ChatMessagePtr ) ), this, SLOT( onSendMessage( m4e::chat::ChatMessagePtr ) ) );
     connect( _p_webApp->getEvents(), SIGNAL( onResponseRemoveLocation( bool, QString, QString ) ), this, SLOT( onResponseRemoveLocation( bool, QString, QString ) ) );
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseGetLocationVotesByTime( bool, QList< m4e::event::ModelLocationVotesPtr > ) ), this,
+                                     SLOT( onResponseGetLocationVotesByTime( bool, QList< m4e::event::ModelLocationVotesPtr > ) ) );
 
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
@@ -132,21 +149,17 @@ void WidgetEventPanel::setupLocations()
     bool userisowner = common::GuiUtils::userIsOwner( _event->getOwner()->getId(), _p_webApp );
     if ( _event->getLocations().size() > 0 )
     {
+        _p_ui->labelEmptyPanel->hide();
         for ( auto location: _event->getLocations() )
         {
             addLocation( _event, location, userisowner );
         }
+        requestCurrentLoctionVotes();
     }
     else
     {
-        setupNoLocationWidget();
+        _p_ui->labelEmptyPanel->show();
     }
-}
-
-void WidgetEventPanel::setupNoLocationWidget()
-{
-    //! TODO we need a good looking widget here!
-    _p_clientArea->addItem( "Event has no location!" );
 }
 
 void WidgetEventPanel::addLocation( event::ModelEventPtr event, event::ModelLocationPtr location, bool userIsOwner )
@@ -161,7 +174,7 @@ void WidgetEventPanel::addLocation( event::ModelEventPtr event, event::ModelLoca
     _p_clientArea->setItemWidget( p_item, p_widget );
     p_item->setData( Qt::UserRole, location->getId() );
 
-    //! NOTE this is really needed after every item insertion, otherwise the items get draggable
+    //! NOTE it seems that this is really needed after every item insertion, otherwise the items get draggable
     _p_clientArea->setDragDropMode( QListWidget::NoDragDrop );
 }
 
@@ -201,6 +214,24 @@ void WidgetEventPanel::setEventMembers()
         members += "...";
     }
     _p_ui->labelMembersBody->setText( members );
+}
+
+bool WidgetEventPanel::requestCurrentLoctionVotes()
+{
+    if ( !_event.valid() )
+    {
+        log_error << TAG << "cannot request for event location votes, invalid event" << std::endl;
+        return false;
+    }
+
+    QDateTime tend, tbeg;
+    if ( !_p_webApp->getEvents()->getVotingTimeWindow( _event->getId(), tbeg, tend ) )
+    {
+        return false;
+    }
+
+    _p_webApp->getEvents()->requestGetLocationVotesByTime( _event->getId(), tbeg, tend );
+    return true;
 }
 
 void WidgetEventPanel::onBtnBuzzClicked()
@@ -261,6 +292,33 @@ void WidgetEventPanel::onResponseRemoveLocation( bool success, QString eventId, 
                  common::DialogMessage::BtnOk );
 
     msg.exec();
+}
+
+void WidgetEventPanel::onResponseGetLocationVotesByTime( bool success, QList< ModelLocationVotesPtr > votes )
+{
+    if ( !success )
+    {
+        QString err = _p_webApp->getEvents()->getLastError();
+        log_warning << TAG << "problem occured while retrieving the event location votes: " << err << std::endl;
+    }
+    else
+    {
+        for ( ModelLocationVotesPtr v: votes )
+        {
+            log_verbose << "location votes" << std::endl;
+            log_verbose << "  event: " << v->getEventId() << std::endl;
+            log_verbose << "  location: " << v->getLocationId() << std::endl;
+            log_verbose << "  creation time: " << v->getVoteCreationTime().toString() << std::endl;
+            log_verbose << "  voting begin: " << v->getVoteTimeBegin().toString() << std::endl;
+            log_verbose << "  voting end: " << v->getVoteTimeEnd().toString() << std::endl;
+            log_verbose << "  users:";
+            for ( QString u: v->getUserIds() )
+            {
+                log_verbose << " " << u;
+            }
+            log_verbose << std::endl;
+        }
+    }
 }
 
 } // namespace event

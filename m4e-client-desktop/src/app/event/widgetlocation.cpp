@@ -39,6 +39,12 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     _event = event;
     _location = location;
 
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseSetLocationVote( bool, QString, QString, QString, bool ) ), this,
+                                     SLOT( onResponseSetLocationVote( bool, QString, QString, QString, bool ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onResponseGetLocationVotesById( bool, m4e::event::ModelLocationVotesPtr ) ), this,
+                                     SLOT( onResponseGetLocationVotesById( bool, m4e::event::ModelLocationVotesPtr ) ) );
+
     _p_ui->setupUi( this );
     _p_ui->labelHead->setText( _location->getName() );
     _p_ui->labelDescription->setText( _location->getDescription() );
@@ -65,6 +71,50 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     _p_ui->labelHead->installEventFilter( this );
     _p_ui->labelDescription->installEventFilter( this );
     _p_ui->labelPhoto->installEventFilter( this );
+
+    updateVotingUI();
+}
+
+void WidgetLocation::updateVotingUI()
+{
+    if ( !_event.valid() )
+    {
+        log_error << TAG << "cannot upate voting UI, invalid event" << std::endl;
+        return;
+    }
+
+    QDateTime tend, tbeg;
+    bool votingtime = _p_webApp->getEvents()->getVotingTimeWindow( _event->getId(), tbeg, tend );
+    _p_ui->pushButtonVoteUp->setVisible( votingtime );
+    _p_ui->pushButtonVoteDown->setVisible( votingtime );
+    _p_ui->widgetVotes->setVisible( votingtime );
+}
+
+void WidgetLocation::updateVotes( ModelLocationVotesPtr votes )
+{
+    if ( ( votes->getEventId() != _event->getId() ) || ( votes->getLocationId() != _location->getId() ) )
+        return;
+
+    _votes = votes;
+    QString textnovotes = QApplication::translate( "WidgetLocation", "No votes" );
+
+    if ( !_votes.valid() )
+    {
+        _p_ui->labelVotes->setText( "0" );
+        _p_ui->widgetVotes->setToolTip( textnovotes );
+        return;
+    }
+
+    QString tooltip;
+    for ( const auto& v: votes->getUserNames() )
+    {
+        if ( !tooltip.isEmpty() )
+            tooltip += ", ";
+        tooltip += v;
+    }
+
+    _p_ui->labelVotes->setText( QString::number( votes->getUserNames().size() ) );
+    _p_ui->widgetVotes->setToolTip( tooltip.isEmpty() ? textnovotes : tooltip );
 }
 
 void WidgetLocation::onBtnEditClicked()
@@ -101,59 +151,12 @@ void WidgetLocation::onBtnInfoClicked()
 
 void WidgetLocation::onBtnVoteUpClicked()
 {
-    user::ModelUserPtr user = _p_webApp->getUser()->getUserData();
-    if ( !user.valid() )
-    {
-        log_warning << TAG << "invalid user!" << std::endl;
-        return;
-    }
-
-    QString tooltip;
-    auto votes = _location->getVotedMembers();
-    for ( const auto& v: votes )
-    {
-        // check if already voted
-        if ( v == user->getName() )
-            return;
-
-        if ( !tooltip.isEmpty() )
-            tooltip += ", ";
-        tooltip += v;
-    }
-
-    votes.append( user->getName() );
-    _location->setVotedMembers( votes );
-    _p_ui->labelVotes->setText( QString::number( votes.size() ) );
-    tooltip += user->getName();
-    _p_ui->widgetVotes->setToolTip( tooltip.isEmpty() ? QApplication::translate( "WidgetLocation", "No votes" ) : tooltip );
-
-    //! TODO this must be sent to server
+    requestSetLocationVote( true );
 }
 
 void WidgetLocation::onBtnVoteDownClicked()
 {
-    user::ModelUserPtr user = _p_webApp->getUser()->getUserData();
-    if ( !user.valid() )
-    {
-        log_warning << TAG << "invalid user!" << std::endl;
-        return;
-    }
-
-    QString tooltip;
-    auto votes = _location->getVotedMembers();
-    votes.removeOne( user->getName() );
-    for ( const auto& v: votes )
-    {
-        if ( !tooltip.isEmpty() )
-            tooltip += ", ";
-        tooltip += v;
-    }
-
-    _location->setVotedMembers( votes );
-    _p_ui->labelVotes->setText( QString::number( votes.size() ) );
-    _p_ui->widgetVotes->setToolTip( tooltip.isEmpty() ? QApplication::translate( "WidgetLocation", "No votes" ) : tooltip );
-
-    //! TODO this must be sent to server
+    requestSetLocationVote( false );
 }
 
 void WidgetLocation::onDocumentReady( m4e::doc::ModelDocumentPtr document )
@@ -162,6 +165,36 @@ void WidgetLocation::onDocumentReady( m4e::doc::ModelDocumentPtr document )
     if ( !photoid.isEmpty() && document.valid() && ( document->getId() == photoid ) )
     {
         _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
+    }
+}
+
+void WidgetLocation::onResponseSetLocationVote( bool success, QString eventId, QString locationId, QString votesId, bool vote )
+{
+    if ( !_event.valid() || !_location.valid() || ( eventId != _event->getId() ) || ( locationId != _location->getId() ) )
+    {
+        return;
+    }
+
+    if ( !success )
+    {
+        log_warning << TAG << "could not vote for location, reason: " << _p_webApp->getEvents()->getLastError() << std::endl;
+    }
+    else
+    {
+        log_verbose << TAG << "voting was successful: " << ( vote ? "voted" : "unvoted" ) << " location " << _location->getName() << std::endl;
+        _p_webApp->getEvents()->requestGetLocationVotesById( votesId );
+    }
+}
+
+void WidgetLocation::onResponseGetLocationVotesById( bool success, ModelLocationVotesPtr votes )
+{
+    if ( !success )
+    {
+        log_warning << TAG << "could not get votes results" << std::endl;
+    }
+    else
+    {
+        updateVotes( votes );
     }
 }
 
@@ -174,6 +207,26 @@ bool WidgetLocation::eventFilter( QObject* p_obj, QEvent* p_event )
     }
 
     return QObject::eventFilter( p_obj, p_event );
+}
+
+void WidgetLocation::requestSetLocationVote( bool vote )
+{
+    user::ModelUserPtr user = _p_webApp->getUser()->getUserData();
+    if ( !user.valid() || !_event.valid() || !_location.valid() )
+    {
+        log_warning << TAG << "cannot vote, invalid inputs" << std::endl;
+        return;
+    }
+
+    // check if we have already voted, if so then ignore the button click
+    if ( _votes.valid() )
+    {
+        bool alreadyvoted = _votes->getUserNames().contains( user->getName() );
+        if ( ( vote && alreadyvoted ) || ( !vote && !alreadyvoted ) )
+            return;
+    }
+
+    _p_webApp->getEvents()->requestSetLocationVote( _event->getId(), _location->getId(), vote );
 }
 
 } // namespace event

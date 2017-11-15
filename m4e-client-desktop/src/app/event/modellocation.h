@@ -39,12 +39,14 @@ class ModelLocation : public common::ModelBase, public m4e::core::RefCount< Mode
 
         /**
          * @brief Set the name of members who voted for this location.
+         *
          * @return List of voted Members
          */
         const QList< QString >&         getVotedMembers() const { return _votedMembers; }
 
         /**
          * @brief Get the name of members who voted for this location.
+         *
          * @param votedMembers  List of voted members
          */
         void                            setVotedMembers( const QList< QString >& votedMembers ) { _votedMembers = votedMembers; }

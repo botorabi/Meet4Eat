@@ -47,13 +47,10 @@ WidgetEventList::WidgetEventList( webapp::WebApp* p_webApp, QWidget* p_parent ) 
 void WidgetEventList::selectEvent( const QString& eventId )
 {
     // check if the event exists at all
-    for ( WidgetEventItem* p_item: _widgets )
+    if ( findEventItem( eventId ) )
     {
-        if ( p_item->getId() == eventId )
-        {
-            onClicked( eventId );
-            return;
-        }
+        onClicked( eventId );
+        return;
     }
     selectFirstEvent();
 }
@@ -62,6 +59,13 @@ void WidgetEventList::selectFirstEvent()
 {
     if ( _widgets.size() > 0 )
         onClicked( _widgets.at( 0 )->getId() );
+}
+
+void WidgetEventList::createNewLocation( const QString& eventId )
+{
+    WidgetEventItem* p_item = findEventItem( eventId );
+    if ( p_item )
+        p_item->createNewLocation();
 }
 
 void WidgetEventList::setupUI()
@@ -113,6 +117,18 @@ void WidgetEventList::addEvent( m4e::event::ModelEventPtr event )
     setItemWidget( p_listitem, p_itemwidget );
 
     _widgets.append( p_itemwidget );
+}
+
+WidgetEventItem* WidgetEventList::findEventItem( const QString& eventId )
+{
+    for ( WidgetEventItem* p_item: _widgets )
+    {
+        if ( p_item->getId() == eventId )
+        {
+            return p_item;
+        }
+    }
+    return nullptr;
 }
 
 void WidgetEventList::onClicked( QString id )
