@@ -167,15 +167,12 @@ bool Events::getVotingTimeWindow( const QString& eventId, QDateTime& timeBegin, 
             }
         }
 
-        timeEnd   = QDateTime::currentDateTime();
-        timeEnd   = timeEnd.addDays( daystonextmatch );
-        timeBegin = timeEnd;
+        QDate currdate = QDate::currentDate();
+        timeEnd.setDate( currdate );
         timeEnd.setTime( event->getRepeatDayTime() );
-        // if no voting time window is set then take the day time as time-end
-        if ( event->getRepeatDayVotingBegin().isValid() )
-            timeBegin.setTime( event->getRepeatDayVotingBegin() );
-        else
-            timeBegin.setTime( event->getRepeatDayTime() );
+        timeEnd = timeEnd.addDays( daystonextmatch );
+        timeBegin = timeEnd;
+        timeBegin.setTime( event->getRepeatDayVotingBegin()  );
     }
     else
     {

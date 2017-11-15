@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>754</width>
-    <height>629</height>
+    <width>719</width>
+    <height>608</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -506,9 +506,6 @@ QPushButton::checked {
                    <width>100</width>
                    <height>16777215</height>
                   </size>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
                  </property>
                  <property name="dateTime">
                   <datetime>

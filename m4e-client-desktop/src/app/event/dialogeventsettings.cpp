@@ -124,14 +124,12 @@ void DialogEventSettings::setupCommonElements( event::ModelEventPtr event )
     if ( votingtime == 0 )
     {
         _p_ui->timeEditVotingTimeBegin->setTime( QTime( 0, 0 ) );
-        _p_ui->timeEditVotingTimeBegin->setReadOnly( true );
     }
     else
     {
         int hours = votingtime / ( 60 * 60 );
         int mins  = ( votingtime % ( 60 * 60 ) ) / 60;
         _p_ui->timeEditVotingTimeBegin->setTime( QTime( hours, mins ) );
-        _p_ui->timeEditVotingTimeBegin->setReadOnly( false );
     }
 }
 

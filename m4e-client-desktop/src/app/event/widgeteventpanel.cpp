@@ -94,6 +94,7 @@ void WidgetEventPanel::setupUI()
 {
     _p_ui = new Ui::WidgetEventPanel;
     _p_ui->setupUi( this );
+    _widgets.clear();
 
     _p_ui->widgetChat->setupUI( _p_webApp );
     connect( _p_ui->widgetChat, SIGNAL( onSendMessage( m4e::chat::ChatMessagePtr ) ), this, SLOT( onSendMessage( m4e::chat::ChatMessagePtr ) ) );
@@ -176,6 +177,8 @@ void WidgetEventPanel::addLocation( event::ModelEventPtr event, event::ModelLoca
 
     //! NOTE it seems that this is really needed after every item insertion, otherwise the items get draggable
     _p_clientArea->setDragDropMode( QListWidget::NoDragDrop );
+
+    _widgets.append( p_widget );
 }
 
 QListWidgetItem* WidgetEventPanel::findLocationItem( const QString& locationId )
@@ -232,6 +235,16 @@ bool WidgetEventPanel::requestCurrentLoctionVotes()
 
     _p_webApp->getEvents()->requestGetLocationVotesByTime( _event->getId(), tbeg, tend );
     return true;
+}
+
+WidgetLocation* WidgetEventPanel::findWidgetLocation( const QString& locationId )
+{
+    for ( auto p_widget: _widgets )
+    {
+        if ( p_widget->getId() == locationId )
+            return p_widget;
+    }
+    return nullptr;
 }
 
 void WidgetEventPanel::onBtnBuzzClicked()
@@ -305,6 +318,12 @@ void WidgetEventPanel::onResponseGetLocationVotesByTime( bool success, QList< Mo
     {
         for ( ModelLocationVotesPtr v: votes )
         {
+            WidgetLocation* p_widget = findWidgetLocation( v->getLocationId() );
+            if ( p_widget )
+            {
+                p_widget->updateVotes( v );
+            }
+
             log_verbose << "location votes" << std::endl;
             log_verbose << "  event: " << v->getEventId() << std::endl;
             log_verbose << "  location: " << v->getLocationId() << std::endl;

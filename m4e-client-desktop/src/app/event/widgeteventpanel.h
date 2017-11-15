@@ -30,6 +30,8 @@ namespace m4e
 namespace event
 {
 
+class WidgetLocation;
+
 /**
  * @brief Class for decorating the "Event" widget.
  *
@@ -181,6 +183,14 @@ class WidgetEventPanel : public QWidget
          */
         bool                        requestCurrentLoctionVotes();
 
+        /**
+         * @brief Try to find a WidgetLocation given its ID.
+         *
+         * @param locationId    The location ID
+         * @return              The widget if the ID was found, otherwise nullptr
+         */
+        WidgetLocation*             findWidgetLocation( const QString& locationId );
+
         Ui::WidgetEventPanel*       _p_ui           = nullptr;
 
         QListWidget*                _p_clientArea   = nullptr;
@@ -192,6 +202,8 @@ class WidgetEventPanel : public QWidget
         typedef QMap< QString /*id*/, QString /*name*/>  Locations;
 
         m4e::event::ModelEventPtr   _event;
+
+        QList< WidgetLocation* >    _widgets;
 };
 
 } // namespace event

@@ -182,17 +182,8 @@ QDateTime ModelEvent::getStartDateVotingBegin() const
 QTime ModelEvent::getRepeatDayVotingBegin() const
 {
     QTime begintime;
-    if ( _repeatDayTime.isValid() && ( _votingTimeBegin > 0 ) )
-    {
-        // we take only the inner day offset for repeated events
-        qint64 offset = _votingTimeBegin % ( 60 * 60 * 24 );
-        qint64 secs = _repeatDayTime.msecsSinceStartOfDay() / 1000;
-        qint64 t = secs - offset;
-        //! NOTE absolute no idea why Qt has nothing like setSecsSinceStartOfDay
-        int hour = static_cast< int >( t / ( 60 * 60 ) );
-        int min  = static_cast< int >( t / 60 ) - hour * 60;
-        begintime = QTime( hour, min, 0 );
-    }
+    int utcoffset = QTimeZone::systemTimeZone().offsetFromUtc( QDateTime::currentDateTime() );
+    begintime = _repeatDayTime.addSecs( -_votingTimeBegin + utcoffset );
 
     return begintime;
 }
