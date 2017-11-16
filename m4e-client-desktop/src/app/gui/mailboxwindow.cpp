@@ -26,7 +26,7 @@ MailboxWindow::MailboxWindow( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  _p_ui( new Ui::MailboxWindow ),
  _p_webApp( p_webApp )
 {
-    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window /*| Qt::FramelessWindowHint*/ | Qt::CustomizeWindowHint );
 
     _p_ui->setupUi( this );
 

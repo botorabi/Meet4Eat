@@ -38,20 +38,6 @@ class ModelLocation : public common::ModelBase, public m4e::core::RefCount< Mode
                                         ModelLocation() {}
 
         /**
-         * @brief Set the name of members who voted for this location.
-         *
-         * @return List of voted Members
-         */
-        const QList< QString >&         getVotedMembers() const { return _votedMembers; }
-
-        /**
-         * @brief Get the name of members who voted for this location.
-         *
-         * @param votedMembers  List of voted members
-         */
-        void                            setVotedMembers( const QList< QString >& votedMembers ) { _votedMembers = votedMembers; }
-
-        /**
          * @brief Create a JSON string out of the location model.
          *
          * @return JSON document representing the event location
@@ -87,10 +73,6 @@ class ModelLocation : public common::ModelBase, public m4e::core::RefCount< Mode
          * @return true if both locations have the same ID, otherwise false.
          */
         bool                            operator != ( const ModelLocation& right ) { return _id != right.getId(); }
-
-    protected:
-
-        QList< QString >                _votedMembers;
 };
 
 typedef m4e::core::SmartPtr< ModelLocation > ModelLocationPtr;

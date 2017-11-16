@@ -7,10 +7,10 @@
  */
 package net.m4e.app.event;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -26,6 +26,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.AbstractFacade;
 import net.m4e.common.Entities;
@@ -52,6 +53,12 @@ public class EventLocationVoteEntityFacadeREST extends AbstractFacade<EventLocat
      */
     @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
     private EntityManager entityManager;
+
+    /**
+     * Event used for notifying other users
+     */
+    @Inject
+    Event<NotifyUsersEvent> notifyUsersEvent;
 
     /**
      * Create the REST facade.
@@ -104,6 +111,10 @@ public class EventLocationVoteEntityFacadeREST extends AbstractFacade<EventLocat
             Log.warning(TAG, "*** Cannot update event location vote, outside of voting time window!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, invalid voting time window.", ResponseResults.CODE_BAD_REQUEST, null);
         }
+
+        // notify all event members about removing a location
+        EventNotifications notifications = new EventNotifications(notifyUsersEvent, null);
+        notifications.sendNotifyLocationVote(EventNotifications.ChangeType.Modify, sessionuser, event, locationId, (vote > 0));
 
         jsonresponse.add("votesId", voteentity.getId().toString());
         jsonresponse.add("eventId", eventId.toString());

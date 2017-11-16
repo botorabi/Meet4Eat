@@ -50,7 +50,7 @@ MainWindow::MainWindow() :
  QMainWindow( nullptr ),
  _p_ui( new Ui::MainWindow )
 {
-    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window /*| Qt::FramelessWindowHint*/ | Qt::CustomizeWindowHint );
     setAttribute( Qt::WA_NoSystemBackground );
     setAttribute( Qt::WA_TranslucentBackground );
 
@@ -422,6 +422,9 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+
     connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ), this,
                                             SLOT( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ) );
 
@@ -554,6 +557,29 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
         addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: " ) + "'" + eventname + "'" );
 
     _p_ui->pushButtonRefreshEvents->show();
+}
+
+void MainWindow::onEventLocationVote(  QString senderId, QString eventId, QString locationId, bool vote )
+{
+    // suppress echo
+    QString userid = _p_webApp->getUser()->getUserData()->getId();
+    if ( senderId == userid )
+        return;
+
+    QString eventname;
+    QString locationname;
+    event::ModelEventPtr event = _p_webApp->getEvents()->getUserEvent( eventId );
+
+    if ( event.valid() )
+    {
+        eventname = event->getName();
+        event::ModelLocationPtr location = event->getLocation( locationId );
+        if ( location.valid() )
+            locationname = location->getName();
+    }
+    addLogText( QApplication::translate( "MainWindow", "Location vote arrived: " ) + "'" + eventname + "' / '" + locationname + "': " + ( vote ? "vote" : "unvote" ) );
+
+    //! TODO play a sound
 }
 
 void MainWindow::onEventMessage( QString /*senderId*/, QString eventId, notify::NotifyEventPtr notify )

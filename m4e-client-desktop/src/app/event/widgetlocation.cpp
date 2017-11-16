@@ -45,6 +45,9 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetLocationVotesById( bool, m4e::event::ModelLocationVotesPtr ) ), this,
                                      SLOT( onResponseGetLocationVotesById( bool, m4e::event::ModelLocationVotesPtr ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+
     _p_ui->setupUi( this );
     _p_ui->labelHead->setText( _location->getName() );
     _p_ui->labelDescription->setText( _location->getDescription() );
@@ -143,6 +146,7 @@ void WidgetLocation::onBtnInfoClicked()
 {
     DialogLocationDetails* p_dlg = new DialogLocationDetails( _p_webApp, this );
     p_dlg->setupUI( _location );
+    p_dlg->setupVotes( _votes );
     p_dlg->exec();
     delete p_dlg;
 }
@@ -164,6 +168,21 @@ void WidgetLocation::onDocumentReady( m4e::doc::ModelDocumentPtr document )
     {
         _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
     }
+}
+
+void WidgetLocation::onEventLocationVote( QString senderId, QString /*eventId*/, QString locationId, bool /*vote*/ )
+{
+    // suppress echo
+    QString userid = _p_webApp->getUser()->getUserData()->getId();
+    if ( senderId == userid )
+        return;
+
+    // is this vote for this location?
+    if ( locationId != _location->getId() )
+         return;
+
+    if ( _votes.valid() )
+        _p_webApp->getEvents()->requestGetLocationVotesById( _votes->getId() );
 }
 
 void WidgetLocation::onResponseSetLocationVote( bool success, QString eventId, QString locationId, QString votesId, bool vote )

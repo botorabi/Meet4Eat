@@ -70,6 +70,7 @@ public class NotifyUsersListener {
         // assemble a packet and send it out
         Packet packet = new Packet();
         packet.setChannel(Packet.CHANNEL_NOTIFY);
+        packet.setSourceId((sender != null) && (sender.getId() != null) ? sender.getId().toString() : "");
         packet.setSource((sender != null) ? sender.getName() : "");
 
         JsonObjectBuilder json = Json.createObjectBuilder();
@@ -115,6 +116,7 @@ public class NotifyUsersListener {
         // assemble a packet and send it out
         Packet packet = new Packet();
         packet.setChannel(Packet.CHANNEL_NOTIFY);
+        packet.setSourceId(sender.getId().toString());
         packet.setSource(sender.getName());
 
         JsonObjectBuilder json = Json.createObjectBuilder();

@@ -81,6 +81,13 @@ void Notifications::onChannelNotifyPacket( m4e::comm::PacketPtr packet )
         QString locationid = obj.value( "locationId" ).toString( "" );
         emit onEventLocationChanged( changetype, eventid, locationid );
     }
+    else if ( notifytype == "modifyvote" )
+    {
+        QString eventid = obj.value( "eventId" ).toString( "" );
+        QString locationid = obj.value( "locationId" ).toString( "" );
+        bool    vote = obj.value( "vote" ).toBool( false );
+        emit onEventLocationVote( packet->getSourceId(), eventid, locationid, vote );
+    }
 }
 
 void Notifications::onChannelEventPacket( m4e::comm::PacketPtr packet )

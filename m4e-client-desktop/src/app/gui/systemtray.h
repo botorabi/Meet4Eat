@@ -101,6 +101,16 @@ class SystemTray : QObject
         void                        onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
 
         /**
+         * @brief This signal is emitted when an event location vote arrives.
+         *
+         * @param senderId   User ID of the voter
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         * @param vote       true for vote and false for unvote the given location
+         */
+        void                        onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+
+        /**
          * @brief This signal is emitted when the results of mails count request arrive.
          *
          * @param success  true if the count of unread mails could successfully be retrieved, otherwise false

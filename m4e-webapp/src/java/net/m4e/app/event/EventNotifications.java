@@ -15,6 +15,7 @@ import javax.enterprise.event.Event;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.app.user.UserEntity;
 
@@ -28,8 +29,15 @@ import net.m4e.app.user.UserEntity;
  */
 public class EventNotifications {
 
-    Event notifyUsersEvent;
-    Event notifyUserRelativesEvent;
+    /**
+     * Event for sending user notification
+     */
+    Event<NotifyUsersEvent> notifyUsersEvent;
+
+    /**
+     * Event used for sending notification to user's relatives
+     */
+    Event<NotifyUserRelativesEvent> notifyUserRelativesEvent;
 
     /**
      * Used to characterize the change type in a notification
@@ -87,7 +95,7 @@ public class EventNotifications {
      * @param notifyUsersEvent          Event used for user related notifications
      * @param notifyUserRelativesEvent  Event used for user relatives notifications
      */
-    public EventNotifications(Event notifyUsersEvent, Event notifyUserRelativesEvent) {
+    public EventNotifications(Event<NotifyUsersEvent> notifyUsersEvent, Event<NotifyUserRelativesEvent> notifyUserRelativesEvent) {
         this.notifyUsersEvent = notifyUsersEvent;
         this.notifyUserRelativesEvent = notifyUserRelativesEvent;
     }
@@ -127,6 +135,29 @@ public class EventNotifications {
         JsonObjectBuilder data = Json.createObjectBuilder();
         data.add("eventId", event.getId().toString())
             .add("locationId", locationId.toString());
+        json.add("data", data);
+
+        notifyEventMembers(user, event, json.build());
+    }
+
+    /**
+     * Notify event members about a user voting/unvoting a location.
+     * 
+     * @param changeType    Change type
+     * @param user          User sending the notification
+     * @param event         Members of this event are notified.
+     * @param locationId    ID of location which was voted/unvoted
+     * @param vote          Pass true for vote, false for unvote
+     */
+    public void sendNotifyLocationVote(ChangeType changeType, UserEntity user, EventEntity event, Long locationId, boolean vote) {
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("subject", "Location Vote")
+            .add("type", changeType.value() + "vote")
+            .add("text", "Location vote was " + changeType.pastForm() + ".");
+        JsonObjectBuilder data = Json.createObjectBuilder();
+        data.add("eventId", event.getId().toString())
+            .add("locationId", locationId.toString())
+            .add("vote", vote);
         json.add("data", data);
 
         notifyEventMembers(user, event, json.build());
@@ -215,7 +246,7 @@ public class EventNotifications {
             return;
         }
 
-        NotifyUsersEvent notify = new NotifyUsersEvent();
+        NotifyUserRelativesEvent notify = new NotifyUserRelativesEvent();
         notify.setSenderId(user.getId());
         notify.setSubject(subject);
         notify.setText(type);

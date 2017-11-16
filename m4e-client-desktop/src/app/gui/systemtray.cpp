@@ -46,6 +46,9 @@ SystemTray::SystemTray( webapp::WebApp* p_webApp, MainWindow* p_parent ) :
     connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ), this,
                                             SLOT( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+
     connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountMails( bool, int, int ) ), this,
                                       SLOT( onResponseCountMails( bool, int, int ) ) );
 
@@ -222,6 +225,31 @@ void SystemTray::onResponseCountMails( bool success, int /*countTotal*/, int cou
         QString text = QApplication::translate( "SystemTray", "You have received new mails." );
         showMessage( title, text, false );
     }
+}
+
+void SystemTray::onEventLocationVote( QString senderId, QString eventId, QString locationId, bool /*vote*/ )
+{
+    // check if notifications are enabled
+    if ( !_enableNotification )
+        return;
+
+    // suppress echo
+    QString userid = _p_webApp->getUser()->getUserData()->getId();
+    if ( senderId == userid )
+        return;
+
+    QString locationname;
+    event::ModelEventPtr event = _p_webApp->getEvents()->getUserEvent( eventId );
+    if ( event.valid() )
+    {
+        event::ModelLocationPtr loc = event->getLocation( locationId );
+        if ( loc.valid() )
+            locationname = loc->getName();
+    }
+
+    QString title = QApplication::translate( "SystemTray", "Meet4Eat - New Vote" );
+    QString text = QApplication::translate( "SystemTray", "Location: " ) + " " + locationname;
+    showMessage( title, text, false );
 }
 
 void SystemTray::onLocationVotingStart( event::ModelEventPtr event )

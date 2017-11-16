@@ -60,6 +60,20 @@ class Packet : public core::RefCount< Packet >
         void                    setChannel( const QString& channel ) { _channel = channel; }
 
         /**
+         * @brief Get the packet source ID.
+         *
+         * @return Packet source ID
+         */
+        const QString&          getSourceId() const { return _sourceId; }
+
+        /**
+         * @brief Set the packet source ID.
+         *
+         * @param sender Packet source ID
+         */
+        void                    setSourceId( const QString& sourceId ) { _sourceId = sourceId; }
+
+        /**
          * @brief Get the packet source which has sent it.
          *
          * @return Packet source
@@ -119,6 +133,7 @@ class Packet : public core::RefCount< Packet >
     protected:
 
         QString                 _channel;
+        QString                 _sourceId;
         QString                 _source;
         QDateTime               _time;
         QJsonDocument           _data;

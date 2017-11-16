@@ -28,7 +28,8 @@ QGroupBox {
   background-color: transparent; /*rgb(80,112,125);*/
 }
 QLineEdit {
-  background-color: rgb(101,117, 137);  
+  background-color: rgb(101,117, 137);
+  border: 1px solid rgb(131, 147, 167);
 }
 QTextEdit {
   background-color: rgb(101,117, 137);  
@@ -212,6 +213,7 @@ QPushButton::checked {
                 <property name="styleSheet">
                  <string notr="true">QScrollBar:horizontal {
  height: 4px;
+ border: 1px solid rgb(131, 147, 167);
 }
 </string>
                 </property>

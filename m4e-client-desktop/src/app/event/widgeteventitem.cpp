@@ -13,6 +13,7 @@
 #include "dialogeventsettings.h"
 #include "dialoglocationedit.h"
 #include <ui_widgeteventitem.h>
+#include <QPropertyAnimation>
 
 
 namespace m4e
@@ -56,6 +57,9 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
+
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
 
     connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this,
                         SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
@@ -195,6 +199,20 @@ void WidgetEventItem::onEventLocationChanged( notify::Notifications::ChangeType 
     notifyUpdate( QApplication::translate( "WidgetEventItem", "Event location settings were changed, click to updage!") );
 }
 
+void WidgetEventItem::onEventLocationVote( QString senderId, QString eventId, QString /*locationId*/, bool /*vote*/ )
+{
+    // suppress echo
+    QString userid = _p_webApp->getUser()->getUserData()->getId();
+    if ( senderId == userid )
+        return;
+
+    // is this vote for one of the locations of this event?
+    if ( eventId != _event->getId() )
+         return;
+
+    animateItemWidget();
+}
+
 void WidgetEventItem::onLocationVotingStart( m4e::event::ModelEventPtr event )
 {
     if ( event != _event )
@@ -222,6 +240,29 @@ bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
     }
 
     return QObject::eventFilter( p_obj, p_event );
+}
+
+void WidgetEventItem::animateItemWidget()
+{
+    QRect geom = geometry();
+
+    QPropertyAnimation* p_anim1 = new QPropertyAnimation( this, "geometry" );
+    p_anim1->setDuration( 25 );
+    p_anim1->setStartValue( geom );
+    geom.moveLeft( geom.left() + 10 );
+    p_anim1->setEndValue( geom );
+
+    QPropertyAnimation* p_anim2 = new QPropertyAnimation( this, "geometry" );
+    p_anim2->setDuration( 25 );
+    p_anim2->setStartValue( geom );
+    geom.moveLeft( geom.left() - 10 );
+    p_anim2->setEndValue( geom );
+
+    QSequentialAnimationGroup* p_anim = new QSequentialAnimationGroup( this );
+    p_anim->addAnimation( p_anim1 );
+    p_anim->addAnimation( p_anim2 );
+    p_anim->setLoopCount( 10 );
+    p_anim->start( QAbstractAnimation::DeleteWhenStopped );
 }
 
 } // namespace event

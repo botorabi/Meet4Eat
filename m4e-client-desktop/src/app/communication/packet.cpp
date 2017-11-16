@@ -29,6 +29,7 @@ QJsonDocument Packet::toJSON()
 {
     QJsonObject obj;
     obj.insert( "channel", _channel );
+    obj.insert( "sourceId", _sourceId );
     obj.insert( "source", _source );
     obj.insert( "time", _time.toMSecsSinceEpoch() );
     obj.insert( "data", _data.object() );
@@ -48,9 +49,10 @@ bool Packet::fromJSON( const QString& input )
     QJsonObject obj = doc.object();
 
     // the data (payload) is also expected to be in JSON format
-    _data    = QJsonDocument( obj.value( "data" ).toObject( QJsonObject() ) );
-    _channel = obj.value( "channel" ).toString( "" );
-    _source  = obj.value( "source" ).toString( "" );
+    _data     = QJsonDocument( obj.value( "data" ).toObject( QJsonObject() ) );
+    _channel  = obj.value( "channel" ).toString( "" );
+    _sourceId = obj.value( "sourceId" ).toString( "" );
+    _source   = obj.value( "source" ).toString( "" );
     qint64 time = ( qint64 )obj.value( "time" ).toDouble( 0.0 );
     _time = QDateTime::fromMSecsSinceEpoch( time );
 

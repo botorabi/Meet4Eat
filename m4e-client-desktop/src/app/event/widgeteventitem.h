@@ -151,6 +151,16 @@ class WidgetEventItem : public QWidget
         void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
         /**
+         * @brief This signal is emitted when an event location vote arrives.
+         *
+         * @param senderId   User ID of the voter
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         * @param vote       true for vote and false for unvote the given location
+         */
+        void                    onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+
+        /**
          * @brief Timer callback used for voting alarm.
          *
          * @param event  The event
@@ -167,6 +177,8 @@ class WidgetEventItem : public QWidget
     protected:
 
         bool                        eventFilter( QObject* p_obj, QEvent* p_event );
+
+        void                        animateItemWidget();
 
         webapp::WebApp*             _p_webApp = nullptr;
 
