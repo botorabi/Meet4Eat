@@ -157,7 +157,8 @@ ModelDocumentPtr DocumentCache::findDocument( const QString& id, const QString& 
 
     QString filename = cachedir + QDir::separator() + eTag;
     QFile file( filename );
-    if ( !file.open( QFile::ReadWrite ) )
+    bool res = file.open( QFile::ReadWrite );
+    if ( !res || ( file.size() == 0 ) )
     {
         return ModelDocumentPtr();
     }
@@ -312,6 +313,10 @@ bool DocumentCache::checkAndUpdateCacheFileHeader( QFile& file, QByteArray& data
 
     data   = file.readAll();
     offset = 0;
+
+    // check if the file has any content at all, it may also not exist now
+    if ( data.length() == 0 )
+        return false;
 
     // check the file format header
     res = readNextField( data, offset, magic, magicvalue );

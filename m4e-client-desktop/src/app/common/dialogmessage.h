@@ -31,7 +31,7 @@ class DialogMessage : public common::BaseDialog
     public:
 
         /**
-         * @brief Default dialog buttons
+         * @brief Dialog buttons
          */
         enum Buttons
         {

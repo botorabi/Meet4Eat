@@ -281,9 +281,9 @@ public class StatusEntity implements Serializable {
     }
 
     /**
-     * Set the enable  flag.
+     * Set the enable flag.
      * 
-     * @param enabled
+     * @param enabled The enable flag  
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;

@@ -28,7 +28,12 @@
         <file>icon-mail-small.png</file>
         <file>icon-notify.png</file>
         <file>icon-newevent.png</file>
+        <file>icon-refresh.png</file>
+        <file>icon-refresh-alert.png</file>
+        <file>wakeup.png</file>
+        <file>wakeup-512.png</file>
         <file>icon.ico</file>
+        <file>icon-tray.ico</file>
         <file>logo.png</file>
         <file>LICENSE</file>
     </qresource>

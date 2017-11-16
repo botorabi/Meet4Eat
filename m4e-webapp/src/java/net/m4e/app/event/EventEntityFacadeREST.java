@@ -45,7 +45,7 @@ import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
 
 /**
- * REST services for Event entity operations
+ * REST services for Event entity operations.
  * The results of operations depend on the privileges of authenticated user.
  * 
  * @author boto
@@ -198,6 +198,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         event.setIsPublic(reqentity.getIsPublic());
         event.setRepeatWeekDays(reqentity.getRepeatWeekDays());
         event.setRepeatDayTime(reqentity.getRepeatDayTime());
+        event.setVotingTimeBegin(reqentity.getVotingTimeBegin());
 
         try {
             getEvents().updateEvent(event);

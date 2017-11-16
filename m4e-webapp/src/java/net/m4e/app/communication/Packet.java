@@ -48,6 +48,7 @@ public class Packet {
     public final static String CHANNEL_EVENT = "event";
 
     private String channel;
+    private String sourceId;
     private String source;
     private JsonObject data;
     private Long   time = 0L;
@@ -60,12 +61,14 @@ public class Packet {
     /**
      * Create a packet instance.
      *
-     * @param channel Packet channel, one of CHANNEL_xx strings
-     * @param source Human readable string, e.g. user name, as far as available
-     * @param data Packet data, it should be in JSON format
+     * @param channel   Packet channel, one of CHANNEL_xx strings
+     * @param sourceId  ID of sender, e.g. user ID
+     * @param source    Human readable string, e.g. user name, as far as available
+     * @param data      Packet data, it should be in JSON format
      */
-    public Packet(String channel, String source, JsonObject data) {
+    public Packet(String channel, String sourceId, String source, JsonObject data) {
         this.channel = channel;
+        this.sourceId = sourceId;
         this.source = source;
         this.data = data;
     }
@@ -78,6 +81,7 @@ public class Packet {
     public String toJSON() {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("channel", ((channel != null) ? channel : ""))
+            .add("sourceId", ((sourceId != null) ? sourceId : ""))
             .add("source", ((source != null) ? source : ""))
             .add("time", (time == 0L) ? (new Date()).getTime() : time);
         if (data != null) {
@@ -89,13 +93,14 @@ public class Packet {
     /**
      * Create a JSON string with given fields.
      *
-     * @param channel Packet channel
-     * @param source Human readable string, e.g. user name, as far as available
-     * @param data Packet data, it should be in JSON format
-     * @return JSON formatted string
+     * @param channel   Packet channel
+     * @param sourceId  Source ID
+     * @param source    Human readable string of the source, e.g. user name, as far as available
+     * @param data      Packet data, it should be in JSON format
+     * @return          JSON formatted string
      */
-    public static String toJSON(String channel, String source, JsonObject data) {
-        return new Packet(channel, source, data).toJSON();
+    public static String toJSON(String channel, String sourceId, String source, JsonObject data) {
+        return new Packet(channel, sourceId, source, data).toJSON();
     }
 
     /**
@@ -111,10 +116,11 @@ public class Packet {
             JsonReader jreader = Json.createReader(new StringReader(input));
             JsonObject jobject = jreader.readObject();
             String channel = jobject.getString("channel", "");
+            String sourceId = jobject.getString("soourceId", "");
             String source = jobject.getString("soource", "");
             JsonObject data = jobject.getJsonObject("data");
             int time = jobject.getInt("time", 0);
-            packet = new Packet(channel, source, data);
+            packet = new Packet(channel, sourceId, source, data);
             packet.setTime(new Long(time));
         }
         catch (Exception ex) {
@@ -153,10 +159,28 @@ public class Packet {
     /**
      * Set packet's source
      *
-     * @param source
+     * @param source Packet source
      */
     public void setSource(String source) {
         this.source = source;
+    }
+
+    /**
+     * Get packet source ID, can also be empty.
+     *
+     * @return Packet source ID, e.g. a user ID
+     */
+    public String getSourceId() {
+        return sourceId;
+    }
+
+    /**
+     * Set packet's source ID
+     *
+     * @param sourceId Packet source ID
+     */
+    public void setSourceId(String sourceId) {
+        this.sourceId = sourceId;
     }
 
     /**

@@ -42,20 +42,9 @@ void RESTEvent::getEvent( const QString& eventId )
 
 void RESTEvent::createEvent( event::ModelEventPtr event )
 {
-    //! TODO move the json related conversion to the event model
-
-    QJsonObject obj;
-    obj.insert( "name",           event->getName() );
-    obj.insert( "description",    event->getDescription() );
-    obj.insert( "public",         event->getIsPublic() );
-    obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
-    obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
-    obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
-    QJsonDocument json( obj );
-
     QUrl url( getResourcePath() + "/rest/events/create" );
     auto p_callback = new ResponseNewEvent( this );
-    getRESTOps()->POST( url, createResultsCallback( p_callback ), json );
+    getRESTOps()->POST( url, createResultsCallback( p_callback ), event->toJSON() );
 }
 
 void RESTEvent::deleteEvent( const QString& eventId )
@@ -67,25 +56,9 @@ void RESTEvent::deleteEvent( const QString& eventId )
 
 void RESTEvent::updateEvent( event::ModelEventPtr event )
 {
-    QJsonObject obj;
-    obj.insert( "name",           event->getName() );
-    obj.insert( "description",    event->getDescription() );
-    obj.insert( "public",         event->getIsPublic() );
-    obj.insert( "eventStart",     event->getStartDate().toSecsSinceEpoch() );
-    obj.insert( "repeatDayTime",  event->getRepeatDayTime().msecsSinceStartOfDay() / 1000 );
-    obj.insert( "repeatWeekDays", int( event->getRepeatWeekDays() ) );
-
-    // was the photo updated?
-    if ( event->getUpdatedPhoto().valid() )
-    {
-        obj.insert( "photo", QString( event->getUpdatedPhoto()->getContent() ) );
-    }
-
-    QJsonDocument json( obj );
-
     QUrl url( getResourcePath() + "/rest/events/" + event->getId() );
     auto p_callback = new ResponseUpdateEvent( this );
-    getRESTOps()->PUT( url, createResultsCallback( p_callback ), json );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ), event->toJSON() );
 }
 
 void RESTEvent::addMember( const QString& eventId, const QString& memberId )
@@ -129,6 +102,30 @@ void RESTEvent::updateLocation(const QString& eventId, event::ModelLocationPtr l
     QUrl url( getResourcePath() + "/rest/events/putlocation/" + eventId );
     auto p_callback = new ResponseEventUpdateLocation( this );
     getRESTOps()->PUT( url, createResultsCallback( p_callback ), location->toJSON() );
+}
+
+void RESTEvent::setLocationVote( const QString& eventId, const QString& locationId, bool vote )
+{
+    QUrl url( getResourcePath() + "/rest/locationvoting/setvote/" + eventId + "/" + locationId + "/" + ( vote ? "1" : "0" ) );
+    auto p_callback = new ResponseEventSetLocationVote( this );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ) );
+}
+
+void RESTEvent::getLocationVotesByTime( const QString& eventId, const QDateTime& timeBegin, const QDateTime& timeEnd )
+{
+    QString tbegin = QString::number( timeBegin.toSecsSinceEpoch() );
+    QString tend   = QString::number( timeEnd.toSecsSinceEpoch() );
+
+    QUrl url( getResourcePath() + "/rest/locationvoting/getvotes/" + eventId + "/" + tbegin + "/" + tend );
+    auto p_callback = new ResponseEventGetLocationVotesByTime( this );
+    getRESTOps()->GET( url, createResultsCallback( p_callback ) );
+}
+
+void RESTEvent::getLocationVotesById( const QString& votesId )
+{
+    QUrl url( getResourcePath() + "/rest/locationvoting/getvotes/" + votesId );
+    auto p_callback = new ResponseEventGetLocationVotesById( this );
+    getRESTOps()->GET( url, createResultsCallback( p_callback ) );
 }
 
 } // namespace webapp

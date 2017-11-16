@@ -13,6 +13,7 @@
 #include "dialogeventsettings.h"
 #include "dialoglocationedit.h"
 #include <ui_widgeteventitem.h>
+#include <QPropertyAnimation>
 
 
 namespace m4e
@@ -57,7 +58,17 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
-    connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+
+    connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this,
+                        SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
 
     common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 180), QPoint( -2, 2 ), 4 );
     setSelectionMode( true );
@@ -67,6 +78,8 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
 void WidgetEventItem::updateEvent( ModelEventPtr event )
 {
     _event = event;
+
+    _p_ui->widgetVotingTime->setVisible( _p_webApp->getEvents()->getIsVotingTime( _event->getId() ) );
 
     // is the user also the owner of the event? some operations are only permitted to owner
     _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
@@ -111,12 +124,21 @@ void WidgetEventItem::notifyUpdate( const QString& text )
     _p_ui->pushButtonNotification->setToolTip( text );
 }
 
+void WidgetEventItem::createNewLocation()
+{
+    onBtnNewLocationClicked();
+}
+
 void WidgetEventItem::onBtnEditClicked()
 {
-    DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, this );
-    p_dlg->setupUI( _event );
-    p_dlg->exec();
-    delete p_dlg;
+    DialogEventSettings dlg( _p_webApp, this );
+    dlg.setupUI( _event );
+    if ( dlg.exec() != DialogEventSettings::BtnApply )
+        return;
+
+    // update event data
+    onBtnNotificationClicked();
+    emit onClicked( _event->getId() );
 }
 
 void WidgetEventItem::onBtnDeleteClicked()
@@ -177,6 +199,38 @@ void WidgetEventItem::onEventLocationChanged( notify::Notifications::ChangeType 
     notifyUpdate( QApplication::translate( "WidgetEventItem", "Event location settings were changed, click to updage!") );
 }
 
+void WidgetEventItem::onEventLocationVote( QString senderId, QString eventId, QString /*locationId*/, bool /*vote*/ )
+{
+    // suppress echo
+    QString userid = _p_webApp->getUser()->getUserData()->getId();
+    if ( senderId == userid )
+        return;
+
+    // is this vote for one of the locations of this event?
+    if ( eventId != _event->getId() )
+         return;
+
+    animateItemWidget();
+}
+
+void WidgetEventItem::onLocationVotingStart( m4e::event::ModelEventPtr event )
+{
+    if ( event != _event )
+        return;
+
+    log_verbose << TAG << "time to vote for event locations" << std::endl;
+    _p_ui->widgetVotingTime->setVisible( true );
+}
+
+void WidgetEventItem::onLocationVotingEnd( m4e::event::ModelEventPtr event )
+{
+    if ( event != _event )
+        return;
+
+    log_verbose << TAG << "end of to voting time reached" << std::endl;
+    _p_ui->widgetVotingTime->setVisible( false );
+}
+
 bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
 {
     if ( p_event->type() == QEvent::MouseButtonPress )
@@ -186,6 +240,29 @@ bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
     }
 
     return QObject::eventFilter( p_obj, p_event );
+}
+
+void WidgetEventItem::animateItemWidget()
+{
+    QRect geom = geometry();
+
+    QPropertyAnimation* p_anim1 = new QPropertyAnimation( this, "geometry" );
+    p_anim1->setDuration( 25 );
+    p_anim1->setStartValue( geom );
+    geom.moveLeft( geom.left() + 10 );
+    p_anim1->setEndValue( geom );
+
+    QPropertyAnimation* p_anim2 = new QPropertyAnimation( this, "geometry" );
+    p_anim2->setDuration( 25 );
+    p_anim2->setStartValue( geom );
+    geom.moveLeft( geom.left() - 10 );
+    p_anim2->setEndValue( geom );
+
+    QSequentialAnimationGroup* p_anim = new QSequentialAnimationGroup( this );
+    p_anim->addAnimation( p_anim1 );
+    p_anim->addAnimation( p_anim2 );
+    p_anim->setLoopCount( 10 );
+    p_anim->start( QAbstractAnimation::DeleteWhenStopped );
 }
 
 } // namespace event

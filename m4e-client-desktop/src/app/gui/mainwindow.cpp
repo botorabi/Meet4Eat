@@ -19,6 +19,7 @@
 #include <common/dialogmessage.h>
 #include <common/guiutils.h>
 #include <event/dialogeventsettings.h>
+#include <gui/alarmwindow.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
 #include <QDesktopServices>
@@ -30,6 +31,7 @@ namespace m4e
 namespace gui
 {
 
+/** Mail button styling */
 const QString MAIL_BTN_STYLE = \
 "QPushButton {\
  background-color: transparent;\
@@ -48,7 +50,7 @@ MainWindow::MainWindow() :
  QMainWindow( nullptr ),
  _p_ui( new Ui::MainWindow )
 {
-    setWindowFlags( Qt::Window | /*Qt::FramelessWindowHint |*/ Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window /*| Qt::FramelessWindowHint*/ | Qt::CustomizeWindowHint );
     setAttribute( Qt::WA_NoSystemBackground );
     setAttribute( Qt::WA_TranslucentBackground );
 
@@ -82,7 +84,7 @@ MainWindow::MainWindow() :
     _p_updateTimer->start( keepaliveperiod );
 
     updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), false );
-    _p_ui->pushButtonNotification->hide();
+    _p_ui->pushButtonRefreshEvents->hide();
 
     clearWidgetClientArea();
 }
@@ -90,6 +92,15 @@ MainWindow::MainWindow() :
 MainWindow::~MainWindow()
 {
     delete _p_ui;
+}
+
+void MainWindow::selectEvent( const QString& eventId )
+{
+    _currentEventSelection = eventId;
+    if ( _p_eventList )
+    {
+        _p_eventList->selectEvent( _currentEventSelection );
+    }
 }
 
 void MainWindow::terminate()
@@ -148,6 +159,25 @@ void MainWindow::onTimerInit()
     {
         _p_webApp->establishConnection();
     }
+}
+
+void MainWindow::onLocationVotingStart( event::ModelEventPtr event )
+{
+    addLogText( "Location voting started for event '" + event->getName() + "'" );
+
+    QString enablealarm = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_ALARM, "yes" );
+    if ( enablealarm == "yes" )
+    {
+        gui::AlarmWindow* p_dlg = new gui::AlarmWindow( this );
+        p_dlg->setupUI( event );
+        p_dlg->show();
+        common::GuiUtils::widgetToFront( p_dlg );
+    }
+}
+
+void MainWindow::onLocationVotingEnd( m4e::event::ModelEventPtr event )
+{
+    addLogText( "Location voting has ended for event '" + event->getName() + "'" );
 }
 
 void MainWindow::onTimerUpdate()
@@ -342,11 +372,11 @@ void MainWindow::onBtnAddEvent()
     delete p_dlg;
 }
 
-void MainWindow::onBtnNotificationClicked()
+void MainWindow::onBtnRefreshEvents()
 {
     addLogText( QApplication::translate( "MainWindow", "Refreshing all events" ) );
 
-    _p_ui->pushButtonNotification->hide();
+    _p_ui->pushButtonRefreshEvents->hide();
     _p_webApp->getEvents()->requestGetEvents();
 }
 
@@ -354,6 +384,13 @@ void MainWindow::onEventSelection( QString id )
 {
     clearWidgetClientArea();
     createWidgetEvent( id );
+    _currentEventSelection = id;
+}
+
+void MainWindow::onCreateNewLocation( QString eventId )
+{
+    if ( _p_eventList )
+        _p_eventList->createNewLocation( eventId );
 }
 
 void MainWindow::onAuthState( bool authenticated )
@@ -385,11 +422,20 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+
     connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ), this,
                                             SLOT( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ) );
 
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
                                      SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
 
     connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountUnreadMails( bool, int ) ), this,
                                       SLOT( onResponseCountUnreadMails( bool, int ) ) );
@@ -490,7 +536,7 @@ void MainWindow::onEventChanged( notify::Notifications::ChangeType changeType, Q
     else
         addLogText( QApplication::translate( "MainWindow", "Event settings have changed: '" ) + eventname + "'" );
 
-    _p_ui->pushButtonNotification->show();
+    _p_ui->pushButtonRefreshEvents->show();
 }
 
 void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType changeType, QString eventId, QString locationId )
@@ -510,7 +556,30 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
     else
         addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: " ) + "'" + eventname + "'" );
 
-    _p_ui->pushButtonNotification->show();
+    _p_ui->pushButtonRefreshEvents->show();
+}
+
+void MainWindow::onEventLocationVote(  QString senderId, QString eventId, QString locationId, bool vote )
+{
+    // suppress echo
+    QString userid = _p_webApp->getUser()->getUserData()->getId();
+    if ( senderId == userid )
+        return;
+
+    QString eventname;
+    QString locationname;
+    event::ModelEventPtr event = _p_webApp->getEvents()->getUserEvent( eventId );
+
+    if ( event.valid() )
+    {
+        eventname = event->getName();
+        event::ModelLocationPtr location = event->getLocation( locationId );
+        if ( location.valid() )
+            locationname = location->getName();
+    }
+    addLogText( QApplication::translate( "MainWindow", "Location vote arrived: " ) + "'" + eventname + "' / '" + locationname + "': " + ( vote ? "vote" : "unvote" ) );
+
+    //! TODO play a sound
 }
 
 void MainWindow::onEventMessage( QString /*senderId*/, QString eventId, notify::NotifyEventPtr notify )
@@ -577,35 +646,30 @@ void MainWindow::clearWidgetClientArea()
 
 void MainWindow::clearWidgetMyEvents()
 {
-    QLayoutItem* p_item;
-    QLayout* p_layout = _p_ui->widgetEventItems->layout();
-    while ( ( p_layout->count() > 0 ) && ( nullptr != ( p_item = p_layout->takeAt( 0 ) ) ) )
-    {
-        p_item->widget()->deleteLater();
-        delete p_item;
-    }
+    if ( _p_eventList )
+        _p_eventList->deleteLater();
+
+    _p_eventList = nullptr;
 }
 
 void MainWindow::createWidgetMyEvents()
 {
     clearWidgetClientArea();
-
-    event::WidgetEventList* p_widget = new event::WidgetEventList( _p_webApp, this );
-    _p_ui->widgetEventItems->layout()->addWidget( p_widget );
-    connect( p_widget, SIGNAL( onEventSelection( QString /*id*/ ) ), this, SLOT( onEventSelection( QString /*id*/ ) ) );
-    // auto-select the first event
-    p_widget->selectFirstEvent();
+    _p_eventList = new event::WidgetEventList( _p_webApp, this );
+    _p_ui->widgetEventItems->layout()->addWidget( _p_eventList );
+    connect( _p_eventList, SIGNAL( onEventSelection( QString /*id*/ ) ), this, SLOT( onEventSelection( QString /*id*/ ) ) );
+    _p_eventList->selectEvent( _currentEventSelection );
 }
 
 void MainWindow::createWidgetEvent( const QString& eventId )
 {
-    event::WidgetEventPanel* p_widget = new event::WidgetEventPanel( _p_webApp, _p_ui->widgetClientArea );
-    p_widget->setEvent( eventId );
-
+    event::WidgetEventPanel* p_eventpanel = new event::WidgetEventPanel( _p_webApp, _p_ui->widgetClientArea );
+    connect( p_eventpanel, SIGNAL( onCreateNewLocation( QString /*eventId*/) ), this, SLOT( onCreateNewLocation( QString ) ) );
+    p_eventpanel->setupEvent( eventId );
     if ( _p_chatSystem )
-        p_widget->setChatSystem( _p_chatSystem );
+        p_eventpanel->setChatSystem( _p_chatSystem );
 
-    _p_ui->widgetClientArea->layout()->addWidget( p_widget );
+    _p_ui->widgetClientArea->layout()->addWidget( p_eventpanel );
 }
 
 } // namespace gui

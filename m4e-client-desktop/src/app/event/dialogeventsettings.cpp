@@ -67,16 +67,9 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     }
 
     setResizable( false );
-
-    _p_ui->lineEditOwner->setText( event->getOwner()->getName() );
-    _p_ui->lineEditName->setText( event->getName() );
-    _p_ui->textEditDescription->setPlainText( event->getDescription() );
-    _p_ui->checkBoxIsPublic->setChecked( event->getIsPublic() );
-    _p_ui->dateTimeEditStart->setDateTime( event->getStartDate() );
-    _p_ui->timeEditDayTime->setTime( event->getRepeatDayTime() );
-
+    setupCommonElements( event );
     setupMembers( event );
-    setupWeekDays( _event->getRepeatWeekDays() );
+    _p_ui->lineEditOwner->setText( event->getOwner()->getName() );
 
     // load  the image only if a valid photo id exits
     QString photoid = event->getPhotoId();
@@ -105,12 +98,20 @@ void DialogEventSettings::setupNewEventUI( event::ModelEventPtr event )
     QString cancelbtn( QApplication::translate( "DialogEventSettings", "Cancel" ) );
     setupButtons( &applybtn, &cancelbtn, nullptr );
 
-    setResizable( false );
-
     _p_ui->widgetOwner->hide();
     _p_ui->labelMembers->hide();
     _p_ui->groupBoxMembers->hide();
 
+    // as we hide the members ui in dialog, we have to adjust the dialog size
+    adjustSize();
+
+    setResizable( false );
+
+    setupCommonElements( event );
+}
+
+void DialogEventSettings::setupCommonElements( event::ModelEventPtr event )
+{
     _p_ui->lineEditName->setText( event->getName() );
     _p_ui->textEditDescription->setPlainText( event->getDescription() );
     _p_ui->checkBoxIsPublic->setChecked( event->getIsPublic() );
@@ -118,6 +119,18 @@ void DialogEventSettings::setupNewEventUI( event::ModelEventPtr event )
     _p_ui->timeEditDayTime->setTime( event->getRepeatDayTime() );
 
     setupWeekDays( event->getRepeatWeekDays() );
+
+    qint64 votingtime = event->getVotingTimeBegin();
+    if ( votingtime == 0 )
+    {
+        _p_ui->timeEditVotingTimeBegin->setTime( QTime( 0, 0 ) );
+    }
+    else
+    {
+        int hours = votingtime / ( 60 * 60 );
+        int mins  = ( votingtime % ( 60 * 60 ) ) / 60;
+        _p_ui->timeEditVotingTimeBegin->setTime( QTime( hours, mins ) );
+    }
 }
 
 void DialogEventSettings::onDocumentReady( m4e::doc::ModelDocumentPtr document )
@@ -354,6 +367,7 @@ bool DialogEventSettings::onButton1Clicked()
     _event->setStartDate( _p_ui->dateTimeEditStart->dateTime() );
     _event->setRepeatDayTime( _p_ui->timeEditDayTime->time() );
     _event->setRepeatWeekDays( getWeekDays() );
+    _event->setVotingTimeBegin( _p_ui->timeEditVotingTimeBegin->time().msecsSinceStartOfDay() / 1000 );
 
     if ( _editNewEvent )
         _p_webApp->getEvents()->requestNewEvent( _event );

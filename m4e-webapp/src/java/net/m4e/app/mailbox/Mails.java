@@ -21,9 +21,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
-import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.common.Entities;
 import net.m4e.system.core.Log;
 

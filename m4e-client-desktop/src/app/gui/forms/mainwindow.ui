@@ -341,14 +341,16 @@ QPushButton:hover {
                     </item>
                     <item>
                      <widget class="QPushButton" name="pushButtonStatus">
-                      <property name="enabled">
-                       <bool>true</bool>
-                      </property>
                       <property name="minimumSize">
                        <size>
-                        <width>150</width>
+                        <width>200</width>
                         <height>25</height>
                        </size>
+                      </property>
+                      <property name="font">
+                       <font>
+                        <pointsize>10</pointsize>
+                       </font>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">QPushButton {
@@ -356,6 +358,7 @@ QPushButton:hover {
   background: rgb(228,107, 0);
   border: 1px solid rgb(188,67, 0);
   border-radius: 2px;
+  text-align: center;
 }
 QPushButton::hover {
   color: white;
@@ -366,8 +369,9 @@ QPushButton::hover {
 QPushButton::disabled {
   color: rgb(231, 247, 167);
   background: transparent;
-  border: 1px solid rgb(131,147, 167);
+  border: 0px solid rgb(131,147, 167);
   border-radius: 2px;
+  text-align: right;
 }
 </string>
                       </property>
@@ -684,7 +688,7 @@ QPushButton:hover {
                         </spacer>
                        </item>
                        <item>
-                        <widget class="QPushButton" name="pushButtonNotification">
+                        <widget class="QPushButton" name="pushButtonRefreshEvents">
                          <property name="minimumSize">
                           <size>
                            <width>32</width>
@@ -698,13 +702,13 @@ QPushButton:hover {
                           </size>
                          </property>
                          <property name="toolTip">
-                          <string>Events were changed, click to refresh all events.</string>
+                          <string>Refresh events</string>
                          </property>
                          <property name="styleSheet">
                           <string notr="true">QPushButton {
   background-color: transparent;
   border-radius: 16px;
-  border-image: url(:/icon-notify.png);
+  border-image: url(:/icon-refresh-alert.png);
 }
 QPushButton:hover {
   background-color: rgb(50,82,95);
@@ -1077,29 +1081,13 @@ QPushButton:hover {
    </hints>
   </connection>
   <connection>
-   <sender>pushButtonNotification</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>onBtnNotificationClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>302</x>
-     <y>160</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1</x>
-     <y>196</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButtonAddEvent</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>onBtnAddEvent()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>340</x>
+     <x>329</x>
      <y>160</y>
     </hint>
     <hint type="destinationlabel">
@@ -1172,6 +1160,22 @@ QPushButton:hover {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButtonRefreshEvents</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onBtnRefreshEvents()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>284</x>
+     <y>144</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>271</x>
+     <y>-4</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnCloseClicked()</slot>
@@ -1181,11 +1185,11 @@ QPushButton:hover {
   <slot>onBtnSettingsClicked()</slot>
   <slot>onBtnAboutClicked()</slot>
   <slot>onBtnMaximizeClicked()</slot>
-  <slot>onBtnNotificationClicked()</slot>
   <slot>onBtnAddEvent()</slot>
   <slot>onBtnLogoClicked()</slot>
   <slot>onBtnCollapseLogsClicked()</slot>
   <slot>onBtnMailsClicked()</slot>
   <slot>onBtnStatusClicked()</slot>
+  <slot>onBtnRefreshEvents()</slot>
  </slots>
 </ui>

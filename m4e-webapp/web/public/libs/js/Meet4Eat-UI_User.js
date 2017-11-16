@@ -229,6 +229,7 @@ function Meet4EatUI_User(baseModule) {
 		$('#page_users_edit_title').text("Create a new user");
 		$("#page_users_edit_form :input").val("");
 		$('#page_users_edit_form_login').prop("disabled", false);
+		$('#page_users_edit_form_email').prop("disabled", false);
 	};
 
 	self._updateUiUserTableAdd = function(userFields) {

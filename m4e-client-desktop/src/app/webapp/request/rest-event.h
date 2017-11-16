@@ -13,6 +13,7 @@
 #include <webapp/m4e-api/m4e-rest.h>
 #include <user/modeluser.h>
 #include <event/modelevent.h>
+#include <event/modellocationvotes.h>
 
 
 namespace m4e
@@ -52,14 +53,14 @@ class RESTEvent : public Meet4EatREST
         /**
          * @brief Get all user events. The results are emitted by signal 'onRESTEventGetEvents'.
          *
-         * @param userId   User ID
+         * @param userId   The user ID
          */
         void                    getEvents();
 
         /**
          * @brief Get user's event with given ID. The results are emitted by signal 'onRESTEventGetEvent'.
          *
-         * @param eventId  Event ID
+         * @param eventId  The event ID
          */
         void                    getEvent( const QString& eventId );
 
@@ -73,7 +74,7 @@ class RESTEvent : public Meet4EatREST
         /**
          * @brief Delete user's event with given ID. The results are emitted by signal 'onRESTEventDeleteEvent'.
          *
-         * @param eventId  Event ID
+         * @param eventId  The event ID
          */
         void                    deleteEvent( const QString& eventId );
 
@@ -87,39 +88,39 @@ class RESTEvent : public Meet4EatREST
         /**
          * @brief Add a new member to event.
          *
-         * @param eventId   Event ID
-         * @param memberId  User ID
+         * @param eventId   The event ID
+         * @param memberId  The user ID
          */
         void                    addMember( const QString& eventId, const QString& memberId );
 
         /**
          * @brief Remove a member from event.
          *
-         * @param eventId   Event ID
-         * @param memberId  User ID
+         * @param eventId   The event ID
+         * @param memberId  The user ID
          */
         void                    removeMember( const QString& eventId, const QString& memberId );
 
         /**
          * @brief Get event  location data.
          *
-         * @param eventId     Event ID
-         * @param locationId  Location ID
+         * @param eventId     The event ID
+         * @param locationId  The location ID
          */
         void                    getLocation( const QString& eventId, const QString& locationId );
 
         /**
          * @brief Add a new location to event.
          *
-         * @param eventId   Event ID
-         * @param location  Location to add
+         * @param eventId   The event ID
+         * @param location  The location ID
          */
         void                    addLocation( const QString& eventId, event::ModelLocationPtr location );
 
         /**
          * @brief Remove a location from given event.
          *
-         * @param eventId     Event ID
+         * @param eventId     The event ID
          * @param locationId  ID of location to remove
          */
         void                    removeLocation( const QString& eventId, const QString& locationId );
@@ -127,10 +128,35 @@ class RESTEvent : public Meet4EatREST
         /**
          * @brief Update event location.
          *
-         * @param eventId     Event ID
+         * @param eventId     The event ID
          * @param locationId  ID of location to update
          */
         void                    updateLocation( const QString& eventId, event::ModelLocationPtr location );
+
+        /**
+         * @brief Set a vote for an event location.
+         *
+         * @param eventId     The event ID
+         * @param locationId  The location ID
+         * @param vote        Pass true in order to vote for location, false for unvote it
+         */
+        void                    setLocationVote( const QString& eventId, const QString& locationId, bool vote );
+
+        /**
+         * @brief Get votes of all event locations for a given time range.
+         *
+         * @param eventId       The event ID
+         * @param timeBegin     Time range begin
+         * @param timeEnd       Time range end
+         */
+        void                    getLocationVotesByTime( const QString& eventId, const QDateTime& timeBegin, const QDateTime& timeEnd );
+
+        /**
+         * @brief Get votes of a single event location.
+         *
+         * @param votesId       The ID of location votes entry
+         */
+        void                    getLocationVotesById( const QString& votesId );
 
     signals:
 
@@ -304,6 +330,54 @@ class RESTEvent : public Meet4EatREST
          * @param reason    Error string
          */
         void                    onRESTEventErrorUpdateLocation( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of setLocationVote request.
+         *
+         * @param eventId     ID of event containing the location
+         * @param locationId  ID of updated location
+         * @param votesId     ID of the votes entry
+         * @param vote        true for vote, false for unvote
+         */
+        void                    onRESTEventSetLocationVote( QString eventId, QString locationId, QString votesId, bool vote );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorSetLocationVote( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of getLocationVotesByTime request.
+         *
+         * @param votes     The location votes
+         */
+        void                    onRESTEventGetLocationVotesByTime( QList<  m4e::event::ModelLocationVotesPtr > votes );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorGetLocationVotesByTime( QString errorCode, QString reason );
+
+        /**
+         * @brief Emit the results of getLocationVotesById request.
+         *
+         * @param votes     The location votes for requested location
+         */
+        void                    onRESTEventGetLocationVotesById( m4e::event::ModelLocationVotesPtr votes );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTEventErrorGetLocationVotesById( QString errorCode, QString reason );
 };
 
 } // namespace webapp

@@ -13,6 +13,7 @@
 #include <webapp/webapp.h>
 #include <chat/chatsystem.h>
 #include <event/events.h>
+#include <event/widgeteventlist.h>
 #include <notification/notifications.h>
 #include <QMainWindow>
 #include <QMouseEvent>
@@ -59,6 +60,13 @@ class MainWindow : public QMainWindow
         virtual                     ~MainWindow();
 
         /**
+         * @brief Select the given event in event list.
+         *
+         * @param eventId ID of event to select
+         */
+        void                        selectEvent( const QString& eventId );
+
+        /**
          * @brief Request for teminating the application.
          */
         void                        terminate();
@@ -71,6 +79,20 @@ class MainWindow : public QMainWindow
          * @brief Initial webapp setup happens in this slot.
          */
         void                        onTimerInit();
+
+        /**
+         * @brief Received when an event voting has started.
+         *
+         * @param event     The event which triggered its voting alarm
+         */
+        void                        onLocationVotingStart( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief End of an event voting time.
+         *
+         * @param event  The event
+         */
+        void                        onLocationVotingEnd( m4e::event::ModelEventPtr event );
 
         /**
          * @brief Periodic update timer
@@ -101,9 +123,11 @@ class MainWindow : public QMainWindow
 
         void                        onBtnAddEvent();
 
-        void                        onBtnNotificationClicked();
+        void                        onBtnRefreshEvents();
 
         void                        onEventSelection( QString id );
+
+        void                        onCreateNewLocation( QString eventId );
 
         /**
          * @brief This signal is emitted to inform about the current authentication state.
@@ -167,6 +191,16 @@ class MainWindow : public QMainWindow
         void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
         /**
+         * @brief This signal is emitted when an event location vote arrives.
+         *
+         * @param senderId   User ID of the voter
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         * @param vote       true for vote and false for unvote the given location
+         */
+        void                    onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+
+        /**
          * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
          *
          * @param sender    Message sender Id (usually an user ID)
@@ -227,6 +261,8 @@ class MainWindow : public QMainWindow
 
         SystemTray*                 _p_systemTray    = nullptr;
 
+        event::WidgetEventList*     _p_eventList     = nullptr;
+
         bool                        _dragging        = false;
 
         QPoint                      _draggingPos;
@@ -236,6 +272,8 @@ class MainWindow : public QMainWindow
         bool                        _enableKeepAlive = false;
 
         int                         _lastUnreadMails = 0;
+
+        QString                     _currentEventSelection;
 };
 
 } // namespace gui

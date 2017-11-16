@@ -44,6 +44,15 @@ class DialogEventSettings : public common::BaseDialog
     public:
 
         /**
+         * @brief Dialog buttons
+         */
+        enum Buttons
+        {
+            BtnApply  = common::BaseDialog::Btn1,
+            BtnCancel = common::BaseDialog::Btn2
+        };
+
+        /**
          * @brief Create a dialog instance.
          *
          * @param p_webApp  Web application interface
@@ -151,6 +160,8 @@ class DialogEventSettings : public common::BaseDialog
          * @brief Overridden method for handling Cancel button click
          */
         virtual bool                onButton2Clicked();
+
+        void                        setupCommonElements( event::ModelEventPtr event );
 
         void                        setupWeekDays( unsigned int weekDays );
 

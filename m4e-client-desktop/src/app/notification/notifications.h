@@ -96,6 +96,16 @@ class Notifications : public QObject
         void                    onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
         /**
+         * @brief This signal is emitted when an event location vote arrives.
+         *
+         * @param senderId   User ID of the voter
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         * @param vote       true for vote and false for unvote the given location
+         */
+        void                    onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+
+        /**
          * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
          *
          * @param sender    Message sender Id (usually an user ID)

@@ -8,12 +8,18 @@
 
 #include "events.h"
 #include <core/log.h>
+#include <assert.h>
 
 
 namespace m4e
 {
 namespace event
 {
+
+/* Timer name prefixes */
+static const QString PREFIX_TIMER_START = "START_";
+static const QString PREFIX_TIMER_END   = "END_";
+
 
 Events::Events( QObject* p_parent ) :
  QObject( p_parent )
@@ -41,6 +47,12 @@ Events::Events( QObject* p_parent ) :
     connect( _p_restEvent, SIGNAL( onRESTEventErrorRemoveLocation( QString, QString ) ), this, SLOT( onRESTEventErrorRemoveLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventUpdateLocation( QString, QString ) ), this, SLOT( onRESTEventUpdateLocation( QString, QString ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorUpdateLocation( QString, QString ) ), this, SLOT( onRESTEventErrorUpdateLocation( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventSetLocationVote( QString, QString, QString, bool ) ), this, SLOT( onRESTEventSetLocationVote( QString, QString, QString, bool ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorSetLocationVote( QString, QString ) ), this, SLOT( onRESTEventErrorSetLocationVote( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventGetLocationVotesByTime( QList< m4e::event::ModelLocationVotesPtr > ) ), this, SLOT( onRESTEventGetLocationVotesByTime( QList< m4e::event::ModelLocationVotesPtr > ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorGetLocationVotesByTime( QString, QString ) ), this, SLOT( onRESTEventErrorGetLocationVotesByTime( QString, QString ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventGetLocationVotesById( m4e::event::ModelLocationVotesPtr ) ), this, SLOT( onRESTEventGetLocationVotesById( m4e::event::ModelLocationVotesPtr ) ) );
+    connect( _p_restEvent, SIGNAL( onRESTEventErrorGetLocationVotesById( QString, QString ) ), this, SLOT( onRESTEventErrorGetLocationVotesById( QString, QString ) ) );
 }
 
 Events::~Events()
@@ -140,12 +152,78 @@ void Events::requestUpdateLocation( const QString& eventId, ModelLocationPtr loc
     _p_restEvent->updateLocation( eventId, location );
 }
 
+bool Events::getVotingTimeWindow( const QString& eventId, QDateTime& timeBegin, QDateTime& timeEnd )
+{
+    ModelEventPtr event = getUserEvent( eventId );
+    if ( !event.valid() )
+        return false;
+
+    if ( event->isRepeated() )
+    {
+        // calculate the next event time considering the week days
+        int today = QDate::currentDate().dayOfWeek() - 1;
+        int daystonextmatch = 0;
+        for ( int i = 0; i < 7; i++ )
+        {
+            if ( event->checkIsRepeatedDay( ( today + i ) % 7 ) )
+            {
+                daystonextmatch = i;
+                break;
+            }
+        }
+
+        QDate currdate = QDate::currentDate();
+        timeEnd.setDate( currdate );
+        timeEnd.setTime( event->getRepeatDayTime() );
+        timeEnd = timeEnd.addDays( daystonextmatch );
+        timeBegin = timeEnd;
+        timeBegin.setTime( event->getRepeatDayVotingBegin()  );
+    }
+    else
+    {
+        timeEnd   = event->getStartDate();
+        timeBegin = event->getStartDateVotingBegin();
+    }
+    qint64 secscurr = QDateTime::currentDateTime().toSecsSinceEpoch();
+    qint64 secsbeg  = timeBegin.toSecsSinceEpoch();
+    qint64 secsend  = timeEnd.toSecsSinceEpoch();
+    if ( (secscurr < secsbeg ) || ( secscurr > secsend ) )
+        return false;
+
+    return true;
+}
+
+bool Events::getIsVotingTime( const QString& eventId )
+{
+    QDateTime timebegin, timeend;
+    return getVotingTimeWindow( eventId, timebegin, timeend );
+}
+
+void Events::requestSetLocationVote( const QString& eventId, const QString& locationId, bool vote )
+{
+    setLastError();
+    _p_restEvent->setLocationVote( eventId, locationId, vote );
+}
+
+void Events::requestGetLocationVotesByTime( const QString& eventId, const QDateTime& timeBegin, const QDateTime& timeEnd )
+{
+    setLastError();
+    _p_restEvent->getLocationVotesByTime( eventId, timeBegin, timeEnd );
+}
+
+void Events::requestGetLocationVotesById( const QString& locationVotesId )
+{
+    setLastError();
+    _p_restEvent->getLocationVotesById( locationVotesId );
+}
+
 //######### Responses ############//
 
 void Events::onRESTEventGetEvents( QList< event::ModelEventPtr > events )
 {
     log_verbose << TAG << "got events: " << QString::number( events.size() ) << std::endl;
     _events = events;
+    updateVotingTimers();
     emit onResponseGetEvents( true, events );
 }
 
@@ -166,7 +244,7 @@ void Events::onRESTEventGetEvent( ModelEventPtr event )
         ModelEventPtr ev = _events[ i ];
         if ( ev->getId() == event->getId() )
         {
-            log_verbose << TAG << "  updating the local copy of event" << std::endl;
+            //log_verbose << TAG << "  updating the local copy of event" << std::endl;
             _events[ i ] = event;
             emit onResponseGetEvent( true, event );
             return;
@@ -174,6 +252,7 @@ void Events::onRESTEventGetEvent( ModelEventPtr event )
     }
     log_verbose << TAG << "  add new event to local copy of events" << std::endl;
     _events.append( event );
+    updateVotingTimers();
     emit onResponseGetEvent( true, event );
 }
 
@@ -197,6 +276,7 @@ void Events::onRESTEventDeleteEvent( QString eventId )
             break;
         }
     }
+    updateVotingTimers();
     emit onResponseDeleteEvent( true, eventId );
 }
 
@@ -223,6 +303,7 @@ void Events::onRESTEventErrorNewEvent( QString errorCode, QString reason )
 void Events::onRESTEventUpdateEvent( QString eventId )
 {
     log_verbose << TAG << "event was updated: " << eventId << std::endl;
+    updateVotingTimers();
     emit onResponseUpdateEvent( true, eventId );
 }
 
@@ -311,10 +392,178 @@ void Events::onRESTEventErrorUpdateLocation( QString errorCode, QString reason )
     emit onResponseUpdateLocation( false, "", "" );
 }
 
+void Events::onRESTEventSetLocationVote( QString eventId, QString locationId, QString votesId, bool vote )
+{
+    log_verbose << TAG << "location vote was set: " << eventId << "/" << locationId << "/" << ( vote ? "vote" : "unvote" ) << std::endl;
+    emit onResponseSetLocationVote( true, eventId, locationId, votesId, vote );
+}
+
+void Events::onRESTEventErrorSetLocationVote( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to set the location vote: " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseSetLocationVote( false, "", "", "", false );
+}
+
+void Events::onRESTEventGetLocationVotesByTime( QList< ModelLocationVotesPtr > votes )
+{
+    log_verbose << TAG << "location votes were received (by time)" << std::endl;
+    emit onResponseGetLocationVotesByTime( true, votes );
+}
+
+void Events::onRESTEventErrorGetLocationVotesByTime( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to get location votes (by time): " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseGetLocationVotesByTime( true, QList< ModelLocationVotesPtr >() );
+}
+
+void Events::onRESTEventGetLocationVotesById( ModelLocationVotesPtr votes )
+{
+    log_verbose << TAG << "location votes were received (by id)" << std::endl;
+    emit onResponseGetLocationVotesById( true, votes );
+}
+
+void Events::onRESTEventErrorGetLocationVotesById( QString errorCode, QString reason )
+{
+    log_verbose << TAG << "failed to get location votes (by id): " << errorCode << ", reason: " << reason << std::endl;
+    setLastError( reason, errorCode );
+    emit onResponseGetLocationVotesById( true, ModelLocationVotesPtr() );
+}
+
 void Events::setLastError( const QString& error, const QString& errorCode )
 {
     _lastError = error;
     _lastErrorCode = errorCode;
+}
+
+void Events::onAlarmVotingStart()
+{
+    QTimer* p_timer = dynamic_cast< QTimer* >( sender() );
+    assert( p_timer && "invalid event sender type!" );
+
+    QString eventid = p_timer->property( "id" ).toString();
+    ModelEventPtr event = getUserEvent( eventid );
+    if ( !event.valid() )
+        return;
+
+    log_verbose << TAG << "start voting for event: " << event->getName() << std::endl;
+
+    updateVotingTimer( event, true, false );
+
+    emit onLocationVotingStart( event );
+}
+
+void Events::onAlarmVotingEnd()
+{
+    QTimer* p_timer = dynamic_cast< QTimer* >( sender() );
+    assert( p_timer && "invalid event sender type!" );
+
+    QString eventid = p_timer->property( "id" ).toString();
+    ModelEventPtr event = getUserEvent( eventid );
+    if ( !event.valid() )
+        return;
+
+    log_verbose << TAG << "end voting for event: " << event->getName() << std::endl;
+
+    updateVotingTimer( event, false, true );
+
+    emit onLocationVotingEnd( event );
+}
+
+void Events::destroyVotingTimers()
+{
+    QMap< QString/*id*/, QTimer* >::iterator iter = _alarms.begin(), iterend = _alarms.end();
+    for ( ; iter != iterend; ++iter )
+    {
+        iter.value()->stop();
+        delete iter.value();
+    }
+    _alarms.clear();
+}
+
+void Events::updateVotingTimers()
+{
+    log_verbose << TAG << "updating event alarms" << std::endl;
+
+    destroyVotingTimers();
+
+    for ( ModelEventPtr event: _events )
+    {
+        // setup start and end timers
+        updateVotingTimer( event, true, true );
+    }
+}
+
+void Events::updateVotingTimer( ModelEventPtr event, bool startTimer, bool endTimer )
+{
+    QDateTime now = QDateTime::currentDateTime();
+
+    QDateTime timebegin, timeend;
+    getVotingTimeWindow( event->getId(), timebegin, timeend );
+
+    qint64 intvstart = now.msecsTo( timebegin );
+    qint64 intvend   = now.msecsTo( timeend );
+
+    // minimum distance to start of event
+    const qint64 TIMER_THRESHOLD_START    = 10000;
+    // minimum duration (end time - start time)
+    const qint64 TIMER_THRESHOLD_DURATION = 60000;
+
+    if ( startTimer )
+    {
+        // first delete the old timer if any exist
+        QString alarmname = PREFIX_TIMER_START + event->getId();
+        if ( _alarms.contains( alarmname ) )
+        {
+            _alarms.value( alarmname )->deleteLater();
+            _alarms.remove( alarmname );
+        }
+
+        if ( intvstart > TIMER_THRESHOLD_START )
+        {
+            setupVotingTimer( event, intvstart, true );
+        }
+    }
+
+    if ( endTimer )
+    {
+        // first delete the old timer if any exist
+        QString alarmname = PREFIX_TIMER_END + event->getId();
+        if ( _alarms.contains( alarmname ) )
+        {
+            _alarms.value( alarmname )->deleteLater();
+            _alarms.remove( alarmname );
+        }
+
+        if ( ( ( intvend - intvstart ) > TIMER_THRESHOLD_DURATION ) && ( intvend > TIMER_THRESHOLD_START ) )
+        {
+            setupVotingTimer( event, intvend, false );
+        }
+    }
+}
+
+void Events::setupVotingTimer( ModelEventPtr event, quint64 interval, bool startTimer )
+{
+    if ( interval <= 0 )
+    {
+        log_error << TAG << "cannot setup timer, invalid interval!" << std::endl;
+        return;
+    }
+
+    QTimer* p_timer = new QTimer( this );
+    p_timer->setSingleShot( true );
+    p_timer->setInterval( interval );
+    p_timer->setProperty( "id", QVariant( event->getId() ) );
+    p_timer->start();
+
+    if ( startTimer )
+        connect( p_timer, SIGNAL( timeout() ), this, SLOT( onAlarmVotingStart() ) );
+    else
+        connect( p_timer, SIGNAL( timeout() ), this, SLOT( onAlarmVotingEnd() ) );
+
+    QString alarmname = ( startTimer ? PREFIX_TIMER_START : PREFIX_TIMER_END ) + event->getId();
+    _alarms.insert( alarmname, p_timer );
 }
 
 } // namespace event

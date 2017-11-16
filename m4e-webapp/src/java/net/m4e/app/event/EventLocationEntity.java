@@ -22,7 +22,7 @@ import net.m4e.common.EntityWithPhoto;
 /**
  * This entity describes an event location.
  * 
- * @author abotorabi
+ * @author boto
  * Date of creation Aug 31, 2017
  */
 @Entity

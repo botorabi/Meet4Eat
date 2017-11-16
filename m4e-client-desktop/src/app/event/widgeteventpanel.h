@@ -15,6 +15,7 @@
 #include <chat/chatsystem.h>
 #include <QListWidget>
 #include <QWidget>
+#include <QTimer>
 #include <QLabel>
 #include <QMap>
 
@@ -30,6 +31,8 @@ namespace m4e
 namespace event
 {
 
+class WidgetLocation;
+
 /**
  * @brief Class for decorating the "Event" widget.
  *
@@ -41,7 +44,7 @@ class WidgetEventPanel : public QWidget
     /**
      * @brief TAG Used for logging
      */
-    const std::string TAG = "(WidgetEvent) ";
+    const std::string TAG = "(WidgetEventPanel) ";
 
     Q_OBJECT
 
@@ -61,11 +64,18 @@ class WidgetEventPanel : public QWidget
         virtual                     ~WidgetEventPanel();
 
         /**
-         * @brief Set the event which is represented by this widget.
+         * @brief Setup the widget for an event with given ID.
          *
          * @param id    Event ID
          */
-        void                        setEvent( const QString& id );
+        void                        setupEvent( const QString& id );
+
+        /**
+         * @brief Get the event ID.
+         *
+         * @return The event ID, or empty string if no event was setup before.
+         */
+        QString                     getEventId() const;
 
         /**
          * @brief Set the ChatSystem which allows the chat messanging.
@@ -74,8 +84,41 @@ class WidgetEventPanel : public QWidget
          */
         void                        setChatSystem( m4e::chat::ChatSystem* p_chatSystem );
 
+    signals:
+
+        /**
+         * @brief This signal is emitted when the user requests for creating a new location.
+         *
+         * @param eventId  The ID of event which should get a new location
+         */
+        void                        onCreateNewLocation( QString eventId );
+
     protected slots:
 
+        /**
+         * @brief This signal is received when an event voting time was reached.
+         *
+         * @param event The event
+         */
+        void                        onLocationVotingStart(  m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief This signal is received when an event voting time has ended.
+         *
+         * @param event The event
+         */
+        void                        onLocationVotingEnd(  m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief Called when a link in any QLabel was clicked.
+         *
+         * @param link Activated link
+         */
+        void                        onLinkActivated( QString link );
+
+        /**
+         * @brief The buzz button was clicked.
+         */
         void                        onBtnBuzzClicked();
 
         /**
@@ -108,6 +151,14 @@ class WidgetEventPanel : public QWidget
          */
         void                        onResponseRemoveLocation( bool success, QString eventId, QString locationId );
 
+        /**
+         * @brief Results of location votes request by time range.
+         *
+         * @param success   true if user votes could successfully be retrieved, otherwise false
+         * @param votes     The event location votes list
+         */
+        void                        onResponseGetLocationVotesByTime( bool success, QList< m4e::event::ModelLocationVotesPtr > votes );
+
     protected:
 
         /**
@@ -124,11 +175,6 @@ class WidgetEventPanel : public QWidget
          * @brief Setup all location widgets.
          */
         void                        setupLocations();
-
-        /**
-         * @brief Setup a widget informing that the event has no location.
-         */
-        void                        setupNoLocationWidget();
 
         /**
          * @brief Add a new location for an event
@@ -152,18 +198,34 @@ class WidgetEventPanel : public QWidget
          */
         void                        setEventMembers();
 
+        /**
+         * @brief Request for currently running event location votes.
+         *
+         * @return Return false if it's not time to vote.
+         */
+        bool                        requestCurrentLoctionVotes();
 
-        Ui::WidgetEventPanel*       _p_ui           = nullptr;
+        /**
+         * @brief Try to find a WidgetLocation given its ID.
+         *
+         * @param locationId    The location ID
+         * @return              The widget if the ID was found, otherwise nullptr
+         */
+        WidgetLocation*             findWidgetLocation( const QString& locationId );
 
-        QListWidget*                _p_clientArea   = nullptr;
+        Ui::WidgetEventPanel*       _p_ui               = nullptr;
 
-        webapp::WebApp*             _p_webApp       = nullptr;
+        QListWidget*                _p_clientArea       = nullptr;
 
-        m4e::chat::ChatSystem*      _p_chatSystem   = nullptr;
+        webapp::WebApp*             _p_webApp           = nullptr;
+
+        m4e::chat::ChatSystem*      _p_chatSystem       = nullptr;
 
         typedef QMap< QString /*id*/, QString /*name*/>  Locations;
 
         m4e::event::ModelEventPtr   _event;
+
+        QList< WidgetLocation* >    _widgets;
 };
 
 } // namespace event

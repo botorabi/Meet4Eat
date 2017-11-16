@@ -319,6 +319,7 @@ void WebApp::onClosedConnection()
 {
     log_debug << TAG << "closed server connection" << std::endl;
     emit onServerConnectionClosed();
+    _authState = AuthNoConnection;
 }
 
 } // namespace webapp

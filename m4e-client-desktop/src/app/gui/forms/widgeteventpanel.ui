@@ -270,10 +270,75 @@ QPushButton:hover {
         <number>2</number>
        </property>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,0">
+        <layout class="QVBoxLayout" name="layoutPanel" stretch="0,1,1,0">
          <property name="spacing">
           <number>2</number>
          </property>
+         <item>
+          <widget class="QWidget" name="widgetVotingTime" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">#widgetVotingTime {
+  color: white;
+  background-color: rgb(252, 233, 79);
+  border: 2px solid rgb(181,197, 217);
+  border-radius: 12px;
+}</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
+             <number>2</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <widget class="QLabel" name="label">
+                <property name="styleSheet">
+                 <string notr="true">color: rgb(28,52,62);</string>
+                </property>
+                <property name="text">
+                 <string>Location Voting in Progress!</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelEmptyPanel">
+           <property name="font">
+            <font>
+             <family>Roboto</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;This event has no locations!&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;CREATE_LOCATION&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Click here to create some.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QListWidget" name="listWidget">
            <property name="styleSheet">
@@ -321,9 +386,26 @@ QPushButton:hover {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>labelEmptyPanel</sender>
+   <signal>linkActivated(QString)</signal>
+   <receiver>WidgetEventPanel</receiver>
+   <slot>onLinkActivated(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>304</x>
+     <y>273</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>642</x>
+     <y>343</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnBuzzClicked()</slot>
   <slot>onListItemClicked(QListWidgetItem*)</slot>
+  <slot>onLinkActivated(QString)</slot>
  </slots>
 </ui>

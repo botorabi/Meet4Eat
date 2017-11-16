@@ -35,6 +35,11 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
 {
     SMARTPTR_DEFAULTS( ModelEvent )
 
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(ModelEvent) ";
+
     public:
 
         /**
@@ -75,7 +80,7 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
          *
          * @return Event start date
          */
-        QDateTime                           getStartDate() const { return _startDate; }
+        const QDateTime&                    getStartDate() const { return _startDate; }
 
         /**
          * @brief Set event's start date.
@@ -92,18 +97,55 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                isRepeated() const { return _repeatWeekDays != 0; }
 
         /**
-         * @brief Get repetetion's day time, only valid for repeated events.
+         * @brief Given the current day in range 0..6 (Monday..Sunday) return true if it maches to one of
+         * event's repeated days.
+         *
+         * @param currentDay    The current day in range 0..6
+         * @return              Return true if it mached one of event's repeated days
+         */
+        bool                                checkIsRepeatedDay( unsigned int currentDay ) const;
+
+        /**
+         * @brief Get repetetion's day time, only valid for repeated events. The returned time is in your local time zone.
          *
          * @return Repetetion's day time
          */
-        QTime                               getRepeatDayTime() const { return _repeatDayTime; }
+        QTime                               getRepeatDayTime() const;
 
         /**
-         * @brief Set repetetion's day time.
+         * @brief Set repetetion's day time. Use a local time, the method will convert the time to UTC as expected by application server.
          *
-         * @param repeatDayTime Repetetion's day time.
+         * @param repeatDayTime Repetetion's day time in your local time zone.
          */
-        void                                setRepeatDayTime( const QTime& repeatDayTime ) { _repeatDayTime = repeatDayTime; }
+        void                                setRepeatDayTime( const QTime& repeatDayTime );
+
+        /**
+         * @brief Get the begin of voting time in seconds before the event takes place. An event location voting is accepted only in this time window.
+         *
+         * @return Begin of voting time in seconds
+         */
+        qint64                              getVotingTimeBegin() const { return _votingTimeBegin; }
+
+        /**
+         * @brief Set the begin of voting time.
+         *
+         * @param votingTimeBegin Begin of voting time offset in seconds
+         */
+        void                                setVotingTimeBegin( qint64 votingTimeBegin ) { _votingTimeBegin = votingTimeBegin; }
+
+        /**
+         * @brief Calculate the voting begin time for event start.
+         *
+         * @return Event voting begin time
+         */
+        QDateTime                           getStartDateVotingBegin() const;
+
+        /**
+         * @brief Calculate the begin of voting time for repeated events.
+         *
+         * @return  Event voting time for repeated event
+         */
+        QTime                               getRepeatDayVotingBegin() const;
 
         /**
          * @brief Repetetion's week days if this is a repeated event.
@@ -192,6 +234,29 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         void                                setMembers( const QList< user::ModelUserInfoPtr >& members ) { _members = members; }
 
         /**
+         * @brief Create a JSON string out of the event model. Note that this method exports only the event data without owner, locations, and members.
+         *
+         * @return JSON document representing the event
+         */
+        QJsonDocument                       toJSON();
+
+        /**
+         * @brief Setup the event given a JSON formatted string. This method imports event data and its owner, locations, and members.
+         *
+         * @param input Input string in JSON format
+         * @return Return false if the input was not in proper format.
+         */
+        bool                                fromJSON( const QString& input );
+
+        /**
+         * @brief Setup the event given a JSON document.
+         *
+         * @param input Input in JSON document
+         * @return Return false if the input was not in proper format.
+         */
+        bool                                fromJSON( const QJsonDocument& input );
+
+        /**
          * @brief Comparison operator which considers the event ID.
          *
          * @param right     Right hand of operation.
@@ -212,6 +277,7 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         bool                                _isPublic = false;
         QDateTime                           _startDate;
         QTime                               _repeatDayTime;
+        qint64                              _votingTimeBegin;
         unsigned int                        _repeatWeekDays = 0;
         QList< ModelLocationPtr >           _locations;
         user::ModelUserInfoPtr              _owner;

@@ -257,6 +257,79 @@ class ResponseEventUpdateLocation: public Meet4EatRESTResponse
         RESTEvent*  _p_requester;
 };
 
+/**
+ * @brief Response handler for SetLocationVote
+ *
+ * @author boto
+ * @date Nov 14, 2017
+ */
+class ResponseEventSetLocationVote: public Meet4EatRESTResponse
+{
+    public:
+
+        explicit    ResponseEventSetLocationVote( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
+/**
+ * @brief Response handler for GetLocationVotesByTime
+ *
+ * @author boto
+ * @date Nov 14, 2017
+ */
+class ResponseEventGetLocationVotesByTime: public Meet4EatRESTResponse
+{
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(ResponseEventGetLocationVotesByTime) ";
+
+    public:
+
+        explicit    ResponseEventGetLocationVotesByTime( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
+/**
+ * @brief Response handler for GetLocationVotesById
+ *
+ * @author boto
+ * @date Nov 14, 2017
+ */
+class ResponseEventGetLocationVotesById: public Meet4EatRESTResponse
+{
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(ResponseEventGetLocationVotesById) ";
+
+    public:
+
+        explicit    ResponseEventGetLocationVotesById( RESTEvent* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTEvent*  _p_requester;
+};
+
 } // namespace webapp
 } // namespace m4e
 
