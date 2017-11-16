@@ -11,6 +11,7 @@
 #include "resp-event.h"
 #include <webapp/request/rest-event.h>
 #include <event/modelevent.h>
+#include <event/modellocationvotes.h>
 #include <QJsonObject>
 #include <QJsonArray>
 
@@ -19,101 +20,6 @@ namespace m4e
 {
 namespace webapp
 {
-
-/**
- * @brief Utility function: Create an event out of given json object.
- *
- * @param json  JSON object containing event information
- * @return      Event model
- */
-static event::ModelEventPtr createEvent( const QJsonObject& json )
-{
-    QString    id             = json.value( "id" ).toString( "" );
-    QString    name           = json.value( "name" ).toString( "" );
-    QString    desc           = json.value( "description" ).toString( "" );
-    QString    photoid        = json.value( "photoId" ).toString( "" );
-    QString    photoetag      = json.value( "photoETag" ).toString( "" );
-    bool       ispublic       = json.value( "public" ).toBool();
-    int        eventstart     = json.value( "eventStart" ).toInt( 0 );
-    int        repweekdays    = json.value( "repeatWeekDays" ).toInt( 0 );
-    int        repdaytime     = json.value( "repeatDayTime" ).toInt( 0 );
-    QJsonArray locations      = json.value( "locations" ).toArray();
-    QJsonArray members        = json.value( "members" ).toArray();
-    QString    ownerid        = json.value( "ownerId" ).toString( "" );
-    QString    ownername      = json.value( "ownerName" ).toString( "" );
-    QString    ownerphotoid   = json.value( "ownerPhotoId" ).toString( "" );
-    QString    ownerphotoetag = json.value( "ownerPhotoETag" ).toString( "" );
-    QString    ownerstatus    = json.value( "status" ).toString( "" );
-
-    event::ModelEventPtr ev = new event::ModelEvent();
-    ev->setId( id );
-    ev->setName( name );
-    ev->setDescription( desc );
-    ev->setIsPublic( ispublic );
-    ev->setPhotoId( photoid );
-    ev->setPhotoETag( photoetag );
-    ev->setRepeatWeekDays( static_cast< uint >( repweekdays ) );
-    if ( eventstart > 0 )
-    {
-        QDateTime start;
-        //! NOTE the eventStart is in seconds, not in milliseconds!
-        start.setTime_t( static_cast< uint >( eventstart ) );
-        ev->setStartDate( start );
-    }
-    uint hour = static_cast< uint >( repdaytime / ( 60 * 60 ) );
-    uint min = static_cast< uint >( repdaytime / 60 ) - hour * 60;
-    QTime reptime( hour, min, 0 );
-    ev->setRepeatDayTime( reptime );
-
-    // extract the locations
-    QList< event::ModelLocationPtr > locs;
-    for ( int i = 0; i < locations.size(); i++ )
-    {
-        QJsonObject obj = locations.at( i ).toObject();
-        QString id        = obj.value( "id" ).toString( "" );
-        QString name      = obj.value( "name" ).toString( "" );
-        QString desc      = obj.value( "description" ).toString( "" );
-        QString photoid   = obj.value( "photoId" ).toString( "" );
-        QString photoetag = obj.value( "photoETag" ).toString( "" );
-
-        event::ModelLocationPtr l = new event::ModelLocation();
-        l->setId( id );
-        l->setName( name );
-        l->setDescription( desc );
-        l->setPhotoId( photoid );
-        l->setPhotoETag( photoetag );
-
-        locs.append( l );
-    }
-    ev->setLocations( locs );
-
-    // extract the members
-    QList< user::ModelUserInfoPtr > mems;
-    for ( int i = 0; i < members.size(); i++ )
-    {
-        QJsonObject obj = members.at( i ).toObject();
-        user::ModelUserInfoPtr u = new user::ModelUserInfo();
-        if ( !u->fromJSON( QJsonDocument( obj ) ) )
-        {
-            log_warning << "createEvent " << "invalid JSON format detected, ignoring search result!" << std::endl;
-        }
-        else
-        {
-            mems.append( u );
-        }
-    }
-    ev->setMembers( mems );
-
-    user::ModelUserInfoPtr owner = new user::ModelUserInfo();
-    owner->setId( ownerid );
-    owner->setName( ownername );
-    owner->setPhotoId( ownerphotoid );
-    owner->setPhotoETag( ownerphotoetag );
-    owner->setStatus( ownerstatus );
-    ev->setOwner( owner );
-
-    return ev;
-}
 
 /******************************************************/
 /***************** ResponseGetEvents ******************/
@@ -140,8 +46,9 @@ void ResponseGetEvents::onRESTResponseSuccess( const QJsonDocument& results )
     for ( int i = 0; i < objects.size(); i++ )
     {
         QJsonObject obj = objects.at( i ).toObject();
-        m4e::event::ModelEventPtr event = createEvent( obj );
-        events.append( event );
+        m4e::event::ModelEventPtr event = new m4e::event::ModelEvent();
+        if ( event->fromJSON( QJsonDocument( obj ) ) )
+            events.append( event );
     }
 
     emit _p_requester->onRESTEventGetEvents( events );
@@ -262,7 +169,15 @@ void ResponseGetEvent::onRESTResponseSuccess( const QJsonDocument& results )
         return;
     }
 
-    emit _p_requester->onRESTEventGetEvent( createEvent( datadoc.object() ) );
+    m4e::event::ModelEventPtr event = new m4e::event::ModelEvent();
+    if ( event->fromJSON( datadoc ) )
+    {
+        emit _p_requester->onRESTEventGetEvent( event );
+    }
+    else
+    {
+        emit _p_requester->onRESTEventErrorGetEvent( "", "Invalid format!" );
+    }
 }
 
 void ResponseGetEvent::onRESTResponseError( const QString& reason )
@@ -469,6 +384,122 @@ void ResponseEventUpdateLocation::onRESTResponseSuccess( const QJsonDocument& re
 void ResponseEventUpdateLocation::onRESTResponseError( const QString& reason )
 {
     emit _p_requester->onRESTEventErrorUpdateLocation( "", reason );
+}
+
+/******************************************************/
+/************ ResponseEventSetLocationVote ************/
+/******************************************************/
+
+ResponseEventSetLocationVote::ResponseEventSetLocationVote( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventSetLocationVote::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorSetLocationVote( errcode, errstring );
+        return;
+    }
+    QJsonObject obj     = datadoc.object();
+    QString votesid     = obj.value( "votesId" ).toString( "" );
+    QString eventid     = obj.value( "eventId" ).toString( "" );
+    QString locationid  = obj.value( "locationId" ).toString( "" );
+    bool    vote        = obj.value( "vote" ).toBool( false );
+
+    emit _p_requester->onRESTEventSetLocationVote( eventid, locationid, votesid, vote );
+}
+
+void ResponseEventSetLocationVote::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorSetLocationVote( "", reason );
+}
+
+/******************************************************/
+/******** ResponseEventGetLocationVotesByTime *********/
+/******************************************************/
+
+ResponseEventGetLocationVotesByTime::ResponseEventGetLocationVotesByTime( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventGetLocationVotesByTime::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorGetLocationVotesByTime( errcode, errstring );
+        return;
+    }
+
+    QList< event::ModelLocationVotesPtr > votes;
+    QJsonArray votelist = datadoc.array();
+    for ( int i = 0; i < votelist.size(); i++ )
+    {
+        event::ModelLocationVotesPtr v = new event::ModelLocationVotes();
+        QJsonObject obj = votelist.at( i ).toObject();
+        if ( v->fromJSON( QJsonDocument( obj ) ) )
+        {
+           votes.append( v );
+        }
+        else
+        {
+            log_warning << TAG << "cannot import votes, invalid format!" << std::endl;
+        }
+    }
+    emit _p_requester->onRESTEventGetLocationVotesByTime( votes );
+}
+
+void ResponseEventGetLocationVotesByTime::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorGetLocationVotesByTime( "", reason );
+}
+
+/******************************************************/
+/********* ResponseEventGetLocationVotesById **********/
+/******************************************************/
+
+ResponseEventGetLocationVotesById::ResponseEventGetLocationVotesById( RESTEvent* p_requester ) :
+ _p_requester( p_requester )
+{
+}
+
+void ResponseEventGetLocationVotesById::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTEventErrorGetLocationVotesById( errcode, errstring );
+        return;
+    }
+
+    QJsonObject obj = datadoc.object();
+    event::ModelLocationVotesPtr votes = new event::ModelLocationVotes();
+    if ( votes->fromJSON( QJsonDocument( obj ) ) )
+    {
+        emit _p_requester->onRESTEventGetLocationVotesById( votes );
+    }
+    else
+    {
+        log_warning << TAG << "cannot import votes, invalid format!" << std::endl;
+    }
+}
+
+void ResponseEventGetLocationVotesById::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTEventErrorGetLocationVotesById( "", reason );
 }
 
 } // namespace webapp

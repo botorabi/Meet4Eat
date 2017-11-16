@@ -11,7 +11,7 @@
 
 #include <configuration.h>
 #include <common/basedialog.h>
-#include <event/modellocation.h>
+#include <event/modellocationvotes.h>
 #include <webapp/webapp.h>
 
 
@@ -55,6 +55,13 @@ class DialogLocationDetails : public common::BaseDialog
          */
         void                        setupUI( event::ModelLocationPtr location );
 
+        /**
+         * @brief Setup the votes.
+         *
+         * @param votes Location votes
+         */
+        void                        setupVotes( event::ModelLocationVotesPtr votes );
+
     protected slots:
 
         /**
@@ -68,9 +75,11 @@ class DialogLocationDetails : public common::BaseDialog
 
         /**
          * @brief Create a formatted string for members voted for this location.
-         * @return
+         *
+         * @param votes Location votes
+         * @return Formatted string containing the members who have voted.
          */
-        QString                     formatVoteMembers() const;
+        QString                     formatVoteMembers( ModelLocationVotesPtr votes ) const;
 
         Ui::WidgetLocationDetails*  _p_ui     = nullptr;
 

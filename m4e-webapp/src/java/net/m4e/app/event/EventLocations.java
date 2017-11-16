@@ -10,16 +10,22 @@ package net.m4e.app.event;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
+import net.m4e.app.user.UserEntity;
 import net.m4e.common.Strings;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
@@ -56,6 +62,7 @@ public class EventLocations {
      * @param inputEntity  Entity containing the new location data
      * @param creatorID    Creator ID
      * @return             A new created event location entity if successfully, otherwise null.
+     * @throws Exception   Throws an exception if something goes wrong.
      */
     public EventLocationEntity createNewLocation(EventEntity event, EventLocationEntity inputEntity, Long creatorID) throws Exception {
         // setup the new entity
@@ -94,7 +101,7 @@ public class EventLocations {
      * @return               Updated location
      * @throws Exception     Throws an exception if something went wrong.
      */
-    EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
+    public EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
         Entities entityutils = new Entities(entityManager);
         EventLocationEntity location = entityutils.findEntity(EventLocationEntity.class, inputLocation.getId());
         if ((location == null) || !location.getStatus().getIsActive()) {
@@ -124,7 +131,7 @@ public class EventLocations {
      * @param image         Image to set to given event
      * @throws Exception    Throws exception if any problem occurred.
      */
-    void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) throws Exception {
+    public void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) throws Exception {
         Entities entities = new Entities(entityManager);
         // make sure that the resource URL is set
         image.setResourceURL("/EventLoction/Image");
@@ -132,15 +139,114 @@ public class EventLocations {
     }
 
     /**
-     * Try to find an event location with given user ID.
+     * Try to find an event location with given location ID.
      * 
-     * @param id Event location ID
-     * @return Return an entity if found, otherwise return null.
+     * @param id    Event location ID
+     * @return      Return an entity if found, otherwise return null.
      */
     public EventLocationEntity findLocation(Long id) {
-        Entities eutils = new Entities(entityManager);
-        EventLocationEntity event = eutils.findEntity(EventLocationEntity.class, id);
-        return event;
+        Entities entities = new Entities(entityManager);
+        EventLocationEntity location = entities.findEntity(EventLocationEntity.class, id);
+        return location;
+    }
+
+    /**
+     * Get all location votes for given event in a given voting time window.
+     * 
+     * @param event         The event the locations belong to
+     * @param timeBegin     Begin of voting time window (in seconds)
+     * @param timeEnd       End of voting time window (in seconds)
+     * @return              List of location vote entities
+     */
+    public List<EventLocationVoteEntity> getVotes(EventEntity event, Long timeBegin, Long timeEnd) {
+        int MAX_CNT_RESULTS = 100;
+        TypedQuery<EventLocationVoteEntity> query = entityManager.createNamedQuery("EventLocationVoteEntity.findVotes", EventLocationVoteEntity.class);
+        query.setParameter("timeBegin", timeBegin);
+        query.setParameter("timeEnd", timeEnd);
+        query.setParameter("eventId", event.getId());
+
+        List<EventLocationVoteEntity> voteentities = query.setMaxResults(MAX_CNT_RESULTS).getResultList();
+        return voteentities;
+    }
+
+    /**
+     * Update a vote entry for a given event location. If the entry does not exist, then one is created. Voting is
+     * accepted only during a particular time (voting window). If this method is called outside of voting window time
+     * then a false is returned and nothing happens.
+     * 
+     * The voting window ends at event start time or repeated day time (for repeated events) and begins the amount of
+     * 'voting time begin' before the end.
+     * 
+     * @param voter     Voting user
+     * @param event     The event the location belongs to
+     * @param location  Event location the vote goes for
+     * @param vote      true for voting, false for unvoting the location.
+     * @return          Return the vote entity, or null if it is currently outside the voting time window.
+     */
+    public EventLocationVoteEntity createOrUpdateVote(UserEntity voter, EventEntity event, EventLocationEntity location, boolean vote) {
+        long voteend;
+        long votebegin;
+        long now = Calendar.getInstance(TimeZone.getDefault()).getTimeInMillis() / 1000;
+
+        // for repeated events check the current day
+        Long wd = event.getRepeatWeekDays();
+        if (wd > 0L) {
+            int currentday = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+            //! NOTE Calendar.DAY_OF_WEEK begins with a 1 for Sunday, convert the day flag
+            currentday = (1 << ((currentday + 5) % 7));
+            if ((currentday & wd) == 0) {
+                return null;
+            }
+            //! NOTE the repeat day time is expected to be in UTC
+            voteend = event.getRepeatDayTime();
+            long daysdivider = 60 * 60 * 24;
+            voteend += (now / daysdivider) * daysdivider;
+            votebegin = voteend - event.getVotingTimeBegin();
+        }
+        else {
+            voteend   = event.getEventStart();
+            votebegin = voteend - event.getVotingTimeBegin();
+        }
+
+        // check if the vote is happening in the right time window
+        if ((now < votebegin) || (now > voteend)) {
+            return null;
+        }
+
+        TypedQuery<EventLocationVoteEntity> query = entityManager.createNamedQuery("EventLocationVoteEntity.findLocationVotes", EventLocationVoteEntity.class);
+        query.setParameter("timeBegin", votebegin);
+        query.setParameter("timeEnd", voteend);
+        query.setParameter("locationId", location.getId());
+
+        Entities entities = new Entities(entityManager);
+        EventLocationVoteEntity voteentity;
+        //! NOTE we expect maximal 1 result here
+        List<EventLocationVoteEntity> voteentities = query.getResultList();
+        if (voteentities.isEmpty()) {
+            voteentity = new EventLocationVoteEntity();
+            voteentity.setEventId(event.getId());
+            voteentity.setLocationId(location.getId());
+            voteentity.setVoteTimeBegin(votebegin);
+            voteentity.setVoteTimeEnd(voteend);
+            voteentity.setCreationTime((new Date()).getTime() / 1000);
+            entities.createEntity(voteentity);
+        }
+        else {
+            voteentity = voteentities.get(0);
+        }
+
+        if (vote) {
+            voteentity.addUserId(voter.getId());
+            voteentity.addUserName(voter.getName());
+        }
+        else {
+            voteentity.removeUserId(voter.getId());            
+            voteentity.removeUserName(voter.getName());            
+        }
+
+        entities.updateEntity(voteentity);
+
+        return voteentity;
     }
 
     /**
@@ -240,6 +346,54 @@ public class EventLocations {
             .add("description", (entity.getDescription() != null) ? entity.getDescription(): "")
             .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
             .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag() : "");
+        return json;
+    }
+
+    /**
+     * Export the given event location votes to JSON format.
+     * 
+     * @param votes    Event location votes
+     * @return          A JSON array builder containing the exported votes.
+     */
+    public JsonObjectBuilder exportLocationVotesJSON(EventLocationVoteEntity votes) {
+        JsonObjectBuilder obj = Json.createObjectBuilder();
+        obj.add("id", (votes.getId() != null) ? votes.getId().toString() : "")
+           .add("eventId", (votes.getEventId() != null) ? votes.getEventId().toString() : "")
+           .add("locationId", (votes.getLocationId() != null) ? votes.getLocationId().toString() : "")
+           .add("timeBegin", votes.getVoteTimeBegin())
+           .add("timeEnd", votes.getVoteTimeEnd())
+           .add("creationTime", votes.getCreationTime());
+
+        if (votes.getUserIds() != null) {
+            JsonArrayBuilder userids = Json.createArrayBuilder();
+            votes.getUserIds().forEach((u)-> {
+                userids.add(u);
+            });
+            obj.add("userIds", userids);
+        }
+        if (votes.getUserNames() != null) {
+            JsonArrayBuilder usernames = Json.createArrayBuilder();
+            votes.getUserNames().forEach((u)-> {
+                usernames.add(u);
+            });
+            obj.add("userNames", usernames);
+        }
+
+        return obj;
+    }
+
+    /**
+     * Export a list of event location votes to JSON format.
+     * 
+     * @param votes     List of location votes
+     * @return          A JSON array builder containing the exported votes.
+     */
+    public JsonArrayBuilder exportLocationVotesJSON(List<EventLocationVoteEntity> votes) {
+        JsonArrayBuilder json = Json.createArrayBuilder();
+        votes.forEach((v) -> {
+            JsonObjectBuilder obj = exportLocationVotesJSON(v);
+            json.add(obj);
+        });
         return json;
     }
 }

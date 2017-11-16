@@ -28,18 +28,6 @@ DialogLocationDetails::~DialogLocationDetails()
     delete _p_ui;
 }
 
-QString DialogLocationDetails::formatVoteMembers() const
-{
-    QString text;
-    for ( const auto& mem: _location->getVotedMembers() )
-    {
-        if ( !text.isEmpty() )
-            text += ", ";
-        text += mem;
-    }
-    return text;
-}
-
 void DialogLocationDetails::setupUI( event::ModelLocationPtr location )
 {
     _location = location;
@@ -51,8 +39,8 @@ void DialogLocationDetails::setupUI( event::ModelLocationPtr location )
     setResizable( true );
 
     _p_ui->labelDescription->setText( _location->getDescription() );
-    _p_ui->labelVoteMembers->setText( formatVoteMembers() );
-    _p_ui->labelVotes->setText( QString::number( location->getVotedMembers().size() ) );
+    _p_ui->labelVoteMembers->setText( "" );
+    _p_ui->labelVotes->setText( "0" );
 
     // load  the image only if a valid photo id exits
     QString photoid = location->getPhotoId();
@@ -67,6 +55,15 @@ void DialogLocationDetails::setupUI( event::ModelLocationPtr location )
     }
 }
 
+void DialogLocationDetails::setupVotes( ModelLocationVotesPtr votes )
+{
+    if ( !votes.valid() )
+        return;
+
+    _p_ui->labelVoteMembers->setText( formatVoteMembers( votes ) );
+    _p_ui->labelVotes->setText( QString::number( votes->getUserNames().size() ) );
+}
+
 void DialogLocationDetails::onDocumentReady( m4e::doc::ModelDocumentPtr document )
 {
     QString photoid = _location->getPhotoId();
@@ -74,6 +71,18 @@ void DialogLocationDetails::onDocumentReady( m4e::doc::ModelDocumentPtr document
     {
         _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( document ) );
     }
+}
+
+QString DialogLocationDetails::formatVoteMembers( event::ModelLocationVotesPtr votes ) const
+{
+    QString text;
+    for ( const auto& mem: votes->getUserNames() )
+    {
+        if ( !text.isEmpty() )
+            text += ", ";
+        text += mem;
+    }
+    return text;
 }
 
 } // namespace event

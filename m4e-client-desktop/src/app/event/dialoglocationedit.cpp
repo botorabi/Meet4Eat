@@ -111,17 +111,11 @@ void DialogLocationEdit::onResponseAddLocation( bool success, QString /*eventId*
     {
         common::DialogMessage msg( this );
         msg.setupUI( QApplication::translate( "DialogLocationCreate", "Add Location" ),
-                     QApplication::translate( "DialogLocationCreate", "New location was successfully created. Need to create a new location?" ),
-                     common::DialogMessage::BtnYes | common::DialogMessage::BtnNo );
+                     QApplication::translate( "DialogLocationCreate", "New location was successfully created." ),
+                     common::DialogMessage::BtnOk );
 
-        if ( msg.exec() == common::DialogMessage::BtnNo )
-        {
-            done( common::DialogMessage::BtnOk );
-        }
-        else
-        {
-            resetDialog();
-        }
+        msg.exec();
+        done( common::DialogMessage::BtnOk );
     }
     else
     {

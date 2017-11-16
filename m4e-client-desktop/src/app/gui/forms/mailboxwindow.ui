@@ -25,7 +25,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">#MailboxWindow {
-  border: 10px solid rgb(151,167, 187);
+  border: 1px solid rgb(151,167, 187);
 }</string>
   </property>
   <widget class="QWidget" name="centralWidget">

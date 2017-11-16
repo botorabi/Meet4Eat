@@ -46,13 +46,26 @@ WidgetEventList::WidgetEventList( webapp::WebApp* p_webApp, QWidget* p_parent ) 
 
 void WidgetEventList::selectEvent( const QString& eventId )
 {
-    onClicked( eventId );
+    // check if the event exists at all
+    if ( findEventItem( eventId ) )
+    {
+        onClicked( eventId );
+        return;
+    }
+    selectFirstEvent();
 }
 
 void WidgetEventList::selectFirstEvent()
 {
     if ( _widgets.size() > 0 )
         onClicked( _widgets.at( 0 )->getId() );
+}
+
+void WidgetEventList::createNewLocation( const QString& eventId )
+{
+    WidgetEventItem* p_item = findEventItem( eventId );
+    if ( p_item )
+        p_item->createNewLocation();
 }
 
 void WidgetEventList::setupUI()
@@ -97,13 +110,25 @@ void WidgetEventList::addEvent( m4e::event::ModelEventPtr event )
     connect( p_itemwidget, SIGNAL( onRequestDeleteEvent( QString ) ), this, SLOT( onRequestDeleteEvent( QString ) ) );
 
     QListWidgetItem* p_listitem = new QListWidgetItem( this );
-    p_listitem->setSizeHint( p_itemwidget->sizeHint() );
+    p_listitem->setSizeHint( p_itemwidget->size() );
     p_listitem->setFlags( Qt::NoItemFlags );
 
     addItem( p_listitem );
     setItemWidget( p_listitem, p_itemwidget );
 
     _widgets.append( p_itemwidget );
+}
+
+WidgetEventItem* WidgetEventList::findEventItem( const QString& eventId )
+{
+    for ( WidgetEventItem* p_item: _widgets )
+    {
+        if ( p_item->getId() == eventId )
+        {
+            return p_item;
+        }
+    }
+    return nullptr;
 }
 
 void WidgetEventList::onClicked( QString id )

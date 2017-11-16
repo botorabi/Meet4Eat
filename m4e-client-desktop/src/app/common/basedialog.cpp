@@ -19,7 +19,7 @@ namespace common
 BaseDialog::BaseDialog( QWidget* p_parent ) :
  QDialog( p_parent )
 {
-    setWindowFlags( Qt::Window | /*Qt::FramelessWindowHint |*/ Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint );
 
     _p_ui = new Ui::BaseDlg();
     _p_ui->setupUi( this );

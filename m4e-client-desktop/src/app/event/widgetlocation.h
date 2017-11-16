@@ -12,6 +12,7 @@
 #include <configuration.h>
 #include <webapp/webapp.h>
 #include <event/modellocation.h>
+#include <event/modellocationvotes.h>
 #include <QWidget>
 #include <QLabel>
 
@@ -65,11 +66,25 @@ class WidgetLocation : public QWidget
         void                        setupUI( event::ModelEventPtr event, event::ModelLocationPtr location, bool userIsOwner );
 
         /**
-         * @brief Get the ID which was defined on setup.
+         * @brief Get the location ID.
          *
          * @return ID
          */
         const QString&              getId() const { return _location->getId(); }
+
+        /**
+         * @brief Update the votes of this location. Pass an empty object in order to reset the votes UI.
+         *
+         * @param votes Location votes
+         */
+        void                        updateVotes( event::ModelLocationVotesPtr votes );
+
+        /**
+         * @brief Enable/disable the voting UI in this widget.
+         *
+         * @param enable    Pass true for enabling and false for disabling the voting UI
+         */
+        void                        enableVotingUI( bool enable );
 
     signals:
 
@@ -106,9 +121,40 @@ class WidgetLocation : public QWidget
          */
         void                        onDocumentReady( m4e::doc::ModelDocumentPtr document );
 
+        /**
+         * @brief This signal is emitted when an event location vote arrives.
+         *
+         * @param senderId   User ID of the voter
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         * @param vote       true for vote and false for unvote the given location
+         */
+        void                        onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+
+        /**
+         * @brief Signal is received when the results of location voting arrive.
+         *
+         * @param success    true if user data could successfully be retrieved, otherwise false
+         * @param eventId    ID of event
+         * @param locationId ID of location to update
+         * @param votesId    ID of location vote entry
+         * @param vote       true for voted for location, false for unvoted location
+         */
+        void                        onResponseSetLocationVote( bool success, QString eventId, QString locationId, QString votesId, bool vote );
+
+        /**
+         * @brief  Signal is received when the results of location votes request by votes ID arrive.
+         *
+         * @param success   true if user votes could successfully be retrieved, otherwise false
+         * @param votes     The event location votes
+         */
+        void                        onResponseGetLocationVotesById( bool success, m4e::event::ModelLocationVotesPtr votes );
+
     protected:
 
         bool                        eventFilter( QObject* p_obj, QEvent* p_event );
+
+        void                        requestSetLocationVote( bool vote );
 
         webapp::WebApp*             _p_webApp = nullptr;
 
@@ -117,6 +163,9 @@ class WidgetLocation : public QWidget
         event::ModelEventPtr        _event;
 
         event::ModelLocationPtr     _location;
+
+        event::ModelLocationVotesPtr _votes;
+
 };
 
 } // namespace event

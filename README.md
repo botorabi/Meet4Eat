@@ -4,7 +4,7 @@
     License: MIT License (MIT)
     Read the LICENSE text in main directory for more details.
 
-    Current Version:   0.7.0
+    Current Version:   0.8.4
     First Created:     August 2017
     Author:            Botorabi (botorabi AT gmx DOT net)
 

@@ -98,6 +98,10 @@ public class EventEntity implements Serializable, EntityWithPhoto {
      */
     private Long repeatDayTime = 0L;
 
+    /**
+     * Time offset used for beginning the voting before the event time was reached (in seconds)
+     */
+    private Long votingTimeBegin = 0L;
 
     /**
      * Create an event entity.
@@ -255,6 +259,7 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get day time for a repeating event.
+     * The returned time is in UTC in order to avoid time zone conflicts!
      * 
      * @return Day time in seconds
      */
@@ -264,11 +269,32 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set day time for a repeating event.
+     * This time must be in UTC in order to avoid time zone conflicts!
      * 
      * @param repeatDayTime Day time in seconds
      */
     public void setRepeatDayTime(Long repeatDayTime) {
         this.repeatDayTime = repeatDayTime;
+    }
+
+    /**
+     * Get the begin of voting time. This is the time offset before the event takes place
+     * and can be used to remind users about an upcoming event. Votes are accepted only
+     * during the time window: [(event start) .. (event start - voting time begin)]
+     * 
+     * @return Begin of voting time in seconds
+     */
+    public Long getVotingTimeBegin() {
+        return votingTimeBegin;
+    }
+
+    /**
+     * Set the begin of voting time. This is an offset to event start.
+     * 
+     * @param votingTimeBegin Begin of voting time in seconds
+     */
+    public void setVotingTimeBegin(Long votingTimeBegin) {
+        this.votingTimeBegin = votingTimeBegin;
     }
 
     /**

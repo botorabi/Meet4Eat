@@ -35,9 +35,9 @@ public class Mail {
     /**
      * Create a mail instance.
      * 
-     * @param mailEntity
-     * @param unread
-     * @param trashDate
+     * @param mailEntity    The mail entity
+     * @param unread        Unread flag
+     * @param trashDate     If trashed then the trash date, otherwise 0
      */
     public Mail(
         MailEntity mailEntity,

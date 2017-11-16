@@ -110,18 +110,18 @@ public class DocumentEntity implements Serializable {
     private String eTag = "";
 
     /**
-     * Get ID.
+     * Get the ID.
      *
-     * @return ID
+     * @return The document ID
      */
     public Long getId() {
         return id;
     }
 
     /**
-     * Set ID.
+     * Set the ID.
      *
-     * @param id
+     * @param id    The document ID
      */
     public void setId(Long id) {
         this.id = id;

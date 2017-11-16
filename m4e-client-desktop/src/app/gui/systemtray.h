@@ -49,7 +49,6 @@ class SystemTray : QObject
          */
         virtual                     ~SystemTray();
 
-
     protected slots:
 
         /**
@@ -73,7 +72,7 @@ class SystemTray : QObject
 
         /**
          * @brief This signal is emitted to notify about user authentication results.
-         *QSystemTrayIcon
+         *
          * @param success  true if the user was successfully authenticated, otherwise false
          * @param userId   User ID, valid if success is true
          */
@@ -102,6 +101,16 @@ class SystemTray : QObject
         void                        onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
 
         /**
+         * @brief This signal is emitted when an event location vote arrives.
+         *
+         * @param senderId   User ID of the voter
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         * @param vote       true for vote and false for unvote the given location
+         */
+        void                        onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+
+        /**
          * @brief This signal is emitted when the results of mails count request arrive.
          *
          * @param success  true if the count of unread mails could successfully be retrieved, otherwise false
@@ -109,6 +118,20 @@ class SystemTray : QObject
          * @param countUnread   Count of unread mails
          */
         void                        onResponseCountMails( bool success, int countTotal, int countUnread );
+
+        /**
+         * @brief Received when an event voting has started.
+         *
+         * @param event     The event which triggered its voting alarm
+         */
+        void                        onLocationVotingStart( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief End of an event voting time.
+         *
+         * @param event  The event
+         */
+        void                        onLocationVotingEnd( m4e::event::ModelEventPtr event );
 
     protected:
 
