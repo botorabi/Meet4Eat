@@ -9,6 +9,7 @@
 #include "systemtray.h"
 #include "mainwindow.h"
 #include <core/log.h>
+#include <settings/appsettings.h>
 #include <common/guiutils.h>
 #include <QApplication>
 #include <QSystemTrayIcon>
@@ -47,6 +48,12 @@ SystemTray::SystemTray( webapp::WebApp* p_webApp, MainWindow* p_parent ) :
 
     connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountMails( bool, int, int ) ), this,
                                       SLOT( onResponseCountMails( bool, int, int ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
 }
 
 SystemTray::~SystemTray()
@@ -82,10 +89,12 @@ void SystemTray::onMenuTriggert( QAction* p_action )
 
         case MenuEnableNotification:
             _enableNotification = p_action->isChecked();
+            settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_EVENT, _enableNotification ? "yes" : "no" );
         break;
 
         case MenuEnableAlarm:
             _enableAlarm = p_action->isChecked();
+            settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_ALARM, _enableAlarm ? "yes" : "no" );
         break;
 
         default:
@@ -100,6 +109,9 @@ void SystemTray::onMessageClicked()
 
 void SystemTray::setupSystemTray()
 {
+    QString enablealarm = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_ALARM, "yes" );
+    QString enableevent = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_EVENT, "yes" );
+
     _p_systemTray = new QSystemTrayIcon( QIcon( M4E_SYSTRAY_ICON ), this );
     connect( _p_systemTray, SIGNAL( activated( QSystemTrayIcon::ActivationReason ) ), this, SLOT( onActivated( QSystemTrayIcon::ActivationReason ) ) );
     connect( _p_systemTray, SIGNAL( messageClicked() ), this, SLOT( onMessageClicked() ) );
@@ -123,13 +135,13 @@ void SystemTray::setupSystemTray()
 
     p_action = new QAction( "Enable Notification" );
     p_action->setCheckable( true );
-    p_action->setChecked( true );
+    p_action->setChecked( ( enableevent == "yes" ) ? true : false );
     p_action->setData( QVariant( MenuEnableNotification ) );
     p_menu->addAction( p_action );
 
     p_action = new QAction( "Enable Alarm" );
     p_action->setCheckable( true );
-    p_action->setChecked( true );
+    p_action->setChecked( ( enablealarm == "yes" ) ? true : false );
     p_action->setData( QVariant( MenuEnableAlarm ) );
     p_menu->addAction( p_action );
 
@@ -210,6 +222,20 @@ void SystemTray::onResponseCountMails( bool success, int /*countTotal*/, int cou
         QString text = QApplication::translate( "SystemTray", "You have received new mails." );
         showMessage( title, text, false );
     }
+}
+
+void SystemTray::onLocationVotingStart( event::ModelEventPtr event )
+{
+    QString title = QApplication::translate( "SystemTray", "Meet4Eat - Voting Time" );
+    QString text = QApplication::translate( "SystemTray", "Event" ) + " " + event->getName();
+    showMessage( title, text, false );
+}
+
+void SystemTray::onLocationVotingEnd( m4e::event::ModelEventPtr event )
+{
+    QString title = QApplication::translate( "SystemTray", "Meet4Eat - End of Voting Time" );
+    QString text = QApplication::translate( "SystemTray", "Event" ) + " " + event->getName();
+    showMessage( title, text, false );
 }
 
 } // namespace gui

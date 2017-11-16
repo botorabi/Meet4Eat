@@ -81,11 +81,18 @@ class MainWindow : public QMainWindow
         void                        onTimerInit();
 
         /**
-         * @brief Received when an event alarm was triggered.
+         * @brief Received when an event voting has started.
          *
-         * @param event     The event which triggered its alarm
+         * @param event     The event which triggered its voting alarm
          */
-        void                        onEventAlarm( m4e::event::ModelEventPtr event );
+        void                        onLocationVotingStart( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief End of an event voting time.
+         *
+         * @param event  The event
+         */
+        void                        onLocationVotingEnd( m4e::event::ModelEventPtr event );
 
         /**
          * @brief Periodic update timer

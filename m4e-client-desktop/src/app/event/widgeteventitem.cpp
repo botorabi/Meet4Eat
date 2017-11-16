@@ -57,7 +57,14 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
-    connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
+    connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this,
+                        SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
 
     common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 180), QPoint( -2, 2 ), 4 );
     setSelectionMode( true );
@@ -67,6 +74,8 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
 void WidgetEventItem::updateEvent( ModelEventPtr event )
 {
     _event = event;
+
+    _p_ui->widgetVotingTime->setVisible( _p_webApp->getEvents()->getIsVotingTime( _event->getId() ) );
 
     // is the user also the owner of the event? some operations are only permitted to owner
     _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
@@ -184,6 +193,24 @@ void WidgetEventItem::onEventLocationChanged( notify::Notifications::ChangeType 
         return;
 
     notifyUpdate( QApplication::translate( "WidgetEventItem", "Event location settings were changed, click to updage!") );
+}
+
+void WidgetEventItem::onLocationVotingStart( m4e::event::ModelEventPtr event )
+{
+    if ( event != _event )
+        return;
+
+    log_verbose << TAG << "time to vote for event locations" << std::endl;
+    _p_ui->widgetVotingTime->setVisible( true );
+}
+
+void WidgetEventItem::onLocationVotingEnd( m4e::event::ModelEventPtr event )
+{
+    if ( event != _event )
+        return;
+
+    log_verbose << TAG << "end of to voting time reached" << std::endl;
+    _p_ui->widgetVotingTime->setVisible( false );
 }
 
 bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )

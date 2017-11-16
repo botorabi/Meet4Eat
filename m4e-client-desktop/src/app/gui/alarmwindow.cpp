@@ -28,9 +28,8 @@ AlarmWindow::AlarmWindow( MainWindow* p_parent ) :
     setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint );
     setAttribute( Qt::WA_NoSystemBackground );
     setAttribute( Qt::WA_TranslucentBackground );
-    move( QApplication::desktop()->screen()->rect().center() - rect().center() );
-
     _p_ui->setupUi( this );
+    move( QApplication::desktop()->screen()->rect().center() - rect().center() );
 }
 
 AlarmWindow::~AlarmWindow()
@@ -72,9 +71,9 @@ void AlarmWindow::setupUI( event::ModelEventPtr event )
                                             );
     text.replace( "@EVENTNAME@", event->getName() );
     if ( event->isRepeated() )
-        text.replace( "@TIME@", event->getRepeatDayTime().toString() );
+        text.replace( "@TIME@", event->getRepeatDayTime().toString( "HH:mm" ) );
     else
-        text.replace( "@TIME@", event->getStartDate().toString() );
+        text.replace( "@TIME@", event->getStartDate().toString( "yyyy-M-dd HH:mm" ) );
 
     _p_ui->labelText->setText( _p_ui->labelText->text().replace( "@TEXT@", text ) );
     _p_ui->labelText->setAttribute( Qt::WA_TransparentForMouseEvents );
@@ -106,18 +105,19 @@ void AlarmWindow::startAnimation()
 
 void AlarmWindow::onBtnDiscardClicked()
 {
-    destroy();
+    deleteLater();
 }
 
 void AlarmWindow::onBtnDisplayEventClicked()
 {
     _p_mainWindow->selectEvent( _event->getId() );
     common::GuiUtils::widgetToFront( _p_mainWindow );
-    destroy();
+    deleteLater();
 }
 
 void AlarmWindow::onTimer()
 {
+    common::GuiUtils::widgetToFront( this );
     startAnimation();
 }
 

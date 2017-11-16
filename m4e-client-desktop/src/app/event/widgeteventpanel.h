@@ -15,6 +15,7 @@
 #include <chat/chatsystem.h>
 #include <QListWidget>
 #include <QWidget>
+#include <QTimer>
 #include <QLabel>
 #include <QMap>
 
@@ -63,11 +64,18 @@ class WidgetEventPanel : public QWidget
         virtual                     ~WidgetEventPanel();
 
         /**
-         * @brief Set the event which is represented by this widget.
+         * @brief Setup the widget for an event with given ID.
          *
          * @param id    Event ID
          */
-        void                        setEvent( const QString& id );
+        void                        setupEvent( const QString& id );
+
+        /**
+         * @brief Get the event ID.
+         *
+         * @return The event ID, or empty string if no event was setup before.
+         */
+        QString                     getEventId() const;
 
         /**
          * @brief Set the ChatSystem which allows the chat messanging.
@@ -86,6 +94,20 @@ class WidgetEventPanel : public QWidget
         void                        onCreateNewLocation( QString eventId );
 
     protected slots:
+
+        /**
+         * @brief This signal is received when an event voting time was reached.
+         *
+         * @param event The event
+         */
+        void                        onLocationVotingStart(  m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief This signal is received when an event voting time has ended.
+         *
+         * @param event The event
+         */
+        void                        onLocationVotingEnd(  m4e::event::ModelEventPtr event );
 
         /**
          * @brief Called when a link in any QLabel was clicked.
@@ -191,13 +213,13 @@ class WidgetEventPanel : public QWidget
          */
         WidgetLocation*             findWidgetLocation( const QString& locationId );
 
-        Ui::WidgetEventPanel*       _p_ui           = nullptr;
+        Ui::WidgetEventPanel*       _p_ui               = nullptr;
 
-        QListWidget*                _p_clientArea   = nullptr;
+        QListWidget*                _p_clientArea       = nullptr;
 
-        webapp::WebApp*             _p_webApp       = nullptr;
+        webapp::WebApp*             _p_webApp           = nullptr;
 
-        m4e::chat::ChatSystem*      _p_chatSystem   = nullptr;
+        m4e::chat::ChatSystem*      _p_chatSystem       = nullptr;
 
         typedef QMap< QString /*id*/, QString /*name*/>  Locations;
 

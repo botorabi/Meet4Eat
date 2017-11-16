@@ -72,10 +72,10 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     _p_ui->labelDescription->installEventFilter( this );
     _p_ui->labelPhoto->installEventFilter( this );
 
-    updateVotingUI();
+    enableVotingUI( _p_webApp->getEvents()->getIsVotingTime( _event->getId() ) );
 }
 
-void WidgetLocation::updateVotingUI()
+void WidgetLocation::enableVotingUI( bool enable )
 {
     if ( !_event.valid() )
     {
@@ -83,11 +83,9 @@ void WidgetLocation::updateVotingUI()
         return;
     }
 
-    QDateTime tend, tbeg;
-    bool votingtime = _p_webApp->getEvents()->getVotingTimeWindow( _event->getId(), tbeg, tend );
-    _p_ui->pushButtonVoteUp->setVisible( votingtime );
-    _p_ui->pushButtonVoteDown->setVisible( votingtime );
-    _p_ui->widgetVotes->setVisible( votingtime );
+    _p_ui->pushButtonVoteUp->setVisible( enable );
+    _p_ui->pushButtonVoteDown->setVisible( enable );
+    _p_ui->widgetVotes->setVisible( enable );
 }
 
 void WidgetLocation::updateVotes( ModelLocationVotesPtr votes )

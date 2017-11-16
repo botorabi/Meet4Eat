@@ -80,10 +80,11 @@ class WidgetLocation : public QWidget
         void                        updateVotes( event::ModelLocationVotesPtr votes );
 
         /**
-         * @brief Update widget's voting UI considering the event voting time window.
-         * While outside the voting time window the UI will disable the voting related button clicks.
+         * @brief Enable/disable the voting UI in this widget.
+         *
+         * @param enable    Pass true for enabling and false for disabling the voting UI
          */
-        void                        updateVotingUI();
+        void                        enableVotingUI( bool enable );
 
     signals:
 

@@ -16,6 +16,11 @@ namespace m4e
 namespace event
 {
 
+/* Timer name prefixes */
+static const QString PREFIX_TIMER_START = "START_";
+static const QString PREFIX_TIMER_END   = "END_";
+
+
 Events::Events( QObject* p_parent ) :
  QObject( p_parent )
 {
@@ -188,6 +193,12 @@ bool Events::getVotingTimeWindow( const QString& eventId, QDateTime& timeBegin, 
     return true;
 }
 
+bool Events::getIsVotingTime( const QString& eventId )
+{
+    QDateTime timebegin, timeend;
+    return getVotingTimeWindow( eventId, timebegin, timeend );
+}
+
 void Events::requestSetLocationVote( const QString& eventId, const QString& locationId, bool vote )
 {
     setLastError();
@@ -212,7 +223,7 @@ void Events::onRESTEventGetEvents( QList< event::ModelEventPtr > events )
 {
     log_verbose << TAG << "got events: " << QString::number( events.size() ) << std::endl;
     _events = events;
-    updateAlarms();
+    updateVotingTimers();
     emit onResponseGetEvents( true, events );
 }
 
@@ -233,7 +244,7 @@ void Events::onRESTEventGetEvent( ModelEventPtr event )
         ModelEventPtr ev = _events[ i ];
         if ( ev->getId() == event->getId() )
         {
-            log_verbose << TAG << "  updating the local copy of event" << std::endl;
+            //log_verbose << TAG << "  updating the local copy of event" << std::endl;
             _events[ i ] = event;
             emit onResponseGetEvent( true, event );
             return;
@@ -241,7 +252,7 @@ void Events::onRESTEventGetEvent( ModelEventPtr event )
     }
     log_verbose << TAG << "  add new event to local copy of events" << std::endl;
     _events.append( event );
-    updateAlarms();
+    updateVotingTimers();
     emit onResponseGetEvent( true, event );
 }
 
@@ -265,7 +276,7 @@ void Events::onRESTEventDeleteEvent( QString eventId )
             break;
         }
     }
-    updateAlarms();
+    updateVotingTimers();
     emit onResponseDeleteEvent( true, eventId );
 }
 
@@ -292,7 +303,7 @@ void Events::onRESTEventErrorNewEvent( QString errorCode, QString reason )
 void Events::onRESTEventUpdateEvent( QString eventId )
 {
     log_verbose << TAG << "event was updated: " << eventId << std::endl;
-    updateAlarms();
+    updateVotingTimers();
     emit onResponseUpdateEvent( true, eventId );
 }
 
@@ -426,7 +437,7 @@ void Events::setLastError( const QString& error, const QString& errorCode )
     _lastErrorCode = errorCode;
 }
 
-void Events::onAlarm()
+void Events::onAlarmVotingStart()
 {
     QTimer* p_timer = dynamic_cast< QTimer* >( sender() );
     assert( p_timer && "invalid event sender type!" );
@@ -436,27 +447,31 @@ void Events::onAlarm()
     if ( !event.valid() )
         return;
 
-    log_verbose << "handling alarm for event: " << event->getName() << std::endl;
+    log_verbose << TAG << "start voting for event: " << event->getName() << std::endl;
 
-    // if the timer needs no re-scheduling then destroy it
-    if ( !scheduleAlarmTimer( event, p_timer ) )
-    {
-        log_verbose << "  removing alarm for event: " << event->getName() << std::endl;
-        _alarms.remove( eventid );
-        p_timer->deleteLater();
-    }
+    updateVotingTimer( event, true, false );
 
-    // for repeated events checke the day in addition to day time
-    if ( event->isRepeated() )
-    {
-        if ( !event->checkIsRepeatedDay( QDate::currentDate().dayOfWeek() - 1 ) )
-            return;
-    }
-
-    emit onEventAlarm( event );
+    emit onLocationVotingStart( event );
 }
 
-void Events::destroyAlarms()
+void Events::onAlarmVotingEnd()
+{
+    QTimer* p_timer = dynamic_cast< QTimer* >( sender() );
+    assert( p_timer && "invalid event sender type!" );
+
+    QString eventid = p_timer->property( "id" ).toString();
+    ModelEventPtr event = getUserEvent( eventid );
+    if ( !event.valid() )
+        return;
+
+    log_verbose << TAG << "end voting for event: " << event->getName() << std::endl;
+
+    updateVotingTimer( event, false, true );
+
+    emit onLocationVotingEnd( event );
+}
+
+void Events::destroyVotingTimers()
 {
     QMap< QString/*id*/, QTimer* >::iterator iter = _alarms.begin(), iterend = _alarms.end();
     for ( ; iter != iterend; ++iter )
@@ -467,45 +482,88 @@ void Events::destroyAlarms()
     _alarms.clear();
 }
 
-void Events::updateAlarms()
+void Events::updateVotingTimers()
 {
     log_verbose << TAG << "updating event alarms" << std::endl;
 
-    destroyAlarms();
+    destroyVotingTimers();
 
     for ( ModelEventPtr event: _events )
     {
-        QTimer* p_timer = new QTimer();
-        // check if the timer needed a schedule at all
-        if ( !scheduleAlarmTimer( event, p_timer ) )
-        {
-            delete p_timer;
-            continue;
-        }
-
-        connect( p_timer, SIGNAL( timeout() ), this, SLOT( onAlarm() ) );
-        _alarms.insert( event->getId(), p_timer );
+        // setup start and end timers
+        updateVotingTimer( event, true, true );
     }
 }
 
-bool Events::scheduleAlarmTimer( ModelEventPtr event, QTimer* p_timer )
+void Events::updateVotingTimer( ModelEventPtr event, bool startTimer, bool endTimer )
 {
-    // get the next voting begin time window. if it's begin time is in the past (no repeated event) then we
-    //  need no timer anymore, otherwise setup an alarm timer for begin of event's voting time
-    QDateTime tbegin, tend;
-    getVotingTimeWindow( event->getId(), tbegin, tend );
-    qint64 currtime  = QDateTime::currentMSecsSinceEpoch();
-    qint64 nextalarm = tbegin.toMSecsSinceEpoch();
-    qint64 alarm     = nextalarm - currtime;
-    if ( ( alarm - 10000 ) < 0 )
-        return false;
+    QDateTime now = QDateTime::currentDateTime();
 
-    p_timer->stop();
+    QDateTime timebegin, timeend;
+    getVotingTimeWindow( event->getId(), timebegin, timeend );
+
+    qint64 intvstart = now.msecsTo( timebegin );
+    qint64 intvend   = now.msecsTo( timeend );
+
+    // minimum distance to start of event
+    const qint64 TIMER_THRESHOLD_START    = 10000;
+    // minimum duration (end time - start time)
+    const qint64 TIMER_THRESHOLD_DURATION = 60000;
+
+    if ( startTimer )
+    {
+        // first delete the old timer if any exist
+        QString alarmname = PREFIX_TIMER_START + event->getId();
+        if ( _alarms.contains( alarmname ) )
+        {
+            _alarms.value( alarmname )->deleteLater();
+            _alarms.remove( alarmname );
+        }
+
+        if ( intvstart > TIMER_THRESHOLD_START )
+        {
+            setupVotingTimer( event, intvstart, true );
+        }
+    }
+
+    if ( endTimer )
+    {
+        // first delete the old timer if any exist
+        QString alarmname = PREFIX_TIMER_END + event->getId();
+        if ( _alarms.contains( alarmname ) )
+        {
+            _alarms.value( alarmname )->deleteLater();
+            _alarms.remove( alarmname );
+        }
+
+        if ( ( ( intvend - intvstart ) > TIMER_THRESHOLD_DURATION ) && ( intvend > TIMER_THRESHOLD_START ) )
+        {
+            setupVotingTimer( event, intvend, false );
+        }
+    }
+}
+
+void Events::setupVotingTimer( ModelEventPtr event, quint64 interval, bool startTimer )
+{
+    if ( interval <= 0 )
+    {
+        log_error << TAG << "cannot setup timer, invalid interval!" << std::endl;
+        return;
+    }
+
+    QTimer* p_timer = new QTimer( this );
     p_timer->setSingleShot( true );
-    p_timer->setInterval( alarm );
+    p_timer->setInterval( interval );
     p_timer->setProperty( "id", QVariant( event->getId() ) );
     p_timer->start();
-    return true;
+
+    if ( startTimer )
+        connect( p_timer, SIGNAL( timeout() ), this, SLOT( onAlarmVotingStart() ) );
+    else
+        connect( p_timer, SIGNAL( timeout() ), this, SLOT( onAlarmVotingEnd() ) );
+
+    QString alarmname = ( startTimer ? PREFIX_TIMER_START : PREFIX_TIMER_END ) + event->getId();
+    _alarms.insert( alarmname, p_timer );
 }
 
 } // namespace event

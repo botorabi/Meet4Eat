@@ -270,10 +270,59 @@ QPushButton:hover {
         <number>2</number>
        </property>
        <item>
-        <layout class="QVBoxLayout" name="layoutPanel" stretch="1,1,0">
+        <layout class="QVBoxLayout" name="layoutPanel" stretch="0,1,1,0">
          <property name="spacing">
           <number>2</number>
          </property>
+         <item>
+          <widget class="QWidget" name="widgetVotingTime" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">#widgetVotingTime {
+  color: white;
+  background-color: rgb(252, 233, 79);
+  border: 2px solid rgb(181,197, 217);
+  border-radius: 12px;
+}</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
+             <number>2</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <widget class="QLabel" name="label">
+                <property name="styleSheet">
+                 <string notr="true">color: rgb(28,52,62);</string>
+                </property>
+                <property name="text">
+                 <string>Location Voting in Progress!</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
          <item>
           <widget class="QLabel" name="labelEmptyPanel">
            <property name="font">

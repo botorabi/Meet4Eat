@@ -19,7 +19,7 @@
 /* App name and version */
 #define M4E_APP_NAME            "Meet4Eat"
 #define M4E_ORGANIZATION_NAME   "vr-fun"
-#define M4E_APP_VERSION         "0.8.3"
+#define M4E_APP_VERSION         "0.8.4"
 #define M4E_APP_COPYRIGHT       "(c) 2017"
 #define M4E_APP_URL             "http://m4e.org"
 
@@ -58,6 +58,11 @@
 /* App settings category for server */
 #define M4E_SETTINGS_CAT_APP          "App"
 #define M4E_SETTINGS_KEY_APP_QUIT_MSG "quitmsg"
+
+/* App settings category for notifications */
+#define M4E_SETTINGS_CAT_NOTIFY       "Notify"
+#define M4E_SETTINGS_KEY_NOTIFY_ALARM "alarm"
+#define M4E_SETTINGS_KEY_NOTIFY_EVENT "event"
 
 /* Resource path to base REST services on the web application server */
 #define M4E_REST_SRV_RESOURCE_PATH   "/m4e/webresources"

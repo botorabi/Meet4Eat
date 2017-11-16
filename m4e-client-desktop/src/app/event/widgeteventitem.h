@@ -33,6 +33,11 @@ namespace event
  */
 class WidgetEventItem : public QWidget
 {
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(WidgetEventItem) ";
+
     Q_OBJECT
 
     public:
@@ -144,6 +149,20 @@ class WidgetEventItem : public QWidget
          * @param loactionId Event location ID
          */
         void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
+
+        /**
+         * @brief Timer callback used for voting alarm.
+         *
+         * @param event  The event
+         */
+        void                        onLocationVotingStart( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief Timer callback used for voting alarm.
+         *
+         * @param event  The event
+         */
+        void                        onLocationVotingEnd( m4e::event::ModelEventPtr event );
 
     protected:
 

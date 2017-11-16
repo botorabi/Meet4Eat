@@ -36,7 +36,7 @@ WidgetEventPanel::~WidgetEventPanel()
         delete _p_ui;
 }
 
-void WidgetEventPanel::setEvent( const QString& id )
+void WidgetEventPanel::setupEvent( const QString& id )
 {
     QList< event::ModelEventPtr > events = _p_webApp->getEvents()->getUserEvents();
     event::ModelEventPtr event;
@@ -62,6 +62,13 @@ void WidgetEventPanel::setEvent( const QString& id )
     }
 }
 
+QString WidgetEventPanel::getEventId() const
+{
+    if ( _event.valid() )
+        return _event->getId();
+    return "";
+}
+
 void WidgetEventPanel::setChatSystem( chat::ChatSystem* p_chatSystem )
 {
     _p_chatSystem = p_chatSystem;
@@ -72,6 +79,36 @@ void WidgetEventPanel::setChatSystem( chat::ChatSystem* p_chatSystem )
     for ( auto msg: messages )
     {
         onReceivedChatMessageEvent( msg );
+    }
+}
+
+void WidgetEventPanel::onLocationVotingStart( m4e::event::ModelEventPtr event )
+{
+    if ( event != _event )
+        return;
+
+    log_verbose << TAG << "time to vote for event locations" << std::endl;
+
+    _p_ui->widgetVotingTime->setVisible( true );
+    for ( auto p_widget: _widgets )
+    {
+        p_widget->enableVotingUI( true );
+    }
+
+    requestCurrentLoctionVotes();
+}
+
+void WidgetEventPanel::onLocationVotingEnd( m4e::event::ModelEventPtr event )
+{
+    if ( event != _event )
+        return;
+
+    log_verbose << TAG << "end of to voting time reached" << std::endl;
+
+    _p_ui->widgetVotingTime->setVisible( false );
+    for ( auto p_widget: _widgets )
+    {
+        p_widget->enableVotingUI( false );
     }
 }
 
@@ -102,10 +139,12 @@ void WidgetEventPanel::setupUI()
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetLocationVotesByTime( bool, QList< m4e::event::ModelLocationVotesPtr > ) ), this,
                                      SLOT( onResponseGetLocationVotesByTime( bool, QList< m4e::event::ModelLocationVotesPtr > ) ) );
 
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this, SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this, SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
+
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetMembers, shadowcolor, QPoint( -3, 3 ), 3 );
-    //common::GuiUtils::createShadowEffect( _p_ui->pushButtonResetMyVotes, shadowcolor, QPoint( -2, 2 ), 2 );
     common::GuiUtils::createShadowEffect( _p_ui->pushButtonBuzz, shadowcolor, QPoint( -2, 2 ), 1 );
 
     _p_clientArea = _p_ui->listWidget;
@@ -121,26 +160,24 @@ void WidgetEventPanel::setupWidgetHead()
 {
     _p_ui->labelInfoHead->setText( _event->getName() );
     QString info;
-    info += "Owner: " + _event->getOwner()->getName();
+    info += QApplication::translate( "WidgetEventPanel", "Owner: " ) + _event->getOwner()->getName();
     if ( _event->isRepeated() )
     {
-        QTime time = _event->getRepeatDayTime();
         unsigned int days = _event->getRepeatWeekDays();
         QString weekdays;
-        weekdays += ( days & event::ModelEvent::WeekDayMonday )    != 0 ? " Mon" : "";
-        weekdays += ( days & event::ModelEvent::WeekDayTuesday )   != 0 ? " Tue" : "";
-        weekdays += ( days & event::ModelEvent::WeekDayWednesday ) != 0 ? " Wed" : "";
-        weekdays += ( days & event::ModelEvent::WeekDayThursday )  != 0 ? " Tur" : "";
-        weekdays += ( days & event::ModelEvent::WeekDayFriday )    != 0 ? " Fri" : "";
-        weekdays += ( days & event::ModelEvent::WeekDaySaturday )  != 0 ? " Sat" : "";
-        weekdays += ( days & event::ModelEvent::WeekDaySunday )    != 0 ? " Sun" : "";
-        info += "\nRepeated Event";
-        info += "\n * Week Days:" + weekdays;
-        info += "\n * At " + QString( "%1" ).arg( time.hour(), 2, 10, QChar( '0' ) ) + ":" + QString( "%1" ).arg( time.minute(), 2, 10, QChar( '0' ) );
+        weekdays += ( days & event::ModelEvent::WeekDayMonday )    != 0 ? QApplication::translate( "WidgetEventPanel", "Mon" ) + " " : "";
+        weekdays += ( days & event::ModelEvent::WeekDayTuesday )   != 0 ? QApplication::translate( "WidgetEventPanel", "Tue" ) + " " : "";
+        weekdays += ( days & event::ModelEvent::WeekDayWednesday ) != 0 ? QApplication::translate( "WidgetEventPanel", "Wed" ) + " " : "";
+        weekdays += ( days & event::ModelEvent::WeekDayThursday )  != 0 ? QApplication::translate( "WidgetEventPanel", "Thu" ) + " " : "";
+        weekdays += ( days & event::ModelEvent::WeekDaySaturday )  != 0 ? QApplication::translate( "WidgetEventPanel", "Sat" ) + " " : "";
+        weekdays += ( days & event::ModelEvent::WeekDaySunday )    != 0 ? QApplication::translate( "WidgetEventPanel", "Sun" ) + " " : "";
+        info += "\n" + QApplication::translate( "WidgetEventPanel", "Repeated Event" );
+        info += "\n * " + QApplication::translate( "WidgetEventPanel", "Week Days" ) + ": " + weekdays;
+        info += "\n * " + QApplication::translate( "WidgetEventPanel", "At" ) + " " + _event->getRepeatDayTime().toString( "HH:mm" );
     }
     else
     {
-        info += "\nEvent date: " + _event->getStartDate().toString();
+        info += "\n" + QApplication::translate( "WidgetEventPanel", "Event Date" ) + ": " + _event->getStartDate().toString( "yyyy-M-dd HH:mm" );
     }
     _p_ui->labelInfoBody->setText( info );
 }
@@ -155,10 +192,14 @@ void WidgetEventPanel::setupLocations()
         {
             addLocation( _event, location, userisowner );
         }
-        requestCurrentLoctionVotes();
+        bool votinginprogress = _p_webApp->getEvents()->getIsVotingTime( _event->getId() );
+        _p_ui->widgetVotingTime->setVisible( votinginprogress );
+        if ( votinginprogress )
+            requestCurrentLoctionVotes();
     }
     else
     {
+        _p_ui->widgetVotingTime->setVisible( false );
         _p_ui->labelEmptyPanel->show();
     }
 }
@@ -323,19 +364,6 @@ void WidgetEventPanel::onResponseGetLocationVotesByTime( bool success, QList< Mo
             {
                 p_widget->updateVotes( v );
             }
-
-            log_verbose << "location votes" << std::endl;
-            log_verbose << "  event: " << v->getEventId() << std::endl;
-            log_verbose << "  location: " << v->getLocationId() << std::endl;
-            log_verbose << "  creation time: " << v->getVoteCreationTime().toString() << std::endl;
-            log_verbose << "  voting begin: " << v->getVoteTimeBegin().toString() << std::endl;
-            log_verbose << "  voting end: " << v->getVoteTimeEnd().toString() << std::endl;
-            log_verbose << "  users:";
-            for ( QString u: v->getUserIds() )
-            {
-                log_verbose << " " << u;
-            }
-            log_verbose << std::endl;
         }
     }
 }

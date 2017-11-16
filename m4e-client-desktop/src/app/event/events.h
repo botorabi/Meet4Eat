@@ -185,6 +185,14 @@ class Events : public QObject
         bool                                getVotingTimeWindow( const QString& eventId, QDateTime& timeBegin, QDateTime& timeEnd );
 
         /**
+         * @brief Given an event check if it is during its voting time right now.
+         *
+         * @param eventId       The event ID
+         * @return              Return false if the current system time is outside voting time window defined in given event.
+         */
+        bool                                getIsVotingTime( const QString& eventId );
+
+        /**
          * @brief Request for voting/unvoting an event location, the results are emitted by signal 'onResponseSetLocationVote'.
          *
          * @param eventId       The event ID the location belongs to
@@ -337,6 +345,20 @@ class Events : public QObject
          * @param votes     The event location votes
          */
         void                                onResponseGetLocationVotesById( bool success, m4e::event::ModelLocationVotesPtr votes );
+
+        /**
+         * @brief This signal is emitted when an event voting time was reached.
+         *
+         * @param event The event
+         */
+        void                                onLocationVotingStart(  m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief This signal is emitted when an event voting time has ended.
+         *
+         * @param event The event
+         */
+        void                                onLocationVotingEnd(  m4e::event::ModelEventPtr event );
 
     protected slots:
 
@@ -559,26 +581,26 @@ class Events : public QObject
         void                                onRESTEventErrorGetLocationVotesById( QString errorCode, QString reason );
 
         /**
-         * @brief Called when an event alarm was reached.
+         * @brief Called when the start of event voting was reached.
          */
-        void                                onAlarm();
+        void                                onAlarmVotingStart();
+
+        /**
+         * @brief Called when the end of event voting was reached.
+         */
+        void                                onAlarmVotingEnd();
 
     protected:
 
         void                                setLastError( const QString& error ="", const QString& errorCode ="" );
 
-        void                                destroyAlarms();
+        void                                destroyVotingTimers();
 
-        void                                updateAlarms();
+        void                                updateVotingTimers();
 
-        /**
-         * @brief Schedule the alarm timer. Return false if no need for alarm anymore (e.g. because the alarm time lies in the past).
-         *
-         * @param event     The event
-         * @param p_timer   The timer to schedule
-         * @return          Return true if the timer was scheduled
-         */
-        bool                                scheduleAlarmTimer( event::ModelEventPtr event, QTimer* p_timer );
+        void                                updateVotingTimer( ModelEventPtr event, bool startTimer, bool endTimer );
+
+        void                                setupVotingTimer( ModelEventPtr event, quint64 interval, bool startTimer );
 
         webapp::RESTEvent*                  _p_restEvent = nullptr;
 

@@ -161,11 +161,23 @@ void MainWindow::onTimerInit()
     }
 }
 
-void MainWindow::onEventAlarm( event::ModelEventPtr event )
+void MainWindow::onLocationVotingStart( event::ModelEventPtr event )
 {
-    gui::AlarmWindow* p_dlg = new gui::AlarmWindow( this );
-    p_dlg->setupUI( event );
-    p_dlg->show();
+    addLogText( "Location voting started for event '" + event->getName() + "'" );
+
+    QString enablealarm = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_ALARM, "yes" );
+    if ( enablealarm == "yes" )
+    {
+        gui::AlarmWindow* p_dlg = new gui::AlarmWindow( this );
+        p_dlg->setupUI( event );
+        p_dlg->show();
+        common::GuiUtils::widgetToFront( p_dlg );
+    }
+}
+
+void MainWindow::onLocationVotingEnd( m4e::event::ModelEventPtr event )
+{
+    addLogText( "Location voting has ended for event '" + event->getName() + "'" );
 }
 
 void MainWindow::onTimerUpdate()
@@ -416,8 +428,11 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
                                      SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
 
-    connect( _p_webApp->getEvents(), SIGNAL( onEventAlarm( m4e::event::ModelEventPtr ) ), this,
-                                     SLOT( onEventAlarm( m4e::event::ModelEventPtr ) ) );
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
+
+    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
+                                     SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
 
     connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountUnreadMails( bool, int ) ), this,
                                       SLOT( onResponseCountUnreadMails( bool, int ) ) );
@@ -624,7 +639,7 @@ void MainWindow::createWidgetEvent( const QString& eventId )
 {
     event::WidgetEventPanel* p_eventpanel = new event::WidgetEventPanel( _p_webApp, _p_ui->widgetClientArea );
     connect( p_eventpanel, SIGNAL( onCreateNewLocation( QString /*eventId*/) ), this, SLOT( onCreateNewLocation( QString ) ) );
-    p_eventpanel->setEvent( eventId );
+    p_eventpanel->setupEvent( eventId );
     if ( _p_chatSystem )
         p_eventpanel->setChatSystem( _p_chatSystem );
 
