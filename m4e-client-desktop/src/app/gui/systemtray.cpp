@@ -43,8 +43,8 @@ SystemTray::SystemTray( webapp::WebApp* p_webApp, MainWindow* p_parent ) :
     connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
     connect( _p_webApp, SIGNAL( onServerConnectionClosed() ), this, SLOT( onServerConnectionClosed() ) );
 
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ), this,
-                                            SLOT( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ) );
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
+                                            SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
                                             SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
@@ -69,7 +69,7 @@ void SystemTray::onActivated( QSystemTrayIcon::ActivationReason reason )
     {
         case QSystemTrayIcon::Trigger:
         case QSystemTrayIcon::DoubleClick:
-            common::GuiUtils::widgetToFront( _p_mainWindow );
+            common::GuiUtils::bringWidgetToFront( _p_mainWindow );
         break;
 
         default:
@@ -83,7 +83,7 @@ void SystemTray::onMenuTriggert( QAction* p_action )
     switch( id )
     {
         case MenuOpen:
-            common::GuiUtils::widgetToFront( _p_mainWindow );
+            common::GuiUtils::bringWidgetToFront( _p_mainWindow );
         break;
 
         case MenuQuit:
@@ -107,7 +107,7 @@ void SystemTray::onMenuTriggert( QAction* p_action )
 
 void SystemTray::onMessageClicked()
 {
-    common::GuiUtils::widgetToFront( _p_mainWindow );
+    common::GuiUtils::bringWidgetToFront( _p_mainWindow );
 }
 
 void SystemTray::setupSystemTray()
@@ -194,7 +194,7 @@ void SystemTray::onServerConnectionClosed()
 {
 }
 
-void SystemTray::onEventMessage( QString senderId, QString eventId, notify::NotifyEventPtr notify )
+void SystemTray::onEventMessage( QString senderId, QString /*senderName*/, QString eventId, notify::NotifyEventPtr notify )
 {
     QString eventname;
     QString userid;

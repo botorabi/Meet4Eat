@@ -108,11 +108,12 @@ class Notifications : public QObject
         /**
          * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
          *
-         * @param sender    Message sender Id (usually an user ID)
-         * @param eventId   ID of receiving event
-         * @param notify    Notification object containing the message content
+         * @param senderId      Message sender Id (usually an user ID)
+         * @param senderName    Message sender's name
+         * @param eventId       ID of receiving event
+         * @param notify        Notification object containing the message content
          */
-        void                    onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
+        void                    onEventMessage( QString senderId, QString senderName, QString eventId, m4e::notify::NotifyEventPtr notify );
 
     protected slots:
 

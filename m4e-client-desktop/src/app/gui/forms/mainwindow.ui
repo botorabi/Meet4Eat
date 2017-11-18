@@ -367,7 +367,7 @@ QPushButton::hover {
   border-radius: 2px;
 }
 QPushButton::disabled {
-  color: rgb(231, 247, 167);
+  color: white;
   background: transparent;
   border: 0px solid rgb(131,147, 167);
   border-radius: 2px;

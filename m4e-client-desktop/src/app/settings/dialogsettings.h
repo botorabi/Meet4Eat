@@ -41,6 +41,14 @@ class DialogSettings : public common::BaseDialog
     public:
 
         /**
+         * @brief Dialog buttons
+         */
+        enum Buttons
+        {
+            BtnDismiss = common::BaseDialog::Btn1
+        };
+
+        /**
          * @brief Create a settings dialog instance.
          *
          * @param p_webApp  Web application interface
@@ -79,6 +87,8 @@ class DialogSettings : public common::BaseDialog
         void                        setupUI();
 
         void                        storeCredentials();
+
+        bool                        validateInput();
 
         Ui::WidgetSettings*         _p_ui     = nullptr;
 

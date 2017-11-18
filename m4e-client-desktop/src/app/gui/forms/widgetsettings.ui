@@ -210,6 +210,13 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Let empty to take the default public server.</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>

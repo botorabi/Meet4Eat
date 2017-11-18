@@ -102,7 +102,7 @@ void UserAuthentication::onRESTAuthenticationAuthState( bool authenticated, QStr
 
 void UserAuthentication::onRESTAuthenticationErrorAuthState( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get auth state: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to get auth state: " << errorCode << ", reason: " << reason << std::endl;
     if ( _userName.isEmpty() && _password.isEmpty() )
     {
         emit onResponseAuthState( false, "" );
@@ -121,7 +121,7 @@ void UserAuthentication::onRESTAuthenticationLogin( QString userId )
 
 void UserAuthentication::onRESTAuthenticationErrorLogin( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to login, error code: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to login, error code: " << errorCode << ", reason: " << reason << std::endl;
     QString text = QApplication::translate( "UserAuthentication", "Failed to authenticate user. Reason: " ) + reason;
     emit onResponseSignInResult( false, "", AuthCodeInvalidCredentials, text );
 }
@@ -134,7 +134,7 @@ void UserAuthentication::onRESTAuthenticationLogout()
 
 void UserAuthentication::onRESTAuthenticationErrorLogout( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to logout, error code: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to logout, error code: " << errorCode << ", reason: " << reason << std::endl;
     QString text = QApplication::translate( "UserAuthentication", "Failed to sign out user. Reason: " ) + reason;
     emit onResponseSignOutResult( false, AuthCodeOtherReason, text );
 }

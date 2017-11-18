@@ -82,20 +82,11 @@ class GuiUtils
                                                 int blurr = 6 );
 
         /**
-         * @brief Check if the given owner ID matches to currently authorized user's ID.
-         *
-         * @param ownerId   Owner ID to check
-         * @param p_webApp  Web app interface containing information about the authorized user
-         * @return          Return true if user is the owner, otherwise false.
-         */
-        static bool         userIsOwner( const QString& ownerId, webapp::WebApp* p_webApp );
-
-        /**
          * @brief Bring the given widget to front on desktop.
          *
          * @param p_widget Widget to bring to front
          */
-        static void         widgetToFront( QWidget* p_widget );
+        static void         bringWidgetToFront( QWidget* p_widget );
 };
 
 } // namespace common

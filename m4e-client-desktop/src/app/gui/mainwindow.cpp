@@ -19,6 +19,7 @@
 #include <common/dialogmessage.h>
 #include <common/guiutils.h>
 #include <event/dialogeventsettings.h>
+#include <user/dialogusersettings.h>
 #include <gui/alarmwindow.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
@@ -68,9 +69,6 @@ MainWindow::MainWindow() :
     // create the try icon
     _p_systemTray = new SystemTray( _p_webApp, this );
 
-    // create the chat system
-    _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
-
     _p_initTimer = new QTimer();
     _p_initTimer->setSingleShot( true );
     connect( _p_initTimer, SIGNAL( timeout() ), this, SLOT( onTimerInit() ) );
@@ -83,7 +81,7 @@ MainWindow::MainWindow() :
     connect( _p_updateTimer, SIGNAL( timeout() ), this, SLOT( onTimerUpdate() ) );
     _p_updateTimer->start( keepaliveperiod );
 
-    updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), false );
+    updateStatus( QApplication::translate( "MainWindow", "No Connection!" ), true );
     _p_ui->pushButtonRefreshEvents->hide();
 
     clearWidgetClientArea();
@@ -118,7 +116,7 @@ void MainWindow::customEvent( QEvent* p_event )
     if ( p_event->type() == M4E_APP_INSTANCE_EVENT_TYPE )
     {
         // then bring the main window on top.
-        common::GuiUtils::widgetToFront( this );
+        common::GuiUtils::bringWidgetToFront( this );
     }
 }
 
@@ -154,6 +152,14 @@ void MainWindow::closeEvent( QCloseEvent* p_event )
 
 void MainWindow::onTimerInit()
 {
+    // if no login exist then show the settings dialog
+    QString login = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
+    if ( login.isEmpty() )
+    {
+        settings::DialogSettings dlg( _p_webApp, this );
+        dlg.exec();
+    }
+
     QString remember = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
     if ( remember == "yes" )
     {
@@ -171,7 +177,7 @@ void MainWindow::onLocationVotingStart( event::ModelEventPtr event )
         gui::AlarmWindow* p_dlg = new gui::AlarmWindow( this );
         p_dlg->setupUI( event );
         p_dlg->show();
-        common::GuiUtils::widgetToFront( p_dlg );
+        common::GuiUtils::bringWidgetToFront( p_dlg );
     }
 }
 
@@ -193,8 +199,8 @@ void MainWindow::onBtnStatusClicked()
 {
     if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
     {
-        updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), true );
-        _p_webApp->establishConnection();
+        settings::DialogSettings dlg( _p_webApp, this );
+        dlg.exec();
     }
 }
 
@@ -294,15 +300,19 @@ void MainWindow::onBtnMaximizeClicked()
 
 void MainWindow::onBtnUserProfileClicked()
 {
-    //! TODO
-    log_verbose << TAG << "TODO user profile" << std::endl;
+    if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
+        return;
+
+    user::DialogUserSettings dlg( _p_webApp, this );
+    dlg.setupUI( _p_webApp->getUser()->getUserData() );
+    dlg.exec();
 }
 
 void MainWindow::onBtnMailsClicked()
 {
     if ( _p_mailWindow )
     {
-        common::GuiUtils::widgetToFront( _p_mailWindow );
+        common::GuiUtils::bringWidgetToFront( _p_mailWindow );
     }
     else
     {
@@ -425,8 +435,8 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
                                             SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
 
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ), this,
-                                            SLOT( onEventMessage( QString, QString, m4e::notify::NotifyEventPtr ) ) );
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
+                                            SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
 
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
                                      SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
@@ -449,8 +459,6 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
     if ( success )
     {
         log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
-        // create the chat system
-        _p_chatSystem = new chat::ChatSystem( _p_webApp, this );
         // start the keep alive updates
         _enableKeepAlive = true;
         addLogText( "User has successfully signed in" );
@@ -488,9 +496,6 @@ void MainWindow::onUserSignedOff( bool success )
 
     _enableKeepAlive = false;
 
-    delete _p_chatSystem;
-    _p_chatSystem = nullptr;
-
     if ( success )
     {
         clearWidgetMyEvents();
@@ -505,8 +510,6 @@ void MainWindow::onServerConnectionClosed()
     log_debug << TAG << "server connection was closed" << std::endl;
 
     updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
-    delete _p_chatSystem;
-    _p_chatSystem = nullptr;
     clearWidgetMyEvents();
     createWidgetMyEvents();
 
@@ -582,8 +585,12 @@ void MainWindow::onEventLocationVote(  QString senderId, QString eventId, QStrin
     //! TODO play a sound
 }
 
-void MainWindow::onEventMessage( QString /*senderId*/, QString eventId, notify::NotifyEventPtr notify )
+void MainWindow::onEventMessage( QString senderId, QString senderName, QString eventId, notify::NotifyEventPtr notify )
 {
+    // suppress echo
+    if ( senderId == _p_webApp->getUser()->getUserData()->getId() )
+        return;
+
     QString eventname;
     event::ModelEventPtr event = _p_webApp->getEvents()->getUserEvent( eventId );
 
@@ -592,7 +599,10 @@ void MainWindow::onEventMessage( QString /*senderId*/, QString eventId, notify::
 
     addLogText( QApplication::translate( "MainWindow", "New event message arrived: " ) + "'" + eventname + "', " + notify->getSubject() );
 
-    //! TODO: on buzz message, bring the application window with an own dialog to front and play a notification sound!
+    QString title = QApplication::translate( "MainWindow", "Meet4Eat - @USER@" );
+    title.replace( "@USER@", senderName );
+    QString text = QApplication::translate( "MainWindow", "Buzzing the members of event" ) + " '" + event->getName() + "'";
+    _p_systemTray->showMessage( title, text );
 }
 
 void MainWindow::onResponseCountUnreadMails( bool success, int coun )
@@ -666,8 +676,6 @@ void MainWindow::createWidgetEvent( const QString& eventId )
     event::WidgetEventPanel* p_eventpanel = new event::WidgetEventPanel( _p_webApp, _p_ui->widgetClientArea );
     connect( p_eventpanel, SIGNAL( onCreateNewLocation( QString /*eventId*/) ), this, SLOT( onCreateNewLocation( QString ) ) );
     p_eventpanel->setupEvent( eventId );
-    if ( _p_chatSystem )
-        p_eventpanel->setChatSystem( _p_chatSystem );
 
     _p_ui->widgetClientArea->layout()->addWidget( p_eventpanel );
 }

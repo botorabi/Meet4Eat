@@ -151,6 +151,23 @@ class WidgetEventItem : public QWidget
         void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
         /**
+         * @brief This signal is received from chat system whenever a new event chat message arrived.
+         *
+         * @param msg Chat message
+         */
+        void                        onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr msg );
+
+        /**
+         * @brief This signal is received  when an event message was arrived. An event message can be used to buzz all event members.
+         *
+         * @param senderId      Message sender Id (usually an user ID)
+         * @param senderName    Message sender's name
+         * @param eventId       ID of receiving event
+         * @param notify        Notification object containing the message content
+         */
+        void                        onEventMessage( QString senderId, QString senderName, QString eventId, m4e::notify::NotifyEventPtr notify );
+
+        /**
          * @brief This signal is emitted when an event location vote arrives.
          *
          * @param senderId   User ID of the voter

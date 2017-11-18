@@ -8,6 +8,7 @@
 
 #include "chatsystem.h"
 #include <core/log.h>
+#include <webapp/webapp.h>
 #include "chatmessage.h"
 #include <QJsonObject>
 
@@ -35,6 +36,11 @@ ChatSystem::~ChatSystem()
 {
 }
 
+void ChatSystem::addChatMessage( ChatMessagePtr message )
+{
+    storeEventMessage( message );
+}
+
 bool ChatSystem::sendToUser( ChatMessagePtr message )
 {
     return createAndSendPacket( true, message );
@@ -59,6 +65,7 @@ void ChatSystem::onChannelChatPacket( comm::PacketPtr packet )
     QJsonObject obj = doc.object();
 
     ChatMessagePtr msg = new ChatMessage();
+    msg->setSenderId( packet->getSourceId() );
     msg->setSender( packet->getSource() );
     msg->setTime( packet->getTime() );
     msg->setText( obj.value( PACKET_FIELD_TEXT ).toString( "" ) );

@@ -74,9 +74,23 @@ class User : public QObject
         user::ModelUserPtr      getUserData();
 
         /**
+         * @brief Get the user ID, or empty string if no user exists. The user ID can also be retrieved by using getUserData().
+         *
+         * @return The user ID, or empty string if no user exists now.
+         */
+        QString                 getUserId();
+
+        /**
+         * @brief Given an ID check if it is the ID of authenticated user. This method can be used for checking for resource ownership.
+         *
+         * @return Return true if the given ID is the same as the user ID.
+         */
+        bool                    isUserId( const QString& id );
+
+        /**
          * @brief Request for getting the user data, the results are emitted by signal 'onResponseUserData'.
          */
-        void                    requestUserData( const QString userId );
+        void                    requestUserData( const QString& userId );
 
         /**
          * @brief Request for searching for users given the keyword. The hits are emitted by signal 'onResponseUserSearch'.

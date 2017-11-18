@@ -20,6 +20,7 @@
 #include <communication/connection.h>
 #include <notification/notifications.h>
 #include <mailbox/mailbox.h>
+#include <chat/chatsystem.h>
 #include <QObject>
 
 
@@ -130,6 +131,13 @@ class WebApp : public QObject
          * @return The mailbox
          */
         mailbox::MailBox*               getMailBox();
+
+        /**
+         * @brief Get the chat system
+         *
+         * @return The chat system
+         */
+        chat::ChatSystem*               getChatSystem();
 
         /**
          * @brief Request for updating the authentication state. If successful then the state will be notified by signal 'onAuthState';
@@ -285,6 +293,8 @@ class WebApp : public QObject
 
         mailbox::MailBox*               getOrCreateMailBox();
 
+        chat::ChatSystem*               getOrCreateChatSystem();
+
         void                            resetAllResources();
 
         QString                         _userID;
@@ -302,6 +312,8 @@ class WebApp : public QObject
         doc::DocumentCache*             _p_documentCache = nullptr;
 
         mailbox::MailBox*               _p_mailBox       = nullptr;
+
+        chat::ChatSystem*               _p_chatSystem    = nullptr;
 
         AuthState                       _authState = AuthNoConnection;
 

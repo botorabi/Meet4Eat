@@ -77,13 +77,6 @@ class WidgetEventPanel : public QWidget
          */
         QString                     getEventId() const;
 
-        /**
-         * @brief Set the ChatSystem which allows the chat messanging.
-         *
-         * @param p_chatSystem  The chat system
-         */
-        void                        setChatSystem( m4e::chat::ChatSystem* p_chatSystem );
-
     signals:
 
         /**
@@ -143,6 +136,16 @@ class WidgetEventPanel : public QWidget
         void                        onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr msg );
 
         /**
+         * @brief This signal is received  when an event message was arrived. An event message can be used to buzz all event members.
+         *
+         * @param senderId      Message sender Id (usually an user ID)
+         * @param senderName    Message sender's name
+         * @param eventId       ID of receiving event
+         * @param notify        Notification object containing the message content
+         */
+        void                        onEventMessage( QString senderId, QString senderName, QString eventId, m4e::notify::NotifyEventPtr notify );
+
+        /**
          * @brief Results of remove event location request.
          *
          * @param success    true if user data could successfully be retrieved, otherwise false
@@ -170,6 +173,11 @@ class WidgetEventPanel : public QWidget
          * @brief Setup the head elements in event widget (info fields, etc.)
          */
         void                        setupWidgetHead();
+
+        /**
+         * @brief Get all chat messages of current event and restore the chat window.
+         */
+        void                        restoreChatMessages();
 
         /**
          * @brief Setup all location widgets.
@@ -218,8 +226,6 @@ class WidgetEventPanel : public QWidget
         QListWidget*                _p_clientArea       = nullptr;
 
         webapp::WebApp*             _p_webApp           = nullptr;
-
-        m4e::chat::ChatSystem*      _p_chatSystem       = nullptr;
 
         typedef QMap< QString /*id*/, QString /*name*/>  Locations;
 

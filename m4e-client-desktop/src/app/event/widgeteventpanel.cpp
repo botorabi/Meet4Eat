@@ -56,6 +56,7 @@ void WidgetEventPanel::setupEvent( const QString& id )
     else
     {
         _event = event;
+        restoreChatMessages();
         setupLocations();
         setupWidgetHead();
         setEventMembers();
@@ -67,19 +68,6 @@ QString WidgetEventPanel::getEventId() const
     if ( _event.valid() )
         return _event->getId();
     return "";
-}
-
-void WidgetEventPanel::setChatSystem( chat::ChatSystem* p_chatSystem )
-{
-    _p_chatSystem = p_chatSystem;
-    connect( _p_chatSystem, SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
-
-    // restore the messages already received
-    QList< chat::ChatMessagePtr > messages = _p_chatSystem->getEventMessages( _event->getId() );
-    for ( auto msg: messages )
-    {
-        onReceivedChatMessageEvent( msg );
-    }
 }
 
 void WidgetEventPanel::onLocationVotingStart( m4e::event::ModelEventPtr event )
@@ -134,6 +122,7 @@ void WidgetEventPanel::setupUI()
     _widgets.clear();
 
     _p_ui->widgetChat->setupUI( _p_webApp );
+    connect( _p_webApp->getChatSystem(), SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
     connect( _p_ui->widgetChat, SIGNAL( onSendMessage( m4e::chat::ChatMessagePtr ) ), this, SLOT( onSendMessage( m4e::chat::ChatMessagePtr ) ) );
     connect( _p_webApp->getEvents(), SIGNAL( onResponseRemoveLocation( bool, QString, QString ) ), this, SLOT( onResponseRemoveLocation( bool, QString, QString ) ) );
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetLocationVotesByTime( bool, QList< m4e::event::ModelLocationVotesPtr > ) ), this,
@@ -142,10 +131,12 @@ void WidgetEventPanel::setupUI()
     connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this, SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
     connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this, SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
+                                            SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
+
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetMembers, shadowcolor, QPoint( -3, 3 ), 3 );
-    common::GuiUtils::createShadowEffect( _p_ui->pushButtonBuzz, shadowcolor, QPoint( -2, 2 ), 1 );
 
     _p_clientArea = _p_ui->listWidget;
     _p_clientArea->setUniformItemSizes( true );
@@ -182,12 +173,29 @@ void WidgetEventPanel::setupWidgetHead()
     _p_ui->labelInfoBody->setText( info );
 }
 
+void WidgetEventPanel::restoreChatMessages()
+{
+    if ( !_event.valid() )
+    {
+        log_error << TAG << "cannot restore the chat messages, invalid event!" << std::endl;
+        return;
+    }
+
+    // restore the messages already received
+    QList< chat::ChatMessagePtr > messages = _p_webApp->getChatSystem()->getEventMessages( _event->getId() );
+    for ( auto msg: messages )
+    {
+        onReceivedChatMessageEvent( msg );
+    }
+}
+
 void WidgetEventPanel::setupLocations()
 {
-    bool userisowner = common::GuiUtils::userIsOwner( _event->getOwner()->getId(), _p_webApp );
+    bool userisowner = _p_webApp->getUser()->isUserId( _event->getOwner()->getId() );
     if ( _event->getLocations().size() > 0 )
     {
         _p_ui->labelEmptyPanel->hide();
+        _p_ui->labelEmptyPanelCreate->hide();
         for ( auto location: _event->getLocations() )
         {
             addLocation( _event, location, userisowner );
@@ -201,6 +209,7 @@ void WidgetEventPanel::setupLocations()
     {
         _p_ui->widgetVotingTime->setVisible( false );
         _p_ui->labelEmptyPanel->show();
+        _p_ui->labelEmptyPanelCreate->setVisible( userisowner );
     }
 }
 
@@ -303,16 +312,28 @@ void WidgetEventPanel::onDeleteLocation( QString id )
 
 void WidgetEventPanel::onSendMessage( m4e::chat::ChatMessagePtr msg )
 {
-    if ( !_p_chatSystem )
-        return;
-
     msg->setReceiverId( _event->getId() );
-    _p_chatSystem->sendToEventMembers( msg );
+    _p_webApp->getChatSystem()->sendToEventMembers( msg );
 }
 
 void WidgetEventPanel::onReceivedChatMessageEvent( chat::ChatMessagePtr msg )
 {
-    _p_ui->widgetChat->appendChatText( msg );
+    if ( msg->getReceiverId() == _event->getId() )
+        _p_ui->widgetChat->appendChatText( msg );
+}
+
+void WidgetEventPanel::onEventMessage( QString /*senderId*/, QString senderName, QString eventId, notify::NotifyEventPtr notify )
+{
+    chat::ChatMessagePtr msg = new chat::ChatMessage();
+    msg->setReceiverId( eventId );
+    msg->setText( "(" + notify->getSubject() + ") " + notify->getText() );
+    msg->setTime( QDateTime::currentDateTime() );
+    msg->setSender( senderName );
+
+    _p_webApp->getChatSystem()->addChatMessage( msg  );
+
+    if ( eventId == _event->getId() )
+        _p_ui->widgetChat->appendChatText( msg );
 }
 
 void WidgetEventPanel::onResponseRemoveLocation( bool success, QString eventId, QString locationId )

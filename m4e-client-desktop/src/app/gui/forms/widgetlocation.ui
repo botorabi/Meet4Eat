@@ -280,14 +280,14 @@ QWidget::disabled {
            <widget class="QPushButton" name="pushButtonVoteDown">
             <property name="minimumSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>25</width>
+              <height>25</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>25</width>
+              <height>25</height>
              </size>
             </property>
             <property name="cursor">
@@ -303,27 +303,33 @@ QWidget::disabled {
              <string notr="true">QPushButton {
   background-color: transparent;
   border-radius: 10px;
-  border-image: url(:/icon-thumbdown.png);
+  border-image: url(:/icon-thumbdown-hollow.png);
 }
 QPushButton:hover {
   background-color: rgb(50,82,95);
   border-radius: 10px;
+}
+QPushButton:disabled {
+  border-image: url();
 }</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButtonVoteUp">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="minimumSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>25</width>
+              <height>25</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>25</width>
+              <height>25</height>
              </size>
             </property>
             <property name="cursor">
@@ -339,11 +345,14 @@ QPushButton:hover {
              <string notr="true">QPushButton {
   background-color: transparent;
   border-radius: 10px;
-  border-image: url(:/icon-thumbup.png);
+  border-image: url(:/icon-thumbup-hollow.png);
 }
 QPushButton:hover {
   background-color: rgb(50,82,95);
   border-radius: 10px;
+}
+QPushButton:disabled {
+  border-image: url();
 }</string>
             </property>
            </widget>

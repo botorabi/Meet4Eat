@@ -230,31 +230,31 @@
            <widget class="QPushButton" name="pushButtonBuzz">
             <property name="minimumSize">
              <size>
-              <width>64</width>
-              <height>64</height>
+              <width>96</width>
+              <height>96</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>64</width>
-              <height>64</height>
+              <width>96</width>
+              <height>96</height>
              </size>
             </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
             <property name="toolTip">
-             <string>Buzz all event members</string>
+             <string>Buzz Your Friends!</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
   background-color: transparent;
   border-radius: 24px;
-  border-image: url(:/icon-buzz-64.png);
+  border-image: url(:/icon-buzz-96.png);
 }
 QPushButton:hover {
   background-color: rgb(50,82,95);
-  border-radius: 24px;
+  border-radius: 48px;
 }</string>
             </property>
            </widget>
@@ -270,7 +270,7 @@ QPushButton:hover {
         <number>2</number>
        </property>
        <item>
-        <layout class="QVBoxLayout" name="layoutPanel" stretch="0,1,1,0">
+        <layout class="QVBoxLayout" name="layoutPanel" stretch="0,1,0,1,0">
          <property name="spacing">
           <number>2</number>
          </property>
@@ -332,7 +332,23 @@ QPushButton:hover {
             </font>
            </property>
            <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;This event has no locations!&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;CREATE_LOCATION&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Click here to create some.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;This event has no locations!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelEmptyPanelCreate">
+           <property name="font">
+            <font>
+             <family>Roboto</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;CREATE_LOCATION&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Click here to create some.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignBottom|Qt::AlignHCenter</set>
@@ -377,8 +393,8 @@ QPushButton:hover {
    <slot>onBtnBuzzClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>626</x>
-     <y>35</y>
+     <x>624</x>
+     <y>48</y>
     </hint>
     <hint type="destinationlabel">
      <x>319</x>
@@ -387,18 +403,18 @@ QPushButton:hover {
    </hints>
   </connection>
   <connection>
-   <sender>labelEmptyPanel</sender>
+   <sender>labelEmptyPanelCreate</sender>
    <signal>linkActivated(QString)</signal>
    <receiver>WidgetEventPanel</receiver>
    <slot>onLinkActivated(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>304</x>
-     <y>273</y>
+     <x>224</x>
+     <y>311</y>
     </hint>
     <hint type="destinationlabel">
-     <x>642</x>
-     <y>343</y>
+     <x>644</x>
+     <y>417</y>
     </hint>
    </hints>
   </connection>

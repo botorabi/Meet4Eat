@@ -112,6 +112,7 @@ public class ChatSystem {
         Events events = new Events(entityManager);
         Set<Long> receiverids = events.getMembers(receiverId);
         receiverids.add(sender.getId());
+        packet.setSourceId(sender.getId().toString());
         packet.setSource(sender.getName());
         packet.setTime((new Date()).getTime());
         connections.sendPacket(packet, new ArrayList(receiverids));
@@ -132,6 +133,7 @@ public class ChatSystem {
         List<Long> receiverids = new ArrayList();
         receiverids.add(sender.getId());
         receiverids.add(recipient.getId());
+        packet.setSourceId(sender.getId().toString());
         packet.setSource(sender.getName());
         packet.setTime((new Date()).getTime());
         connections.sendPacket(packet, receiverids);

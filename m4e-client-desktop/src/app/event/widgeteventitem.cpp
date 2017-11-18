@@ -10,6 +10,7 @@
 #include <core/log.h>
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
+#include <chat/chatsystem.h>
 #include "dialogeventsettings.h"
 #include "dialoglocationedit.h"
 #include <ui_widgeteventitem.h>
@@ -61,6 +62,9 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
                                             SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
+                                            SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
+
     connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this,
                         SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
 
@@ -69,6 +73,8 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
 
     connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
                                      SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
+
+    connect( _p_webApp->getChatSystem(), SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
 
     common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 180), QPoint( -2, 2 ), 4 );
     setSelectionMode( true );
@@ -82,7 +88,7 @@ void WidgetEventItem::updateEvent( ModelEventPtr event )
     _p_ui->widgetVotingTime->setVisible( _p_webApp->getEvents()->getIsVotingTime( _event->getId() ) );
 
     // is the user also the owner of the event? some operations are only permitted to owner
-    _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
+    _userIsOwner = _p_webApp->getUser()->isUserId( _event->getOwner()->getId() );
     _p_ui->labelHead->setText( event->getName() );
     _p_ui->labelDescription->setText( event->getDescription() );
     _p_ui->pushButtonEdit->setHidden( !_userIsOwner );
@@ -199,6 +205,20 @@ void WidgetEventItem::onEventLocationChanged( notify::Notifications::ChangeType 
     notifyUpdate( QApplication::translate( "WidgetEventItem", "Event location settings were changed, click to updage!") );
 }
 
+void WidgetEventItem::onReceivedChatMessageEvent( chat::ChatMessagePtr msg )
+{
+    if ( msg->getReceiverId() == _event->getId() && ( msg->getSenderId() != _p_webApp->getUser()->getUserData()->getId() ) )
+        notifyUpdate( QApplication::translate( "WidgetEventItem", "New chat message arrived!") );
+}
+
+void WidgetEventItem::onEventMessage( QString senderId, QString /*senderName*/, QString eventId, notify::NotifyEventPtr /*notify*/ )
+{
+    if ( ( eventId != _event->getId() ) || ( senderId == _p_webApp->getUser()->getUserData()->getId() ) )
+        return;
+
+    notifyUpdate( QApplication::translate( "WidgetEventItem", "New message arrived!") );
+}
+
 void WidgetEventItem::onEventLocationVote( QString senderId, QString eventId, QString /*locationId*/, bool /*vote*/ )
 {
     // suppress echo
@@ -236,6 +256,7 @@ bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
     if ( p_event->type() == QEvent::MouseButtonPress )
     {
         emit onClicked( _event->getId() );
+        _p_ui->pushButtonNotification->hide();
         return true;
     }
 
