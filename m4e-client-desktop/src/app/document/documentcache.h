@@ -105,11 +105,10 @@ class DocumentCache : public QObject
         /**
          * @brief Try to find a document in local cache.
          *
-         * @param id        Document ID
          * @param eTag      Document ETag
          * @return          A valid document if found, otherwise an invalid document is returned.
          */
-        ModelDocumentPtr                findDocument( const QString& id, const QString& eTag );
+        ModelDocumentPtr                findDocument( const QString& eTag );
 
         /**
          * @brief Locally cache the document.

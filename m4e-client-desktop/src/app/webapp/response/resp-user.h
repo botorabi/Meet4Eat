@@ -47,7 +47,6 @@ class ResponseGetUserData: public Meet4EatRESTResponse
         RESTUser*   _p_requester;
 };
 
-
 /**
  * @brief Response handler for GetUserSearch
  *
@@ -64,6 +63,32 @@ class ResponseGetUserSearch: public Meet4EatRESTResponse
     public:
 
         explicit    ResponseGetUserSearch( RESTUser* p_requester );
+
+        void        onRESTResponseSuccess( const QJsonDocument& results );
+
+        void        onRESTResponseError( const QString& reason );
+
+    protected:
+
+        RESTUser*   _p_requester;
+};
+
+/**
+ * @brief Response handler for UpdateUserData
+ *
+ * @author boto
+ * @date No 19, 2017
+ */
+class ResponseUpdateUserData: public Meet4EatRESTResponse
+{
+    /**
+     * @brief TAG Used for logging
+     */
+    const std::string TAG = "(ResponseUpdateUserData) ";
+
+    public:
+
+        explicit    ResponseUpdateUserData( RESTUser* p_requester );
 
         void        onRESTResponseSuccess( const QJsonDocument& results );
 

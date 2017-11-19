@@ -44,6 +44,15 @@ class DialogUserSettings : public common::BaseDialog
     public:
 
         /**
+         * @brief Dialog buttons
+         */
+        enum Buttons
+        {
+            BtnApply  = common::BaseDialog::Btn1,
+            BtnCancel = common::BaseDialog::Btn2
+        };
+
+        /**
          * @brief Create a dialog instance.
          *
          * @param p_webApp  Web application interface
@@ -77,6 +86,14 @@ class DialogUserSettings : public common::BaseDialog
          */
         void                        onDocumentReady( m4e::doc::ModelDocumentPtr document );
 
+        /**
+         * @brief Results of user data update request.
+         *
+         * @param success   true if user data could successfully be updated, otherwise false
+         * @param userId    ID of the user who was updated on server.
+         */
+        void                        onResponseUpdateUserData( bool success, QString userId );
+
     protected:
 
         /**
@@ -84,11 +101,21 @@ class DialogUserSettings : public common::BaseDialog
          */
         virtual bool                onButton1Clicked();
 
+        /**
+         * @brief Validate the input fields and report any problem.
+         *
+         * @param problem   If returning false then this string contains a text describing the problem.
+         * @return          Return false if something is wrong with input fields.
+         */
+        bool                        validateInput( QString& problem );
+
         Ui::WidgetUserSettings*     _p_ui     = nullptr;
 
         webapp::WebApp*             _p_webApp = nullptr;
 
         user::ModelUserPtr          _user;
+
+        doc::ModelDocumentPtr       _updatedPhoto;
 };
 
 } // namespace user

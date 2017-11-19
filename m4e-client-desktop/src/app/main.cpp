@@ -11,7 +11,7 @@
 #include <core/core.h>
 
 
-int main( int argc, char *argv[] )
+int main( int argc, char* argv[] )
 {
     m4e::core::Core appcore;
     appcore.initialize( argc, argv );

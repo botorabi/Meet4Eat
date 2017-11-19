@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>359</width>
-    <height>408</height>
+    <height>382</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -61,19 +61,19 @@ QPushButton::checked {
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
-    <number>6</number>
+    <number>0</number>
    </property>
    <property name="leftMargin">
-    <number>6</number>
+    <number>0</number>
    </property>
    <property name="topMargin">
-    <number>6</number>
+    <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>6</number>
+    <number>0</number>
    </property>
    <property name="bottomMargin">
-    <number>6</number>
+    <number>0</number>
    </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
@@ -84,22 +84,25 @@ QPushButton::checked {
       <widget class="QWidget" name="widget" native="true">
        <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
         <property name="spacing">
-         <number>9</number>
+         <number>7</number>
         </property>
         <property name="leftMargin">
-         <number>9</number>
+         <number>11</number>
         </property>
         <property name="topMargin">
-         <number>9</number>
+         <number>11</number>
         </property>
         <property name="rightMargin">
-         <number>9</number>
+         <number>11</number>
         </property>
         <property name="bottomMargin">
-         <number>9</number>
+         <number>11</number>
         </property>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,0">
+          <property name="spacing">
+           <number>7</number>
+          </property>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <property name="bottomMargin">
@@ -260,92 +263,121 @@ QPushButton::checked {
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>Change Password</string>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <property name="spacing">
+             <number>0</number>
             </property>
-           </widget>
+            <property name="topMargin">
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>Change Password</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelLine">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>1</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>1</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+  background-color: rgb(131,147, 167);
+}</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox">
-            <property name="title">
-             <string/>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <property name="leftMargin">
+             <number>6</number>
             </property>
-            <property name="checked">
-             <bool>false</bool>
+            <property name="rightMargin">
+             <number>6</number>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
-             <item>
-              <widget class="QLabel" name="label_10">
-               <property name="text">
-                <string>Current Password</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEditPwCurrent">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="maxLength">
-                <number>32</number>
-               </property>
-               <property name="echoMode">
-                <enum>QLineEdit::Password</enum>
-               </property>
-               <property name="placeholderText">
-                <string>Enter your current password</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_7">
-               <property name="text">
-                <string>Password</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEditPw">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="maxLength">
-                <number>32</number>
-               </property>
-               <property name="echoMode">
-                <enum>QLineEdit::Password</enum>
-               </property>
-               <property name="placeholderText">
-                <string>Enter your password</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_9">
-               <property name="text">
-                <string>Repeat Password</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEditPwRepeat">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="maxLength">
-                <number>32</number>
-               </property>
-               <property name="echoMode">
-                <enum>QLineEdit::Password</enum>
-               </property>
-               <property name="placeholderText">
-                <string>Enter your password</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
+            <item>
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>Current Password</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditPwCurrent">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="maxLength">
+               <number>32</number>
+              </property>
+              <property name="echoMode">
+               <enum>QLineEdit::Password</enum>
+              </property>
+              <property name="placeholderText">
+               <string>Enter your current password</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>Repeat Password</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditPw">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="maxLength">
+               <number>32</number>
+              </property>
+              <property name="echoMode">
+               <enum>QLineEdit::Password</enum>
+              </property>
+              <property name="placeholderText">
+               <string>Enter your password</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Password</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditPwRepeat">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="maxLength">
+               <number>32</number>
+              </property>
+              <property name="echoMode">
+               <enum>QLineEdit::Password</enum>
+              </property>
+              <property name="placeholderText">
+               <string>Enter your password</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>

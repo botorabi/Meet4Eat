@@ -97,5 +97,35 @@ void ResponseGetUserSearch::onRESTResponseError( const QString& reason )
 {
     emit _p_requester->onRESTUserErrorSearchResults( "", reason );
 }
+
+/******************************************************/
+/************* ResponseUpdateUserData *****************/
+/******************************************************/
+
+ResponseUpdateUserData::ResponseUpdateUserData( RESTUser* p_requester ) :
+ _p_requester( p_requester )
+{}
+
+void ResponseUpdateUserData::onRESTResponseSuccess( const QJsonDocument& results )
+{
+    QJsonDocument datadoc;
+    QString       errstring;
+    QString       errcode;
+    bool res = checkStatus( results, datadoc, errcode, errstring );
+    if ( !res )
+    {
+        emit _p_requester->onRESTUserErrorUpdateData( errcode, errstring );
+        return;
+    }
+
+    QString userid = datadoc.object().value( "userId" ).toString( "" );
+    emit _p_requester->onRESTUserUpdateData( userid );
+}
+
+void ResponseUpdateUserData::onRESTResponseError( const QString& reason )
+{
+    emit _p_requester->onRESTUserErrorUpdateData( "", reason );
+}
+
 } // namespace webapp
 } // namespace m4e

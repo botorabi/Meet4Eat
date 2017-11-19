@@ -322,7 +322,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String edit(@PathParam("id") Long id, String userJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id.toString());
+        jsonresponse.add("userId", id.toString());
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             Log.error(TAG, "*** Cannot update user, no user in session found!");
@@ -357,28 +357,39 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         user.setRoles(getUsers().adaptRequestedRoles(sessionuser, reqentity.getRoles()));
 
         // take over non-empty fields
+        boolean needupdate = false;
         if ((reqentity.getName() != null) && !reqentity.getName().isEmpty()) {
             user.setName(reqentity.getName());
+            needupdate = true;
         }
         if ((reqentity.getPassword() != null) && !reqentity.getPassword().isEmpty()) {
             user.setPassword(reqentity.getPassword());
+            needupdate = true;
         }
         if (reqentity.getPhoto() != null) {
             try {
                 getUsers().updateUserImage(user, reqentity.getPhoto());
+                needupdate = true;
             }
             catch (Exception ex) {
                 Log.warning(TAG, "*** User image could not be updated, reason: " + ex.getLocalizedMessage());
             }
         }
 
-        try {
-            getUsers().updateUser(user);
+        if (needupdate) {
+            try {
+                getUsers().updateUser(user);
+            }
+            catch (Exception ex) {
+                return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user.",
+                                                 ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            }
         }
-        catch (Exception ex) {
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user.",
-                                             ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+        else {
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "No input for update.",
+                                             ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());            
         }
+
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User successfully updated",
                                          ResponseResults.CODE_OK, jsonresponse.build().toString());
     }

@@ -66,6 +66,20 @@ class User : public QObject
         const QString&          getServerURL() const;
 
         /**
+         * @brief Get the error which occurred while the last request. Use this if a response delivers a 'success' set to false.
+         *
+         * @return Last error
+         */
+        const QString&          getLastError() const { return _lastError; }
+
+        /**
+         * @brief Get the error code set by REST response, see getLastError above.
+         *
+         * @return Last error code
+         */
+        const QString&          getLastErrorCode() const { return _lastErrorCode; }
+
+        /**
          * @brief Get the user data as far as it could be fetched from server successfully. Consider to request the user data before by
          *        using the method 'requestUserData' below.
          *
@@ -89,8 +103,22 @@ class User : public QObject
 
         /**
          * @brief Request for getting the user data, the results are emitted by signal 'onResponseUserData'.
+         *
+         * @param userId  The user ID
          */
         void                    requestUserData( const QString& userId );
+
+        /**
+         * @brief Request for updating the data of current user on server. The results are emitted by signal 'onResponseUpdateUserData'.
+         *
+         * NOTE: a user must be already authenticated before using this method.
+         *
+         * @param name      User name, let empty if no change required
+         * @param password  Pass the hash of a new password if a password change is required, otherwise let the string be empty.
+         * @param photo     New photo, let empty if no change required
+         * @return          Return false if no user is currently authenticated.
+         */
+        bool                    requestUpdateUserData( const QString& name, const QString& password, doc::ModelDocumentPtr photo );
 
         /**
          * @brief Request for searching for users given the keyword. The hits are emitted by signal 'onResponseUserSearch'.
@@ -110,10 +138,18 @@ class User : public QObject
         void                    onResponseUserData( bool success, m4e::user::ModelUserPtr user );
 
         /**
+         * @brief Results of user data update request.
+         *
+         * @param success   true if user data could successfully be updated, otherwise false
+         * @param userId    ID of the user who was updated on server.
+         */
+        void                    onResponseUpdateUserData( bool success, QString userId );
+
+        /**
          * @brief Results of user search request.
          *
-         * @param success  true if user data could successfully be retrieved, otherwise false
-         * @param users List of user hits
+         * @param success   true if user data could successfully be retrieved, otherwise false
+         * @param users     List of user hits
          */
         void                    onResponseUserSearch( bool success, QList< m4e::user::ModelUserInfoPtr > users );
 
@@ -122,7 +158,7 @@ class User : public QObject
         /**
          * @brief Receive the results of requestUserData request.
          *
-         * @param user           User data
+         * @param user      User data
          */
         void                    onRESTUserGetData( m4e::user::ModelUserPtr user );
 
@@ -133,6 +169,21 @@ class User : public QObject
          * @param reason    Error string
          */
         void                    onRESTUserErrorGetData( QString errorCode, QString reason );
+
+        /**
+         * @brief Receive the results of requestUpdateUserData request.
+         *
+         * @param userId    The user ID
+         */
+        void                    onRESTUserUpdateData( QString userId );
+
+        /**
+         * @brief Signal is received when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                    onRESTUserErrorUpdateData( QString errorCode, QString reason );
 
         /**
          * @brief Receive the results of searchForUser request.
@@ -151,9 +202,15 @@ class User : public QObject
 
     protected:
 
+        void                    setLastError( const QString& error ="", const QString& errorCode ="" );
+
         webapp::RESTUser*       _p_restUser  = nullptr;
 
         user::ModelUserPtr      _userModel;
+
+        QString                 _lastError;
+
+        QString                 _lastErrorCode;
 };
 
 } // namespace user

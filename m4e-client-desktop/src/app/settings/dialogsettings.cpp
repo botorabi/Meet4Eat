@@ -87,7 +87,7 @@ void DialogSettings::setupUI()
 
     decorate( *_p_ui );
     setTitle( QApplication::translate( "DialogSettings", "Settings" ) );
-    QString btnok( QApplication::translate( "DialogSettings", "Dismiss" ) );
+    QString btnok( QApplication::translate( "DialogSettings", "Ok" ) );
     setupButtons( &btnok, nullptr, nullptr );
     setResizable( false );
 

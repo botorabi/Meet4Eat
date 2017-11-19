@@ -45,7 +45,7 @@ class DialogSettings : public common::BaseDialog
          */
         enum Buttons
         {
-            BtnDismiss = common::BaseDialog::Btn1
+            BtnOk = common::BaseDialog::Btn1
         };
 
         /**

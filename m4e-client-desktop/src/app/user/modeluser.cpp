@@ -38,6 +38,23 @@ QJsonDocument ModelUser::toJSON()
     return doc;
 }
 
+QJsonDocument ModelUser::toJSONForUpdate( const QString& name, const QString& password, doc::ModelDocumentPtr photo )
+{
+    //! NOTE for an user data update request only the following fields are relevant. All other fields cannot be changed.
+    QJsonObject obj;
+    if ( name.length() > 0 )
+        obj.insert( "name", name );
+
+    if ( password.length() > 0 )
+        obj.insert( "password", password );
+
+    if ( photo.valid() )
+        obj.insert( "photo", QString( photo->getContent() ) );
+
+    QJsonDocument doc( obj );
+    return doc;
+}
+
 bool ModelUser::fromJSON( const QString& input )
 {
     QJsonParseError err;

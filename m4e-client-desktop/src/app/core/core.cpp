@@ -55,7 +55,7 @@ static class QtOutputStream: public std::basic_streambuf< char >
 
 } qtOutputStream;
 
-static std::basic_ostream< char > QtLogSteam( &qtOutputStream );
+static std::basic_ostream< char > QtLogStream( &qtOutputStream );
 
 
 Core::Core()
@@ -69,7 +69,44 @@ Core::~Core()
 
 void Core::initialize( int &argc, char* argv[] )
 {
-    defaultlog.addSink( "qdebug" , QtLogSteam, Log::L_VERBOSE );
+    _p_app = new QApplication( argc, argv );
+    _p_app->setApplicationVersion( M4E_APP_VERSION );
+
+    unsigned int loglevel = Log::L_DEBUG;
+    QString      logfile;
+
+    // check the cmd line options
+    QCommandLineOption optverbose( { "v", "vebose" }, "Enable verbose output." );
+    QCommandLineOption optlogfile( { "l", "logfile" }, "Create a log file in given directory <dir>.", "dir" );
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription( M4E_APP_DESCRIPTION );
+    parser.addHelpOption();
+    parser.addOption( optverbose );
+    parser.addOption( optlogfile );
+
+    parser.process( *_p_app );
+
+    if ( parser.isSet( optverbose ) )
+    {
+        loglevel = Log::L_VERBOSE;
+    }
+    if ( parser.isSet( optlogfile ) )
+    {
+        logfile = parser.value( "logfile" );
+        if ( logfile.isEmpty() )
+            logfile = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation ) + QDir::separator() + M4E_APP_NAME ".log";
+    }
+
+    if ( !logfile.isEmpty() )
+    {
+        defaultlog.addSink( "file" , logfile.toStdString(), loglevel );
+    }
+
+#ifdef QT_DEBUG
+    defaultlog.addSink( "qdebug" , QtLogStream, loglevel );
+#endif
+
     defaultlog.enableSeverityLevelPrinting( false );
     defaultlog.enableTimeStamp( false );
     log_info << "*******************************" << std::endl;
@@ -83,7 +120,6 @@ void Core::initialize( int &argc, char* argv[] )
     defaultlog.enableTimeStamp( true );
     log_info << "Starting the app" << std::endl;
 
-    _p_app = new QApplication( argc, argv );
     _p_mainWindow = new m4e::gui::MainWindow();
 }
 
