@@ -363,6 +363,15 @@ QPushButton:hover {
  background: transparent;
 }</string>
            </property>
+           <property name="showDropIndicator" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="resizeMode">
+            <enum>QListView::Adjust</enum>
+           </property>
+           <property name="viewMode">
+            <enum>QListView::IconMode</enum>
+           </property>
           </widget>
          </item>
          <item>
