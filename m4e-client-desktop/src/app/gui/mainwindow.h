@@ -198,16 +198,17 @@ class MainWindow : public QMainWindow
          * @param loactionId Event location ID
          * @param vote       true for vote and false for unvote the given location
          */
-        void                    onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+        void                        onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
 
-        /**
-         * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
-         *
-         * @param sender    Message sender Id (usually an user ID)
-         * @param eventId   ID of receiving event
-         * @param notify    Notification object containing the message content
-         */
-        void                        onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
+            /**
+             * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
+             *
+             * @param senderId      Message sender Id (usually an user ID)
+             * @param senderName    Message sender's name
+             * @param eventId       ID of receiving event
+             * @param notify        Notification object containing the message content
+             */
+            void                        onEventMessage( QString senderId, QString senderName, QString eventId, m4e::notify::NotifyEventPtr notify );
 
         /**
          * @brief This signal is emitted when the results of unread mails count request arrive.
@@ -254,8 +255,6 @@ class MainWindow : public QMainWindow
         QTimer*                     _p_updateTimer   = nullptr;
 
         webapp::WebApp*             _p_webApp        = nullptr;
-
-        chat::ChatSystem*           _p_chatSystem    = nullptr;
 
         MailboxWindow*              _p_mailWindow    = nullptr;
 

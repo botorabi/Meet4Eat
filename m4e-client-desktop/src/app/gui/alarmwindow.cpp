@@ -111,13 +111,13 @@ void AlarmWindow::onBtnDiscardClicked()
 void AlarmWindow::onBtnDisplayEventClicked()
 {
     _p_mainWindow->selectEvent( _event->getId() );
-    common::GuiUtils::widgetToFront( _p_mainWindow );
+    common::GuiUtils::bringWidgetToFront( _p_mainWindow );
     deleteLater();
 }
 
 void AlarmWindow::onTimer()
 {
-    common::GuiUtils::widgetToFront( this );
+    common::GuiUtils::bringWidgetToFront( this );
     startAnimation();
 }
 

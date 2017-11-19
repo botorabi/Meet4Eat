@@ -106,6 +106,7 @@ public class EventSystem {
         Events events = new Events(entityManager);
         Set<Long> receiverids = events.getMembers(eventId);
         receiverids.add(sender.getId());
+        packet.setSourceId(sender.getId().toString());
         packet.setSource(sender.getName());
         packet.setTime((new Date()).getTime());
         connections.sendPacket(packet, new ArrayList(receiverids));

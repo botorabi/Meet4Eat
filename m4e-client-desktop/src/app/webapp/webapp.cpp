@@ -125,6 +125,11 @@ mailbox::MailBox* WebApp::getMailBox()
     return getOrCreateMailBox();
 }
 
+chat::ChatSystem* WebApp::getChatSystem()
+{
+    return getOrCreateChatSystem();
+}
+
 void WebApp::requestDocument( const QString& id, const QString& eTag )
 {
     // document arrives with signal 'onCacheDocumentReady'
@@ -238,6 +243,14 @@ mailbox::MailBox*WebApp::getOrCreateMailBox()
     return _p_mailBox;
 }
 
+chat::ChatSystem* WebApp::getOrCreateChatSystem()
+{
+    if ( !_p_chatSystem )
+        _p_chatSystem = new chat::ChatSystem( this, this );
+
+    return _p_chatSystem;
+}
+
 void WebApp::resetAllResources()
 {
     _userID = "";
@@ -255,6 +268,8 @@ void WebApp::resetAllResources()
     _p_notifications = nullptr;
     delete _p_mailBox;
     _p_mailBox = nullptr;
+    delete _p_chatSystem;
+    _p_chatSystem = nullptr;
 }
 
 void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::UserAuthentication::AuthResultsCode code, QString reason )

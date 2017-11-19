@@ -111,13 +111,7 @@ void GuiUtils::createShadowEffect( QWidget* p_widget, const QColor& color, const
     p_widget->setGraphicsEffect( p_effect );
 }
 
-bool GuiUtils::userIsOwner( const QString& ownerId, webapp::WebApp* p_webApp )
-{
-    user::ModelUserPtr user = p_webApp->getUser()->getUserData();
-    return user.valid() &&  ( user->getId() == ownerId );
-}
-
-void GuiUtils::widgetToFront( QWidget* p_widget )
+void GuiUtils::bringWidgetToFront( QWidget* p_widget )
 {
     if ( p_widget->windowState() & Qt::WindowMinimized )
         p_widget->setWindowState( ( p_widget->windowState() & ~Qt::WindowMinimized ) | Qt::WindowActive );

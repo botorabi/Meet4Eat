@@ -367,7 +367,7 @@ QPushButton::hover {
   border-radius: 2px;
 }
 QPushButton::disabled {
-  color: rgb(231, 247, 167);
+  color: white;
   background: transparent;
   border: 0px solid rgb(131,147, 167);
   border-radius: 2px;
@@ -604,7 +604,7 @@ QPushButton:hover {
               <widget class="QWidget" name="widgetMyEvents" native="true">
                <property name="minimumSize">
                 <size>
-                 <width>300</width>
+                 <width>340</width>
                  <height>0</height>
                 </size>
                </property>

@@ -75,6 +75,7 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     _p_ui->labelDescription->installEventFilter( this );
     _p_ui->labelPhoto->installEventFilter( this );
 
+    updateVotingButtons();
     enableVotingUI( _p_webApp->getEvents()->getIsVotingTime( _event->getId() ) );
 }
 
@@ -116,6 +117,7 @@ void WidgetLocation::updateVotes( ModelLocationVotesPtr votes )
 
     _p_ui->labelVotes->setText( QString::number( votes->getUserNames().size() ) );
     _p_ui->widgetVotes->setToolTip( tooltip.isEmpty() ? textnovotes : tooltip );
+    updateVotingButtons();
 }
 
 void WidgetLocation::onBtnEditClicked()
@@ -238,12 +240,23 @@ void WidgetLocation::requestSetLocationVote( bool vote )
     // check if we have already voted, if so then ignore the button click
     if ( _votes.valid() )
     {
-        bool alreadyvoted = _votes->getUserNames().contains( user->getName() );
+        bool alreadyvoted = _votes->getUserIds().contains( user->getId() );
         if ( ( vote && alreadyvoted ) || ( !vote && !alreadyvoted ) )
             return;
     }
 
     _p_webApp->getEvents()->requestSetLocationVote( _event->getId(), _location->getId(), vote );
+}
+
+void WidgetLocation::updateVotingButtons()
+{
+    user::ModelUserPtr user = _p_webApp->getUser()->getUserData();
+    if ( !user.valid() )
+        return;
+
+    bool enableupvote = !_votes.valid() || !_votes->getUserIds().contains( user->getId() );
+    _p_ui->pushButtonVoteDown->setVisible( !enableupvote );
+    _p_ui->pushButtonVoteUp->setVisible( enableupvote );
 }
 
 } // namespace event

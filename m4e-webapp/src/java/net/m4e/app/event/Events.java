@@ -79,6 +79,10 @@ public class Events {
         newevent.setRepeatDayTime(inputEntity.getRepeatDayTime());
         newevent.setVotingTimeBegin(inputEntity.getVotingTimeBegin());
 
+        if (inputEntity.getPhoto() != null) {
+            updateEventImage(newevent, inputEntity.getPhoto());
+        }
+
         // setup the status
         StatusEntity status = new StatusEntity();
         status.setIdCreator(creatorID);
@@ -88,12 +92,8 @@ public class Events {
         status.setDateLastUpdate(now.getTime());
         newevent.setStatus(status);
 
-        try {
-            createEventEntity(newevent);
-        }
-        catch (Exception ex) {
-            throw ex;
-        }
+        createEventEntity(newevent);
+
         return newevent;
     }
 
@@ -186,7 +186,7 @@ public class Events {
      * @param image         Image to set to given event
      * @throws Exception  Throws an exception if something goes wrong.
      */
-    void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
+    public void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
         Entities entities = new Entities(entityManager);
         // make sure that the resource URL is set
         image.setResourceURL("/Event/Image");

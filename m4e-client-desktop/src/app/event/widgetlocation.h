@@ -156,6 +156,8 @@ class WidgetLocation : public QWidget
 
         void                        requestSetLocationVote( bool vote );
 
+        void                        updateVotingButtons();
+
         webapp::WebApp*             _p_webApp = nullptr;
 
         Ui::WidgetLocation*         _p_ui     = nullptr;

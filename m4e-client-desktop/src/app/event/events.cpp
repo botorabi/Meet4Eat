@@ -221,7 +221,6 @@ void Events::requestGetLocationVotesById( const QString& locationVotesId )
 
 void Events::onRESTEventGetEvents( QList< event::ModelEventPtr > events )
 {
-    log_verbose << TAG << "got events: " << QString::number( events.size() ) << std::endl;
     _events = events;
     updateVotingTimers();
     emit onResponseGetEvents( true, events );
@@ -229,15 +228,13 @@ void Events::onRESTEventGetEvents( QList< event::ModelEventPtr > events )
 
 void Events::onRESTEventErrorGetEvents( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get events: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to get events: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseGetEvents( false, QList< event::ModelEventPtr >() );
 }
 
 void Events::onRESTEventGetEvent( ModelEventPtr event )
 {
-    log_verbose << TAG << "got user event: " << event->getId() << std::endl;
-
     // update the event in our local copy
     for ( int i = 0; i < _events.size(); i++ )
     {
@@ -258,14 +255,13 @@ void Events::onRESTEventGetEvent( ModelEventPtr event )
 
 void Events::onRESTEventErrorGetEvent( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get user event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to get user event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseGetEvent( false, event::ModelEventPtr() );
 }
 
 void Events::onRESTEventDeleteEvent( QString eventId )
 {
-    log_verbose << TAG << "event was deleted: " << eventId << std::endl;
     // remove the event from internal event container
     for ( int i = 0; i < _events.size(); i++ )
     {
@@ -282,151 +278,140 @@ void Events::onRESTEventDeleteEvent( QString eventId )
 
 void Events::onRESTEventErrorDeleteEvent( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to delete event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to delete event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseDeleteEvent( false, "" );
 }
 
 void Events::onRESTEventNewEvent( QString eventId )
 {
-    log_verbose << TAG << "new event was created: " << eventId << std::endl;
     emit onResponseNewEvent( true, eventId );
 }
 
 void Events::onRESTEventErrorNewEvent( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to create new event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to create new event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseNewEvent( false, "" );
 }
 
 void Events::onRESTEventUpdateEvent( QString eventId )
 {
-    log_verbose << TAG << "event was updated: " << eventId << std::endl;
     updateVotingTimers();
     emit onResponseUpdateEvent( true, eventId );
 }
 
 void Events::onRESTEventErrorUpdateEvent( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to update event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to update event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseUpdateEvent( false, "" );
 }
 
 void Events::onRESTEventAddMember( QString eventId, QString memberId )
 {
-    log_verbose << TAG << "new member added to event: " << eventId << "/" << memberId << std::endl;
     emit onResponseAddMember( true, eventId, memberId );
 }
 
 void Events::onRESTEventErrorAddMember( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to add new member to event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to add new member to event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseAddMember( false, "", "" );
 }
 
 void Events::onRESTEventRemoveMember( QString eventId, QString memberId )
 {
-    log_verbose << TAG << "member removed from event: " << eventId << "/" << memberId << std::endl;
     emit onResponseRemoveMember( true, eventId, memberId );
 }
 
 void Events::onRESTEventErrorRemoveMember( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to remove member from event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to remove member from event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseRemoveMember( false, "", "" );
 }
 
 void Events::onRESTEventGetLocation( ModelLocationPtr location )
 {
-    log_verbose << TAG << "location data arrived: " << location->getId() << std::endl;
     emit onResponseGetLocation( true, location );
 }
 
 void Events::onRESTEventErrorGetLocation( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to add new location to event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to add new location to event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseGetLocation( false, ModelLocationPtr() );
 }
 
 void Events::onRESTEventAddLocation( QString eventId, QString locationId )
 {
-    log_verbose << TAG << "new location added to event: " << eventId << "/" << locationId << std::endl;
     emit onResponseAddLocation( true, eventId, locationId );
 }
 
 void Events::onRESTEventErrorAddLocation( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to add new location to event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to add new location to event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseAddLocation( false, "", "" );
 }
 
 void Events::onRESTEventRemoveLocation( QString eventId, QString locationId )
 {
-    log_verbose << TAG << "location removed from event: " << eventId << "/" << locationId << std::endl;
     emit onResponseRemoveLocation( true, eventId, locationId );
 }
 
 void Events::onRESTEventErrorRemoveLocation( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to remove location from event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to remove location from event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseRemoveLocation( false, "", "" );
 }
 
 void Events::onRESTEventUpdateLocation( QString eventId, QString locationId )
 {
-    log_verbose << TAG << "location was updated event: " << eventId << "/" << locationId << std::endl;
     emit onResponseUpdateLocation( true, eventId, locationId );
 }
 
 void Events::onRESTEventErrorUpdateLocation( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to update location of event: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to update location of event: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseUpdateLocation( false, "", "" );
 }
 
 void Events::onRESTEventSetLocationVote( QString eventId, QString locationId, QString votesId, bool vote )
 {
-    log_verbose << TAG << "location vote was set: " << eventId << "/" << locationId << "/" << ( vote ? "vote" : "unvote" ) << std::endl;
     emit onResponseSetLocationVote( true, eventId, locationId, votesId, vote );
 }
 
 void Events::onRESTEventErrorSetLocationVote( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to set the location vote: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to set the location vote: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseSetLocationVote( false, "", "", "", false );
 }
 
 void Events::onRESTEventGetLocationVotesByTime( QList< ModelLocationVotesPtr > votes )
 {
-    log_verbose << TAG << "location votes were received (by time)" << std::endl;
     emit onResponseGetLocationVotesByTime( true, votes );
 }
 
 void Events::onRESTEventErrorGetLocationVotesByTime( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get location votes (by time): " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to get location votes (by time): " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseGetLocationVotesByTime( true, QList< ModelLocationVotesPtr >() );
 }
 
 void Events::onRESTEventGetLocationVotesById( ModelLocationVotesPtr votes )
 {
-    log_verbose << TAG << "location votes were received (by id)" << std::endl;
     emit onResponseGetLocationVotesById( true, votes );
 }
 
 void Events::onRESTEventErrorGetLocationVotesById( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get location votes (by id): " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to get location votes (by id): " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseGetLocationVotesById( true, ModelLocationVotesPtr() );
 }

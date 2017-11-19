@@ -558,7 +558,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if ((eventId == null) || (locationJson == null)) {
             Log.error(TAG, "*** Cannot add location to event, no valid inputs!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         EventEntity event = getEvents().findEvent(eventId);

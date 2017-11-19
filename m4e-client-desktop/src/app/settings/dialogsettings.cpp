@@ -56,6 +56,31 @@ void DialogSettings::storeCredentials()
     settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, remember );
 }
 
+bool DialogSettings::validateInput()
+{
+    QString server   = _p_ui->lineEditServer->text();
+    QString login    = _p_ui->lineEditLogin->text();
+    QString passwd   = _p_ui->lineEditPassword->text();
+    if ( passwd.isEmpty() )
+    {
+        passwd = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
+    }
+    else
+    {
+        passwd = webapp::RESTAuthentication::createHash( passwd );
+    }
+
+    if ( !server.isEmpty() && !login.isEmpty() && !passwd.isEmpty() )
+        return true;
+
+    common::DialogMessage msg( this );
+    msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
+                 QApplication::translate( "DialogSettings", "Please, first enter the account information." ),
+                 common::DialogMessage::BtnOk );
+    msg.exec();
+    return false;
+}
+
 void DialogSettings::setupUI()
 {
     connect( _p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
@@ -63,8 +88,7 @@ void DialogSettings::setupUI()
     decorate( *_p_ui );
     setTitle( QApplication::translate( "DialogSettings", "Settings" ) );
     QString btnok( QApplication::translate( "DialogSettings", "Ok" ) );
-    QString btncancel( QApplication::translate( "DialogSettings", "Cancel" ) );
-    setupButtons( &btnok, &btncancel, nullptr );
+    setupButtons( &btnok, nullptr, nullptr );
     setResizable( false );
 
     connect( _p_ui->pushButtonSignOut, SIGNAL( clicked() ), this, SLOT( onBtnSignOutClicked() ) );
@@ -93,34 +117,14 @@ void DialogSettings::setupUI()
 
 void DialogSettings::onBtnSignInClicked()
 {
-    if ( _p_webApp->getAuthState() == webapp::WebApp::AuthSuccessful )
-        return;
+    if ( validateInput() )
+    {
+        if ( _p_webApp->getAuthState() == webapp::WebApp::AuthSuccessful )
+            return;
 
-    QString server   = _p_ui->lineEditServer->text();
-    QString login    = _p_ui->lineEditLogin->text();
-    QString passwd   = _p_ui->lineEditPassword->text();
-    if ( passwd.isEmpty() )
-    {
-        passwd = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
-    }
-    else
-    {
-        passwd = webapp::RESTAuthentication::createHash( passwd );
-    }
-
-    if ( !server.isEmpty() && !login.isEmpty() && !passwd.isEmpty() )
-    {
         // the webapp gets the credentials from central settings, so store them before trying a connection
          storeCredentials();
         _p_webApp->establishConnection();
-    }
-    else
-    {
-        common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
-                     QApplication::translate( "DialogSettings", "Please, first enter the account information." ),
-                     common::DialogMessage::BtnOk );
-        msg.exec();
     }
 }
 

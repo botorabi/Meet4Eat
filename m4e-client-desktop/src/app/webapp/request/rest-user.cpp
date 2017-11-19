@@ -34,6 +34,13 @@ void RESTUser::getUserData( const QString& userId )
     getRESTOps()->GET( url, createResultsCallback( p_callback ) );
 }
 
+void RESTUser::updateUserData( const QString& userId, const QString& name, const QString& password, doc::ModelDocumentPtr photo )
+{
+    QUrl url( getResourcePath() + "/rest/users/" + userId );
+    auto p_callback = new ResponseUpdateUserData( this );
+    getRESTOps()->PUT( url, createResultsCallback( p_callback ), user::ModelUser::toJSONForUpdate( name, password, photo ) );
+}
+
 void RESTUser::searchForUser( const QString& keyword )
 {
     QUrl url( getResourcePath() + "/rest/users/search/" + keyword );

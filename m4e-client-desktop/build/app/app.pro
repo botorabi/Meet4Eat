@@ -57,6 +57,7 @@ SOURCES += \
     ../../src/app/settings/appsettings.cpp \
     ../../src/app/settings/dialogsettings.cpp \
     ../../src/app/user/dialogsearchuser.cpp \
+    ../../src/app/user/dialogusersettings.cpp \
     ../../src/app/user/modeluser.cpp \
     ../../src/app/user/modeluserinfo.cpp \
     ../../src/app/user/user.cpp \
@@ -121,6 +122,7 @@ HEADERS += \
     ../../src/app/notification/notifications.h \
     ../../src/app/settings/appsettings.h \
     ../../src/app/settings/dialogsettings.h \
+    ../../src/app/user/dialogusersettings.h \
     ../../src/app/user/dialogsearchuser.h \
     ../../src/app/user/modeluser.h \
     ../../src/app/user/modeluserinfo.h \
@@ -160,7 +162,8 @@ FORMS += \
     ../../src/app/gui/forms/widgetmailitem.ui \
     ../../src/app/gui/forms/widgetsearchuser.ui \
     ../../src/app/gui/forms/dialogalarm.ui \
-    ../../src/app/gui/forms/alarmwindow.ui
+    ../../src/app/gui/forms/alarmwindow.ui \
+    ../../src/app/gui/forms/widgetusersettings.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

@@ -29,6 +29,19 @@ class ChatMessage : public core::RefCount< ChatMessage >
                                 ChatMessage();
 
         /**
+         * @brief Get the packet sender ID.
+         *
+         * @return Packet sender ID
+         */
+        const QString&          getSenderId() const { return _senderId; }
+
+        /**
+         * @brief Set the packet sender ID.
+         *
+         * @param senderId Packet sender ID
+         */
+        void                    setSenderId( const QString& senderId ) { _senderId = senderId; }
+        /**
          * @brief Get the packet sender name.
          *
          * @return Packet sender
@@ -101,6 +114,7 @@ class ChatMessage : public core::RefCount< ChatMessage >
     protected:
 
         QString                 _sender;
+        QString                 _senderId;
         QString                 _receiverId;
         QDateTime               _time;
         QString                 _text;

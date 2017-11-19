@@ -36,7 +36,7 @@ void DialogEventSettings::setupUI( event::ModelEventPtr event )
     _event = event;
     decorate( *_p_ui );
 
-    _userIsOwner = common::GuiUtils::userIsOwner( event->getOwner()->getId(), _p_webApp );
+    _userIsOwner = _p_webApp->getUser()->isUserId( _event->getOwner()->getId() );
 
     // if the user is not the event owner then disable editting ui
     if ( !_userIsOwner )
@@ -91,7 +91,9 @@ void DialogEventSettings::setupNewEventUI( event::ModelEventPtr event )
     _userIsOwner = true;
     _editNewEvent = true;
 
+    connect( _p_webApp, SIGNAL( onDocumentReady( m4e::doc::ModelDocumentPtr ) ), this, SLOT( onDocumentReady( m4e::doc::ModelDocumentPtr ) ) );
     connect( _p_webApp->getEvents(), SIGNAL( onResponseNewEvent( bool, QString ) ), this, SLOT( onResponseNewEvent( bool, QString ) ) );
+    connect( _p_ui->pushButtonPhoto, SIGNAL( clicked() ), this, SLOT( onBtnPhotoClicked() ) );
 
     setTitle( QApplication::translate( "DialogEventSettings", "Create New Event" ) );
     QString applybtn( QApplication::translate( "DialogEventSettings", "Apply" ) );
@@ -264,7 +266,7 @@ void DialogEventSettings::onResponseNewEvent( bool success, QString eventId )
 
         common::DialogMessage msg( this );
         msg.setupUI( QApplication::translate( "DialogEventSettings", "New Event" ),
-                     QApplication::translate( "DialogEventSettings", "New event was successfully created.\nPlease don't forget to edit the event for adding your friends as event members." ),
+                     QApplication::translate( "DialogEventSettings", "New event was successfully created.\nPlease don't forget to edit the event and add your friends." ),
                      common::DialogMessage::BtnOk );
         msg.exec();
         done( common::BaseDialog::Btn1 );
@@ -305,7 +307,7 @@ void DialogEventSettings::onBtnPhotoClicked()
     m4e::doc::ModelDocumentPtr doc = new m4e::doc::ModelDocument();
     doc->setContent( imagecontent, "image", format );
     _event->setUpdatedPhoto( doc );
-    _p_ui->pushButtonPhoto->setIcon( image );
+    _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( doc ) );
 }
 
 void DialogEventSettings::onBtnMemberRemoveClicked()

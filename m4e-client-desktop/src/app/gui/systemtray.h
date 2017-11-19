@@ -49,6 +49,16 @@ class SystemTray : QObject
          */
         virtual                     ~SystemTray();
 
+        /**
+         * @brief Post a message to show pop-up in sys tray. Note that the actual appearance of the pup-up depends on the OS.
+         *
+         * @param title     The title
+         * @param message   The message text
+         * @param warning   Pass true in order to display a warning icon for the message.
+         * @param duration  Duration in milliseconds for displaying the pop-up
+         */
+        void                        showMessage( const QString& title, const QString& message, bool warning = false, int duration = 2000 );
+
     protected slots:
 
         /**
@@ -94,11 +104,12 @@ class SystemTray : QObject
         /**
          * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
          *
-         * @param sender    Message sender Id (usually an user ID)
-         * @param eventId   ID of receiving event
-         * @param notify    Notification object containing the message content
+         * @param senderId      Message sender Id (usually an user ID)
+         * @param senderName    Message sender's name
+         * @param eventId       ID of receiving event
+         * @param notify        Notification object containing the message content
          */
-        void                        onEventMessage( QString senderId, QString eventId, m4e::notify::NotifyEventPtr notify );
+        void                        onEventMessage( QString senderId, QString senderName, QString eventId, m4e::notify::NotifyEventPtr notify );
 
         /**
          * @brief This signal is emitted when an event location vote arrives.
@@ -136,8 +147,6 @@ class SystemTray : QObject
     protected:
 
         void                        setupSystemTray();
-
-        void                        showMessage( const QString& title, const QString& message, bool warning = false, int duration = 2000 );
 
         webapp::WebApp*             _p_webApp     = nullptr;
 

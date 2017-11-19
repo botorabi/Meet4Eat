@@ -13,12 +13,15 @@
 #include <communication/connection.h>
 #include <document/modeldocument.h>
 #include <chat/chatmessage.h>
-#include <webapp/webapp.h>
 #include <QObject>
 
 
 namespace m4e
 {
+namespace webapp
+{
+    class WebApp;
+}
 namespace chat
 {
 
@@ -51,6 +54,13 @@ class ChatSystem : public QObject
          * @brief Destroy the ChatSystem instance.
          */
         virtual                 ~ChatSystem();
+
+        /**
+         * @brief Add a chat message.
+         *
+         * @param message   The message to add
+         */
+        void                    addChatMessage( ChatMessagePtr message );
 
         /**
          * @brief Send a text message to given user.

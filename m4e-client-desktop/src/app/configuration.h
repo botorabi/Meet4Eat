@@ -19,9 +19,10 @@
 /* App name and version */
 #define M4E_APP_NAME            "Meet4Eat"
 #define M4E_ORGANIZATION_NAME   "vr-fun"
-#define M4E_APP_VERSION         "0.8.4"
+#define M4E_APP_VERSION         "0.8.5"
 #define M4E_APP_COPYRIGHT       "(c) 2017"
-#define M4E_APP_URL             "http://m4e.org"
+#define M4E_APP_URL             "https://m4e.org"
+#define M4E_APP_DESCRIPTION     M4E_APP_NAME " - A Social Collaboration App. " M4E_APP_COPYRIGHT ", for more information visit " M4E_APP_URL
 
 /* Default app server address */
 #define M4E_DEFAULT_APP_SRV     "https://vr-fun.net:8185"

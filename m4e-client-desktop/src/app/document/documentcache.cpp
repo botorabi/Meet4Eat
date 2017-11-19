@@ -59,7 +59,7 @@ DocumentCache::~DocumentCache()
 void DocumentCache::requestDocument( const QString& id, const QString& eTag )
 {
     // first check the cache
-    ModelDocumentPtr document = findDocument( id, eTag );
+    ModelDocumentPtr document = findDocument( eTag );
     if ( document.valid() )
     {
         emit onDocumentReady( document );
@@ -146,7 +146,7 @@ webapp::RESTDocument* DocumentCache::getOrCreateRESTDocument()
     return _p_restDocument;
 }
 
-ModelDocumentPtr DocumentCache::findDocument( const QString& id, const QString& eTag )
+ModelDocumentPtr DocumentCache::findDocument( const QString& eTag )
 {
     QString cachedir = getOrCreateCacheDirectory();
     if ( cachedir.isEmpty() )
@@ -164,8 +164,6 @@ ModelDocumentPtr DocumentCache::findDocument( const QString& id, const QString& 
     }
 
     ModelDocumentPtr document = new ModelDocument();
-
-    log_verbose << TAG << "loading document " << id << " ..." << std::endl;
 
     // check if the file can be read from cache. if not then the cache file format may have been changed
     if ( !loadDocument( file, document ) )

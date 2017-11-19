@@ -40,7 +40,6 @@ bool Notifications::sendEventMessage( const QString& eventId,  const QString& ti
 
     comm::PacketPtr packet = new comm::Packet();
     packet->setChannel( comm::Packet::CHANNEL_EVENT );
-    packet->setSource( _p_webApp->getUser()->getUserData()->getId() );
     NotifyEventPtr notify = new NotifyEvent();
     notify->setType( "message" );
     notify->setSubject( title );
@@ -105,7 +104,7 @@ void Notifications::onChannelEventPacket( m4e::comm::PacketPtr packet )
     if ( ( notifytype == "message" ) )
     {
         QString eventid = obj.value( "eventId" ).toString( "" );
-        emit onEventMessage( packet->getSource(), eventid, notify );
+        emit onEventMessage( packet->getSourceId(), packet->getSource(), eventid, notify );
     }
 }
 

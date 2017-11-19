@@ -22,11 +22,34 @@ QJsonDocument ModelUser::toJSON()
     QJsonObject obj;
     obj.insert( "id", getId() );
     obj.insert( "name", getName() );
-    obj.insert( "description", getDescription() );
-    obj.insert( "email", getEMail() );
+    obj.insert( "login", getLogin() );
+    obj.insert( "email", getEmail() );
     obj.insert( "photoId", getPhotoId() );
     obj.insert( "photoETag", getPhotoETag() );
     obj.insert( "status", getStatus() );
+
+    // is there a photo update?
+    if ( getUpdatedPhoto().valid() )
+    {
+        obj.insert( "photo", QString( getUpdatedPhoto()->getContent() ) );
+    }
+
+    QJsonDocument doc( obj );
+    return doc;
+}
+
+QJsonDocument ModelUser::toJSONForUpdate( const QString& name, const QString& password, doc::ModelDocumentPtr photo )
+{
+    //! NOTE for an user data update request only the following fields are relevant. All other fields cannot be changed.
+    QJsonObject obj;
+    if ( name.length() > 0 )
+        obj.insert( "name", name );
+
+    if ( password.length() > 0 )
+        obj.insert( "password", password );
+
+    if ( photo.valid() )
+        obj.insert( "photo", QString( photo->getContent() ) );
 
     QJsonDocument doc( obj );
     return doc;
@@ -47,7 +70,7 @@ bool ModelUser::fromJSON( const QJsonDocument& input )
     QJsonObject data      = input.object();
     QString     id        = data.value( "id" ).toString( "" );
     QString     name      = data.value( "name" ).toString( "" );
-    QString     desc      = data.value( "description" ).toString( "" );
+    QString     login     = data.value( "login" ).toString( "" );
     QString     email     = data.value( "email" ).toString( "" );
     QString     photoid   = data.value( "photoId" ).toString( "" );
     QString     photoetag = data.value( "photoETag" ).toString( "" );
@@ -55,8 +78,8 @@ bool ModelUser::fromJSON( const QJsonDocument& input )
 
     setId( id );
     setName( name );
-    setDescription( desc );
-    setEMail( email );
+    setLogin( login );
+    setEmail( email );
     setPhotoId( photoid );
     setPhotoETag( photoetag );
     setStatus( status );

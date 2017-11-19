@@ -147,7 +147,7 @@ public class DocumentPool {
         Entities eutils = new Entities(entityManager);
         List<DocumentEntity> documents = eutils.findEntityByField(DocumentEntity.class, "eTag", etag);
         for (DocumentEntity doc: documents) {
-            if (doc.getStatus().getIsActive() && Objects.equals(doc.getETag(), etag)) {
+            if ((doc.getStatus() != null) && doc.getStatus().getIsActive() && Objects.equals(doc.getETag(), etag)) {
                 // update the document reference count
                 doc.getStatus().increaseRefCount();
                 doc.getStatus().setDateLastUpdate((new Date()).getTime());

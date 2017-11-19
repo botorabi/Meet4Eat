@@ -108,67 +108,61 @@ void MailBox::requestMarkMail( const QString& mailId, bool read )
 
 void MailBox::onRESTMailCountMails( int countTotal, int countUnread )
 {
-    log_verbose << TAG << "got count of mails: " << countTotal << ", unread: " << countUnread << std::endl;
     emit onResponseCountMails( true, countTotal, countUnread );
 }
 
 void MailBox::onRESTMailErrorCountMails( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get count of mails: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to get count of mails: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseCountMails( false, 0, 0 );
 }
 
 void MailBox::onRESTMailCountUnreadMails( int count )
 {
-    log_verbose << TAG << "got count of unread mails: " << count<< std::endl;
     emit onResponseCountUnreadMails( true, count );
 }
 
 void MailBox::onRESTMailErrorCountUnreadMails( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get count of unread mails: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to get count of unread mails: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseCountUnreadMails( false, 0 );
 }
 
 void MailBox::onRESTMailGetMails( QList< m4e::mailbox::ModelMailPtr > mails )
 {
-    log_verbose << TAG << "got user's mails" << std::endl;
-
     _mails = mails;
     emit onResponseMails( true, mails );
 }
 
 void MailBox::onRESTMailErrorGetMails( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to get user's mails: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to get user's mails: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseMails( false, QList< m4e::mailbox::ModelMailPtr >() );
 }
 
 void MailBox::onRESTMailSendMail()
 {
-    log_verbose << TAG << "mail was sent successfully" << std::endl;
     emit onResponseSendMail( true );
 }
 
 void MailBox::onRESTMailErrorSendMail( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to send a mail: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to send a mail: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponseSendMail( false );
 }
 
 void MailBox::onRESTMailPerformOperation( QString mailId, QString operation )
 {
-    log_verbose << TAG << "mail operation was successfully performed: " << mailId << "/" << operation << std::endl;
     emit onResponsePerformOperation( true, mailId, operation );
 }
 
 void MailBox::onRESTMailErrorPerformOperation( QString errorCode, QString reason )
 {
-    log_verbose << TAG << "failed to delete user's mails: " << errorCode << ", reason: " << reason << std::endl;
+    log_warning << TAG << "failed to delete user's mails: " << errorCode << ", reason: " << reason << std::endl;
     setLastError( reason, errorCode );
     emit onResponsePerformOperation( false, "", "" );
 }
