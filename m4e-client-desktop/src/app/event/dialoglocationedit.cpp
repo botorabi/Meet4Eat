@@ -44,9 +44,9 @@ void DialogLocationEdit::setupUIEditLocation( event::ModelEventPtr event, ModelL
 
     decorate( *_p_ui );
 
-    setTitle( QApplication::translate( "DialogLocationCreate", "Edit Location" ) );
-    QString okbtn( QApplication::translate( "DialogLocationCreate", "Ok" ) );
-    QString cancelbtn( QApplication::translate( "DialogLocationCreate", "Cancel" ) );
+    setTitle( QApplication::translate( "DialogLocationEdit", "Edit Location" ) );
+    QString okbtn( QApplication::translate( "DialogLocationEdit", "Ok" ) );
+    QString cancelbtn( QApplication::translate( "DialogLocationEdit", "Cancel" ) );
     setupButtons( &okbtn, &cancelbtn, nullptr );
     setResizable( true );
 
@@ -83,8 +83,8 @@ void DialogLocationEdit::onBtnPhotoClicked()
     if ( !res )
     {
         common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "DialogEventSettings", "Set Image" ),
-                     QApplication::translate( "DialogEventSettings", "Cannot update the image. The file format is not supported!" ),
+        msg.setupUI( QApplication::translate( "DialogLocationEdit", "Set Image" ),
+                     QApplication::translate( "DialogLocationEdit", "Cannot update the image. The file format is not supported!" ),
                      common::DialogMessage::BtnOk );
         msg.exec();
         return;
@@ -110,8 +110,8 @@ void DialogLocationEdit::onResponseAddLocation( bool success, QString /*eventId*
     if ( success )
     {
         common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "DialogLocationCreate", "Add Location" ),
-                     QApplication::translate( "DialogLocationCreate", "New location was successfully created." ),
+        msg.setupUI( QApplication::translate( "DialogLocationEdit", "Add Location" ),
+                     QApplication::translate( "DialogLocationEdit", "New location was successfully created." ),
                      common::DialogMessage::BtnOk );
 
         msg.exec();
@@ -121,8 +121,8 @@ void DialogLocationEdit::onResponseAddLocation( bool success, QString /*eventId*
     {
         const QString& reason = _p_webApp->getEvents()->getLastError();
         common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "DialogLocationCreate", "Add Location" ),
-                     QApplication::translate( "DialogLocationCreate", "Failed to create a new location.\nReason: " ) + reason,
+        msg.setupUI( QApplication::translate( "DialogLocationEdit", "Add Location" ),
+                     QApplication::translate( "DialogLocationEdit", "Failed to create a new location.\nReason: " ) + reason,
                      common::DialogMessage::BtnOk );
 
         msg.exec();
@@ -134,8 +134,8 @@ void DialogLocationEdit::onResponseUpdateLocation( bool success, QString /*event
     if ( success )
     {
         common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "DialogLocationCreate", "Update Location" ),
-                     QApplication::translate( "DialogLocationCreate", "Event location was successfully updated." ),
+        msg.setupUI( QApplication::translate( "DialogLocationEdit", "Update Location" ),
+                     QApplication::translate( "DialogLocationEdit", "Event location was successfully updated." ),
                      common::DialogMessage::BtnOk );
 
         msg.exec();
@@ -145,8 +145,8 @@ void DialogLocationEdit::onResponseUpdateLocation( bool success, QString /*event
     {
         const QString& reason = _p_webApp->getEvents()->getLastError();
         common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "DialogLocationCreate", "Update Location" ),
-                     QApplication::translate( "DialogLocationCreate", "Event location could not be updated.\nReason: " ) + reason,
+        msg.setupUI( QApplication::translate( "DialogLocationEdit", "Update Location" ),
+                     QApplication::translate( "DialogLocationEdit", "Event location could not be updated.\nReason: " ) + reason,
                      common::DialogMessage::BtnOk );
 
         msg.exec();

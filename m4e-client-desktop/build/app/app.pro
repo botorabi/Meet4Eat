@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += core gui widgets network websockets
+QT += core gui widgets network websockets multimedia
 
 TARGET = Meet4Eat
 TEMPLATE = app
@@ -44,6 +44,7 @@ SOURCES += \
     ../../src/app/event/widgeteventpanel.cpp \
     ../../src/app/event/widgetlocation.cpp \
     ../../src/app/gui/alarmwindow.cpp \
+    ../../src/app/gui/buzzwindow.cpp \
     ../../src/app/gui/mainwindow.cpp \
     ../../src/app/gui/mailboxwindow.cpp \
     ../../src/app/gui/systemtray.cpp \
@@ -110,6 +111,7 @@ HEADERS += \
     ../../src/app/event/widgetlocation.h \
     ../../src/app/event/widgeteventpanel.h \
     ../../src/app/gui/alarmwindow.h \
+    ../../src/app/gui/buzzwindow.h \
     ../../src/app/gui/mainwindow.h \
     ../../src/app/gui/mailboxwindow.h \
     ../../src/app/gui/systemtray.h \
@@ -163,7 +165,8 @@ FORMS += \
     ../../src/app/gui/forms/widgetsearchuser.ui \
     ../../src/app/gui/forms/dialogalarm.ui \
     ../../src/app/gui/forms/alarmwindow.ui \
-    ../../src/app/gui/forms/widgetusersettings.ui
+    ../../src/app/gui/forms/widgetusersettings.ui \
+    ../../src/app/gui/forms/buzzwindow.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

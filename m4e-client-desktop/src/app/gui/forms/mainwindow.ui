@@ -702,7 +702,7 @@ QPushButton:hover {
                           </size>
                          </property>
                          <property name="toolTip">
-                          <string>Refresh events</string>
+                          <string>Events were updated</string>
                          </property>
                          <property name="styleSheet">
                           <string notr="true">QPushButton {

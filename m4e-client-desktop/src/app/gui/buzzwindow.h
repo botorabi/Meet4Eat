@@ -6,19 +6,20 @@
  *          main directory for more details.
  */
 
-#ifndef ALARMWINDOW_H
-#define ALARMWINDOW_H
+#ifndef BUZZWINDOW_H
+#define BUZZWINDOW_H
 
 #include <configuration.h>
 #include <common/basedialog.h>
 #include <event/modelevent.h>
+#include <QMediaPlayer>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QTimer>
 
 
 namespace Ui {
-  class AlarmWindow;
+  class BuzzWindow;
 }
 
 namespace m4e
@@ -29,12 +30,12 @@ namespace gui
 class MainWindow;
 
 /**
- * @brief A window for wakeup alarm.
+ * @brief A window for buzzing the user.
  *
  * @author boto
- * @date Nov 10, 2017
+ * @date Nov 20, 2017
  */
-class AlarmWindow : public QMainWindow
+class BuzzWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -45,25 +46,25 @@ class AlarmWindow : public QMainWindow
          *
          * @param p_parent  Parent widget
          */
-        explicit                    AlarmWindow( MainWindow* p_parent );
+        explicit                    BuzzWindow( MainWindow* p_parent );
 
         /**
          * @brief Destroy the instance.
          */
-        virtual                     ~AlarmWindow();
+        virtual                     ~BuzzWindow();
 
         /**
          * @brief Setup the window.
          *
-         * @param event  The alarming event
+         * @param source    The source of the buzz
+         * @param title     Buzz title
+         * @param text      Buzz text
          */
-        void                        setupUI( event::ModelEventPtr event );
+        void                        setupUI( const QString& source, const QString& title, const QString& text );
 
     protected slots:
 
         void                        onBtnDiscardClicked();
-
-        void                        onBtnDisplayEventClicked();
 
         void                        onTimer();
 
@@ -79,11 +80,11 @@ class AlarmWindow : public QMainWindow
 
         MainWindow*                 _p_mainWindow = nullptr;
 
-        Ui::AlarmWindow*            _p_ui         = nullptr;
+        Ui::BuzzWindow*             _p_ui         = nullptr;
 
         QTimer*                     _p_timer      = nullptr;
 
-        event::ModelEventPtr        _event;
+        QMediaPlayer*               _p_player     = nullptr;
 
         bool                        _dragging     = false;
 
@@ -93,4 +94,4 @@ class AlarmWindow : public QMainWindow
 } // namespace gui
 } // namespace m4e
 
-#endif // ALARMWINDOW_H
+#endif // BUZZWINDOW_H

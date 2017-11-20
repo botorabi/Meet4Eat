@@ -160,6 +160,7 @@ void WidgetEventPanel::setupWidgetHead()
         weekdays += ( days & event::ModelEvent::WeekDayTuesday )   != 0 ? QApplication::translate( "WidgetEventPanel", "Tue" ) + " " : "";
         weekdays += ( days & event::ModelEvent::WeekDayWednesday ) != 0 ? QApplication::translate( "WidgetEventPanel", "Wed" ) + " " : "";
         weekdays += ( days & event::ModelEvent::WeekDayThursday )  != 0 ? QApplication::translate( "WidgetEventPanel", "Thu" ) + " " : "";
+        weekdays += ( days & event::ModelEvent::WeekDayFriday )    != 0 ? QApplication::translate( "WidgetEventPanel", "Fri" ) + " " : "";
         weekdays += ( days & event::ModelEvent::WeekDaySaturday )  != 0 ? QApplication::translate( "WidgetEventPanel", "Sat" ) + " " : "";
         weekdays += ( days & event::ModelEvent::WeekDaySunday )    != 0 ? QApplication::translate( "WidgetEventPanel", "Sun" ) + " " : "";
         info += "\n" + QApplication::translate( "WidgetEventPanel", "Repeated Event" );

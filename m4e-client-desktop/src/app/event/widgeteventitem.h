@@ -171,11 +171,12 @@ class WidgetEventItem : public QWidget
          * @brief This signal is emitted when an event location vote arrives.
          *
          * @param senderId   User ID of the voter
+         * @param senderName User name of the voter
          * @param eventId    Event ID
          * @param loactionId Event location ID
          * @param vote       true for vote and false for unvote the given location
          */
-        void                    onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+        void                    onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
 
         /**
          * @brief Timer callback used for voting alarm.
