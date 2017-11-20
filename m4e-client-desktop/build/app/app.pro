@@ -44,6 +44,7 @@ SOURCES += \
     ../../src/app/event/widgeteventpanel.cpp \
     ../../src/app/event/widgetlocation.cpp \
     ../../src/app/gui/alarmwindow.cpp \
+    ../../src/app/gui/buzzwindow.cpp \
     ../../src/app/gui/mainwindow.cpp \
     ../../src/app/gui/mailboxwindow.cpp \
     ../../src/app/gui/systemtray.cpp \
@@ -76,8 +77,7 @@ SOURCES += \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-mailbox.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
-    ../../src/app/webapp/webapp.cpp \
-    ../../src/app/gui/buzzwindow.cpp
+    ../../src/app/webapp/webapp.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -111,6 +111,7 @@ HEADERS += \
     ../../src/app/event/widgetlocation.h \
     ../../src/app/event/widgeteventpanel.h \
     ../../src/app/gui/alarmwindow.h \
+    ../../src/app/gui/buzzwindow.h \
     ../../src/app/gui/mainwindow.h \
     ../../src/app/gui/mailboxwindow.h \
     ../../src/app/gui/systemtray.h \
@@ -143,8 +144,7 @@ HEADERS += \
     ../../src/app/webapp/response/resp-event.h \
     ../../src/app/webapp/response/resp-mailbox.h \
     ../../src/app/webapp/response/resp-user.h \
-    ../../src/app/webapp/webapp.h \
-    ../../src/app/gui/buzzwindow.h
+    ../../src/app/webapp/webapp.h
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
