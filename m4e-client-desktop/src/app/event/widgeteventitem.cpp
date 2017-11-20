@@ -59,8 +59,8 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
-                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
                                             SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
@@ -91,7 +91,6 @@ void WidgetEventItem::updateEvent( ModelEventPtr event )
     _userIsOwner = _p_webApp->getUser()->isUserId( _event->getOwner()->getId() );
     _p_ui->labelHead->setText( event->getName() );
     _p_ui->labelDescription->setText( event->getDescription() );
-    _p_ui->pushButtonEdit->setHidden( !_userIsOwner );
     _p_ui->pushButtonDelete->setHidden( !_userIsOwner );
     _p_ui->pushButtonNewLocation->setHidden( !_userIsOwner );
     _p_ui->pushButtonNotification->hide();
@@ -142,9 +141,16 @@ void WidgetEventItem::onBtnEditClicked()
     if ( dlg.exec() != DialogEventSettings::BtnApply )
         return;
 
-    // update event data
-    onBtnNotificationClicked();
-    emit onClicked( _event->getId() );
+    if ( !dlg.userIsMemberOfEvent() )
+    {
+        _p_webApp->getEvents()->requestGetEvents();
+    }
+    else
+    {
+        // update event data
+        onBtnNotificationClicked();
+        emit onClicked( _event->getId() );
+    }
 }
 
 void WidgetEventItem::onBtnDeleteClicked()
@@ -219,7 +225,7 @@ void WidgetEventItem::onEventMessage( QString senderId, QString /*senderName*/, 
     notifyUpdate( QApplication::translate( "WidgetEventItem", "New message arrived!") );
 }
 
-void WidgetEventItem::onEventLocationVote( QString senderId, QString eventId, QString /*locationId*/, bool /*vote*/ )
+void WidgetEventItem::onEventLocationVote( QString senderId, QString /*senderName*/, QString eventId, QString /*locationId*/, bool /*vote*/ )
 {
     // suppress echo
     QString userid = _p_webApp->getUser()->getUserData()->getId();
@@ -265,6 +271,8 @@ bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
 
 void WidgetEventItem::animateItemWidget()
 {
+    //! TODO make sure that the widget does not drift. check if an animation is already running, if so skip a new animation
+
     QRect geom = geometry();
 
     QPropertyAnimation* p_anim1 = new QPropertyAnimation( this, "geometry" );

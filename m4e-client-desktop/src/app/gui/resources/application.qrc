@@ -35,9 +35,11 @@
         <file>icon-refresh.png</file>
         <file>icon-refresh-alert.png</file>
         <file>wakeup.png</file>
-        <file>wakeup-512.png</file>
+        <file>buzz.png</file>
+        <file>buzz.mp3</file>
         <file>icon.ico</file>
         <file>icon-tray.ico</file>
+        <file>icon-tray.png</file>
         <file>logo.png</file>
         <file>LICENSE</file>
     </qresource>

@@ -14,9 +14,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.websocket.Session;
 import net.m4e.app.chat.ChatSystem;
+import net.m4e.app.event.EventNotifications;
+import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.app.user.UserEntity;
 import net.m4e.system.core.Log;
 
@@ -43,6 +48,12 @@ public class ConnectedClients {
      */
     @Inject
     ChatSystem chatSystem;
+
+    /**
+     * Event used for notifying other users
+     */
+    @Inject
+    Event<NotifyUserRelativesEvent> notifyUserRelativesEvent;
 
     /**
      * Class used for a user entry
@@ -129,6 +140,10 @@ public class ConnectedClients {
         // store the user in session, we need it later while handling incoming messages
         session.getUserProperties().put("user", user);
         entry.sessions.add(session);
+
+        // send a notification to user's relatives about going online
+        sendNotificationToRelatives(user, true);
+
         return true;
     }
 
@@ -152,6 +167,21 @@ public class ConnectedClients {
         if (entry.sessions.size() < 1) {
             connections.remove(user.getId());
         }
+
+        // send a notification to user's relatives about going offline
+        sendNotificationToRelatives(user, true);
+
         return true;
+    }
+
+    /**
+     * Send a notification to user's relatives and let them know about user going on/off.
+     * 
+     * @param user      The user
+     * @param online    Pass true for notifying about going online, otherwise offline
+     */
+    private void sendNotificationToRelatives(UserEntity user, boolean online) {
+        EventNotifications notifications = new EventNotifications(null, notifyUserRelativesEvent);
+        notifications.sendNotifyOnlineStatusChanged(user, online);
     }
 }

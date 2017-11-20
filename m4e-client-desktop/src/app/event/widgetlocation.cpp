@@ -45,8 +45,8 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetLocationVotesById( bool, m4e::event::ModelLocationVotesPtr ) ), this,
                                      SLOT( onResponseGetLocationVotesById( bool, m4e::event::ModelLocationVotesPtr ) ) );
 
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
-                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
 
     _p_ui->setupUi( this );
     _p_ui->labelHead->setText( _location->getName() );
@@ -75,7 +75,6 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     _p_ui->labelDescription->installEventFilter( this );
     _p_ui->labelPhoto->installEventFilter( this );
 
-    updateVotingButtons();
     enableVotingUI( _p_webApp->getEvents()->getIsVotingTime( _event->getId() ) );
 }
 
@@ -87,8 +86,15 @@ void WidgetLocation::enableVotingUI( bool enable )
         return;
     }
 
-    _p_ui->pushButtonVoteUp->setVisible( enable );
-    _p_ui->pushButtonVoteDown->setVisible( enable );
+    if ( enable )
+    {
+        updateVotingButtons();
+    }
+    else
+    {
+        _p_ui->pushButtonVoteUp->setVisible( false );
+        _p_ui->pushButtonVoteDown->setVisible( false );
+    }
     _p_ui->widgetVotes->setVisible( enable );
 }
 
@@ -172,7 +178,7 @@ void WidgetLocation::onDocumentReady( m4e::doc::ModelDocumentPtr document )
     }
 }
 
-void WidgetLocation::onEventLocationVote( QString senderId, QString /*eventId*/, QString locationId, bool /*vote*/ )
+void WidgetLocation::onEventLocationVote( QString senderId, QString /*senderName*/, QString /*eventId*/, QString locationId, bool /*vote*/ )
 {
     // suppress echo
     QString userid = _p_webApp->getUser()->getUserData()->getId();
@@ -252,9 +258,14 @@ void WidgetLocation::updateVotingButtons()
 {
     user::ModelUserPtr user = _p_webApp->getUser()->getUserData();
     if ( !user.valid() )
+    {
+        _p_ui->pushButtonVoteDown->setVisible( false );
+        _p_ui->pushButtonVoteUp->setVisible( false );
         return;
+    }
 
     bool enableupvote = !_votes.valid() || !_votes->getUserIds().contains( user->getId() );
+
     _p_ui->pushButtonVoteDown->setVisible( !enableupvote );
     _p_ui->pushButtonVoteUp->setVisible( enableupvote );
 }

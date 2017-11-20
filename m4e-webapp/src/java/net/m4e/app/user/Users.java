@@ -343,17 +343,23 @@ public class Users {
         Set<Long> relatives = new HashSet();
         Entities eutils = new Entities(entityManager);
         List<EventEntity> events = eutils.findAllEntities(EventEntity.class);
-        events.stream().parallel()
-            .filter((event) -> (event.getStatus().getIsActive()))
-            .map((event) -> event.getMembers())
-            .filter((members) -> ((members != null) && (members.contains(user))))
-            .forEach((members) -> {
-                members.stream()
-                    .filter((u) -> (u.getStatus().getIsActive()))
-                    .forEach((u) -> {
-                        relatives.add(u.getId());
-                });
-            });
+        for (EventEntity event: events) {
+            if ((event.getStatus() == null) || !event.getStatus().getIsActive()) {
+                continue;
+            }
+            Collection<UserEntity> members = event.getMembers();
+            if (members == null) {
+                continue;
+            }
+
+            Long ownerid = event.getStatus().getIdOwner();
+            if (Objects.equals(ownerid, user.getId()) || members.contains(user)) {
+                for (UserEntity u: event.getMembers()) {
+                    relatives.add(u.getId());
+                }
+                relatives.add(ownerid);
+            }
+        }
 
         return new ArrayList(relatives);
     }

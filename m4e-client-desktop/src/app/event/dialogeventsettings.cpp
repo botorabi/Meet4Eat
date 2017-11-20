@@ -112,6 +112,11 @@ void DialogEventSettings::setupNewEventUI( event::ModelEventPtr event )
     setupCommonElements( event );
 }
 
+bool DialogEventSettings::userIsMemberOfEvent()
+{
+    return !_members.contains( _p_webApp->getUser()->getUserId() );
+}
+
 void DialogEventSettings::setupCommonElements( event::ModelEventPtr event )
 {
     _p_ui->lineEditName->setText( event->getName() );
@@ -424,7 +429,8 @@ void DialogEventSettings::setupMembers( event::ModelEventPtr event )
         _p_ui->tableWidgetMembers->setItem( row, 0, p_item );
         _members.insert( member->getId() );
 
-        if ( _userIsOwner )
+        // the event owner of the member itself get the remove button
+        if ( _userIsOwner || ( _p_webApp->getUser()->isUserId(  member->getId() ) ) )
         {
             _p_ui->tableWidgetMembers->setCellWidget( row, 1, createRemoveMemberButton( member->getId() ) );
         }

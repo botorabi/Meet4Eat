@@ -194,21 +194,22 @@ class MainWindow : public QMainWindow
          * @brief This signal is emitted when an event location vote arrives.
          *
          * @param senderId   User ID of the voter
+         * @param senderName User name of the voter
          * @param eventId    Event ID
          * @param loactionId Event location ID
          * @param vote       true for vote and false for unvote the given location
          */
-        void                        onEventLocationVote( QString senderId, QString eventId, QString locationId, bool vote );
+        void                    onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
 
-            /**
-             * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
-             *
-             * @param senderId      Message sender Id (usually an user ID)
-             * @param senderName    Message sender's name
-             * @param eventId       ID of receiving event
-             * @param notify        Notification object containing the message content
-             */
-            void                        onEventMessage( QString senderId, QString senderName, QString eventId, m4e::notify::NotifyEventPtr notify );
+        /**
+         * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
+         *
+         * @param senderId      Message sender Id (usually an user ID)
+         * @param senderName    Message sender's name
+         * @param eventId       ID of receiving event
+         * @param notify        Notification object containing the message content
+         */
+        void                        onEventMessage( QString senderId, QString senderName, QString eventId, m4e::notify::NotifyEventPtr notify );
 
         /**
          * @brief This signal is emitted when the results of unread mails count request arrive.
@@ -217,6 +218,20 @@ class MainWindow : public QMainWindow
          * @param count     Count of unread mails
          */
         void                        onResponseCountUnreadMails( bool success, int count );
+
+        /**
+         * @brief Notify about a user's online status.
+         *
+         * @param senderId      User ID
+         * @param senderName    User Name
+         * @param online        true if the user went online, otherwise false for user going offline
+         */
+        void                        onUserOnlineStatusChanged( QString senderId, QString senderName, bool online );
+
+        /**
+         * @brief Called when the event refresh timer was triggered.
+         */
+        void                        onEventRefreshTimer();
 
     protected:
 
@@ -248,11 +263,15 @@ class MainWindow : public QMainWindow
 
         void                        createWidgetEvent( const QString& eventId );
 
+        void                        scheduleEventRefreshing();
+
         Ui::MainWindow*             _p_ui            = nullptr;
 
         QTimer*                     _p_initTimer     = nullptr;
 
         QTimer*                     _p_updateTimer   = nullptr;
+
+        QTimer*                     _p_eventTimer    = nullptr;
 
         webapp::WebApp*             _p_webApp        = nullptr;
 

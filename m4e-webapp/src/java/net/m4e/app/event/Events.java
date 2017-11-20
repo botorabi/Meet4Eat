@@ -383,23 +383,34 @@ public class Events {
     }
 
     /**
-     * Create a inbox message for a member who has left an event.
+     * Create a inbox message for a member who has left an event. The event is sent
+     * to the event owner and the member itself.
      * 
      * @param event     The event
      * @param member    Member who left the event
      */
     void createEventLeavingMail(EventEntity event, UserEntity member) {
         Mails mails = new Mails(entityManager);
-        MailEntity mail = new MailEntity();
-        mail.setSenderId(0L);
-        mail.setReceiverId(member.getId());
-        mail.setReceiverName(member.getName());
-        mail.setSendDate((new Date()).getTime());
-        mail.setSubject("You have left an event");
-        mail.setContent("Hi " + member.getName() + ",\n\nwe wanted to confirm that you have left the event '" +
+        MailEntity mailuser = new MailEntity();
+        mailuser.setSenderId(0L);
+        mailuser.setReceiverId(member.getId());
+        mailuser.setReceiverName(member.getName());
+        mailuser.setSendDate((new Date()).getTime());
+        mailuser.setSubject("You have left an event");
+        mailuser.setContent("Hi " + member.getName() + ",\n\nwe wanted to confirm that you have left the event '" +
+                                event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
+
+        MailEntity mailowner = new MailEntity();
+        mailowner.setSenderId(0L);
+        mailowner.setReceiverId(member.getId());
+        mailowner.setReceiverName(member.getName());
+        mailowner.setSendDate((new Date()).getTime());
+        mailowner.setSubject("A member has left your event");
+        mailowner.setContent("Hi " + member.getName() + ",\n\nwe wanted to let you know that member '" + member.getName() + "' has left your event '" +
                                 event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
         try {
-            mails.createMail(mail);
+            mails.createMail(mailuser);
+            mails.createMail(mailowner);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** could not create mail, reason: " + ex.getLocalizedMessage());

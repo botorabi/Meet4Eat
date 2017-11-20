@@ -21,6 +21,7 @@
 #include <event/dialogeventsettings.h>
 #include <user/dialogusersettings.h>
 #include <gui/alarmwindow.h>
+#include <gui/buzzwindow.h>
 #include "ui_mainwindow.h"
 #include "ui_widgetabout.h"
 #include <QDesktopServices>
@@ -69,17 +70,21 @@ MainWindow::MainWindow() :
     // create the try icon
     _p_systemTray = new SystemTray( _p_webApp, this );
 
-    _p_initTimer = new QTimer();
+    _p_initTimer = new QTimer( this );
     _p_initTimer->setSingleShot( true );
     connect( _p_initTimer, SIGNAL( timeout() ), this, SLOT( onTimerInit() ) );
     _p_initTimer->start( 1000 );
 
     int keepaliveperiod = M4E_PERIOD_SRV_UPDATE_STATUS * 1000 * 60;
-    _p_updateTimer = new QTimer();
+    _p_updateTimer = new QTimer( this );
     _p_updateTimer->setSingleShot( false );
     _p_updateTimer->setInterval( keepaliveperiod );
     connect( _p_updateTimer, SIGNAL( timeout() ), this, SLOT( onTimerUpdate() ) );
     _p_updateTimer->start( keepaliveperiod );
+
+    _p_eventTimer = new QTimer( this );
+    _p_eventTimer->setSingleShot( true );
+    connect( _p_eventTimer, SIGNAL( timeout() ), this, SLOT( onEventRefreshTimer() ) );
 
     updateStatus( QApplication::translate( "MainWindow", "No Connection!" ), true );
     _p_ui->pushButtonRefreshEvents->hide();
@@ -294,7 +299,7 @@ void MainWindow::onBtnMaximizeClicked()
     }
     else
     {
-        setWindowState( Qt::WindowMaximized );
+        setWindowState( windowState() | Qt::WindowMaximized );
     }
 }
 
@@ -384,10 +389,7 @@ void MainWindow::onBtnAddEvent()
 
 void MainWindow::onBtnRefreshEvents()
 {
-    addLogText( QApplication::translate( "MainWindow", "Refreshing all events" ) );
-
     _p_ui->pushButtonRefreshEvents->hide();
-    _p_webApp->getEvents()->requestGetEvents();
 }
 
 void MainWindow::onEventSelection( QString id )
@@ -432,11 +434,14 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
-                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
                                             SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
+
+    connect( _p_webApp->getNotifications(), SIGNAL( onUserOnlineStatusChanged( QString, QString, bool ) ), this,
+                                            SLOT( onUserOnlineStatusChanged( QString, QString, bool ) ) );
 
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
                                      SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
@@ -511,7 +516,6 @@ void MainWindow::onServerConnectionClosed()
 
     updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
     clearWidgetMyEvents();
-    createWidgetMyEvents();
 
     addLogText( "Server connection was closed" );
 }
@@ -520,6 +524,11 @@ void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEvent
 {
     clearWidgetMyEvents();
     createWidgetMyEvents();
+}
+
+void MainWindow::scheduleEventRefreshing()
+{
+    _p_eventTimer->start( 1000 );
 }
 
 void MainWindow::onEventChanged( notify::Notifications::ChangeType changeType, QString eventId )
@@ -540,6 +549,7 @@ void MainWindow::onEventChanged( notify::Notifications::ChangeType changeType, Q
         addLogText( QApplication::translate( "MainWindow", "Event settings have changed: '" ) + eventname + "'" );
 
     _p_ui->pushButtonRefreshEvents->show();
+    scheduleEventRefreshing();
 }
 
 void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType changeType, QString eventId, QString locationId )
@@ -560,9 +570,10 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
         addLogText( QApplication::translate( "MainWindow", "Event location settings have changed: " ) + "'" + eventname + "'" );
 
     _p_ui->pushButtonRefreshEvents->show();
+    scheduleEventRefreshing();
 }
 
-void MainWindow::onEventLocationVote(  QString senderId, QString eventId, QString locationId, bool vote )
+void MainWindow::onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote )
 {
     // suppress echo
     QString userid = _p_webApp->getUser()->getUserData()->getId();
@@ -580,7 +591,7 @@ void MainWindow::onEventLocationVote(  QString senderId, QString eventId, QStrin
         if ( location.valid() )
             locationname = location->getName();
     }
-    addLogText( QApplication::translate( "MainWindow", "Location vote arrived: " ) + "'" + eventname + "' / '" + locationname + "': " + ( vote ? "vote" : "unvote" ) );
+    addLogText( QApplication::translate( "MainWindow", "Location vote arrived from '" ) + senderName + "': '" + eventname + "' / '" + locationname + "': " + ( vote ? "vote" : "unvote" ) );
 
     //! TODO play a sound
 }
@@ -603,6 +614,16 @@ void MainWindow::onEventMessage( QString senderId, QString senderName, QString e
     title.replace( "@USER@", senderName );
     QString text = QApplication::translate( "MainWindow", "Buzzing the members of event" ) + " '" + event->getName() + "'";
     _p_systemTray->showMessage( title, text );
+
+
+    QString enablealarm = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_ALARM, "yes" );
+    if ( enablealarm == "yes" )
+    {
+        gui::BuzzWindow* p_dlg = new gui::BuzzWindow( this );
+        p_dlg->setupUI( senderName + " / " + eventname, notify->getSubject(), notify->getText() );
+        p_dlg->show();
+        common::GuiUtils::bringWidgetToFront( p_dlg );
+    }
 }
 
 void MainWindow::onResponseCountUnreadMails( bool success, int coun )
@@ -619,6 +640,21 @@ void MainWindow::onResponseCountUnreadMails( bool success, int coun )
         }
         _lastUnreadMails = coun;
     }
+}
+
+void MainWindow::onUserOnlineStatusChanged( QString /*senderId*/, QString senderName, bool online )
+{
+    QString text;
+    text = QApplication::translate( "MainWindow", "User '@USER@' went @STATUS@" );
+    text.replace( "@USER@", senderName );
+    text.replace( "@STATUS@", online ? "online" : "offline" );
+    addLogText( text );
+}
+
+void MainWindow::onEventRefreshTimer()
+{
+    addLogText( QApplication::translate( "MainWindow", "Refreshing all events" ) );
+    _p_webApp->getEvents()->requestGetEvents();
 }
 
 void MainWindow::updateStatus( const QString& text, bool offline )

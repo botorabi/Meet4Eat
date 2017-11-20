@@ -79,6 +79,13 @@ class DialogEventSettings : public common::BaseDialog
          */
         void                        setupNewEventUI( event::ModelEventPtr event );
 
+        /**
+         * @brief Check if the user is still member of the event or it has left the event.
+         *
+         * @return Return true if the user has left the event by removing itself form the member list.
+         */
+        bool                        userIsMemberOfEvent();
+
     protected slots:
 
         /**

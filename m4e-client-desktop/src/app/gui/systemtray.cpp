@@ -21,7 +21,7 @@ namespace m4e
 namespace gui
 {
 
-static const QString M4E_SYSTRAY_ICON = ":/icon-tray.ico";
+static const QString M4E_SYSTRAY_ICON = ":/icon-tray.png";
 
 enum MenuIDs
 {
@@ -46,8 +46,8 @@ SystemTray::SystemTray( webapp::WebApp* p_webApp, MainWindow* p_parent ) :
     connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
                                             SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
 
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, bool ) ), this,
-                                            SLOT( onEventLocationVote( QString, QString, QString, bool ) ) );
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
 
     connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountMails( bool, int, int ) ), this,
                                       SLOT( onResponseCountMails( bool, int, int ) ) );
@@ -227,7 +227,7 @@ void SystemTray::onResponseCountMails( bool success, int /*countTotal*/, int cou
     }
 }
 
-void SystemTray::onEventLocationVote( QString senderId, QString eventId, QString locationId, bool /*vote*/ )
+void SystemTray::onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool /*vote*/ )
 {
     // check if notifications are enabled
     if ( !_enableNotification )
@@ -247,7 +247,7 @@ void SystemTray::onEventLocationVote( QString senderId, QString eventId, QString
             locationname = loc->getName();
     }
 
-    QString title = QApplication::translate( "SystemTray", "Meet4Eat - New Vote" );
+    QString title = QApplication::translate( "SystemTray", "Meet4Eat - New Vote from " ) + senderName;
     QString text = QApplication::translate( "SystemTray", "Location: " ) + " " + locationname;
     showMessage( title, text, false );
 }

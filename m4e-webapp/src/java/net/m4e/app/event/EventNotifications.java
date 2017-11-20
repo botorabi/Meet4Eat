@@ -184,6 +184,25 @@ public class EventNotifications {
         notifyEventMembers(user, event, json.build());
     }
 
+
+    /**
+     * Notify user relatives about going on/off, i.e. the online status.
+     * 
+     * @param user      The user sending its status
+     * @param online    Pass true for notifying about going online, otherwise offline
+     */
+    public void sendNotifyOnlineStatusChanged(UserEntity user, boolean online) {
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("subject", "Event Member")
+            .add("type", "onlinestatus")
+            .add("text", "User went " + (online ? "online" : "offline") + ".");
+        JsonObjectBuilder data = Json.createObjectBuilder();
+        data.add("onlineStatus", (online ? "online" : "offline"));
+        json.add("data", data);
+
+        notifyUserRelatives(user, json.build());
+    }
+
     /**
      * Send a notification to all event members. The notification data is extracted from given notificationJson string, which is
      * expected to have the following fields:
@@ -249,7 +268,12 @@ public class EventNotifications {
         NotifyUserRelativesEvent notify = new NotifyUserRelativesEvent();
         notify.setSenderId(user.getId());
         notify.setSubject(subject);
-        notify.setText(type);
+        notify.setType(type);
+        notify.setText(text);
+        JsonObject data = jsonObject.getJsonObject("data");
+        if (data != null) {
+            notify.setData(data);
+        }
         notifyUserRelativesEvent.fireAsync(notify);
     }
 }

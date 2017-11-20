@@ -156,6 +156,7 @@ ModelDocumentPtr DocumentCache::findDocument( const QString& eTag )
     }
 
     QString filename = cachedir + QDir::separator() + eTag;
+
     QFile file( filename );
     bool res = file.open( QFile::ReadWrite );
     if ( !res || ( file.size() == 0 ) )
@@ -190,7 +191,7 @@ bool DocumentCache::cacheDocument( ModelDocumentPtr document )
 
     QString filename = cachedir + QDir::separator() + document->getETag();
     QFile file( filename );
-    if ( !file.exists() )
+    if ( !file.exists() || ( file.size() == 0 ) )
     {
         log_verbose << TAG << "caching document: " << document->getId() << std::endl;
 

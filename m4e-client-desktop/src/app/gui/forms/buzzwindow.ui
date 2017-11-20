@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AlarmWindow</class>
- <widget class="QMainWindow" name="AlarmWindow">
+ <class>BuzzWindow</class>
+ <widget class="QMainWindow" name="BuzzWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -35,7 +35,7 @@
   <widget class="QWidget" name="centralWidget">
    <property name="styleSheet">
     <string notr="true">#centralWidget {
- border-image: url(:/wakeup.png);
+ border-image: url(:/buzz.png);
   background: transparent;
 }
 QWidget {
@@ -67,7 +67,7 @@ QPushButton[enabled=&quot;false&quot;] {
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>130</height>
+        <height>320</height>
        </size>
       </property>
      </spacer>
@@ -97,7 +97,7 @@ QPushButton[enabled=&quot;false&quot;] {
           <item>
            <widget class="QLabel" name="labelTitle">
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Meat4Eat - Wake Alarm&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;@TITLE@&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -109,13 +109,13 @@ QPushButton[enabled=&quot;false&quot;] {
             <property name="minimumSize">
              <size>
               <width>200</width>
-              <height>200</height>
+              <height>120</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
               <width>200</width>
-              <height>200</height>
+              <height>150</height>
              </size>
             </property>
             <property name="text">
@@ -126,6 +126,16 @@ QPushButton[enabled=&quot;false&quot;] {
             </property>
             <property name="wordWrap">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelSource">
+            <property name="text">
+             <string>@SOURCE@</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -159,7 +169,7 @@ QPushButton[enabled=&quot;false&quot;] {
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>120</height>
+        <height>75</height>
        </size>
       </property>
      </spacer>
@@ -174,38 +184,6 @@ QPushButton[enabled=&quot;false&quot;] {
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonDisplayEvent">
-        <property name="minimumSize">
-         <size>
-          <width>120</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="focusPolicy">
-         <enum>Qt::NoFocus</enum>
-        </property>
-        <property name="text">
-         <string>Display Event</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>90</width>
           <height>20</height>
          </size>
         </property>
@@ -256,7 +234,7 @@ QPushButton[enabled=&quot;false&quot;] {
   <connection>
    <sender>pushButtonDiscard</sender>
    <signal>clicked()</signal>
-   <receiver>AlarmWindow</receiver>
+   <receiver>BuzzWindow</receiver>
    <slot>onBtnDiscardClicked()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -266,22 +244,6 @@ QPushButton[enabled=&quot;false&quot;] {
     <hint type="destinationlabel">
      <x>435</x>
      <y>511</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButtonDisplayEvent</sender>
-   <signal>clicked()</signal>
-   <receiver>AlarmWindow</receiver>
-   <slot>onBtnDisplayEventClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>195</x>
-     <y>490</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>219</x>
-     <y>509</y>
     </hint>
    </hints>
   </connection>
