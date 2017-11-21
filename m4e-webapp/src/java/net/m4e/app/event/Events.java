@@ -400,13 +400,16 @@ public class Events {
         mailuser.setContent("Hi " + member.getName() + ",\n\nwe wanted to confirm that you have left the event '" +
                                 event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
 
+        Entities entities = new Entities(entityManager);
+        UserEntity ownerentity = entities.findEntity(UserEntity.class, event.getStatus().getIdOwner());
+
         MailEntity mailowner = new MailEntity();
         mailowner.setSenderId(0L);
-        mailowner.setReceiverId(member.getId());
-        mailowner.setReceiverName(member.getName());
+        mailowner.setReceiverId(ownerentity.getId());
+        mailowner.setReceiverName(ownerentity.getName());
         mailowner.setSendDate((new Date()).getTime());
         mailowner.setSubject("A member has left your event");
-        mailowner.setContent("Hi " + member.getName() + ",\n\nwe wanted to let you know that member '" + member.getName() + "' has left your event '" +
+        mailowner.setContent("Hi " + ownerentity.getName() + ",\n\nwe wanted to let you know that member '" + member.getName() + "' has left your event '" +
                                 event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
         try {
             mails.createMail(mailuser);

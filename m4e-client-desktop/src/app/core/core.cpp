@@ -127,12 +127,15 @@ void Core::start()
 {
     assert( _p_mainWindow && "core was not initialized before" );
 
+    // in debug build allow multiple instances of the app for debuggin purpose
+#ifndef QT_DEBUG
     // check if an app instance is already running
     if ( !checkOrSetupSingleProc( _p_mainWindow ) )
     {
         log_info << "an application instance is already running, quitting..." << std::endl;
         return;
     }
+#endif
 
     _p_mainWindow->show();
     _p_app->exec();

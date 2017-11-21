@@ -114,7 +114,7 @@ void DialogEventSettings::setupNewEventUI( event::ModelEventPtr event )
 
 bool DialogEventSettings::userIsMemberOfEvent()
 {
-    return !_members.contains( _p_webApp->getUser()->getUserId() );
+    return _members.contains( _p_webApp->getUser()->getUserId() );
 }
 
 void DialogEventSettings::setupCommonElements( event::ModelEventPtr event )

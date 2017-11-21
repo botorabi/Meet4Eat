@@ -84,6 +84,21 @@ ModelEventPtr Events::getUserEvent( const QString& id )
     return ModelEventPtr();
 }
 
+void Events::updateUserStatus( const QString& userId, bool online )
+{
+    for ( ModelEventPtr event: _events )
+    {
+        for ( user::ModelUserInfoPtr user: event->getMembers() )
+        {
+            if ( user->getId() == userId )
+            {
+                user->setStatus( online ? "online" : "offline" );
+                break;
+            }
+        }
+    }
+}
+
 //######### Requests ############//
 
 void Events::requestGetEvents()

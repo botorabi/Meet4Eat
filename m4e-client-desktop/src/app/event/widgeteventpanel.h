@@ -146,6 +146,15 @@ class WidgetEventPanel : public QWidget
         void                        onEventMessage( QString senderId, QString senderName, QString eventId, m4e::notify::NotifyEventPtr notify );
 
         /**
+         * @brief Notify about a user's online status.
+         *
+         * @param senderId      User ID
+         * @param senderName    User Name
+         * @param online        true if the user went online, otherwise false for user going offline
+         */
+        void                        onUserOnlineStatusChanged( QString senderId, QString senderName, bool online );
+
+        /**
          * @brief Results of remove event location request.
          *
          * @param success    true if user data could successfully be retrieved, otherwise false

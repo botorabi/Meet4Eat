@@ -70,6 +70,14 @@ bool DialogSettings::validateInput()
         passwd = webapp::RESTAuthentication::createHash( passwd );
     }
 
+    // if the server url field was empty then restore the default
+    if ( server.isEmpty() )
+    {
+        server = M4E_DEFAULT_APP_SRV;
+        settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, server );
+        _p_ui->lineEditServer->setText( server );
+    }
+
     if ( !server.isEmpty() && !login.isEmpty() && !passwd.isEmpty() )
         return true;
 

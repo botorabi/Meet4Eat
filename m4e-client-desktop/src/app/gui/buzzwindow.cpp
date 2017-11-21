@@ -102,6 +102,7 @@ void BuzzWindow::startAnimation()
 
 void BuzzWindow::onBtnDiscardClicked()
 {
+    common::GuiUtils::bringWidgetToFront( _p_mainWindow );
     deleteLater();
 }
 

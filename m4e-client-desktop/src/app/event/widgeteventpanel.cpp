@@ -134,6 +134,9 @@ void WidgetEventPanel::setupUI()
     connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
                                             SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onUserOnlineStatusChanged( QString, QString, bool ) ), this,
+                                            SLOT( onUserOnlineStatusChanged( QString, QString, bool ) ) );
+
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetMembers, shadowcolor, QPoint( -3, 3 ), 3 );
@@ -335,6 +338,11 @@ void WidgetEventPanel::onEventMessage( QString /*senderId*/, QString senderName,
 
     if ( eventId == _event->getId() )
         _p_ui->widgetChat->appendChatText( msg );
+}
+
+void WidgetEventPanel::onUserOnlineStatusChanged( QString senderId, QString /*senderName*/, bool online )
+{
+    _p_ui->widgetChat->updateUserStatus( senderId, online );
 }
 
 void WidgetEventPanel::onResponseRemoveLocation( bool success, QString eventId, QString locationId )

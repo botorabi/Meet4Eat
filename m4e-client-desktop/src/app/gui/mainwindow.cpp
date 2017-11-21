@@ -434,6 +434,9 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventMemberChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
+                                            SLOT( onEventMemberChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
+
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
                                             SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
 
@@ -573,6 +576,12 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
     scheduleEventRefreshing();
 }
 
+void MainWindow::onEventMemberChanged( notify::Notifications::ChangeType /*changeType*/, QString eventId, QString userId )
+{
+    //! TODO update the event list
+    log_debug << TAG << "TODO onEventMemberChanged " << eventId << "/" << userId << std::endl;
+}
+
 void MainWindow::onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote )
 {
     // suppress echo
@@ -598,6 +607,10 @@ void MainWindow::onEventLocationVote( QString senderId, QString senderName, QStr
 
 void MainWindow::onEventMessage( QString senderId, QString senderName, QString eventId, notify::NotifyEventPtr notify )
 {
+clearWidgetMyEvents();
+createWidgetMyEvents();
+return;
+
     // suppress echo
     if ( senderId == _p_webApp->getUser()->getUserData()->getId() )
         return;
@@ -642,13 +655,15 @@ void MainWindow::onResponseCountUnreadMails( bool success, int coun )
     }
 }
 
-void MainWindow::onUserOnlineStatusChanged( QString /*senderId*/, QString senderName, bool online )
+void MainWindow::onUserOnlineStatusChanged( QString senderId, QString senderName, bool online )
 {
     QString text;
     text = QApplication::translate( "MainWindow", "User '@USER@' went @STATUS@" );
     text.replace( "@USER@", senderName );
     text.replace( "@STATUS@", online ? "online" : "offline" );
     addLogText( text );
+
+    _p_webApp->getEvents()->updateUserStatus( senderId, online );
 }
 
 void MainWindow::onEventRefreshTimer()

@@ -94,6 +94,14 @@ class Events : public QObject
         m4e::event::ModelEventPtr           getUserEvent( const QString& id );
 
         /**
+         * @brief Update the online status of given user in all events.
+         *
+         * @param userId    The User ID
+         * @param online    Pass true for online and false for offline
+         */
+        void                                updateUserStatus( const QString& userId, bool online );
+
+        /**
          * @brief Request for getting all user events, the results are emitted by signal 'onResponseGetEvents'.
          */
         void                                requestGetEvents();

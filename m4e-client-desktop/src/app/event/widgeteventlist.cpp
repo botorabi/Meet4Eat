@@ -175,24 +175,21 @@ void WidgetEventList::onResponseGetEvent( bool success, m4e::event::ModelEventPt
 
 void WidgetEventList::onResponseDeleteEvent( bool success, QString /*eventId*/ )
 {
-    QString text;
     if ( !success )
     {
-        text = QApplication::translate( "WidgetEventList", "Could not delete the event.\nReason: " ) + _p_webApp->getEvents()->getLastError();
+        QString text = QApplication::translate( "WidgetEventList", "Could not delete the event.\nReason: " ) + _p_webApp->getEvents()->getLastError();
+        common::DialogMessage* p_msg = new common::DialogMessage( this );
+        p_msg->setupUI( QApplication::translate( "WidgetEventList", "Delete Event" ),
+                        text,
+                        common::DialogMessage::BtnOk );
+
+        p_msg->show();
+        delete p_msg;
     }
     else
     {
-        text = QApplication::translate( "WidgetEventList", "Event was successfully deleted." );
+        _p_webApp->getEvents()->requestGetEvents();
     }
-
-    common::DialogMessage msg( this );
-    msg.setupUI( QApplication::translate( "WidgetEventList", "Delete Event" ),
-                 text,
-                 common::DialogMessage::BtnOk );
-
-    msg.exec();
-
-    _p_webApp->getEvents()->requestGetEvents();
 }
 
 } // namespace event

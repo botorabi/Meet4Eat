@@ -191,6 +191,15 @@ class MainWindow : public QMainWindow
         void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
         /**
+         * @brief This signal is emitted when an event member was added or removed.
+         *
+         * @param changeType One of ChangeType enums
+         * @param eventId    Event ID
+         * @param memberId   User ID
+         */
+        void                        onEventMemberChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString userId );
+
+        /**
          * @brief This signal is emitted when an event location vote arrives.
          *
          * @param senderId   User ID of the voter

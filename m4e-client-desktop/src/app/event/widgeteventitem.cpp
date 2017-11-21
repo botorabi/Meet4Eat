@@ -136,12 +136,16 @@ void WidgetEventItem::createNewLocation()
 
 void WidgetEventItem::onBtnEditClicked()
 {
-    DialogEventSettings dlg( _p_webApp, this );
-    dlg.setupUI( _event );
-    if ( dlg.exec() != DialogEventSettings::BtnApply )
+    DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, this );
+    p_dlg->setupUI( _event );
+    int  res = p_dlg->exec();
+    bool userleftevent = !p_dlg->userIsMemberOfEvent();
+    delete p_dlg;
+
+    if ( !userleftevent && ( res != DialogEventSettings::BtnApply ) )
         return;
 
-    if ( !dlg.userIsMemberOfEvent() )
+    if ( userleftevent )
     {
         _p_webApp->getEvents()->requestGetEvents();
     }

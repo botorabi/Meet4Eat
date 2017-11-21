@@ -49,8 +49,14 @@ void WebApp::establishConnection()
     {
         _authState = AuthConnecting;
         m4e::user::UserAuthentication* p_user = getOrCreateUserAuth();
+
         // just for the case that the server url was changed
         p_user->setServerURL( server );
+        getOrCreateEvent()->setServerURL( server );
+        getOrCreateConnection()->setServerURL( server );
+        getOrCreateUser()->setServerURL( server );
+        getOrCreateMailBox()->setServerURL( server );
+
         p_user->requestSignIn( username, passwd );
         username.clear();
         passwd.clear();
