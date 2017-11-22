@@ -103,6 +103,8 @@ void BuzzWindow::startAnimation()
 void BuzzWindow::onBtnDiscardClicked()
 {
     common::GuiUtils::bringWidgetToFront( _p_mainWindow );
+    //! NOTE fist detach from parent! see commen in MailboxWindow::onBtnCloseClicked()
+    setParent( nullptr );
     deleteLater();
 }
 

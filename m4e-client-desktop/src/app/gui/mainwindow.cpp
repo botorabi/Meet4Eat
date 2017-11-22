@@ -469,6 +469,7 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
         log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
         // start the keep alive updates
         _enableKeepAlive = true;
+        addLogText( "Web App Server " + _p_webApp->getWebAppVersion() );
         addLogText( "User has successfully signed in" );
     }
     else
@@ -607,10 +608,6 @@ void MainWindow::onEventLocationVote( QString senderId, QString senderName, QStr
 
 void MainWindow::onEventMessage( QString senderId, QString senderName, QString eventId, notify::NotifyEventPtr notify )
 {
-clearWidgetMyEvents();
-createWidgetMyEvents();
-return;
-
     // suppress echo
     if ( senderId == _p_webApp->getUser()->getUserData()->getId() )
         return;
@@ -639,19 +636,19 @@ return;
     }
 }
 
-void MainWindow::onResponseCountUnreadMails( bool success, int coun )
+void MainWindow::onResponseCountUnreadMails( bool success, int count )
 {
     if ( success )
     {
         QString btnstyle = MAIL_BTN_STYLE;
-        btnstyle.replace("@MAIL_BTN_ICON@", ( coun > 0 ) ? MAIL_BTN_ICON_NEWMAILS : MAIL_BTN_ICON_NONEWMAILS );
+        btnstyle.replace("@MAIL_BTN_ICON@", ( count > 0 ) ? MAIL_BTN_ICON_NEWMAILS : MAIL_BTN_ICON_NONEWMAILS );
         _p_ui->pushButtonUserMails->setStyleSheet( btnstyle );
-        if ( coun > _lastUnreadMails )
+        if ( count > _lastUnreadMails )
         {
-            log_debug << "user has unread mails: " << coun << std::endl;
+            log_debug << "user has unread mails: " << count << std::endl;
             addLogText( QApplication::translate( "MainWindow", "New mails have arrived." ) );
         }
-        _lastUnreadMails = coun;
+        _lastUnreadMails = count;
     }
 }
 

@@ -115,6 +115,9 @@ void SystemTray::setupSystemTray()
     QString enablealarm = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_ALARM, "yes" );
     QString enableevent = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_EVENT, "yes" );
 
+    _enableNotification = ( enableevent == "yes" ) ? true : false;
+    _enableAlarm = ( enablealarm == "yes" ) ? true : false;
+
     _p_systemTray = new QSystemTrayIcon( QIcon( M4E_SYSTRAY_ICON ), this );
     connect( _p_systemTray, SIGNAL( activated( QSystemTrayIcon::ActivationReason ) ), this, SLOT( onActivated( QSystemTrayIcon::ActivationReason ) ) );
     connect( _p_systemTray, SIGNAL( messageClicked() ), this, SLOT( onMessageClicked() ) );
@@ -138,13 +141,13 @@ void SystemTray::setupSystemTray()
 
     p_action = new QAction( "Enable Notification" );
     p_action->setCheckable( true );
-    p_action->setChecked( ( enableevent == "yes" ) ? true : false );
+    p_action->setChecked( _enableNotification );
     p_action->setData( QVariant( MenuEnableNotification ) );
     p_menu->addAction( p_action );
 
     p_action = new QAction( "Enable Alarm" );
     p_action->setCheckable( true );
-    p_action->setChecked( ( enablealarm == "yes" ) ? true : false );
+    p_action->setChecked( _enableAlarm );
     p_action->setData( QVariant( MenuEnableAlarm ) );
     p_menu->addAction( p_action );
 

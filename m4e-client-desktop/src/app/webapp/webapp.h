@@ -29,6 +29,8 @@ namespace m4e
 namespace webapp
 {
 
+class RESTAppInfo;
+
 /**
  * @brief This class establishes the connection to web application server
  *        and provides access to user data.
@@ -82,6 +84,13 @@ class WebApp : public QObject
          * @brief Shut down an established connection.
          */
         void                            shutdownConnection();
+
+        /**
+         * @brief Get the web application version retrieved from server.
+         *
+         * @return Web application version
+         */
+        const QString&                  getWebAppVersion() const;
 
         /**
          * @brief Get current web app authentication state
@@ -220,6 +229,13 @@ class WebApp : public QObject
     protected slots:
 
         /**
+         * @brief This signal is emitted when the server info arrives.
+         *
+         * @param version   The web application version
+         */
+        void                            onRESTAppInfo( QString version );
+
+        /**
          * @brief Results of authentication state request.
          *
          * @param authenticated true if the user is already authenticated, otherwise false.
@@ -279,6 +295,8 @@ class WebApp : public QObject
         template< class T >
         void                            setupServerURL( T* p_inst ) const;
 
+        RESTAppInfo*                    getOrCreateAppInfo();
+
         user::UserAuthentication*       getOrCreateUserAuth();
 
         comm::Connection*               getOrCreateConnection();
@@ -298,6 +316,10 @@ class WebApp : public QObject
         void                            resetAllResources();
 
         QString                         _userID;
+
+        QString                         _webAppVersion;
+
+        RESTAppInfo*                    _p_restAppInfo   = nullptr;
 
         user::UserAuthentication*       _p_userAuth      = nullptr;
 

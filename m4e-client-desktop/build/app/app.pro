@@ -77,7 +77,9 @@ SOURCES += \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-mailbox.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
-    ../../src/app/webapp/webapp.cpp
+    ../../src/app/webapp/webapp.cpp \
+    ../../src/app/webapp/request/rest-appinfo.cpp \
+    ../../src/app/webapp/response/resp-appinfo.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -144,7 +146,9 @@ HEADERS += \
     ../../src/app/webapp/response/resp-event.h \
     ../../src/app/webapp/response/resp-mailbox.h \
     ../../src/app/webapp/response/resp-user.h \
-    ../../src/app/webapp/webapp.h
+    ../../src/app/webapp/webapp.h \
+    ../../src/app/webapp/request/rest-appinfo.h \
+    ../../src/app/webapp/response/resp-appinfo.h
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \

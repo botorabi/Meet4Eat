@@ -105,6 +105,8 @@ void AlarmWindow::startAnimation()
 
 void AlarmWindow::onBtnDiscardClicked()
 {
+    //! NOTE fist detach from parent! see commen in MailboxWindow::onBtnCloseClicked()
+    setParent( nullptr );
     deleteLater();
 }
 
@@ -112,6 +114,7 @@ void AlarmWindow::onBtnDisplayEventClicked()
 {
     _p_mainWindow->selectEvent( _event->getId() );
     common::GuiUtils::bringWidgetToFront( _p_mainWindow );
+    setParent( nullptr );
     deleteLater();
 }
 
