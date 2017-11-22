@@ -36,6 +36,14 @@ class DialogBuzz : public common::BaseDialog
 
     public:
 
+        /**
+         * @brief Dialog buttons
+         */
+        enum Buttons
+        {
+            BtnSend  = common::BaseDialog::Btn1,
+            BtnCancel = common::BaseDialog::Btn2
+        };
 
         /**
          * @brief Create a dialog instance.

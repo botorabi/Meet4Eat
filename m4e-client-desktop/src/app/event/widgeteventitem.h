@@ -126,6 +126,8 @@ class WidgetEventItem : public QWidget
 
         void                        onBtnNotificationClicked();
 
+        void                        onAnimationFinished();
+
         /**
          * @brief This signal is received from webapp when a requested document was arrived.
          *
@@ -176,7 +178,7 @@ class WidgetEventItem : public QWidget
          * @param loactionId Event location ID
          * @param vote       true for vote and false for unvote the given location
          */
-        void                    onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
+        void                        onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
 
         /**
          * @brief Timer callback used for voting alarm.
@@ -205,6 +207,10 @@ class WidgetEventItem : public QWidget
         event::ModelEventPtr        _event;
 
         bool                        _userIsOwner = false;
+
+        bool                        _selected    = false;
+
+        bool                        _animating   = false;
 };
 
 } // namespace event

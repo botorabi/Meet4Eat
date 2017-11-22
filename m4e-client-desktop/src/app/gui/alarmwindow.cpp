@@ -21,7 +21,7 @@ namespace gui
 {
 
 AlarmWindow::AlarmWindow( MainWindow* p_parent ) :
- QMainWindow( p_parent ),
+ QMainWindow( nullptr ),
  _p_mainWindow( p_parent ),
  _p_ui( new Ui::AlarmWindow() )
 {
@@ -105,8 +105,6 @@ void AlarmWindow::startAnimation()
 
 void AlarmWindow::onBtnDiscardClicked()
 {
-    //! NOTE fist detach from parent! see commen in MailboxWindow::onBtnCloseClicked()
-    setParent( nullptr );
     deleteLater();
 }
 
@@ -114,7 +112,6 @@ void AlarmWindow::onBtnDisplayEventClicked()
 {
     _p_mainWindow->selectEvent( _event->getId() );
     common::GuiUtils::bringWidgetToFront( _p_mainWindow );
-    setParent( nullptr );
     deleteLater();
 }
 

@@ -19,11 +19,14 @@ namespace m4e
 namespace event
 {
 
-DialogEventSettings::DialogEventSettings( webapp::WebApp* p_webApp, QWidget* p_parent ) :
+DialogEventSettings::DialogEventSettings( webapp::WebApp* p_webApp, QWidget* p_parent, bool autoDestroy ) :
  common::BaseDialog( p_parent ),
  _p_webApp( p_webApp )
 {
     _p_ui = new Ui::WidgetEventSettings();
+
+    if ( autoDestroy )
+        setAttribute( Qt::WA_DeleteOnClose );
 }
 
 DialogEventSettings::~DialogEventSettings()
@@ -312,6 +315,8 @@ void DialogEventSettings::onBtnPhotoClicked()
     m4e::doc::ModelDocumentPtr doc = new m4e::doc::ModelDocument();
     doc->setContent( imagecontent, "image", format );
     _event->setUpdatedPhoto( doc );
+    _event->setPhotoId( "" );
+    _event->setPhotoETag( "" );
     _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( doc ) );
 }
 
@@ -366,7 +371,13 @@ void DialogEventSettings::onLineEditSeachtReturnPressed()
 bool DialogEventSettings::onButton1Clicked()
 {
     if ( !_userIsOwner )
+    {
+        // if the user left the event via this settings dialog then refresh all events
+        if ( !userIsMemberOfEvent() )
+            _p_webApp->getEvents()->requestGetEvents();
+
         return true;
+    }
 
     _event->setName( _p_ui->lineEditName->text() );
     _event->setDescription( _p_ui->textEditDescription->toPlainText() );
@@ -377,15 +388,23 @@ bool DialogEventSettings::onButton1Clicked()
     _event->setVotingTimeBegin( _p_ui->timeEditVotingTimeBegin->time().msecsSinceStartOfDay() / 1000 );
 
     if ( _editNewEvent )
+    {
         _p_webApp->getEvents()->requestNewEvent( _event );
+    }
     else
+    {
         _p_webApp->getEvents()->requestUpdateEvent( _event );
+    }
 
     return false;
 }
 
 bool DialogEventSettings::onButton2Clicked()
 {
+    // if the user left the event via this settings dialog then refresh all events
+    if ( !userIsMemberOfEvent() )
+        _p_webApp->getEvents()->requestGetEvents();
+
     return true;
 }
 

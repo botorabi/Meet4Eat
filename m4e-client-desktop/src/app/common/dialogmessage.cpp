@@ -17,9 +17,11 @@ namespace m4e
 namespace common
 {
 
-DialogMessage::DialogMessage( QWidget* p_parent ) :
+DialogMessage::DialogMessage( QWidget* p_parent, bool autoDestroy ) :
  common::BaseDialog( p_parent )
 {
+    if ( autoDestroy )
+        setAttribute( Qt::WA_DeleteOnClose );
 }
 
 DialogMessage::~DialogMessage()

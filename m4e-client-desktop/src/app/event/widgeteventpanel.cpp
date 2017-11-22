@@ -23,6 +23,9 @@ namespace m4e
 namespace event
 {
 
+/** Minimal time interval between two buzzes, this is used for minimize spamming */
+static const int M4E_BUZZ_ANTI_SPAM_TIME = 5000;
+
 WidgetEventPanel::WidgetEventPanel( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  QWidget( p_parent ),
  _p_webApp( p_webApp )
@@ -121,6 +124,15 @@ void WidgetEventPanel::setupUI()
     _p_ui->setupUi( this );
     _widgets.clear();
 
+    // setup the buzz button activation timer
+    // the buzz button is initially disabled for the sake of spam protection
+    _p_ui->pushButtonBuzz->setEnabled( false );
+    _p_buzzActivationTimer = new QTimer( this );
+    _p_buzzActivationTimer->setSingleShot( true );
+    connect( _p_buzzActivationTimer, SIGNAL( timeout() ), this, SLOT( onBuzzActivationTimer() ) );
+
+    scheduleEnableBuzz( M4E_BUZZ_ANTI_SPAM_TIME );
+
     _p_ui->widgetChat->setupUI( _p_webApp );
     connect( _p_webApp->getChatSystem(), SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
     connect( _p_ui->widgetChat, SIGNAL( onSendMessage( m4e::chat::ChatMessagePtr ) ), this, SLOT( onSendMessage( m4e::chat::ChatMessagePtr ) ) );
@@ -137,6 +149,10 @@ void WidgetEventPanel::setupUI()
     connect( _p_webApp->getNotifications(), SIGNAL( onUserOnlineStatusChanged( QString, QString, bool ) ), this,
                                             SLOT( onUserOnlineStatusChanged( QString, QString, bool ) ) );
 
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
+                                            SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
+
+
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetMembers, shadowcolor, QPoint( -3, 3 ), 3 );
@@ -148,6 +164,21 @@ void WidgetEventPanel::setupUI()
     _p_clientArea->setViewMode( QListView::IconMode );
     _p_clientArea->setWrapping( true );
     _p_clientArea->setSpacing( 10 );
+}
+
+void WidgetEventPanel::scheduleEnableBuzz( int msec )
+{
+    if ( msec <= 0 )
+    {
+        _p_ui->pushButtonBuzz->setEnabled( true );
+        _p_ui->pushButtonBuzz->setToolTip( QApplication::translate( "WidgetEventPanel", "Buzz Your Friends!" ) );
+    }
+    else
+    {
+        _p_ui->pushButtonBuzz->setEnabled( false );
+        _p_ui->pushButtonBuzz->setToolTip( QApplication::translate( "WidgetEventPanel", "Buzz Cooldown..." ) );
+        _p_buzzActivationTimer->start( msec );
+    }
 }
 
 void WidgetEventPanel::setupWidgetHead()
@@ -305,7 +336,9 @@ void WidgetEventPanel::onBtnBuzzClicked()
 {
     DialogBuzz* p_dlg = new DialogBuzz( _p_webApp, this );
     p_dlg->setupUI( _event );
-    p_dlg->exec();
+    if ( p_dlg->exec() == DialogBuzz::BtnSend )
+        scheduleEnableBuzz( M4E_BUZZ_ANTI_SPAM_TIME );
+
     delete p_dlg;
 }
 
@@ -396,6 +429,29 @@ void WidgetEventPanel::onResponseGetLocationVotesByTime( bool success, QList< Mo
             }
         }
     }
+}
+
+void WidgetEventPanel::onEventLocationVote( QString senderId, QString /*senderName*/, QString /*eventId*/, QString locationId, bool /*vote*/ )
+{
+    // suppress echo
+    QString userid = _p_webApp->getUser()->getUserData()->getId();
+    if ( senderId == userid )
+        return;
+
+    WidgetLocation* p_widget = findWidgetLocation( locationId );
+    if ( !p_widget )
+        return;
+
+    if ( p_widget->getVotes().valid() )
+        _p_webApp->getEvents()->requestGetLocationVotesById( p_widget->getVotes()->getId() );
+    else
+        requestCurrentLoctionVotes();
+}
+
+void WidgetEventPanel::onBuzzActivationTimer()
+{
+    _p_ui->pushButtonBuzz->setEnabled( true );
+    _p_ui->pushButtonBuzz->setToolTip( QApplication::translate( "WidgetEventPanel", "Buzz Your Friends!" ) );
 }
 
 } // namespace event

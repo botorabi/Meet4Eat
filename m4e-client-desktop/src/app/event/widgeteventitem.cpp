@@ -121,6 +121,7 @@ void WidgetEventItem::setSelectionMode( bool normal )
 
     QColor shadowcolor = normal ? QColor( 100, 100, 100, 180) : QColor( 231, 247, 167 , 180 );
     common::GuiUtils::createShadowEffect( this, shadowcolor, QPoint( -3, 3 ), 6 );
+    _selected = !normal;
 }
 
 void WidgetEventItem::notifyUpdate( const QString& text )
@@ -136,25 +137,9 @@ void WidgetEventItem::createNewLocation()
 
 void WidgetEventItem::onBtnEditClicked()
 {
-    DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, this );
+    DialogEventSettings* p_dlg = new DialogEventSettings( _p_webApp, nullptr, true );
     p_dlg->setupUI( _event );
-    int  res = p_dlg->exec();
-    bool userleftevent = !p_dlg->userIsMemberOfEvent();
-    delete p_dlg;
-
-    if ( !userleftevent && ( res != DialogEventSettings::BtnApply ) )
-        return;
-
-    if ( userleftevent )
-    {
-        _p_webApp->getEvents()->requestGetEvents();
-    }
-    else
-    {
-        // update event data
-        onBtnNotificationClicked();
-        emit onClicked( _event->getId() );
-    }
+    p_dlg->show();
 }
 
 void WidgetEventItem::onBtnDeleteClicked()
@@ -188,6 +173,11 @@ void WidgetEventItem::onBtnNotificationClicked()
 {
     _p_ui->pushButtonNotification->hide();
     emit onRequestUpdateEvent( _event->getId() );
+}
+
+void WidgetEventItem::onAnimationFinished()
+{
+    _animating = false;
 }
 
 void WidgetEventItem::onDocumentReady( m4e::doc::ModelDocumentPtr document )
@@ -265,7 +255,9 @@ bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
 {
     if ( p_event->type() == QEvent::MouseButtonPress )
     {
-        emit onClicked( _event->getId() );
+        if ( !_selected )
+            emit onClicked( _event->getId() );
+
         _p_ui->pushButtonNotification->hide();
         return true;
     }
@@ -275,7 +267,10 @@ bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
 
 void WidgetEventItem::animateItemWidget()
 {
-    //! TODO make sure that the widget does not drift. check if an animation is already running, if so skip a new animation
+    if ( _animating )
+        return;
+
+    _animating = true;
 
     QRect geom = geometry();
 
@@ -296,6 +291,7 @@ void WidgetEventItem::animateItemWidget()
     p_anim->addAnimation( p_anim2 );
     p_anim->setLoopCount( 10 );
     p_anim->start( QAbstractAnimation::DeleteWhenStopped );
+    connect( p_anim, SIGNAL( finished() ),this, SLOT( onAnimationFinished() ) );
 }
 
 } // namespace event

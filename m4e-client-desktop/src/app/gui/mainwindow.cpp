@@ -378,13 +378,12 @@ void MainWindow::onAboutLinkActivated( QString link )
 
 void MainWindow::onBtnAddEvent()
 {
-    event::DialogEventSettings* p_dlg = new event::DialogEventSettings( _p_webApp, this );
+    event::DialogEventSettings* p_dlg = new event::DialogEventSettings( _p_webApp, this , true);
     event::ModelEventPtr event = new event::ModelEvent();
     event->setStartDate( QDateTime::currentDateTime() );
 
     p_dlg->setupNewEventUI( event );
     p_dlg->exec();
-    delete p_dlg;
 }
 
 void MainWindow::onBtnRefreshEvents()
@@ -577,10 +576,10 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
     scheduleEventRefreshing();
 }
 
-void MainWindow::onEventMemberChanged( notify::Notifications::ChangeType /*changeType*/, QString eventId, QString userId )
+void MainWindow::onEventMemberChanged( notify::Notifications::ChangeType changeType, QString eventId, QString userId )
 {
-    //! TODO update the event list
-    log_debug << TAG << "TODO onEventMemberChanged " << eventId << "/" << userId << std::endl;
+    log_debug << TAG << "user's event membership changed: " << eventId << "/" << userId << std::endl;
+    _p_webApp->getEvents()->updateUserMembership( userId, eventId, changeType == notify::Notifications::Added );
 }
 
 void MainWindow::onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote )

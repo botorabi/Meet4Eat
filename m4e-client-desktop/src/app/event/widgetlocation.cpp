@@ -22,6 +22,10 @@ namespace m4e
 namespace event
 {
 
+/** Minimal time interval between two location votes, this is used for minimize spamming */
+static const int M4E_VOTE_ANTI_SPAM_TIME = 5000;
+
+
 WidgetLocation::WidgetLocation( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  QWidget( p_parent ),
  _p_webApp( p_webApp)
@@ -39,17 +43,18 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
     _event = event;
     _location = location;
 
+    _p_spamTimer = new QTimer( this );
+    _p_spamTimer->setSingleShot( true );
+    connect( _p_spamTimer, SIGNAL( timeout() ), this, SLOT( onAntiSpamTimeout() ) );
+
     connect( _p_webApp->getEvents(), SIGNAL( onResponseSetLocationVote( bool, QString, QString, QString, bool ) ), this,
                                      SLOT( onResponseSetLocationVote( bool, QString, QString, QString, bool ) ) );
 
     connect( _p_webApp->getEvents(), SIGNAL( onResponseGetLocationVotesById( bool, m4e::event::ModelLocationVotesPtr ) ), this,
                                      SLOT( onResponseGetLocationVotesById( bool, m4e::event::ModelLocationVotesPtr ) ) );
 
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
-                                            SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
-
     _p_ui->setupUi( this );
-    _p_ui->labelHead->setText( _location->getName() );
+    _p_ui->labelHead->setText( _location->getName() );    
     _p_ui->labelDescription->setText( _location->getDescription() );
 
     // the buttons "delete" and "edit" are only visible for event owner
@@ -128,7 +133,7 @@ void WidgetLocation::updateVotes( ModelLocationVotesPtr votes )
 
 void WidgetLocation::onBtnEditClicked()
 {
-    DialogLocationEdit* p_dlg = new DialogLocationEdit( _p_webApp, this );
+    DialogLocationEdit* p_dlg = new DialogLocationEdit( _p_webApp, nullptr );
     p_dlg->setupUIEditLocation( _event, _location );
     p_dlg->exec();
     delete p_dlg;
@@ -162,11 +167,18 @@ void WidgetLocation::onBtnInfoClicked()
 void WidgetLocation::onBtnVoteUpClicked()
 {
     requestSetLocationVote( true );
+    spamProtection( true );
 }
 
 void WidgetLocation::onBtnVoteDownClicked()
 {
     requestSetLocationVote( false );
+    spamProtection( true );
+}
+
+void WidgetLocation::onAntiSpamTimeout()
+{
+    spamProtection( false );
 }
 
 void WidgetLocation::onDocumentReady( m4e::doc::ModelDocumentPtr document )
@@ -176,21 +188,6 @@ void WidgetLocation::onDocumentReady( m4e::doc::ModelDocumentPtr document )
     {
         _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
     }
-}
-
-void WidgetLocation::onEventLocationVote( QString senderId, QString /*senderName*/, QString /*eventId*/, QString locationId, bool /*vote*/ )
-{
-    // suppress echo
-    QString userid = _p_webApp->getUser()->getUserData()->getId();
-    if ( senderId == userid )
-        return;
-
-    // is this vote for this location?
-    if ( locationId != _location->getId() )
-         return;
-
-    if ( _votes.valid() )
-        _p_webApp->getEvents()->requestGetLocationVotesById( _votes->getId() );
 }
 
 void WidgetLocation::onResponseSetLocationVote( bool success, QString eventId, QString locationId, QString votesId, bool vote )
@@ -219,6 +216,7 @@ void WidgetLocation::onResponseGetLocationVotesById( bool success, ModelLocation
     }
     else
     {
+        // the method checks if the incoming votes is for this location
         updateVotes( votes );
     }
 }
@@ -252,6 +250,15 @@ void WidgetLocation::requestSetLocationVote( bool vote )
     }
 
     _p_webApp->getEvents()->requestSetLocationVote( _event->getId(), _location->getId(), vote );
+}
+
+void WidgetLocation::spamProtection( bool start )
+{
+    if ( start )
+        _p_spamTimer->start( M4E_VOTE_ANTI_SPAM_TIME );
+
+    _p_ui->pushButtonVoteDown->setEnabled( !start );
+    _p_ui->pushButtonVoteUp->setEnabled( !start );
 }
 
 void WidgetLocation::updateVotingButtons()

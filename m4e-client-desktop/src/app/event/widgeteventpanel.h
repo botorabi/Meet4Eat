@@ -171,12 +171,36 @@ class WidgetEventPanel : public QWidget
          */
         void                        onResponseGetLocationVotesByTime( bool success, QList< m4e::event::ModelLocationVotesPtr > votes );
 
+        /**
+         * @brief This signal is emitted when an event location vote arrives.
+         *
+         * @param senderId   User ID of the voter
+         * @param senderName User name of the voter
+         * @param eventId    Event ID
+         * @param loactionId Event location ID
+         * @param vote       true for vote and false for unvote the given location
+         */
+        void                        onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
+
+        /**
+         * @brief Timeout callback used for buzz button activation
+         */
+        void                        onBuzzActivationTimer();
+
     protected:
 
         /**
          * @brief Setup the widget.
          */
         void                        setupUI();
+
+        /**
+         * @brief Schedule a time in milliseconds for activating the buzz button. This
+         * is used for spam protection.
+         *
+         * @param msec    Time to activate the button in milliseconds
+         */
+        void                        scheduleEnableBuzz( int msec );
 
         /**
          * @brief Setup the head elements in event widget (info fields, etc.)
@@ -230,11 +254,13 @@ class WidgetEventPanel : public QWidget
          */
         WidgetLocation*             findWidgetLocation( const QString& locationId );
 
-        Ui::WidgetEventPanel*       _p_ui               = nullptr;
+        Ui::WidgetEventPanel*       _p_ui                   = nullptr;
 
-        QListWidget*                _p_clientArea       = nullptr;
+        QListWidget*                _p_clientArea           = nullptr;
 
-        webapp::WebApp*             _p_webApp           = nullptr;
+        QTimer*                     _p_buzzActivationTimer  = nullptr;
+
+        webapp::WebApp*             _p_webApp               = nullptr;
 
         typedef QMap< QString /*id*/, QString /*name*/>  Locations;
 

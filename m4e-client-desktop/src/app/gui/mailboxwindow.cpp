@@ -22,7 +22,7 @@ namespace gui
 {
 
 MailboxWindow::MailboxWindow( webapp::WebApp* p_webApp, QWidget* p_parent ) :
- QMainWindow( p_parent ),
+ QMainWindow( nullptr ),
  _p_ui( new Ui::MailboxWindow ),
  _p_webApp( p_webApp )
 {
@@ -69,11 +69,6 @@ void MailboxWindow::restoreWindowGeometry()
 void MailboxWindow::onBtnCloseClicked()
 {
     emit onMailWindowClosed();
-
-    //! NOTE detach from parent, otherwise the entire app will terminate if the main window is minimized!
-    //!      don't know if this is a feature or a bug of Qt
-    setParent( nullptr );
-
     deleteLater();
 }
 

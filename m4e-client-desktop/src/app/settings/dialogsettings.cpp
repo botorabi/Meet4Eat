@@ -168,11 +168,11 @@ void DialogSettings::onUserSignedIn( bool success, QString /*userId*/ )
     if ( success )
     {
         log_debug << TAG << "successfully signed in user" << std::endl;
-        common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
+        common::DialogMessage* p_msg = new common::DialogMessage( this, true );
+        p_msg->setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
                      QApplication::translate( "DialogSettings", "You were successfully signed in." ),
                      common::DialogMessage::BtnOk );
-        msg.exec();
+        p_msg->show();
     }
     else
     {
