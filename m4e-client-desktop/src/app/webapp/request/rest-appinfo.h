@@ -48,9 +48,9 @@ class RESTAppInfo : public Meet4EatREST
         virtual                 ~RESTAppInfo();
 
         /**
-         * @brief Get the web app information. The results are emitted by signal 'onRESTAppInfo'.
+         * @brief Request for the the web app information. The results are emitted by signal 'onRESTAppInfo'.
          */
-        void                    getAppInfo();
+        void                    requestAppInfo();
 
     signals:
 

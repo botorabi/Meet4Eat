@@ -26,7 +26,7 @@ RESTAppInfo::~RESTAppInfo()
 {
 }
 
-void RESTAppInfo::getAppInfo()
+void RESTAppInfo::requestAppInfo()
 {
     QUrl url( getResourcePath() + "/rest/appinfo" );
     auto p_callback = new ResponseAppInfo( this );

@@ -61,7 +61,7 @@ MainWindow::MainWindow() :
 
     // prepare the start of webapp, it connects the application to the webapp server
     _p_webApp = new webapp::WebApp( this );
-    connect( _p_webApp, SIGNAL( onAuthState( bool ) ), this, SLOT( onAuthState( bool ) ) );
+    connect( _p_webApp, SIGNAL( onAuthState( bool, bool ) ), this, SLOT( onAuthState( bool, bool ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
     connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
@@ -86,7 +86,7 @@ MainWindow::MainWindow() :
     _p_eventTimer->setSingleShot( true );
     connect( _p_eventTimer, SIGNAL( timeout() ), this, SLOT( onEventRefreshTimer() ) );
 
-    updateStatus( QApplication::translate( "MainWindow", "No Connection!" ), true );
+    updateStatus( QApplication::translate( "MainWindow", "No Connection!" ), false );
     _p_ui->pushButtonRefreshEvents->hide();
 
     clearWidgetClientArea();
@@ -404,9 +404,19 @@ void MainWindow::onCreateNewLocation( QString eventId )
         _p_eventList->createNewLocation( eventId );
 }
 
-void MainWindow::onAuthState( bool authenticated )
+void MainWindow::onAuthState( bool success, bool authenticated )
 {
-    if ( !authenticated )
+    if ( !success )
+    {
+        if ( _recoverConnection )
+        {
+            // schedule a new attempt to sign in
+            log_debug << TAG << "cannot reach the app server, schedule a new connection..." << std::endl;
+            _recoverConnection = true;
+            _p_initTimer->start( M4E_PERIOD_CONN_RECOVERY * 60000 );
+         }
+    }
+    else if ( !authenticated )
     {
         log_debug << TAG << "attempt to connect the server..." << std::endl;
         _p_webApp->establishConnection();
@@ -425,7 +435,7 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
         text = QApplication::translate( "MainWindow", "No Connection!" );
     }
 
-    updateStatus( text, false );
+    updateStatus( text, true );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ), this,
                                             SLOT( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ) );
@@ -468,13 +478,14 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
         log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
         // start the keep alive updates
         _enableKeepAlive = true;
+        _recoverConnection = false;
         addLogText( "Web App Server " + _p_webApp->getWebAppVersion() );
         addLogText( "User has successfully signed in" );
     }
     else
     {
         log_verbose << TAG << "user could not sign in: " << userId << std::endl;
-        updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+        updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
         addLogText( "User failed to sign in!" );
 
         // show the dialog only on initial sign in
@@ -492,6 +503,13 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
 
             _enableKeepAlive = true;
         }
+        else
+        {
+            // schedule a new attempt to sign in
+            log_debug << TAG << "lost connection, schedule a new connection..." << std::endl;
+            _recoverConnection = true;
+            _p_initTimer->start( M4E_PERIOD_CONN_RECOVERY * 60000 );
+        }
     }
 
     _initialSignIn = false;
@@ -500,9 +518,10 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
 
 void MainWindow::onUserSignedOff( bool success )
 {
-    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
 
     _enableKeepAlive = false;
+    _recoverConnection = false;
 
     if ( success )
     {
@@ -517,10 +536,17 @@ void MainWindow::onServerConnectionClosed()
 {
     log_debug << TAG << "server connection was closed" << std::endl;
 
-    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
     clearWidgetMyEvents();
 
     addLogText( "Server connection was closed" );
+
+    // un uncontrolled connection loss should be recovered
+    if ( _recoverConnection )
+    {
+        log_debug << TAG << "lost connection, schedule a new connection..." << std::endl;
+        _p_initTimer->start( M4E_PERIOD_CONN_RECOVERY * 60000 );
+    }
 }
 
 void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEventPtr > /*events*/ )
@@ -668,11 +694,11 @@ void MainWindow::onEventRefreshTimer()
     _p_webApp->getEvents()->requestGetEvents();
 }
 
-void MainWindow::updateStatus( const QString& text, bool offline )
+void MainWindow::updateStatus( const QString& text, bool online )
 {
     _p_ui->pushButtonStatus->setText( text );
-    _p_ui->pushButtonStatus->setEnabled( offline );
-    QString tooltip = offline ? QApplication::translate( "MainWindow", "Click to connect the server" ) : "";
+    _p_ui->pushButtonStatus->setEnabled( !online );
+    QString tooltip = !online ? QApplication::translate( "MainWindow", "Click to connect the server" ) : "";
     _p_ui->pushButtonStatus->setToolTip( tooltip );
 }
 

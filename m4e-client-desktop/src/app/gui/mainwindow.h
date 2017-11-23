@@ -132,9 +132,10 @@ class MainWindow : public QMainWindow
         /**
          * @brief This signal is emitted to inform about the current authentication state.
          *
+         * @param success        true if the authentication state could be determined, otherwise false if a connection problem exists.
          * @param authenticated  True if the user is authenticated, otherwise false
          */
-        void                        onAuthState( bool authenticated );
+        void                        onAuthState( bool success, bool authenticated );
 
         /**
          * @brief This signal is emitted when an update of user data was arrived.
@@ -208,7 +209,7 @@ class MainWindow : public QMainWindow
          * @param loactionId Event location ID
          * @param vote       true for vote and false for unvote the given location
          */
-        void                    onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
+        void                        onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
 
         /**
          * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
@@ -246,7 +247,7 @@ class MainWindow : public QMainWindow
 
         void                        customEvent( QEvent* p_event );
 
-        void                        updateStatus( const QString& text, bool offline );
+        void                        updateStatus( const QString& text, bool online );
 
         void                        addLogText( const QString& text );
 
@@ -294,9 +295,11 @@ class MainWindow : public QMainWindow
 
         QPoint                      _draggingPos;
 
-        bool                        _initialSignIn   = true;
+        bool                        _initialSignIn     = true;
 
-        bool                        _enableKeepAlive = false;
+        bool                        _enableKeepAlive   = false;
+
+        bool                        _recoverConnection = false;
 
         int                         _lastUnreadMails = 0;
 

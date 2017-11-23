@@ -160,13 +160,13 @@ void WidgetEventItem::onBtnDeleteClicked()
 
 void WidgetEventItem::onBtnNewLocationClicked()
 {
-    DialogLocationEdit* p_dlg = new DialogLocationEdit( _p_webApp, this );
+    DialogLocationEdit* p_dlg = new DialogLocationEdit( _p_webApp, nullptr );
     p_dlg->setupUINewLocation( _event );
     p_dlg->exec();
     delete p_dlg;
 
     // update event data
-    onBtnNotificationClicked();
+    //onBtnNotificationClicked();
 }
 
 void WidgetEventItem::onBtnNotificationClicked()

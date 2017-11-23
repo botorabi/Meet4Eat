@@ -19,7 +19,7 @@
 /* App name and version */
 #define M4E_APP_NAME            "Meet4Eat"
 #define M4E_ORGANIZATION_NAME   "vr-fun"
-#define M4E_APP_VERSION         "0.8.7"
+#define M4E_APP_VERSION         "0.8.8"
 #define M4E_APP_COPYRIGHT       "(c) 2017"
 #define M4E_APP_URL             "https://m4e.org"
 #define M4E_APP_DESCRIPTION     M4E_APP_NAME " - A Social Collaboration App. " M4E_APP_COPYRIGHT ", for more information visit " M4E_APP_URL
@@ -89,6 +89,11 @@
  * period on app server.
  */
 #define M4E_PERIOD_SRV_UPDATE_STATUS 15
+
+/* The period (in minutes) for trying to reconnect a server after a
+ * loss of connection.
+ */
+#define M4E_PERIOD_CONN_RECOVERY     1
 
 /* Used for assuring one running instance of the application per user */
 #define  M4E_APP_INSTANCE_KEY        M4E_APP_NAME

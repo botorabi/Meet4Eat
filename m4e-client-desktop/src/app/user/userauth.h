@@ -97,10 +97,11 @@ class UserAuthentication : public QObject
         /**
          * @brief Results of authentication state request.
          *
+         * @param success       True if the authentication state retrieval was successful, otherwise false.
          * @param authenticated true if the user is already authenticated, otherwise false.
          * @param userId        User ID, if the user is already authenticated, otherwise 0
          */
-        void                    onResponseAuthState( bool authenticated, QString userId );
+        void                    onResponseAuthState( bool success, bool authenticated, QString userId );
 
         /**
          * @brief Results of an authentication attempt are emitted by this signal.

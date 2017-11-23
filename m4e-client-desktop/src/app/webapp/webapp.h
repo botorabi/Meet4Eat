@@ -179,9 +179,10 @@ class WebApp : public QObject
         /**
          * @brief This signal is emitted to inform about the current authentication state.
          *
+         * @param success        true if the authentication state could be determined, otherwise false if a connection problem exists.
          * @param authenticated  True if the user is authenticated, otherwise false
          */
-        void                            onAuthState( bool authenticated );
+        void                            onAuthState( bool success, bool authenticated );
 
         /**
          * @brief This signal is emitted to notify about user authentication results.
@@ -236,12 +237,21 @@ class WebApp : public QObject
         void                            onRESTAppInfo( QString version );
 
         /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                            onRESTAppInfoError( QString errorCode, QString reason );
+
+        /**
          * @brief Results of authentication state request.
          *
+         * @param success       True if the authentication state retrieval was successful, otherwise false.
          * @param authenticated true if the user is already authenticated, otherwise false.
          * @param userId        User ID, if the user is already authenticated, otherwise 0
          */
-        void                            onResponseAuthState( bool authenticated, QString userId );
+        void                            onResponseAuthState( bool success, bool authenticated, QString userId );
 
         /**
          * @brief Results of an authentication attempt are emitted by this signal.
