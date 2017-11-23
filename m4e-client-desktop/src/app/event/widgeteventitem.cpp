@@ -164,15 +164,11 @@ void WidgetEventItem::onBtnNewLocationClicked()
     p_dlg->setupUINewLocation( _event );
     p_dlg->exec();
     delete p_dlg;
-
-    // update event data
-    //onBtnNotificationClicked();
 }
 
 void WidgetEventItem::onBtnNotificationClicked()
 {
     _p_ui->pushButtonNotification->hide();
-    emit onRequestUpdateEvent( _event->getId() );
 }
 
 void WidgetEventItem::onAnimationFinished()

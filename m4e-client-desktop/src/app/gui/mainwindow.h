@@ -14,6 +14,7 @@
 #include <chat/chatsystem.h>
 #include <event/events.h>
 #include <event/widgeteventlist.h>
+#include <settings/dialogsettings.h>
 #include <notification/notifications.h>
 #include <QMainWindow>
 #include <QMouseEvent>
@@ -130,6 +131,15 @@ class MainWindow : public QMainWindow
         void                        onCreateNewLocation( QString eventId );
 
         /**
+         * @brief On start of server connection establishing the web server information is fetched as first step.
+         * This signal notifies about the reachablity of the server and its version.
+         *
+         * @param success   true if the server was reachable, otherwise false
+         * @param version   The web app server version.
+         */
+        void                        onWebServerInfo( bool success, QString version );
+
+        /**
          * @brief This signal is emitted to inform about the current authentication state.
          *
          * @param success        true if the authentication state could be determined, otherwise false if a connection problem exists.
@@ -243,6 +253,11 @@ class MainWindow : public QMainWindow
          */
         void                        onEventRefreshTimer();
 
+        /**
+         * @brief Timer used for recovery a lost connection.
+         */
+        void                        onRecoveryTimer();
+
     protected:
 
         void                        customEvent( QEvent* p_event );
@@ -256,6 +271,8 @@ class MainWindow : public QMainWindow
         void                        storeWindowGeometry();
 
         void                        restoreWindowGeometry();
+
+        void                        showSettingsDialog();
 
         void                        mouseDoubleClickEvent( QMouseEvent* p_event );
 
@@ -273,6 +290,8 @@ class MainWindow : public QMainWindow
 
         void                        createWidgetEvent( const QString& eventId );
 
+        void                        scheduleConnectionRecovery();
+
         void                        scheduleEventRefreshing();
 
         Ui::MainWindow*             _p_ui            = nullptr;
@@ -283,6 +302,8 @@ class MainWindow : public QMainWindow
 
         QTimer*                     _p_eventTimer    = nullptr;
 
+        QTimer*                     _p_recoveryTimer = nullptr;
+
         webapp::WebApp*             _p_webApp        = nullptr;
 
         MailboxWindow*              _p_mailWindow    = nullptr;
@@ -290,6 +311,8 @@ class MainWindow : public QMainWindow
         SystemTray*                 _p_systemTray    = nullptr;
 
         event::WidgetEventList*     _p_eventList     = nullptr;
+
+        settings::DialogSettings*   _p_settingsDlg   = nullptr;
 
         bool                        _dragging        = false;
 

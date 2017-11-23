@@ -177,6 +177,15 @@ class WebApp : public QObject
     signals:
 
         /**
+         * @brief On start of server connection establishing the web server information is fetched as first step.
+         * This signal notifies about the reachablity of the server and its version.
+         *
+         * @param success   true if the server was reachable, otherwise false
+         * @param version   The web app server version.
+         */
+        void                            onWebServerInfo( bool success, QString version );
+
+        /**
          * @brief This signal is emitted to inform about the current authentication state.
          *
          * @param success        true if the authentication state could be determined, otherwise false if a connection problem exists.

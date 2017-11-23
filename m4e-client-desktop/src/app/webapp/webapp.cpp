@@ -43,6 +43,11 @@ void WebApp::establishConnection()
     _webAppVersion = "";
     _authState     = AuthNoConnection;
 
+    //! NOTE: the user login process consists of following steps:
+    // 1. get the app server info
+    // 2. get the authentication state
+    // 3. try to authenticate
+
     // kick off the connection by requesting the app server info
     setupServerURL( getOrCreateAppInfo() );
     getOrCreateAppInfo()->requestAppInfo();
@@ -150,6 +155,7 @@ RESTAppInfo* WebApp::getOrCreateAppInfo()
     {
         _p_restAppInfo = new RESTAppInfo( this );
         connect( _p_restAppInfo, SIGNAL( onRESTAppInfo( QString ) ), this, SLOT( onRESTAppInfo( QString ) ) );
+        connect( _p_restAppInfo, SIGNAL( onRESTAppInfoError( QString, QString ) ), this, SLOT( onRESTAppInfoError( QString, QString ) ) );
 
         setupServerURL( _p_restAppInfo );
     }
@@ -282,6 +288,8 @@ void WebApp::onRESTAppInfo( QString version )
     log_info << TAG << "web app version: " << version << std::endl;
     _webAppVersion = version;
 
+    onWebServerInfo( true, version );
+
     QString username = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
     QString passwd   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
     QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
@@ -309,6 +317,7 @@ void WebApp::onRESTAppInfoError( QString errorCode, QString reason )
 {
     log_warning << TAG << "could not reach the web app server (" << errorCode  << "), reason: " << reason << std::endl;
     _authState = AuthFail;
+    onWebServerInfo( false, "" );
 }
 
 void WebApp::onResponseAuthState( bool success, bool authenticated, QString /*userId*/ )

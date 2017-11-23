@@ -82,13 +82,6 @@ class WidgetEventList : public QListWidget
         void                        onClicked( QString id );
 
         /**
-         * @brief This signal is used for updating the event data from app server.
-         *
-         * @param id   The event ID
-         */
-        void                        onRequestUpdateEvent( QString id );
-
-        /**
          * @brief This signal is used if the event should be deleted.
          *
          * @param id    The event ID

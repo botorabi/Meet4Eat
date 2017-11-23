@@ -61,6 +61,7 @@ MainWindow::MainWindow() :
 
     // prepare the start of webapp, it connects the application to the webapp server
     _p_webApp = new webapp::WebApp( this );
+    connect( _p_webApp, SIGNAL( onWebServerInfo( bool, QString ) ), this, SLOT( onWebServerInfo( bool, QString ) ) );
     connect( _p_webApp, SIGNAL( onAuthState( bool, bool ) ), this, SLOT( onAuthState( bool, bool ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
@@ -85,6 +86,10 @@ MainWindow::MainWindow() :
     _p_eventTimer = new QTimer( this );
     _p_eventTimer->setSingleShot( true );
     connect( _p_eventTimer, SIGNAL( timeout() ), this, SLOT( onEventRefreshTimer() ) );
+
+    _p_recoveryTimer = new QTimer( this );
+    _p_recoveryTimer->setSingleShot( true );
+    connect( _p_recoveryTimer, SIGNAL( timeout() ), this, SLOT( onRecoveryTimer() ) );
 
     updateStatus( QApplication::translate( "MainWindow", "No Connection!" ), false );
     _p_ui->pushButtonRefreshEvents->hide();
@@ -161,8 +166,7 @@ void MainWindow::onTimerInit()
     QString login = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
     if ( login.isEmpty() )
     {
-        settings::DialogSettings dlg( _p_webApp, this );
-        dlg.exec();
+        showSettingsDialog();
     }
 
     QString remember = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
@@ -204,8 +208,15 @@ void MainWindow::onBtnStatusClicked()
 {
     if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
     {
-        settings::DialogSettings dlg( _p_webApp, this );
-        dlg.exec();
+        if ( _recoverConnection )
+        {
+            updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), false );
+            _p_webApp->requestAuthState();
+        }
+        else
+        {
+            showSettingsDialog();
+        }
     }
 }
 
@@ -252,6 +263,14 @@ void MainWindow::onBtnCloseClicked()
         }
     }
     hide();
+}
+
+void MainWindow::showSettingsDialog()
+{
+    if ( !_p_settingsDlg )
+        _p_settingsDlg = new settings::DialogSettings( _p_webApp, this );
+
+    _p_settingsDlg->exec();
 }
 
 void MainWindow::mouseDoubleClickEvent( QMouseEvent* p_event )
@@ -329,9 +348,8 @@ void MainWindow::onBtnMailsClicked()
 
 void MainWindow::onBtnSettingsClicked()
 {
-    settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );
-    dlg->exec();
-    delete dlg;
+    _recoverConnection = false;
+    showSettingsDialog();
 }
 
 void MainWindow::onBtnAboutClicked()
@@ -404,6 +422,15 @@ void MainWindow::onCreateNewLocation( QString eventId )
         _p_eventList->createNewLocation( eventId );
 }
 
+void MainWindow::onWebServerInfo( bool success, QString /*version*/ )
+{
+    if ( !success )
+    {
+        log_debug << TAG << "the server seems to be unreachable!" << std::endl;
+        showSettingsDialog();
+    }
+}
+
 void MainWindow::onAuthState( bool success, bool authenticated )
 {
     if ( !success )
@@ -411,10 +438,9 @@ void MainWindow::onAuthState( bool success, bool authenticated )
         if ( _recoverConnection )
         {
             // schedule a new attempt to sign in
-            log_debug << TAG << "cannot reach the app server, schedule a new connection..." << std::endl;
-            _recoverConnection = true;
-            _p_initTimer->start( M4E_PERIOD_CONN_RECOVERY * 60000 );
-         }
+            log_debug << TAG << "cannot reach the app server" << std::endl;
+            scheduleConnectionRecovery();
+        }
     }
     else if ( !authenticated )
     {
@@ -478,7 +504,7 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
         log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
         // start the keep alive updates
         _enableKeepAlive = true;
-        _recoverConnection = false;
+        _recoverConnection = true;
         addLogText( "Web App Server " + _p_webApp->getWebAppVersion() );
         addLogText( "User has successfully signed in" );
     }
@@ -497,18 +523,9 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
                          common::DialogMessage::BtnOk );
             msg.exec();
 
-            settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );
-            dlg->exec();
-            delete dlg;
+            showSettingsDialog();
 
             _enableKeepAlive = true;
-        }
-        else
-        {
-            // schedule a new attempt to sign in
-            log_debug << TAG << "lost connection, schedule a new connection..." << std::endl;
-            _recoverConnection = true;
-            _p_initTimer->start( M4E_PERIOD_CONN_RECOVERY * 60000 );
         }
     }
 
@@ -538,14 +555,15 @@ void MainWindow::onServerConnectionClosed()
 
     updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
     clearWidgetMyEvents();
+    clearWidgetClientArea();
 
     addLogText( "Server connection was closed" );
 
     // un uncontrolled connection loss should be recovered
     if ( _recoverConnection )
     {
-        log_debug << TAG << "lost connection, schedule a new connection..." << std::endl;
-        _p_initTimer->start( M4E_PERIOD_CONN_RECOVERY * 60000 );
+        log_debug << TAG << "lost connection!" << std::endl;
+        scheduleConnectionRecovery();
     }
 }
 
@@ -553,11 +571,6 @@ void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEvent
 {
     clearWidgetMyEvents();
     createWidgetMyEvents();
-}
-
-void MainWindow::scheduleEventRefreshing()
-{
-    _p_eventTimer->start( 1000 );
 }
 
 void MainWindow::onEventChanged( notify::Notifications::ChangeType changeType, QString eventId )
@@ -694,6 +707,12 @@ void MainWindow::onEventRefreshTimer()
     _p_webApp->getEvents()->requestGetEvents();
 }
 
+void MainWindow::onRecoveryTimer()
+{
+    if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
+        _p_webApp->establishConnection();
+}
+
 void MainWindow::updateStatus( const QString& text, bool online )
 {
     _p_ui->pushButtonStatus->setText( text );
@@ -751,6 +770,27 @@ void MainWindow::createWidgetEvent( const QString& eventId )
     p_eventpanel->setupEvent( eventId );
 
     _p_ui->widgetClientArea->layout()->addWidget( p_eventpanel );
+}
+
+void MainWindow::scheduleConnectionRecovery()
+{
+    // avoid re-scheduling if the timer is already running
+    if ( _p_recoveryTimer->remainingTime() > 0 )
+        return;
+
+    log_debug << TAG << " schedule a new connection..." << std::endl;
+    // callback: onRecoveryTimer
+    _p_recoveryTimer->start( M4E_PERIOD_CONN_RECOVERY * 60000 );
+}
+
+void MainWindow::scheduleEventRefreshing()
+{
+    // avoid re-scheduling if the timer is already running
+    if ( _p_eventTimer->remainingTime() > 0 )
+        return;
+
+    // callback: onEventRefreshTimer
+    _p_eventTimer->start( 1000 );
 }
 
 } // namespace gui

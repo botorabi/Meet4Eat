@@ -106,7 +106,6 @@ void WidgetEventList::addEvent( m4e::event::ModelEventPtr event )
     WidgetEventItem* p_itemwidget = new WidgetEventItem( _p_webApp, this );
     p_itemwidget->setupUI( event );
     connect( p_itemwidget, SIGNAL( onClicked( QString ) ), this, SLOT( onClicked( QString ) ) );
-    connect( p_itemwidget, SIGNAL( onRequestUpdateEvent( QString ) ), this, SLOT( onRequestUpdateEvent( QString ) ) );
     connect( p_itemwidget, SIGNAL( onRequestDeleteEvent( QString ) ), this, SLOT( onRequestDeleteEvent( QString ) ) );
 
     QListWidgetItem* p_listitem = new QListWidgetItem( this );
@@ -140,11 +139,6 @@ void WidgetEventList::onClicked( QString id )
 
     // forward the signal
     emit onEventSelection( id );
-}
-
-void WidgetEventList::onRequestUpdateEvent( QString id )
-{
-    _p_webApp->getEvents()->requestGetEvent( id );
 }
 
 void WidgetEventList::onRequestDeleteEvent( QString id )
