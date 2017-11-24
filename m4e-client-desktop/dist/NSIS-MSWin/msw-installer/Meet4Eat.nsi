@@ -15,7 +15,7 @@
 ;General
 
   !define PROGRAM_NAME      "Meet4Eat"
-  !define COMPANY_NAME      "VR-Fun"  
+  !define COMPANY_NAME      "VR Fun"  
   !define INSTALLER_NAME 	"Meet4Eat"
   !define SRC_FOLDER     	..\Meet4Eat
   
@@ -72,8 +72,8 @@
   VIProductVersion  "${VERSION}.0"
   ;VIAddVersionKey  /LANG=${LANG_ENGLISH} "Comments" ""
   VIAddVersionKey   "ProductName" "${PROGRAM_NAME}"
-  VIAddVersionKey   "CompanyName" ${COMPANY_NAME}
-  VIAddVersionKey   "LegalCopyright" "Copyright 2015, All rights reserved"
+  VIAddVersionKey   "CompanyName" "${COMPANY_NAME}"
+  VIAddVersionKey   "LegalCopyright" "Copyright 2017, All rights reserved"
   VIAddVersionKey   "FileDescription" "${PROGRAM_NAME} Installer"
   VIAddVersionKey   "FileVersion" ${VERSION}
   VIAddVersionKey   "ProductVersion" ${VERSION}

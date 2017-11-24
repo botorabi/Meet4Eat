@@ -20,7 +20,7 @@ namespace m4e
 namespace gui
 {
 
-static const QString M4E_BUZZ_SOUND = "qrc:/buzz.mp3";
+static const QString M4E_BUZZ_SOUND = "qrc:/buzz.wav";
 
 BuzzWindow::BuzzWindow( MainWindow* p_parent ) :
  QMainWindow( nullptr ),

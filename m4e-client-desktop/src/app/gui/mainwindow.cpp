@@ -199,6 +199,7 @@ void MainWindow::onTimerUpdate()
 {
     if ( _enableKeepAlive )
     {
+        log_verbose << TAG << "sending keepalive" << std::endl;
         _p_webApp->requestAuthState();
         _p_webApp->getMailBox()->requestCountUnreadMails();
     }
@@ -426,8 +427,15 @@ void MainWindow::onWebServerInfo( bool success, QString /*version*/ )
 {
     if ( !success )
     {
-        log_debug << TAG << "the server seems to be unreachable!" << std::endl;
-        showSettingsDialog();
+        if ( _recoverConnection )
+        {
+            scheduleConnectionRecovery();
+        }
+        else
+        {
+            log_debug << TAG << "the server seems to be unreachable!" << std::endl;
+            showSettingsDialog();
+        }
     }
 }
 
@@ -445,6 +453,7 @@ void MainWindow::onAuthState( bool success, bool authenticated )
     else if ( !authenticated )
     {
         log_debug << TAG << "attempt to connect the server..." << std::endl;
+        _enableKeepAlive = false;
         _p_webApp->establishConnection();
     }
 }
@@ -501,7 +510,7 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
 {
     if ( success )
     {
-        log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
+        log_info << TAG << "user was successfully signed in" << std::endl;
         // start the keep alive updates
         _enableKeepAlive = true;
         _recoverConnection = true;
@@ -510,7 +519,7 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
     }
     else
     {
-        log_verbose << TAG << "user could not sign in: " << userId << std::endl;
+        log_info << TAG << "user could not sign in: " << userId << std::endl;
         updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
         addLogText( "User failed to sign in!" );
 
@@ -524,8 +533,6 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
             msg.exec();
 
             showSettingsDialog();
-
-            _enableKeepAlive = true;
         }
     }
 
@@ -542,6 +549,7 @@ void MainWindow::onUserSignedOff( bool success )
 
     if ( success )
     {
+        log_info << TAG << "user was successfully signed off" << std::endl;
         clearWidgetMyEvents();
         createWidgetMyEvents();
     }
@@ -559,7 +567,9 @@ void MainWindow::onServerConnectionClosed()
 
     addLogText( "Server connection was closed" );
 
-    // un uncontrolled connection loss should be recovered
+    _enableKeepAlive = false;
+
+    // an uncontrolled connection loss should be recovered
     if ( _recoverConnection )
     {
         log_debug << TAG << "lost connection!" << std::endl;
