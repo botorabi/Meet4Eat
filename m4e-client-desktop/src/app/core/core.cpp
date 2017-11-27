@@ -105,6 +105,11 @@ void Core::initialize( int &argc, char* argv[] )
 
 #ifdef QT_DEBUG
     defaultlog.addSink( "qdebug" , QtLogStream, loglevel );
+#else
+    if ( parser.isSet( optverbose ) )
+    {
+        defaultlog.addSink( "qdebug" , QtLogStream, loglevel );
+    }
 #endif
 
     defaultlog.enableSeverityLevelPrinting( false );

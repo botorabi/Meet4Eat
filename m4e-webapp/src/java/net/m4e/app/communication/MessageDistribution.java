@@ -120,6 +120,7 @@ public class MessageDistribution {
         ChannelEventSystem ev = new ChannelEventSystem();
         ev.setSenderId(user.getId());
         ev.setPacket(packet);
+        ev.setSessionId(session.getId());
         channelEventSystem.fireAsync(ev);
     }
 
@@ -147,15 +148,13 @@ public class MessageDistribution {
 
         String cmd = data.getString("cmd", "");
         if ("ping".equals(cmd)) {
-            List<Long> ids = new ArrayList();
             JsonObjectBuilder json = Json.createObjectBuilder();
             json.add("cmd", "ping");
             json.add("pong", packet.getTime()); // pong contains the timestamp of ping requester
             packet.setSource("");
             packet.setSourceId("");
             packet.setData(json.build());
-            ids.add(senderid);
-            connections.sendPacket(packet, ids);
+            connections.sendPacket(packet, senderid, event.getSessionId());
         }
         else {
             Log.warning(TAG, "unsupported system command '" + cmd + "' received from user: " + senderid);

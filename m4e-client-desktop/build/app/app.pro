@@ -170,7 +170,8 @@ FORMS += \
     ../../src/app/gui/forms/dialogalarm.ui \
     ../../src/app/gui/forms/alarmwindow.ui \
     ../../src/app/gui/forms/widgetusersettings.ui \
-    ../../src/app/gui/forms/buzzwindow.ui
+    ../../src/app/gui/forms/buzzwindow.ui \
+    ../../src/app/gui/forms/widgetvoteshistory.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

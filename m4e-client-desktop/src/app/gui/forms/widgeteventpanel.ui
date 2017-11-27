@@ -225,6 +225,29 @@
          </spacer>
         </item>
         <item>
+         <widget class="QLabel" name="label_2">
+          <property name="styleSheet">
+           <string notr="true">color: white;</string>
+          </property>
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;VOTES_HISTORY&quot;&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline; color:#ffffff;&quot;&gt;Votes History&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
            <widget class="QPushButton" name="pushButtonBuzz">
@@ -445,6 +468,22 @@ QPushButton:disabled {
     <hint type="destinationlabel">
      <x>644</x>
      <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>label_2</sender>
+   <signal>linkActivated(QString)</signal>
+   <receiver>WidgetEventPanel</receiver>
+   <slot>onLinkActivated(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>421</x>
+     <y>55</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>638</x>
+     <y>178</y>
     </hint>
    </hints>
   </connection>
