@@ -17,7 +17,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.websocket.Session;
-import net.m4e.app.chat.ChatSystem;
 import net.m4e.app.event.EventNotifications;
 import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.app.user.UserEntity;
