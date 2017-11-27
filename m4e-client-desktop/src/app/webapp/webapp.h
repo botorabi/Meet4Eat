@@ -29,6 +29,8 @@ namespace m4e
 namespace webapp
 {
 
+class RESTAppInfo;
+
 /**
  * @brief This class establishes the connection to web application server
  *        and provides access to user data.
@@ -82,6 +84,13 @@ class WebApp : public QObject
          * @brief Shut down an established connection.
          */
         void                            shutdownConnection();
+
+        /**
+         * @brief Get the web application version retrieved from server.
+         *
+         * @return Web application version
+         */
+        const QString&                  getWebAppVersion() const;
 
         /**
          * @brief Get current web app authentication state
@@ -168,11 +177,21 @@ class WebApp : public QObject
     signals:
 
         /**
+         * @brief On start of server connection establishing the web server information is fetched as first step.
+         * This signal notifies about the reachablity of the server and its version.
+         *
+         * @param success   true if the server was reachable, otherwise false
+         * @param version   The web app server version.
+         */
+        void                            onWebServerInfo( bool success, QString version );
+
+        /**
          * @brief This signal is emitted to inform about the current authentication state.
          *
+         * @param success        true if the authentication state could be determined, otherwise false if a connection problem exists.
          * @param authenticated  True if the user is authenticated, otherwise false
          */
-        void                            onAuthState( bool authenticated );
+        void                            onAuthState( bool success, bool authenticated );
 
         /**
          * @brief This signal is emitted to notify about user authentication results.
@@ -220,12 +239,28 @@ class WebApp : public QObject
     protected slots:
 
         /**
+         * @brief This signal is emitted when the server info arrives.
+         *
+         * @param version   The web application version
+         */
+        void                            onRESTAppInfo( QString version );
+
+        /**
+         * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
+         *
+         * @param errorCode Error code if any exits
+         * @param reason    Error string
+         */
+        void                            onRESTAppInfoError( QString errorCode, QString reason );
+
+        /**
          * @brief Results of authentication state request.
          *
+         * @param success       True if the authentication state retrieval was successful, otherwise false.
          * @param authenticated true if the user is already authenticated, otherwise false.
          * @param userId        User ID, if the user is already authenticated, otherwise 0
          */
-        void                            onResponseAuthState( bool authenticated, QString userId );
+        void                            onResponseAuthState( bool success, bool authenticated, QString userId );
 
         /**
          * @brief Results of an authentication attempt are emitted by this signal.
@@ -279,6 +314,8 @@ class WebApp : public QObject
         template< class T >
         void                            setupServerURL( T* p_inst ) const;
 
+        RESTAppInfo*                    getOrCreateAppInfo();
+
         user::UserAuthentication*       getOrCreateUserAuth();
 
         comm::Connection*               getOrCreateConnection();
@@ -298,6 +335,10 @@ class WebApp : public QObject
         void                            resetAllResources();
 
         QString                         _userID;
+
+        QString                         _webAppVersion;
+
+        RESTAppInfo*                    _p_restAppInfo   = nullptr;
 
         user::UserAuthentication*       _p_userAuth      = nullptr;
 

@@ -93,6 +93,8 @@ void DialogLocationEdit::onBtnPhotoClicked()
     m4e::doc::ModelDocumentPtr doc = new m4e::doc::ModelDocument();
     doc->setContent( imagecontent, "image", format );
     _location->setUpdatedPhoto( doc );
+    _location->setPhotoId( "" );
+    _location->setPhotoETag( "" );
     _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( doc ) );
 }
 

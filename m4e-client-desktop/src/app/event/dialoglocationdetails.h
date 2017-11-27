@@ -81,6 +81,14 @@ class DialogLocationDetails : public common::BaseDialog
          */
         QString                     formatVoteMembers( ModelLocationVotesPtr votes ) const;
 
+        /**
+         * @brief Make HTML code out of the given description text.
+         *
+         * @param text  Input text
+         * @return      HTML code
+         */
+        QString                     formatDescription( const QString& text );
+
         Ui::WidgetLocationDetails*  _p_ui     = nullptr;
 
         webapp::WebApp*             _p_webApp = nullptr;

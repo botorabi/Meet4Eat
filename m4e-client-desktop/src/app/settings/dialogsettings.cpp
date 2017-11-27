@@ -70,6 +70,14 @@ bool DialogSettings::validateInput()
         passwd = webapp::RESTAuthentication::createHash( passwd );
     }
 
+    // if the server url field was empty then restore the default
+    if ( server.isEmpty() )
+    {
+        server = M4E_DEFAULT_APP_SRV;
+        settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, server );
+        _p_ui->lineEditServer->setText( server );
+    }
+
     if ( !server.isEmpty() && !login.isEmpty() && !passwd.isEmpty() )
         return true;
 
@@ -109,10 +117,6 @@ void DialogSettings::setupUI()
     _p_ui->lineEditLogin->setText( login );
     _p_ui->lineEditPassword->setText( "" );
     _p_ui->checkBoxRememberPw->setChecked( remember == "yes" );
-
-    bool connestablished = _p_webApp->getAuthState() == webapp::WebApp::AuthSuccessful;
-    _p_ui->pushButtonSignOut->setEnabled( connestablished );
-    _p_ui->pushButtonSignIn->setEnabled( !connestablished );
 }
 
 void DialogSettings::onBtnSignInClicked()
@@ -160,11 +164,11 @@ void DialogSettings::onUserSignedIn( bool success, QString /*userId*/ )
     if ( success )
     {
         log_debug << TAG << "successfully signed in user" << std::endl;
-        common::DialogMessage msg( this );
-        msg.setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
+        common::DialogMessage* p_msg = new common::DialogMessage( this, true );
+        p_msg->setupUI( QApplication::translate( "DialogSettings", "User Authentication" ),
                      QApplication::translate( "DialogSettings", "You were successfully signed in." ),
                      common::DialogMessage::BtnOk );
-        msg.exec();
+        p_msg->show();
     }
     else
     {
@@ -175,6 +179,14 @@ void DialogSettings::onUserSignedIn( bool success, QString /*userId*/ )
                      common::DialogMessage::BtnOk );
         msg.exec();
     }
+}
+
+void DialogSettings::showEvent( QShowEvent* /*p_event*/ )
+{
+
+    bool connestablished = _p_webApp->getAuthState() == webapp::WebApp::AuthSuccessful;
+    _p_ui->pushButtonSignOut->setEnabled( connestablished );
+    _p_ui->pushButtonSignIn->setEnabled( !connestablished );
 }
 
 } // namespace settings

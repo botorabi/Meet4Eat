@@ -20,6 +20,37 @@ namespace m4e
 namespace event
 {
 
+user::ModelUserInfoPtr ModelEvent::getMember( const QString& userId )
+{
+    for ( user::ModelUserInfoPtr user: _members )
+    {
+        if ( user->getId() == userId )
+        {
+            return user;
+        }
+    }
+    return user::ModelUserInfoPtr();
+}
+
+void ModelEvent::addMember( user::ModelUserInfoPtr user )
+{
+    //! NOTE there is no check whether a user with the same ID already exists in member list!
+    _members.append( user );
+}
+
+bool ModelEvent::removeMember( const QString& userId )
+{
+    for ( int i = 0; i < _members.count(); i++ )
+    {
+        if ( _members.at( i )->getId() == userId )
+        {
+            _members.removeAt( i );
+            return true;
+        }
+    }
+    return false;
+}
+
 QJsonDocument ModelEvent::toJSON()
 {
     QJsonObject obj;

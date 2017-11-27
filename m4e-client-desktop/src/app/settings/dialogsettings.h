@@ -84,6 +84,8 @@ class DialogSettings : public common::BaseDialog
 
     protected:
 
+        void                        showEvent( QShowEvent* p_event );
+
         void                        setupUI();
 
         void                        storeCredentials();

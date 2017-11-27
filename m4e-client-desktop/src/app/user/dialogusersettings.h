@@ -114,8 +114,6 @@ class DialogUserSettings : public common::BaseDialog
         webapp::WebApp*             _p_webApp = nullptr;
 
         user::ModelUserPtr          _user;
-
-        doc::ModelDocumentPtr       _updatedPhoto;
 };
 
 } // namespace user

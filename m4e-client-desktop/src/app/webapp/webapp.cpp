@@ -14,6 +14,7 @@
 #include <user/user.h>
 #include <QApplication>
 #include <webapp/m4e-api/m4e-restops.h>
+#include <webapp/request/rest-appinfo.h>
 
 
 namespace m4e
@@ -38,23 +39,18 @@ void WebApp::establishConnection()
         return;
     }
 
-    _userID    = "";
-    _authState = AuthNoConnection;
+    _userID        = "";
+    _webAppVersion = "";
+    _authState     = AuthNoConnection;
 
-    QString username = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
-    QString passwd   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
-    QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
+    //! NOTE: the user login process consists of following steps:
+    // 1. get the app server info
+    // 2. get the authentication state
+    // 3. try to authenticate
 
-    if ( !username.isEmpty() && !passwd.isEmpty() )
-    {
-        _authState = AuthConnecting;
-        m4e::user::UserAuthentication* p_user = getOrCreateUserAuth();
-        // just for the case that the server url was changed
-        p_user->setServerURL( server );
-        p_user->requestSignIn( username, passwd );
-        username.clear();
-        passwd.clear();
-    }
+    // kick off the connection by requesting the app server info
+    setupServerURL( getOrCreateAppInfo() );
+    getOrCreateAppInfo()->requestAppInfo();
 }
 
 void WebApp::shutdownConnection()
@@ -72,6 +68,11 @@ void WebApp::shutdownConnection()
     Meet4EatRESTOperations::resetCookie();
 
     resetAllResources();
+}
+
+const QString& WebApp::getWebAppVersion() const
+{
+    return _webAppVersion;
 }
 
 WebApp::AuthState WebApp::getAuthState() const
@@ -141,17 +142,24 @@ void WebApp::requestUserSearch( const QString& keyword )
     getOrCreateUser()->requestUserSearch( keyword );
 }
 
-void WebApp::onResponseAuthState( bool authenticated, QString /*userId*/ )
-{
-    _authState = authenticated ? AuthSuccessful : AuthNoConnection;
-    emit onAuthState( authenticated );
-}
-
 template< class T >
 void WebApp::setupServerURL( T* p_inst ) const
 {
     QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
     p_inst->setServerURL( server );
+}
+
+RESTAppInfo* WebApp::getOrCreateAppInfo()
+{
+    if ( !_p_restAppInfo )
+    {
+        _p_restAppInfo = new RESTAppInfo( this );
+        connect( _p_restAppInfo, SIGNAL( onRESTAppInfo( QString ) ), this, SLOT( onRESTAppInfo( QString ) ) );
+        connect( _p_restAppInfo, SIGNAL( onRESTAppInfoError( QString, QString ) ), this, SLOT( onRESTAppInfoError( QString, QString ) ) );
+
+        setupServerURL( _p_restAppInfo );
+    }
+    return _p_restAppInfo;
 }
 
 user::UserAuthentication* WebApp::getOrCreateUserAuth()
@@ -160,7 +168,7 @@ user::UserAuthentication* WebApp::getOrCreateUserAuth()
     {
         _p_userAuth = new user::UserAuthentication( this );
 
-        connect( _p_userAuth, SIGNAL( onResponseAuthState( bool, QString ) ), this, SLOT( onResponseAuthState( bool, QString ) ) );
+        connect( _p_userAuth, SIGNAL( onResponseAuthState( bool, bool, QString ) ), this, SLOT( onResponseAuthState( bool, bool, QString ) ) );
 
         connect( _p_userAuth, SIGNAL( onResponseSignInResult( bool, QString, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ),
                  this, SLOT( onResponseSignInResult( bool, QString, enum m4e::user::UserAuthentication::AuthResultsCode, QString ) ) );
@@ -233,7 +241,7 @@ doc::DocumentCache* WebApp::getOrCreateDocumentCache()
     return _p_documentCache;
 }
 
-mailbox::MailBox*WebApp::getOrCreateMailBox()
+mailbox::MailBox* WebApp::getOrCreateMailBox()
 {
     if ( !_p_mailBox )
     {
@@ -253,9 +261,12 @@ chat::ChatSystem* WebApp::getOrCreateChatSystem()
 
 void WebApp::resetAllResources()
 {
-    _userID = "";
-    _authState = AuthNoConnection;
+    _userID         = "";
     _authFailReason = "";
+    _authState      = AuthNoConnection;
+
+    delete _p_restAppInfo;
+    _p_restAppInfo = nullptr;
     delete _p_connection;
     _p_connection = nullptr;
     delete _p_user;
@@ -272,6 +283,49 @@ void WebApp::resetAllResources()
     _p_chatSystem = nullptr;
 }
 
+void WebApp::onRESTAppInfo( QString version )
+{
+    log_info << TAG << "web app version: " << version << std::endl;
+    _webAppVersion = version;
+
+    onWebServerInfo( true, version );
+
+    QString username = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
+    QString passwd   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW, "" );
+    QString server   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
+
+    // next step: try to sign in now
+    if ( !username.isEmpty() && !passwd.isEmpty() )
+    {
+        _authState = AuthConnecting;
+        m4e::user::UserAuthentication* p_user = getOrCreateUserAuth();
+
+        // just for the case that the server url was changed
+        p_user->setServerURL( server );
+        getOrCreateEvent()->setServerURL( server );
+        getOrCreateConnection()->setServerURL( server );
+        getOrCreateUser()->setServerURL( server );
+        getOrCreateMailBox()->setServerURL( server );
+
+        p_user->requestSignIn( username, passwd );
+        username.clear();
+        passwd.clear();
+    }
+}
+
+void WebApp::onRESTAppInfoError( QString errorCode, QString reason )
+{
+    log_warning << TAG << "could not reach the web app server (" << errorCode  << "), reason: " << reason << std::endl;
+    _authState = AuthFail;
+    onWebServerInfo( false, "" );
+}
+
+void WebApp::onResponseAuthState( bool success, bool authenticated, QString /*userId*/ )
+{
+    _authState = authenticated ? AuthSuccessful : AuthNoConnection;
+    emit onAuthState( success, authenticated );
+}
+
 void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::UserAuthentication::AuthResultsCode code, QString reason )
 {
     if ( success )
@@ -280,6 +334,7 @@ void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::Us
         _userID = userId;
         emit onUserSignedIn( true, userId );
         user::User* p_user = getOrCreateUser();
+
         p_user->requestUserData( userId );
 
         // after a successful sign-in start the real-time communication
@@ -290,13 +345,13 @@ void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::Us
         _authState = AuthFail;
         _authFailReason = reason;
         emit onUserSignedIn( false, "" );
-        log_verbose << TAG << "failed to sign in user (" << QString::number( code ) << "), reason: " << reason << std::endl;
+        log_verbose << TAG << "failed to sign in user (" << code << "), reason: " << reason << std::endl;
     }
 }
 
 void WebApp::onResponseSignOutResult( bool success, user::UserAuthentication::AuthResultsCode code, QString reason )
 {
-    log_verbose << TAG << "user was signed off (" << QString::number( code ) << "), reason: " << reason << std::endl;
+    log_verbose << TAG << "user was signed off (" << code << "), reason: " << reason << std::endl;
     emit onUserSignedOff( success );
 }
 

@@ -16,8 +16,6 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 import javax.websocket.Session;
 import net.m4e.app.chat.ChatSystem;
 import net.m4e.app.event.EventNotifications;
@@ -42,12 +40,6 @@ public class ConnectedClients {
      * Used for logging
      */
     private final static String TAG = "ConnectedClients";
-
-    /**
-     * The chat system handles incoming chat messages.
-     */
-    @Inject
-    ChatSystem chatSystem;
 
     /**
      * Event used for notifying other users
@@ -142,7 +134,10 @@ public class ConnectedClients {
         entry.sessions.add(session);
 
         // send a notification to user's relatives about going online
-        sendNotificationToRelatives(user, true);
+        // note that a user can be logged in multiple times, we send this notification only for the first login
+        if (entry.sessions.size() == 1) {
+            sendNotificationToRelatives(user, true);
+        }
 
         return true;
     }
@@ -169,7 +164,10 @@ public class ConnectedClients {
         }
 
         // send a notification to user's relatives about going offline
-        sendNotificationToRelatives(user, true);
+         // note that a user can be logged in multiple times, we send this notification only if the user is completely logged out
+        if (entry.sessions.isEmpty()) {
+            sendNotificationToRelatives(user, false);
+        }
 
         return true;
     }

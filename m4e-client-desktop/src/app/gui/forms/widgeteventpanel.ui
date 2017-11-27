@@ -228,6 +228,9 @@
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
            <widget class="QPushButton" name="pushButtonBuzz">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="minimumSize">
              <size>
               <width>96</width>
@@ -249,13 +252,29 @@
             <property name="styleSheet">
              <string notr="true">QPushButton {
   background-color: transparent;
-  border-radius: 24px;
-  border-image: url(:/icon-buzz-96.png);
+  border-radius: 48px;
+  /*border-image: url(:/icon-buzz-96.png);*/
+  border: 5px;
 }
 QPushButton:hover {
   background-color: rgb(50,82,95);
   border-radius: 48px;
+}
+QPushButton:disabled {
+  background-color: gray;
+  border-radius: 48px;
+  border: 6px;
 }</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/application.qrc">
+              <normaloff>:/icon-buzz-96.png</normaloff>:/icon-buzz-96.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>90</width>
+              <height>90</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -393,7 +412,9 @@ QPushButton:hover {
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resources/application.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>pushButtonBuzz</sender>

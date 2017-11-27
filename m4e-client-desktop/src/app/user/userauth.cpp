@@ -84,7 +84,7 @@ void UserAuthentication::onRESTAuthenticationAuthState( bool authenticated, QStr
     //!      if both, user name and login are empty then we want to check only the auth state
     if ( _userName.isEmpty() && _password.isEmpty() )
     {
-        emit onResponseAuthState( authenticated, userId );
+        emit onResponseAuthState( true, authenticated, userId );
         return;
     }
 
@@ -105,7 +105,7 @@ void UserAuthentication::onRESTAuthenticationErrorAuthState( QString errorCode, 
     log_warning << TAG << "failed to get auth state: " << errorCode << ", reason: " << reason << std::endl;
     if ( _userName.isEmpty() && _password.isEmpty() )
     {
-        emit onResponseAuthState( false, "" );
+        emit onResponseAuthState( false, false, "" );
         return;
     }
     _userName.clear();

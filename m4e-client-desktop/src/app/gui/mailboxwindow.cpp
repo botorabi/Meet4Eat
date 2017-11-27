@@ -22,7 +22,7 @@ namespace gui
 {
 
 MailboxWindow::MailboxWindow( webapp::WebApp* p_webApp, QWidget* p_parent ) :
- QMainWindow( p_parent ),
+ QMainWindow( nullptr ),
  _p_ui( new Ui::MailboxWindow ),
  _p_webApp( p_webApp )
 {

@@ -266,6 +266,9 @@ QWidget::disabled {
           </item>
           <item>
            <widget class="QPushButton" name="pushButtonVoteDown">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="minimumSize">
              <size>
               <width>25</width>
@@ -298,7 +301,8 @@ QPushButton:hover {
   border-radius: 10px;
 }
 QPushButton:disabled {
-  border-image: url();
+  background-color: gray;
+  border-radius: 12px;
 }</string>
             </property>
            </widget>
@@ -340,7 +344,8 @@ QPushButton:hover {
   border-radius: 10px;
 }
 QPushButton:disabled {
-  border-image: url();
+  background-color: gray;
+  border-radius: 12px;
 }</string>
             </property>
            </widget>

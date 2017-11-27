@@ -227,11 +227,33 @@ class ModelEvent : public common::ModelBase, public m4e::core::RefCount< ModelEv
         QList< user::ModelUserInfoPtr >     getMembers() { return _members; }
 
         /**
+         * @brief Try to find an event member with given user ID.
+         *
+         * @param userId    User ID of member
+         * @return          Retrun the user info or an empty object if not found.
+         */
+        user::ModelUserInfoPtr              getMember( const QString& userId );
+
+        /**
          * @brief Set the event members.
          *
          * @param members List of event members
          */
         void                                setMembers( const QList< user::ModelUserInfoPtr >& members ) { _members = members; }
+
+        /**
+         * @brief Add the given user to event members.
+         *
+         * @param user      The new event member
+         */
+        void                                addMember( user::ModelUserInfoPtr user );
+
+        /**
+         * @brief Remove the user with given ID from event members.
+         *
+         * @return  Return false if no member with given user ID exists.
+         */
+        bool                                removeMember( const QString& userId );
 
         /**
          * @brief Create a JSON string out of the event model. Note that this method exports only the event data without owner, locations, and members.

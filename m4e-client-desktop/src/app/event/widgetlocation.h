@@ -73,6 +73,13 @@ class WidgetLocation : public QWidget
         const QString&              getId() const { return _location->getId(); }
 
         /**
+         * @brief Get the location votes. It may be empty if no votes exist so far.
+         *
+         * @return The location votes.
+         */
+        event::ModelLocationVotesPtr getVotes() { return _votes; }
+
+        /**
          * @brief Update the votes of this location. Pass an empty object in order to reset the votes UI.
          *
          * @param votes Location votes
@@ -114,23 +121,14 @@ class WidgetLocation : public QWidget
 
         void                        onBtnVoteDownClicked();
 
+        void                        onAntiSpamTimeout();
+
         /**
          * @brief This signal is received from webapp when a requested document was arrived.
          *
          * @param document   Document
          */
         void                        onDocumentReady( m4e::doc::ModelDocumentPtr document );
-
-        /**
-         * @brief This signal is emitted when an event location vote arrives.
-         *
-         * @param senderId   User ID of the voter
-         * @param senderName User name of the voter
-         * @param eventId    Event ID
-         * @param loactionId Event location ID
-         * @param vote       true for vote and false for unvote the given location
-         */
-        void                    onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
 
         /**
          * @brief Signal is received when the results of location voting arrive.
@@ -157,11 +155,15 @@ class WidgetLocation : public QWidget
 
         void                        requestSetLocationVote( bool vote );
 
+        void                        spamProtection( bool start );
+
         void                        updateVotingButtons();
 
-        webapp::WebApp*             _p_webApp = nullptr;
+        webapp::WebApp*             _p_webApp    = nullptr;
 
-        Ui::WidgetLocation*         _p_ui     = nullptr;
+        Ui::WidgetLocation*         _p_ui        = nullptr;
+
+        QTimer*                     _p_spamTimer = nullptr;
 
         event::ModelEventPtr        _event;
 

@@ -80,6 +80,13 @@ void Notifications::onChannelNotifyPacket( m4e::comm::PacketPtr packet )
         QString locationid = obj.value( "locationId" ).toString( "" );
         emit onEventLocationChanged( changetype, eventid, locationid );
     }
+    else if ( ( notifytype == "addmember" ) || ( notifytype == "removemember"  ) )
+    {
+        Notifications::ChangeType changetype = ( notifytype == "addmember" ) ? Notifications::Added : Notifications::Removed;
+        QString eventid = obj.value( "eventId" ).toString( "" );
+        QString memberid = obj.value( "memberId" ).toString( "" );
+        emit onEventMemberChanged( changetype, eventid, memberid );
+    }
     else if ( notifytype == "modifyvote" )
     {
         QString eventid = obj.value( "eventId" ).toString( "" );

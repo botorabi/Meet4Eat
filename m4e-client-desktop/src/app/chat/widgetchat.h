@@ -12,6 +12,7 @@
 #include <webapp/webapp.h>
 #include <chat/chatmessage.h>
 #include <document/modeldocument.h>
+#include <QListWidgetItem>
 #include <QWidget>
 #include <QLabel>
 
@@ -51,6 +52,11 @@ class WidgetChat : public QWidget
          */
                                     WidgetChat( QWidget* p_parent = nullptr );
         /**
+         * @brief Destroy WidgetEvent
+         */
+        virtual                     ~WidgetChat();
+
+        /**
          * @brief Setup the widget.
          *
          * @param p_webApp          Web application interface
@@ -58,16 +64,19 @@ class WidgetChat : public QWidget
         void                        setupUI( webapp::WebApp* p_webApp );
 
         /**
-         * @brief Destroy WidgetEvent
-         */
-        virtual                     ~WidgetChat();
-
-        /**
          * @brief Set the event members.
          *
          * @param users Event members
          */
         void                        setMembers( const QList< user::ModelUserInfoPtr > users );
+
+        /**
+         * @brief Update the online status of given user.
+         *
+         * @param userId    The User ID
+         * @param online    Pass true for online and false for offline
+         */
+        void                        updateUserStatus( const QString& userId, bool online );
 
         /**
          * @brief Append a new chat message.
@@ -98,6 +107,10 @@ class WidgetChat : public QWidget
         void                        onSendMessage( m4e::chat::ChatMessagePtr msg );
 
     protected:
+
+        QListWidgetItem*            findUserItem( const QString& userId );
+
+        void                        setupUserItem( QListWidgetItem* p_item, bool online );
 
         webapp::WebApp*             _p_webApp = nullptr;
 

@@ -48,12 +48,8 @@ void WidgetChat::setMembers( const QList< user::ModelUserInfoPtr > users )
     for ( user::ModelUserInfoPtr user: users )
     {
         QListWidgetItem* p_item = new QListWidgetItem( QIcon(), user->getName() );
-
-        if ( user->getStatus() != "online" )
-        {
-            p_item->setForeground( QBrush( QColor( 150, 150, 150 ) ) );
-            p_item->setToolTip( QApplication::translate( "WidgetChat", "User is currently offline") );
-        }
+        p_item->setData( Qt::UserRole, user->getId() );
+        setupUserItem( p_item, user->getStatus() == "online" );
 
         _p_ui->listWidgetMembers->insertItem( row, p_item );
 
@@ -70,6 +66,15 @@ void WidgetChat::setMembers( const QList< user::ModelUserInfoPtr > users )
         }
         row++;
     }
+}
+
+void WidgetChat::updateUserStatus( const QString& userId, bool online )
+{
+    QListWidgetItem* p_item = findUserItem( userId );
+    if ( !p_item )
+        return;
+
+    setupUserItem( p_item, online );
 }
 
 void WidgetChat::appendChatText( ChatMessagePtr msg )
@@ -126,6 +131,31 @@ void WidgetChat::onDocumentReady( m4e::doc::ModelDocumentPtr document )
     QPixmap pix = common::GuiUtils::createRoundIcon( document );
     QListWidgetItem* p_item = _p_ui->listWidgetMembers->item( row );
     p_item->setIcon( QIcon( pix ) );
+}
+
+QListWidgetItem* WidgetChat::findUserItem( const QString& userId )
+{
+    for ( int i = 0; i < _p_ui->listWidgetMembers->count(); i++ )
+    {
+        QListWidgetItem* p_item = _p_ui->listWidgetMembers->item( i );
+        if ( p_item->data( Qt::UserRole ).toString() == userId )
+            return p_item;
+    }
+    return nullptr;
+}
+
+void WidgetChat::setupUserItem( QListWidgetItem* p_item, bool online )
+{
+    if ( online )
+    {
+        p_item->setForeground( QBrush( QColor( 0, 0, 0 ) ) );
+        p_item->setToolTip( "" );
+    }
+    else
+    {
+        p_item->setForeground( QBrush( QColor( 150, 150, 150 ) ) );
+        p_item->setToolTip( QApplication::translate( "WidgetChat", "User is currently offline") );
+    }
 }
 
 } // namespace chat

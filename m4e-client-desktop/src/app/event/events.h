@@ -83,7 +83,7 @@ class Events : public QObject
          *
          * @return User events
          */
-        QList< m4e::event::ModelEventPtr >   getUserEvents();
+        QList< event::ModelEventPtr >       getUserEvents();
 
         /**
          * @brief Get the event with given ID.
@@ -91,7 +91,24 @@ class Events : public QObject
          * @param id The event ID
          * @return User event, or an invalid event object if the ID was not found.
          */
-        m4e::event::ModelEventPtr           getUserEvent( const QString& id );
+        event::ModelEventPtr                getUserEvent( const QString& id );
+
+        /**
+         * @brief Update the online status of given user in all events.
+         *
+         * @param userId    The user ID
+         * @param online    Pass true for online and false for offline
+         */
+        void                                updateUserStatus( const QString& userId, bool online );
+
+        /**
+         * @brief Update the event membership of a user in given event.
+         *
+         * @param userId    The user ID
+         * @param eventId   The event ID
+         * @param added     Pass if the user was added to event, or false if the user was removed from the event.
+         */
+        void                                updateUserMembership( const QString& userId, const QString& eventId, bool added );
 
         /**
          * @brief Request for getting all user events, the results are emitted by signal 'onResponseGetEvents'.

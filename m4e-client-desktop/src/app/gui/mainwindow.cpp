@@ -61,7 +61,8 @@ MainWindow::MainWindow() :
 
     // prepare the start of webapp, it connects the application to the webapp server
     _p_webApp = new webapp::WebApp( this );
-    connect( _p_webApp, SIGNAL( onAuthState( bool ) ), this, SLOT( onAuthState( bool ) ) );
+    connect( _p_webApp, SIGNAL( onWebServerInfo( bool, QString ) ), this, SLOT( onWebServerInfo( bool, QString ) ) );
+    connect( _p_webApp, SIGNAL( onAuthState( bool, bool ) ), this, SLOT( onAuthState( bool, bool ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
     connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
     connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
@@ -86,7 +87,11 @@ MainWindow::MainWindow() :
     _p_eventTimer->setSingleShot( true );
     connect( _p_eventTimer, SIGNAL( timeout() ), this, SLOT( onEventRefreshTimer() ) );
 
-    updateStatus( QApplication::translate( "MainWindow", "No Connection!" ), true );
+    _p_recoveryTimer = new QTimer( this );
+    _p_recoveryTimer->setSingleShot( true );
+    connect( _p_recoveryTimer, SIGNAL( timeout() ), this, SLOT( onRecoveryTimer() ) );
+
+    updateStatus( QApplication::translate( "MainWindow", "No Connection!" ), false );
     _p_ui->pushButtonRefreshEvents->hide();
 
     clearWidgetClientArea();
@@ -161,8 +166,7 @@ void MainWindow::onTimerInit()
     QString login = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_LOGIN, "" );
     if ( login.isEmpty() )
     {
-        settings::DialogSettings dlg( _p_webApp, this );
-        dlg.exec();
+        showSettingsDialog();
     }
 
     QString remember = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_USER, M4E_SETTINGS_KEY_USER_PW_REM, "yes" );
@@ -195,6 +199,7 @@ void MainWindow::onTimerUpdate()
 {
     if ( _enableKeepAlive )
     {
+        log_verbose << TAG << "sending keepalive" << std::endl;
         _p_webApp->requestAuthState();
         _p_webApp->getMailBox()->requestCountUnreadMails();
     }
@@ -204,8 +209,15 @@ void MainWindow::onBtnStatusClicked()
 {
     if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
     {
-        settings::DialogSettings dlg( _p_webApp, this );
-        dlg.exec();
+        if ( _recoverConnection )
+        {
+            updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), false );
+            _p_webApp->requestAuthState();
+        }
+        else
+        {
+            showSettingsDialog();
+        }
     }
 }
 
@@ -252,6 +264,14 @@ void MainWindow::onBtnCloseClicked()
         }
     }
     hide();
+}
+
+void MainWindow::showSettingsDialog()
+{
+    if ( !_p_settingsDlg )
+        _p_settingsDlg = new settings::DialogSettings( _p_webApp, this );
+
+    _p_settingsDlg->exec();
 }
 
 void MainWindow::mouseDoubleClickEvent( QMouseEvent* p_event )
@@ -329,9 +349,8 @@ void MainWindow::onBtnMailsClicked()
 
 void MainWindow::onBtnSettingsClicked()
 {
-    settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );
-    dlg->exec();
-    delete dlg;
+    _recoverConnection = false;
+    showSettingsDialog();
 }
 
 void MainWindow::onBtnAboutClicked()
@@ -378,13 +397,12 @@ void MainWindow::onAboutLinkActivated( QString link )
 
 void MainWindow::onBtnAddEvent()
 {
-    event::DialogEventSettings* p_dlg = new event::DialogEventSettings( _p_webApp, this );
+    event::DialogEventSettings* p_dlg = new event::DialogEventSettings( _p_webApp, this , true);
     event::ModelEventPtr event = new event::ModelEvent();
     event->setStartDate( QDateTime::currentDateTime() );
 
     p_dlg->setupNewEventUI( event );
     p_dlg->exec();
-    delete p_dlg;
 }
 
 void MainWindow::onBtnRefreshEvents()
@@ -405,11 +423,37 @@ void MainWindow::onCreateNewLocation( QString eventId )
         _p_eventList->createNewLocation( eventId );
 }
 
-void MainWindow::onAuthState( bool authenticated )
+void MainWindow::onWebServerInfo( bool success, QString /*version*/ )
 {
-    if ( !authenticated )
+    if ( !success )
+    {
+        if ( _recoverConnection )
+        {
+            scheduleConnectionRecovery();
+        }
+        else
+        {
+            log_debug << TAG << "the server seems to be unreachable!" << std::endl;
+            showSettingsDialog();
+        }
+    }
+}
+
+void MainWindow::onAuthState( bool success, bool authenticated )
+{
+    if ( !success )
+    {
+        if ( _recoverConnection )
+        {
+            // schedule a new attempt to sign in
+            log_debug << TAG << "cannot reach the app server" << std::endl;
+            scheduleConnectionRecovery();
+        }
+    }
+    else if ( !authenticated )
     {
         log_debug << TAG << "attempt to connect the server..." << std::endl;
+        _enableKeepAlive = false;
         _p_webApp->establishConnection();
     }
 }
@@ -426,13 +470,16 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
         text = QApplication::translate( "MainWindow", "No Connection!" );
     }
 
-    updateStatus( text, false );
+    updateStatus( text, true );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ), this,
                                             SLOT( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ) );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
                                             SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
+
+    connect( _p_webApp->getNotifications(), SIGNAL( onEventMemberChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
+                                            SLOT( onEventMemberChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
 
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
                                             SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
@@ -463,15 +510,17 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
 {
     if ( success )
     {
-        log_verbose << TAG << "user was successfully signed in: " << userId << std::endl;
+        log_info << TAG << "user was successfully signed in" << std::endl;
         // start the keep alive updates
         _enableKeepAlive = true;
+        _recoverConnection = true;
+        addLogText( "Web App Server " + _p_webApp->getWebAppVersion() );
         addLogText( "User has successfully signed in" );
     }
     else
     {
-        log_verbose << TAG << "user could not sign in: " << userId << std::endl;
-        updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+        log_info << TAG << "user could not sign in: " << userId << std::endl;
+        updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
         addLogText( "User failed to sign in!" );
 
         // show the dialog only on initial sign in
@@ -483,11 +532,7 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
                          common::DialogMessage::BtnOk );
             msg.exec();
 
-            settings::DialogSettings* dlg = new settings::DialogSettings( _p_webApp, this );
-            dlg->exec();
-            delete dlg;
-
-            _enableKeepAlive = true;
+            showSettingsDialog();
         }
     }
 
@@ -497,12 +542,14 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
 
 void MainWindow::onUserSignedOff( bool success )
 {
-    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
 
     _enableKeepAlive = false;
+    _recoverConnection = false;
 
     if ( success )
     {
+        log_info << TAG << "user was successfully signed off" << std::endl;
         clearWidgetMyEvents();
         createWidgetMyEvents();
     }
@@ -514,21 +561,26 @@ void MainWindow::onServerConnectionClosed()
 {
     log_debug << TAG << "server connection was closed" << std::endl;
 
-    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), true );
+    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
     clearWidgetMyEvents();
+    clearWidgetClientArea();
 
     addLogText( "Server connection was closed" );
+
+    _enableKeepAlive = false;
+
+    // an uncontrolled connection loss should be recovered
+    if ( _recoverConnection )
+    {
+        log_debug << TAG << "lost connection!" << std::endl;
+        scheduleConnectionRecovery();
+    }
 }
 
 void MainWindow::onResponseGetEvents( bool /*success*/, QList< event::ModelEventPtr > /*events*/ )
 {
     clearWidgetMyEvents();
     createWidgetMyEvents();
-}
-
-void MainWindow::scheduleEventRefreshing()
-{
-    _p_eventTimer->start( 1000 );
 }
 
 void MainWindow::onEventChanged( notify::Notifications::ChangeType changeType, QString eventId )
@@ -571,6 +623,12 @@ void MainWindow::onEventLocationChanged( notify::Notifications::ChangeType chang
 
     _p_ui->pushButtonRefreshEvents->show();
     scheduleEventRefreshing();
+}
+
+void MainWindow::onEventMemberChanged( notify::Notifications::ChangeType changeType, QString eventId, QString userId )
+{
+    log_debug << TAG << "user's event membership changed: " << eventId << "/" << userId << std::endl;
+    _p_webApp->getEvents()->updateUserMembership( userId, eventId, changeType == notify::Notifications::Added );
 }
 
 void MainWindow::onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote )
@@ -626,29 +684,31 @@ void MainWindow::onEventMessage( QString senderId, QString senderName, QString e
     }
 }
 
-void MainWindow::onResponseCountUnreadMails( bool success, int coun )
+void MainWindow::onResponseCountUnreadMails( bool success, int count )
 {
     if ( success )
     {
         QString btnstyle = MAIL_BTN_STYLE;
-        btnstyle.replace("@MAIL_BTN_ICON@", ( coun > 0 ) ? MAIL_BTN_ICON_NEWMAILS : MAIL_BTN_ICON_NONEWMAILS );
+        btnstyle.replace("@MAIL_BTN_ICON@", ( count > 0 ) ? MAIL_BTN_ICON_NEWMAILS : MAIL_BTN_ICON_NONEWMAILS );
         _p_ui->pushButtonUserMails->setStyleSheet( btnstyle );
-        if ( coun > _lastUnreadMails )
+        if ( count > _lastUnreadMails )
         {
-            log_debug << "user has unread mails: " << coun << std::endl;
+            log_debug << "user has unread mails: " << count << std::endl;
             addLogText( QApplication::translate( "MainWindow", "New mails have arrived." ) );
         }
-        _lastUnreadMails = coun;
+        _lastUnreadMails = count;
     }
 }
 
-void MainWindow::onUserOnlineStatusChanged( QString /*senderId*/, QString senderName, bool online )
+void MainWindow::onUserOnlineStatusChanged( QString senderId, QString senderName, bool online )
 {
     QString text;
     text = QApplication::translate( "MainWindow", "User '@USER@' went @STATUS@" );
     text.replace( "@USER@", senderName );
     text.replace( "@STATUS@", online ? "online" : "offline" );
     addLogText( text );
+
+    _p_webApp->getEvents()->updateUserStatus( senderId, online );
 }
 
 void MainWindow::onEventRefreshTimer()
@@ -657,11 +717,17 @@ void MainWindow::onEventRefreshTimer()
     _p_webApp->getEvents()->requestGetEvents();
 }
 
-void MainWindow::updateStatus( const QString& text, bool offline )
+void MainWindow::onRecoveryTimer()
+{
+    if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
+        _p_webApp->establishConnection();
+}
+
+void MainWindow::updateStatus( const QString& text, bool online )
 {
     _p_ui->pushButtonStatus->setText( text );
-    _p_ui->pushButtonStatus->setEnabled( offline );
-    QString tooltip = offline ? QApplication::translate( "MainWindow", "Click to connect the server" ) : "";
+    _p_ui->pushButtonStatus->setEnabled( !online );
+    QString tooltip = !online ? QApplication::translate( "MainWindow", "Click to connect the server" ) : "";
     _p_ui->pushButtonStatus->setToolTip( tooltip );
 }
 
@@ -714,6 +780,27 @@ void MainWindow::createWidgetEvent( const QString& eventId )
     p_eventpanel->setupEvent( eventId );
 
     _p_ui->widgetClientArea->layout()->addWidget( p_eventpanel );
+}
+
+void MainWindow::scheduleConnectionRecovery()
+{
+    // avoid re-scheduling if the timer is already running
+    if ( _p_recoveryTimer->remainingTime() > 0 )
+        return;
+
+    log_debug << TAG << " schedule a new connection..." << std::endl;
+    // callback: onRecoveryTimer
+    _p_recoveryTimer->start( M4E_PERIOD_CONN_RECOVERY * 60000 );
+}
+
+void MainWindow::scheduleEventRefreshing()
+{
+    // avoid re-scheduling if the timer is already running
+    if ( _p_eventTimer->remainingTime() > 0 )
+        return;
+
+    // callback: onEventRefreshTimer
+    _p_eventTimer->start( 1000 );
 }
 
 } // namespace gui

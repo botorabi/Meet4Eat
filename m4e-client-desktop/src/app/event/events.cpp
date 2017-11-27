@@ -84,6 +84,47 @@ ModelEventPtr Events::getUserEvent( const QString& id )
     return ModelEventPtr();
 }
 
+void Events::updateUserStatus( const QString& userId, bool online )
+{
+    QString status = online ? "online" : "offline";
+    for ( ModelEventPtr event: _events )
+    {
+        if ( event->getOwner()->getId() == userId )
+            event->getOwner()->setStatus( status );
+
+        for ( user::ModelUserInfoPtr user: event->getMembers() )
+        {
+            if ( user->getId() == userId )
+            {
+                user->setStatus( status );
+                break;
+            }
+        }
+    }
+}
+
+void Events::updateUserMembership( const QString& userId, const QString& eventId, bool added )
+{
+    event::ModelEventPtr event = getUserEvent( eventId );
+    if ( !event.valid() )
+        return;
+
+    user::ModelUserInfoPtr user = event->getMember( userId );
+    if ( !user.valid() )
+        return;
+
+    if ( added )
+    {
+        if ( !user.valid() )
+            event->addMember( user );
+    }
+    else
+    {
+        if ( user.valid() )
+            event->removeMember( userId );
+    }
+}
+
 //######### Requests ############//
 
 void Events::requestGetEvents()

@@ -5,3 +5,7 @@
 /m4e-webapp/web/WEB-INF/accountregistration.cfg
 /m4e-client-desktop/build/**/*.pro.user*
 /m4e-client-desktop/build/build-app-*
+/m4e-client-desktop/bin/
+/m4e-client-desktop/dist/NSIS-MSWin/Meet4Eat/
+/m4e-client-desktop/dist/NSIS-MSWin/msw-installer/nsis/
+/m4e-client-desktop/dist/NSIS-MSWin/Meet4Eat-Setup-*

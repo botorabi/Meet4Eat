@@ -92,11 +92,11 @@ bool DialogUserSettings::onButton1Clicked()
         name = "";
 
     // there is no need for an update request, nothing was changed
-    if ( name.isEmpty() && pw.isEmpty() && !_updatedPhoto.valid() )
+    if ( name.isEmpty() && pw.isEmpty() && !_user->getUpdatedPhoto().valid() )
         return true;
 
     // start the update request
-    _p_webApp->getUser()->requestUpdateUserData( name, pw, _updatedPhoto );
+    _p_webApp->getUser()->requestUpdateUserData( name, pw, _user->getUpdatedPhoto() );
 
     return false;
 }
@@ -161,7 +161,9 @@ void DialogUserSettings::onBtnPhotoClicked()
 
     m4e::doc::ModelDocumentPtr doc = new m4e::doc::ModelDocument();
     doc->setContent( imagecontent, "image", format );
-    _updatedPhoto = doc;
+    _user->setUpdatedPhoto( doc );
+    _user->setPhotoId( "" );
+    _user->setPhotoETag( "" );
     _p_ui->pushButtonPhoto->setIcon( common::GuiUtils::createRoundIcon( doc ) );
 }
 

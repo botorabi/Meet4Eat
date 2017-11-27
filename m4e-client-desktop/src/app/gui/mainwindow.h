@@ -14,6 +14,7 @@
 #include <chat/chatsystem.h>
 #include <event/events.h>
 #include <event/widgeteventlist.h>
+#include <settings/dialogsettings.h>
 #include <notification/notifications.h>
 #include <QMainWindow>
 #include <QMouseEvent>
@@ -130,11 +131,21 @@ class MainWindow : public QMainWindow
         void                        onCreateNewLocation( QString eventId );
 
         /**
+         * @brief On start of server connection establishing the web server information is fetched as first step.
+         * This signal notifies about the reachablity of the server and its version.
+         *
+         * @param success   true if the server was reachable, otherwise false
+         * @param version   The web app server version.
+         */
+        void                        onWebServerInfo( bool success, QString version );
+
+        /**
          * @brief This signal is emitted to inform about the current authentication state.
          *
+         * @param success        true if the authentication state could be determined, otherwise false if a connection problem exists.
          * @param authenticated  True if the user is authenticated, otherwise false
          */
-        void                        onAuthState( bool authenticated );
+        void                        onAuthState( bool success, bool authenticated );
 
         /**
          * @brief This signal is emitted when an update of user data was arrived.
@@ -191,6 +202,15 @@ class MainWindow : public QMainWindow
         void                        onEventLocationChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString locationId );
 
         /**
+         * @brief This signal is emitted when an event member was added or removed.
+         *
+         * @param changeType One of ChangeType enums
+         * @param eventId    Event ID
+         * @param memberId   User ID
+         */
+        void                        onEventMemberChanged( m4e::notify::Notifications::ChangeType changeType, QString eventId, QString userId );
+
+        /**
          * @brief This signal is emitted when an event location vote arrives.
          *
          * @param senderId   User ID of the voter
@@ -199,7 +219,7 @@ class MainWindow : public QMainWindow
          * @param loactionId Event location ID
          * @param vote       true for vote and false for unvote the given location
          */
-        void                    onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
+        void                        onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
 
         /**
          * @brief This signal is emitted  when an event message was arrived. An event message can be used to buzz all event members.
@@ -233,11 +253,16 @@ class MainWindow : public QMainWindow
          */
         void                        onEventRefreshTimer();
 
+        /**
+         * @brief Timer used for recovery a lost connection.
+         */
+        void                        onRecoveryTimer();
+
     protected:
 
         void                        customEvent( QEvent* p_event );
 
-        void                        updateStatus( const QString& text, bool offline );
+        void                        updateStatus( const QString& text, bool online );
 
         void                        addLogText( const QString& text );
 
@@ -246,6 +271,8 @@ class MainWindow : public QMainWindow
         void                        storeWindowGeometry();
 
         void                        restoreWindowGeometry();
+
+        void                        showSettingsDialog();
 
         void                        mouseDoubleClickEvent( QMouseEvent* p_event );
 
@@ -263,6 +290,8 @@ class MainWindow : public QMainWindow
 
         void                        createWidgetEvent( const QString& eventId );
 
+        void                        scheduleConnectionRecovery();
+
         void                        scheduleEventRefreshing();
 
         Ui::MainWindow*             _p_ui            = nullptr;
@@ -273,6 +302,8 @@ class MainWindow : public QMainWindow
 
         QTimer*                     _p_eventTimer    = nullptr;
 
+        QTimer*                     _p_recoveryTimer = nullptr;
+
         webapp::WebApp*             _p_webApp        = nullptr;
 
         MailboxWindow*              _p_mailWindow    = nullptr;
@@ -281,13 +312,17 @@ class MainWindow : public QMainWindow
 
         event::WidgetEventList*     _p_eventList     = nullptr;
 
+        settings::DialogSettings*   _p_settingsDlg   = nullptr;
+
         bool                        _dragging        = false;
 
         QPoint                      _draggingPos;
 
-        bool                        _initialSignIn   = true;
+        bool                        _initialSignIn     = true;
 
-        bool                        _enableKeepAlive = false;
+        bool                        _enableKeepAlive   = false;
+
+        bool                        _recoverConnection = false;
 
         int                         _lastUnreadMails = 0;
 

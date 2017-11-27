@@ -7,6 +7,7 @@
  */
 
 #include "dialoglocationdetails.h"
+#include <core/log.h>
 #include <common/guiutils.h>
 #include <ui_widgetlocationdetails.h>
 
@@ -15,6 +16,10 @@ namespace m4e
 {
 namespace event
 {
+
+/** URLs are automatically converted to clickable links, this string contains the URL styling */
+static const QString DESC_LINK_FORMAT = "<a href='\\1'><span style='text-decoration: underline; color:white;'>\\1</span></a> ";
+
 
 DialogLocationDetails::DialogLocationDetails( webapp::WebApp* p_webApp, QWidget* p_parent ) :
  common::BaseDialog( p_parent ),
@@ -38,7 +43,7 @@ void DialogLocationDetails::setupUI( event::ModelLocationPtr location )
     setupButtons( &okbtn, nullptr, nullptr );
     setResizable( true );
 
-    _p_ui->labelDescription->setText( _location->getDescription() );
+    _p_ui->labelDescription->setText( formatDescription( _location->getDescription() ) );
     _p_ui->labelVoteMembers->setText( "" );
     _p_ui->labelVotes->setText( "0" );
 
@@ -83,6 +88,16 @@ QString DialogLocationDetails::formatVoteMembers( event::ModelLocationVotesPtr v
         text += mem;
     }
     return text;
+}
+
+QString DialogLocationDetails::formatDescription( const QString& text )
+{
+    QString input  = text;
+    input.replace( QRegExp( "((http|https|ftp)://\\S+)" ), DESC_LINK_FORMAT );
+    input.replace( "\n", "<br>" );
+
+    QString output = "<p>" + input + "</p>";
+    return output;
 }
 
 } // namespace event

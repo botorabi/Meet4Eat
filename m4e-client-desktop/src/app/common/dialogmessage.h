@@ -43,9 +43,11 @@ class DialogMessage : public common::BaseDialog
         /**
          * @brief Create a dialog instance.
          *
-         * @param p_parent  Parent widget
+         * @param p_parent      Parent widget
+         * @param autoDestroy   Pass true in order to delegate the object destruction to the instance itself.
+         *                      In this case the instance creator does not need to care about deleting the dialog.
          */
-                                    DialogMessage( QWidget* p_parent );
+        explicit                    DialogMessage( QWidget* p_parent, bool autoDestroy = false );
 
         /**
          * @brief Destroy the instance.

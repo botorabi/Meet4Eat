@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Meat4Eat</string>
+   <string>Meat4Eat - Buzz</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/application.qrc">

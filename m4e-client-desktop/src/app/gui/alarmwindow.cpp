@@ -21,7 +21,7 @@ namespace gui
 {
 
 AlarmWindow::AlarmWindow( MainWindow* p_parent ) :
- QMainWindow( p_parent ),
+ QMainWindow( nullptr ),
  _p_mainWindow( p_parent ),
  _p_ui( new Ui::AlarmWindow() )
 {
