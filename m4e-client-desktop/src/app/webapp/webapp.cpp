@@ -65,6 +65,9 @@ void WebApp::shutdownConnection()
         log_warning << TAG << "there is no connection to shutdown!" << std::endl;
         return;
     }
+
+    log_verbose << TAG << "shutting down the connection" << std::endl;
+
     // first close the real-time communication connection
     getOrCreateConnection()->closeConnection();
     // now sign-off

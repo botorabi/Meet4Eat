@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>612</width>
-    <height>359</height>
+    <width>450</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,6 +21,9 @@ QGroupBox {
   border-radius: 0px;
   border: 0px solid rgb(131, 147, 167);
   background-color: transparent; /*rgb(80,112,125);*/
+}
+QListWidget {
+  background-color: transparent; 
 }
 QLineEdit {
   background-color: rgb(101,117, 137);  
@@ -39,12 +42,6 @@ QCheckBox::indicator {
 }
 QCheckBox::indicator:checked {
   background-color: white;
-}
-QListView {
-  background-color: rgb(101,117, 137);  
-}
-QTableWidget {
-  background-color: rgb(101,117, 137);  
 }
 QDateTimeEdit {
   background-color: rgb(101,117, 137);  
@@ -80,38 +77,7 @@ QPushButton::checked {
       <widget class="QWidget" name="widget" native="true">
        <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,0,0,0,0,0">
-          <item>
-           <widget class="QLabel" name="labelTime">
-            <property name="text">
-             <string>Time Period</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelLine_2">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>1</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>1</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QLabel {
-  background-color: rgb(131,147, 167);
-}</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
+         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,0,0">
           <item>
            <widget class="QGroupBox" name="groupBoxTime">
             <property name="sizePolicy">
@@ -147,12 +113,9 @@ QPushButton::checked {
               </widget>
              </item>
              <item>
-              <widget class="QDateTimeEdit" name="dateTimeEditStart_2">
-               <property name="maximumSize">
-                <size>
-                 <width>180</width>
-                 <height>16777215</height>
-                </size>
+              <widget class="QDateTimeEdit" name="dateTimeEditBegin">
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
                </property>
                <property name="displayFormat">
                 <string>dd.MM.yyyy</string>
@@ -186,12 +149,9 @@ QPushButton::checked {
               </widget>
              </item>
              <item>
-              <widget class="QDateTimeEdit" name="dateTimeEditStart">
-               <property name="maximumSize">
-                <size>
-                 <width>180</width>
-                 <height>16777215</height>
-                </size>
+              <widget class="QDateTimeEdit" name="dateTimeEditEnd">
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
                </property>
                <property name="displayFormat">
                 <string>dd.MM.yyyy</string>
@@ -203,6 +163,29 @@ QPushButton::checked {
              </item>
              <item>
               <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>10</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonUpdate">
+               <property name="text">
+                <string>-&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_3">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -250,15 +233,9 @@ QPushButton::checked {
           </item>
           <item>
            <widget class="QGroupBox" name="groupBoxVotes">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>100</height>
-             </size>
-            </property>
             <property name="styleSheet">
              <string notr="true">QGroupBox {
-  border: 1px solid rgb(131,147, 167);
+  border: 0px solid rgb(131,147, 167);
 }</string>
             </property>
             <property name="title">
@@ -277,21 +254,27 @@ QPushButton::checked {
              <property name="bottomMargin">
               <number>0</number>
              </property>
+             <item>
+              <widget class="QListWidget" name="listWidgetVotes">
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="showDropIndicator" stdset="0">
+                <bool>false</bool>
+               </property>
+               <property name="verticalScrollMode">
+                <enum>QAbstractItemView::ScrollPerPixel</enum>
+               </property>
+               <property name="horizontalScrollMode">
+                <enum>QAbstractItemView::ScrollPerPixel</enum>
+               </property>
+               <property name="resizeMode">
+                <enum>QListView::Adjust</enum>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </item>

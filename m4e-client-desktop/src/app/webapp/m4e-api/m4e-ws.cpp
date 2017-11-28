@@ -75,7 +75,7 @@ bool Meet4EatWebSocket::establishConnection()
     return true;
 }
 
-const QString &Meet4EatWebSocket::getWebAppProtocolVersion() const
+const QString& Meet4EatWebSocket::getWebAppProtocolVersion() const
 {
     return _webAppProtVersion;
 }
@@ -144,7 +144,7 @@ bool Meet4EatWebSocket::setupNetworkRequest( QNetworkRequest& request )
     QNetworkCookieJar* p_cookie = Meet4EatRESTOperations::getCookies();
     if ( !p_cookie )
     {
-        log_error << TAG << "cannot establish a WebSocket connection without a prior sin-in!" << std::endl;
+        log_error << TAG << "cannot establish a WebSocket connection without a prior sign-in!" << std::endl;
         return false;
     }
     // transfer the cookie to the network request header

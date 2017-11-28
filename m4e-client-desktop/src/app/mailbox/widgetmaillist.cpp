@@ -35,6 +35,7 @@ const static QString MAIL_LIST_STYLESHEET = \
 "QScrollBar::vertical {" \
 " background-color: transparent;" \
 " color: rgb(151,167, 187);" \
+" width: 12px;" \
 "}";
 
 static int MAIL_PAGE_SIZE = 10;
@@ -91,7 +92,7 @@ void WidgetMailList::setupListView()
     setDragEnabled( false );
     QVBoxLayout* p_layout = new QVBoxLayout( this );
     p_layout->setSpacing( 8 );
-    p_layout->setContentsMargins( 4, 4, 4, 4 );
+    p_layout->setContentsMargins( 0, 0, 0, 0 );
     setLayout( p_layout );
 }
 

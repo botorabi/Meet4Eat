@@ -61,12 +61,7 @@ MainWindow::MainWindow() :
 
     // prepare the start of webapp, it connects the application to the webapp server
     _p_webApp = new webapp::WebApp( this );
-    connect( _p_webApp, SIGNAL( onWebServerInfo( bool, QString ) ), this, SLOT( onWebServerInfo( bool, QString ) ) );
-    connect( _p_webApp, SIGNAL( onAuthState( bool, bool ) ), this, SLOT( onAuthState( bool, bool ) ) );
-    connect( _p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
-    connect( _p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
-    connect( _p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
-    connect( _p_webApp, SIGNAL( onServerConnectionClosed() ), this, SLOT( onServerConnectionClosed() ) );
+    registerSignals( _p_webApp );
 
     // create the try icon
     _p_systemTray = new SystemTray( _p_webApp, this );
@@ -472,35 +467,8 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
 
     updateStatus( text, true );
 
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ), this,
-                                            SLOT( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ) );
-
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
-                                            SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
-
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventMemberChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
-                                            SLOT( onEventMemberChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
-
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
-                                            SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
-
-    connect( _p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
-                                            SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
-
-    connect( _p_webApp->getNotifications(), SIGNAL( onUserOnlineStatusChanged( QString, QString, bool ) ), this,
-                                            SLOT( onUserOnlineStatusChanged( QString, QString, bool ) ) );
-
-    connect( _p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
-                                     SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
-
-    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this,
-                                     SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
-
-    connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
-                                     SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
-
-    connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountUnreadMails( bool, int ) ), this,
-                                      SLOT( onResponseCountUnreadMails( bool, int ) ) );
+    // a shutdown may have been done before, so we have to re-register some signals
+    registerSignals( _p_webApp );
 
     _p_webApp->getEvents()->requestGetEvents();
     _p_webApp->getMailBox()->requestCountUnreadMails();
@@ -721,6 +689,44 @@ void MainWindow::onRecoveryTimer()
 {
     if ( _p_webApp->getAuthState() != webapp::WebApp::AuthSuccessful )
         _p_webApp->establishConnection();
+}
+
+void  MainWindow::reconnectSignal( const QObject* p_sender, const char* p_signal, const QObject* p_receiver, const char* p_member )
+{
+    disconnect( p_sender, p_signal, p_receiver, p_member );
+    connect( p_sender, p_signal, p_receiver, p_member );
+}
+
+void MainWindow::registerSignals( webapp::WebApp* p_webApp )
+{
+    // register for all necessary signals of subsystems
+
+    reconnectSignal( p_webApp, SIGNAL( onWebServerInfo( bool, QString ) ), this, SLOT( onWebServerInfo( bool, QString ) ) );
+    reconnectSignal( p_webApp, SIGNAL( onAuthState( bool, bool ) ), this, SLOT( onAuthState( bool, bool ) ) );
+    reconnectSignal( p_webApp, SIGNAL( onUserSignedIn( bool, QString ) ), this, SLOT( onUserSignedIn( bool, QString ) ) );
+    reconnectSignal( p_webApp, SIGNAL( onUserSignedOff( bool ) ), this, SLOT( onUserSignedOff( bool ) ) );
+    reconnectSignal( p_webApp, SIGNAL( onUserDataReady( m4e::user::ModelUserPtr ) ), this, SLOT( onUserDataReady( m4e::user::ModelUserPtr ) ) );
+    reconnectSignal( p_webApp, SIGNAL( onServerConnectionClosed() ), this, SLOT( onServerConnectionClosed() ) );
+    reconnectSignal( p_webApp->getNotifications(), SIGNAL( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ), this,
+                                                   SLOT( onEventChanged( m4e::notify::Notifications::ChangeType, QString ) ) );
+    reconnectSignal( p_webApp->getNotifications(), SIGNAL( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
+                                                   SLOT( onEventLocationChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
+    reconnectSignal( p_webApp->getNotifications(), SIGNAL( onEventMemberChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ), this,
+                                                   SLOT( onEventMemberChanged( m4e::notify::Notifications::ChangeType, QString, QString ) ) );
+    reconnectSignal( p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
+                                                   SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
+    reconnectSignal( p_webApp->getNotifications(), SIGNAL( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ), this,
+                                                   SLOT( onEventMessage( QString, QString, QString, m4e::notify::NotifyEventPtr ) ) );
+    reconnectSignal( p_webApp->getNotifications(), SIGNAL( onUserOnlineStatusChanged( QString, QString, bool ) ), this,
+                                                   SLOT( onUserOnlineStatusChanged( QString, QString, bool ) ) );
+    reconnectSignal( p_webApp->getEvents(), SIGNAL( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ), this,
+                                            SLOT( onResponseGetEvents( bool, QList< m4e::event::ModelEventPtr > ) ) );
+    reconnectSignal( p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this,
+                                            SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
+    reconnectSignal( p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
+                                            SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
+    reconnectSignal( p_webApp->getMailBox(), SIGNAL( onResponseCountUnreadMails( bool, int ) ), this,
+                                             SLOT( onResponseCountUnreadMails( bool, int ) ) );
 }
 
 void MainWindow::updateStatus( const QString& text, bool online )

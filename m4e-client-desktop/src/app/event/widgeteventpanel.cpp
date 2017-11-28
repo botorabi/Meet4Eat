@@ -13,6 +13,7 @@
 #include <common/dialogmessage.h>
 #include <chat/chatmessage.h>
 #include <ui_widgeteventpanel.h>
+#include "dialogvoteshistory.h"
 #include "widgeteventitem.h"
 #include "widgetlocation.h"
 #include "dialogbuzz.h"
@@ -114,6 +115,15 @@ void WidgetEventPanel::onLinkActivated( QString link )
         else
         {
             log_error << TAG << "cannot requesr for creating new location, invalid event!" << std::endl;
+        }
+    }
+    else if ( link == "VOTES_HISTORY" )
+    {
+        if ( _event.valid() )
+        {
+            DialogVotesHistory* p_dlg = new DialogVotesHistory( _p_webApp, nullptr, true );
+            p_dlg->setupUI( _event );
+            p_dlg->exec();
         }
     }
 }

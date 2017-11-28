@@ -82,6 +82,20 @@ class ModelLocationVotes : public m4e::core::RefCount< ModelLocationVotes >
         void                            setLocationId( const QString& locationId ) { _locationId = locationId; }
 
         /**
+         * @brief Get the location name.
+         *
+         * @return The location name
+         */
+        const QString&                  getLocationName() const { return _locationName; }
+
+        /**
+         * @brief Set the location name.
+         *
+         * @param locationName  The location name
+         */
+        void                            setLocationName( const QString& locationName ) { _locationName = locationName; }
+
+        /**
          * @brief Get IDs of users who voted for this event location.
          *
          * @return IDs of users voted for this location
@@ -172,6 +186,7 @@ class ModelLocationVotes : public m4e::core::RefCount< ModelLocationVotes >
         QString                         _id;
         QString                         _eventId;
         QString                         _locationId;
+        QString                         _locationName;
         QDateTime                       _voteTimeBegin;
         QDateTime                       _voteTimeEnd;
         QDateTime                       _creationTime;

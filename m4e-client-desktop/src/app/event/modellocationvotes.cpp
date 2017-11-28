@@ -34,6 +34,7 @@ bool ModelLocationVotes::fromJSON( const QJsonDocument& input )
     QString     id            = data.value( "id" ).toString( "" );
     QString     eventid       = data.value( "eventId" ).toString( "" );
     QString     locid         = data.value( "locationId" ).toString( "" );
+    QString     locname       = data.value( "locationName" ).toString( "" );
     qint64      timecreation  = ( qint64 )data.value( "creationTime" ).toDouble( 0.0 );
     qint64      timebegin     = ( qint64 )data.value( "timeBegin" ).toDouble( 0.0 );
     qint64      timeend       = ( qint64 )data.value( "timeEnd" ).toDouble( 0.0 );
@@ -43,6 +44,7 @@ bool ModelLocationVotes::fromJSON( const QJsonDocument& input )
     setId( id );
     setEventId( eventid );
     setLocationId( locid );
+    setLocationName( locname );
 
     QDateTime t;
     t.setSecsSinceEpoch( timecreation );

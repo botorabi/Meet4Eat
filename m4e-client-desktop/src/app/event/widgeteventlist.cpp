@@ -34,6 +34,7 @@ const static QString EVENT_LIST_STYLESHEET = \
 "QScrollBar::vertical {" \
 " background-color: transparent;" \
 " color: rgb(151,167, 187);" \
+" width: 10px;" \
 "}";
 
 
@@ -88,7 +89,7 @@ void WidgetEventList::setupListView()
     setStyleSheet( EVENT_LIST_STYLESHEET );
     setSizePolicy( QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding );
     setVerticalScrollMode( ScrollPerPixel );
-    setSizeAdjustPolicy( SizeAdjustPolicy::AdjustToContents );
+    setSizeAdjustPolicy( SizeAdjustPolicy::AdjustIgnored );
     setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     setVerticalScrollBarPolicy( Qt::ScrollBarAsNeeded );
     setAutoFillBackground( false );

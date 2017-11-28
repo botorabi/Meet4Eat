@@ -35,6 +35,7 @@ SOURCES += \
     ../../src/app/event/dialogeventsettings.cpp \
     ../../src/app/event/dialoglocationdetails.cpp \
     ../../src/app/event/dialoglocationedit.cpp \
+    ../../src/app/event/dialogvoteshistory.cpp \
     ../../src/app/event/events.cpp \
     ../../src/app/event/modelevent.cpp \
     ../../src/app/event/modellocation.cpp \
@@ -67,19 +68,19 @@ SOURCES += \
     ../../src/app/webapp/m4e-api/m4e-rest.cpp \
     ../../src/app/webapp/m4e-api/m4e-restops.cpp \
     ../../src/app/webapp/m4e-api/m4e-ws.cpp \
+    ../../src/app/webapp/request/rest-appinfo.cpp \
     ../../src/app/webapp/request/rest-authentication.cpp \
     ../../src/app/webapp/request/rest-event.cpp \
     ../../src/app/webapp/request/rest-document.cpp \
     ../../src/app/webapp/request/rest-mailbox.cpp \
     ../../src/app/webapp/request/rest-user.cpp \
+    ../../src/app/webapp/response/resp-appinfo.cpp \
     ../../src/app/webapp/response/resp-authentication.cpp \
     ../../src/app/webapp/response/resp-document.cpp \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-mailbox.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
-    ../../src/app/webapp/webapp.cpp \
-    ../../src/app/webapp/request/rest-appinfo.cpp \
-    ../../src/app/webapp/response/resp-appinfo.cpp
+    ../../src/app/webapp/webapp.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
@@ -104,6 +105,7 @@ HEADERS += \
     ../../src/app/event/dialoglocationdetails.h \
     ../../src/app/event/dialoglocationedit.h \
     ../../src/app/event/dialogeventsettings.h \
+    ../../src/app/event/dialogvoteshistory.h \
     ../../src/app/event/events.h \
     ../../src/app/event/modelevent.h \
     ../../src/app/event/modellocation.h \
@@ -136,19 +138,19 @@ HEADERS += \
     ../../src/app/webapp/m4e-api/m4e-rest.h \
     ../../src/app/webapp/m4e-api/m4e-restops.h \
     ../../src/app/webapp/m4e-api/m4e-ws.h \
+    ../../src/app/webapp/request/rest-appinfo.h \
     ../../src/app/webapp/request/rest-authentication.h \
     ../../src/app/webapp/request/rest-document.h \
     ../../src/app/webapp/request/rest-event.h \
     ../../src/app/webapp/request/rest-mailbox.h \
     ../../src/app/webapp/request/rest-user.h \
+    ../../src/app/webapp/response/resp-appinfo.h \
     ../../src/app/webapp/response/resp-authentication.h \
     ../../src/app/webapp/response/resp-document.h \
     ../../src/app/webapp/response/resp-event.h \
     ../../src/app/webapp/response/resp-mailbox.h \
     ../../src/app/webapp/response/resp-user.h \
-    ../../src/app/webapp/webapp.h \
-    ../../src/app/webapp/request/rest-appinfo.h \
-    ../../src/app/webapp/response/resp-appinfo.h
+    ../../src/app/webapp/webapp.h
 
 FORMS += \
     ../../src/app/gui/forms/mainwindow.ui \
@@ -171,7 +173,8 @@ FORMS += \
     ../../src/app/gui/forms/alarmwindow.ui \
     ../../src/app/gui/forms/widgetusersettings.ui \
     ../../src/app/gui/forms/buzzwindow.ui \
-    ../../src/app/gui/forms/widgetvoteshistory.ui
+    ../../src/app/gui/forms/widgetvoteshistory.ui \
+    ../../src/app/gui/forms/widgetvotesitem.ui
 
 RESOURCES += \
     ../../src/app/gui/resources/application.qrc

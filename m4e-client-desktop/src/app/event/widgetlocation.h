@@ -171,6 +171,7 @@ class WidgetLocation : public QWidget
 
         event::ModelLocationVotesPtr _votes;
 
+        bool                        _enableVotingUI = false;
 };
 
 } // namespace event

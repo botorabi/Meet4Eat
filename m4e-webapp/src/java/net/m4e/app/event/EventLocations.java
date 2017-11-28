@@ -226,6 +226,7 @@ public class EventLocations {
             voteentity = new EventLocationVoteEntity();
             voteentity.setEventId(event.getId());
             voteentity.setLocationId(location.getId());
+            voteentity.setLocationName(location.getName());
             voteentity.setVoteTimeBegin(votebegin);
             voteentity.setVoteTimeEnd(voteend);
             voteentity.setCreationTime((new Date()).getTime() / 1000);
@@ -360,6 +361,7 @@ public class EventLocations {
         obj.add("id", (votes.getId() != null) ? votes.getId().toString() : "")
            .add("eventId", (votes.getEventId() != null) ? votes.getEventId().toString() : "")
            .add("locationId", (votes.getLocationId() != null) ? votes.getLocationId().toString() : "")
+           .add("locationName", (votes.getLocationName() != null) ? votes.getLocationName() : "")
            .add("timeBegin", votes.getVoteTimeBegin())
            .add("timeEnd", votes.getVoteTimeEnd())
            .add("creationTime", votes.getCreationTime());

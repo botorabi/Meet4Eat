@@ -90,6 +90,11 @@ public class EventLocationVoteEntity implements Serializable {
     private Long locationId = 0L;
 
     /**
+     * Event location name
+     */
+    private String locationName = "";
+
+    /**
      * IDs of users voted for this location
      */
     private Set<Long> userIds;
@@ -209,6 +214,24 @@ public class EventLocationVoteEntity implements Serializable {
      */
     public void setLocationId(Long locationId) {
         this.locationId = locationId;
+    }
+
+    /**
+     * Get the location name.
+     * 
+     * @return The location name
+     */
+    public String getLocationName() {
+        return locationName;
+    }
+
+    /**
+     * Set the location name.
+     * 
+     * @param locationName The location name
+     */
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 
     /**

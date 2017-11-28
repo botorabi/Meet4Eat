@@ -260,6 +260,10 @@ class MainWindow : public QMainWindow
 
     protected:
 
+        void                        reconnectSignal( const QObject* p_sender, const char* p_signal, const QObject* p_receiver, const char* p_member );
+
+        void                        registerSignals( webapp::WebApp* p_webApp );
+
         void                        customEvent( QEvent* p_event );
 
         void                        updateStatus( const QString& text, bool online );
