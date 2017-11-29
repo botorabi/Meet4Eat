@@ -9,6 +9,7 @@
 #include "dialogvoteshistory.h"
 #include <core/log.h>
 #include <common/guiutils.h>
+#include "votes.h"
 #include <ui_widgetvoteshistory.h>
 #include <ui_widgetvotesitem.h>
 #include <QListWidgetItem>
@@ -77,41 +78,39 @@ void DialogVotesHistory::onResponseGetLocationVotesByTime( bool success, QList< 
 
     clearVotesItems();
 
-    // group all events by voting time
-    QMap< qint64 /*sec votes end*/, QList< ModelLocationVotesPtr > > votingtime;
-    for ( ModelLocationVotesPtr v: votes )
+    Votes voteutils;
+    QList< QList< ModelLocationVotesPtr > > sortedvotes = voteutils.sortByTimeAndVoteCount( votes, true, true );
+
+    if ( sortedvotes.count() < 1 )
     {
-        qint64 vt = v->getVoteTimeEnd().toSecsSinceEpoch();
-        if ( !votingtime.contains( vt ) )
-            votingtime.insert( vt, QList< ModelLocationVotesPtr >() );
-        votingtime[ vt ].append( v );
+        addNoVotesItem();
     }
-
-    // sort the voting times in descending order
-    QList< qint64 > times = votingtime.keys();
-    std::sort( times.begin(), times.end(), std::greater< qint64 >() );
-    for ( qint64 t: times )
+    else
     {
-        QList< ModelLocationVotesPtr > votes = votingtime.value( t );
-
-        // sort the locations for count of votes
-        class CountVotesGreater
+        for ( const QList< ModelLocationVotesPtr >& v: sortedvotes )
         {
-            public:
-                bool operator()( ModelLocationVotesPtr a, ModelLocationVotesPtr b ) const
-                {
-                    return a->getUserNames().size() > b->getUserNames().size();
-                }
-        };
-        std::sort( votes.begin(), votes.end(), CountVotesGreater() );
-
-        addVotesItem( votes );
+            addVotesItem( v );
+        }
     }
 }
 
 void DialogVotesHistory::clearVotesItems()
 {
     _p_ui->listWidgetVotes->clear();
+}
+
+void DialogVotesHistory::addNoVotesItem()
+{
+    QLabel* p_widget = new QLabel( this );
+    p_widget->setText( QApplication::translate( "DialogVotesHistory", "<strong>There are no votes in given time window!</strong>" ) );
+    p_widget->setAlignment( Qt::AlignCenter );
+    QSize size = p_widget->sizeHint();
+    size.setHeight( 150 );
+    p_widget->resize( size );
+    QListWidgetItem* p_listitem = new QListWidgetItem( _p_ui->listWidgetVotes );
+    p_listitem->setSizeHint( p_widget->size() );
+    _p_ui->listWidgetVotes->addItem( p_listitem );
+    _p_ui->listWidgetVotes->setItemWidget( p_listitem, p_widget );
 }
 
 void DialogVotesHistory::addVotesItem( QList< ModelLocationVotesPtr > votes )
@@ -125,8 +124,14 @@ void DialogVotesHistory::addVotesItem( QList< ModelLocationVotesPtr > votes )
     for ( ModelLocationVotesPtr v: votes )
     {
         QString locname = v->getLocationName();
+        //! NOTE the location name was not available in older db structure of votes, fetch it from the event for this case.
+        //! TODO remove this compat code later
         if ( locname.isEmpty() )
-            locname = "[" + v->getLocationId() + "]";
+        {
+            ModelLocationPtr loc = _event->getLocation( v->getLocationId() );
+            if ( loc.valid() )
+                locname = loc->getName();
+        }
 
         if ( labeldate.isEmpty() )
             labeldate = v->getVoteTimeEnd().toString();

@@ -212,26 +212,103 @@
          </widget>
         </item>
         <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
+         <widget class="QWidget" name="widgetVotesHistory" native="true">
+          <property name="minimumSize">
            <size>
-            <width>40</width>
-            <height>20</height>
+            <width>150</width>
+            <height>0</height>
            </size>
           </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
           <property name="styleSheet">
-           <string notr="true">color: white;</string>
+           <string notr="true">#widgetVotesHistory {
+  background-color: rgb(50,82,95);
+  border-radius: 0px;
+  border: 1px solid rgb(131,147, 167);
+}
+QLabel {
+  color: white;
+}</string>
           </property>
-          <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;VOTES_HISTORY&quot;&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline; color:#ffffff;&quot;&gt;Votes History&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0,1">
+           <property name="leftMargin">
+            <number>7</number>
+           </property>
+           <property name="topMargin">
+            <number>7</number>
+           </property>
+           <property name="rightMargin">
+            <number>7</number>
+           </property>
+           <property name="bottomMargin">
+            <number>7</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="labelVotesHead">
+             <property name="font">
+              <font>
+               <family>Roboto</family>
+               <pointsize>11</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string>Votes</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelVotesHistory">
+             <property name="font">
+              <font>
+               <family>Roboto</family>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>Show the votes history</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;VOTES_HISTORY&quot;&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline; color:#ffffff;&quot;&gt;Votes History&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelVotesToday">
+             <property name="font">
+              <font>
+               <family>Roboto</family>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>&lt;Today&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
         <item>
@@ -472,14 +549,14 @@ QPushButton:disabled {
    </hints>
   </connection>
   <connection>
-   <sender>label_2</sender>
+   <sender>labelVotesHistory</sender>
    <signal>linkActivated(QString)</signal>
    <receiver>WidgetEventPanel</receiver>
    <slot>onLinkActivated(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>421</x>
-     <y>55</y>
+     <x>354</x>
+     <y>70</y>
     </hint>
     <hint type="destinationlabel">
      <x>638</x>

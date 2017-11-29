@@ -89,6 +89,8 @@ class DialogVotesHistory : public common::BaseDialog
 
         void                        clearVotesItems();
 
+        void                        addNoVotesItem();
+
         void                        addVotesItem( QList< m4e::event::ModelLocationVotesPtr > votes );
 
         Ui::WidgetVotesHistory*     _p_ui     = nullptr;

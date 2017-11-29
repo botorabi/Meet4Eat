@@ -46,7 +46,7 @@ class Events : public QObject
         explicit                            Events( QObject* p_parent );
 
         /**
-         * @brief Destruct User instance
+         * @brief Destruct the Events instance
          */
         virtual                             ~Events();
 
