@@ -395,6 +395,10 @@ bool DocumentCache::readNextField( QByteArray& data, int& offset, QString& field
     int valuesize = size.toInt() - fieldpos - 1;
     fieldName = field.mid( 0, fieldpos );
     fieldValue = data.mid( offset + fieldName.size() + 1, valuesize );
+    if ( fieldValue.size() != valuesize )
+    {
+        log_warning << TAG << "cache file is corrupted, invalid length of field: " << fieldName << std::endl;
+    }
 
     // update the offset in byte array
     offset = index + field.size() + 1;
