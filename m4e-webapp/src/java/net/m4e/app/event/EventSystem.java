@@ -62,7 +62,7 @@ public class EventSystem {
     }
 
     /**
-     * New chat messages are dispatched asynchronously.
+     * Event messages are dispatched asynchronously.
      * 
      * @param event Chat event
      */

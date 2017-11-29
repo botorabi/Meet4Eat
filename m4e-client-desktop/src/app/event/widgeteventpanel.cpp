@@ -13,9 +13,11 @@
 #include <common/dialogmessage.h>
 #include <chat/chatmessage.h>
 #include <ui_widgeteventpanel.h>
+#include "dialogvoteshistory.h"
 #include "widgeteventitem.h"
 #include "widgetlocation.h"
 #include "dialogbuzz.h"
+#include "votes.h"
 
 
 namespace m4e
@@ -116,6 +118,15 @@ void WidgetEventPanel::onLinkActivated( QString link )
             log_error << TAG << "cannot requesr for creating new location, invalid event!" << std::endl;
         }
     }
+    else if ( link == "VOTES_HISTORY" )
+    {
+        if ( _event.valid() )
+        {
+            DialogVotesHistory* p_dlg = new DialogVotesHistory( _p_webApp, nullptr, true );
+            p_dlg->setupUI( _event );
+            p_dlg->exec();
+        }
+    }
 }
 
 void WidgetEventPanel::setupUI()
@@ -156,6 +167,7 @@ void WidgetEventPanel::setupUI()
     QColor shadowcolor( 150, 150, 150, 110 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetInfo, shadowcolor, QPoint( -3, 3 ), 3 );
     common::GuiUtils::createShadowEffect( _p_ui->widgetMembers, shadowcolor, QPoint( -3, 3 ), 3 );
+    common::GuiUtils::createShadowEffect( _p_ui->widgetVotesHistory, shadowcolor, QPoint( -3, 3 ), 3 );
 
     _p_clientArea = _p_ui->listWidget;
     _p_clientArea->setUniformItemSizes( true );
@@ -206,6 +218,58 @@ void WidgetEventPanel::setupWidgetHead()
         info += "\n" + QApplication::translate( "WidgetEventPanel", "Event Date" ) + ": " + _event->getStartDate().toString( "yyyy-M-dd HH:mm" );
     }
     _p_ui->labelInfoBody->setText( info );
+    _p_ui->labelVotesToday->setText( "" );
+
+    requestVotesOfDay();
+}
+
+void WidgetEventPanel::requestVotesOfDay()
+{
+    // get the votes of today
+    _handleVotesToday = true;
+    QDateTime tbeg = QDateTime::currentDateTime();
+    QDateTime tend = tbeg;
+    tbeg.setTime( QTime( 0, 0 ) );
+    _p_webApp->getEvents()->requestGetLocationVotesByTime( _event->getId(), tbeg, tend );
+}
+
+void WidgetEventPanel::updateVotesOfDayUI( const QList< ModelLocationVotesPtr >& votes )
+{
+    _p_ui->labelVotesToday->setText( "" );
+    Votes voteutils;
+    QList< QList< ModelLocationVotesPtr > > sortedvotes = voteutils.sortByTimeAndVoteCount( votes, true, true );
+
+    int     entries = 0;
+    QString text;
+    for ( const QList< ModelLocationVotesPtr >& currvote: sortedvotes )
+    {
+        for ( ModelLocationVotesPtr vote: currvote )
+        {
+            QString locname = vote->getLocationName();
+
+            //! NOTE the location name was not available in older db structure of votes, fetch it from the event for this case.
+            //! TODO remove this compat code later
+            if ( locname.isEmpty() )
+            {
+                ModelLocationPtr loc = _event->getLocation( vote->getLocationId() );
+                if ( loc.valid() )
+                    locname = loc->getName();
+            }
+
+            if ( !text.isEmpty() )
+                text += "<br>";
+
+            text += " * " + locname + ": " + QString::number( vote->getUserNames().count() );
+
+            // take only the first two entries
+            if ( ++entries > 1 )
+                break;
+        }
+    }
+    if ( !text.isEmpty() )
+    {
+        _p_ui->labelVotesToday->setText( "<strong>Today</strong><br>" + text + "<br> * ...");
+    }
 }
 
 void WidgetEventPanel::restoreChatMessages()
@@ -318,6 +382,7 @@ bool WidgetEventPanel::requestCurrentLoctionVotes()
         return false;
     }
 
+    _handleVotesByTime = true;
     _p_webApp->getEvents()->requestGetLocationVotesByTime( _event->getId(), tbeg, tend );
     return true;
 }
@@ -420,12 +485,22 @@ void WidgetEventPanel::onResponseGetLocationVotesByTime( bool success, QList< Mo
     }
     else
     {
-        for ( ModelLocationVotesPtr v: votes )
+        // check if this is the reponse of votes of the day
+        if ( _handleVotesToday )
         {
-            WidgetLocation* p_widget = findWidgetLocation( v->getLocationId() );
-            if ( p_widget )
+            _handleVotesToday = false;
+            updateVotesOfDayUI( votes );
+        }
+        if ( _handleVotesByTime )
+        {
+            _handleVotesByTime = false;
+            for ( ModelLocationVotesPtr v: votes )
             {
-                p_widget->updateVotes( v );
+                WidgetLocation* p_widget = findWidgetLocation( v->getLocationId() );
+                if ( p_widget )
+                {
+                    p_widget->updateVotes( v );
+                }
             }
         }
     }
@@ -443,9 +518,15 @@ void WidgetEventPanel::onEventLocationVote( QString senderId, QString /*senderNa
         return;
 
     if ( p_widget->getVotes().valid() )
+    {
         _p_webApp->getEvents()->requestGetLocationVotesById( p_widget->getVotes()->getId() );
+        requestVotesOfDay();
+    }
     else
+    {
+        _handleVotesToday = true;
         requestCurrentLoctionVotes();
+    }
 }
 
 void WidgetEventPanel::onBuzzActivationTimer()

@@ -208,6 +208,16 @@ class WidgetEventPanel : public QWidget
         void                        setupWidgetHead();
 
         /**
+         * @brief Get the information of votes of the day and update the UI.
+         */
+        void                        requestVotesOfDay();
+
+        /**
+         * @brief Get the information of votes of the day and update the UI.
+         */
+        void                        updateVotesOfDayUI( const QList< ModelLocationVotesPtr >& votes );
+
+        /**
          * @brief Get all chat messages of current event and restore the chat window.
          */
         void                        restoreChatMessages();
@@ -267,6 +277,10 @@ class WidgetEventPanel : public QWidget
         m4e::event::ModelEventPtr   _event;
 
         QList< WidgetLocation* >    _widgets;
+
+        bool                        _handleVotesToday       = false;
+
+        bool                        _handleVotesByTime      = false;
 };
 
 } // namespace event

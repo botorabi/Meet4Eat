@@ -7,11 +7,20 @@
  */
 package net.m4e.app.communication;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
+import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.websocket.Session;
 import net.m4e.app.user.UserEntity;
+import net.m4e.system.core.Log;
 
 /**
  * All incoming messages are dispatched and distributed via proper events.
@@ -40,6 +49,12 @@ public class MessageDistribution {
     @Inject
     Event<ChannelEventEvent> channelEventEvent;
 
+    /**
+     * Used for firing event channel events
+     */
+    @Inject
+    Event<ChannelEventSystem> channelEventSystem;
+
     @Inject
     ConnectedClients connections;
 
@@ -61,7 +76,9 @@ public class MessageDistribution {
         else if (packet.getChannel().equals(Packet.CHANNEL_EVENT)) {
             distributeToChannelEvent(packet, session);
         }
-        //! TODO cover all other channel types
+        else if (packet.getChannel().equals(Packet.CHANNEL_SYSTEM)) {
+            distributeToChannelSystem(packet, session);
+        }
     }
 
     /**
@@ -90,5 +107,57 @@ public class MessageDistribution {
         ev.setSenderId(user.getId());
         ev.setPacket(packet);
         channelEventEvent.fireAsync(ev);
+    }
+
+    /**
+     * Send an asynchronous event to listeners of communication channel 'System'.
+     * 
+     * @param packet    Incoming event packet
+     * @param session   WebSocket session receiving the packet
+     */
+    private void distributeToChannelSystem(Packet packet, Session session) {
+        UserEntity user = connections.getUser(session);
+        ChannelEventSystem ev = new ChannelEventSystem();
+        ev.setSenderId(user.getId());
+        ev.setPacket(packet);
+        ev.setSessionId(session.getId());
+        channelEventSystem.fireAsync(ev);
+    }
+
+    /**
+     * Dispatcher for system channel messages.
+     * 
+     * @param event System event
+     */
+    public void dispatchMessage(@ObservesAsync ChannelEventSystem event) {
+        Long senderid = event.getSenderId();
+        UserEntity user = connections.getConnectedUser(senderid);
+        if (user == null) {
+            Log.warning(TAG, "invalid sender id detected: " + senderid);
+            return;
+        }
+
+        Packet packet = event.getPacket();
+        JsonObject data = packet.getData();
+        if (data == null) {
+            Log.warning(TAG, "invalid system command received from user: " + senderid);
+            return;
+        }
+
+        //! NOTE currently we support only the ping command.
+
+        String cmd = data.getString("cmd", "");
+        if ("ping".equals(cmd)) {
+            JsonObjectBuilder json = Json.createObjectBuilder();
+            json.add("cmd", "ping");
+            json.add("pong", packet.getTime()); // pong contains the timestamp of ping requester
+            packet.setSource("");
+            packet.setSourceId("");
+            packet.setData(json.build());
+            connections.sendPacket(packet, senderid, event.getSessionId());
+        }
+        else {
+            Log.warning(TAG, "unsupported system command '" + cmd + "' received from user: " + senderid);
+        }
     }
 }

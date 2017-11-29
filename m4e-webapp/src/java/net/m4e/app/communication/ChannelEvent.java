@@ -21,6 +21,11 @@ public abstract class ChannelEvent {
     private Long senderId = 0L;
 
     /**
+     * The WebSocket session ID.
+     */
+    private String sessionId = "";
+
+    /**
      * The network packet
      */
     private Packet packet;
@@ -41,6 +46,24 @@ public abstract class ChannelEvent {
      */
     public void setSenderId(Long senderId) {
         this.senderId = senderId;
+    }
+
+    /**
+     * Get the WebSocket session ID.
+     * 
+     * @return Session ID
+     */
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    /**
+     * Set the WebSocket session ID.
+     * 
+     * @param sessionId Session ID
+     */
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     /**

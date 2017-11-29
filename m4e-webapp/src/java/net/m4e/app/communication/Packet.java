@@ -10,6 +10,7 @@ package net.m4e.app.communication;
 import java.io.StringReader;
 import java.util.Date;
 import javax.json.Json;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -119,9 +120,9 @@ public class Packet {
             String sourceId = jobject.getString("soourceId", "");
             String source = jobject.getString("soource", "");
             JsonObject data = jobject.getJsonObject("data");
-            int time = jobject.getInt("time", 0);
+            long time = jobject.getJsonNumber("time").longValue();
             packet = new Packet(channel, sourceId, source, data);
-            packet.setTime(new Long(time));
+            packet.setTime(time);
         }
         catch (Exception ex) {
             Log.debug(TAG, "Could not read JSON string, reason: " + ex.getLocalizedMessage());

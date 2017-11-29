@@ -17,7 +17,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.websocket.Session;
-import net.m4e.app.chat.ChatSystem;
 import net.m4e.app.event.EventNotifications;
 import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.app.user.UserEntity;
@@ -75,18 +74,19 @@ public class ConnectedClients {
     }
 
     /**
-     * Send a packet to given recipients.
+     * Send a packet to given recipients. The packet is sent to all connections of
+     * recipients.
      * 
      * @param packet        Packet to send
      * @param recipientIds  List of recipients containing user IDs
      */
     public void sendPacket(Packet packet, List<Long> recipientIds) {
-        String msg = packet.toJSON();
         recipientIds.forEach(id -> {
             UserEntry recentry = connections.get(id);
             if (recentry != null) {
                 recentry.sessions.forEach(session -> {
                     try {
+                        String msg = packet.toJSON();
                         session.getBasicRemote().sendText(msg);
                     }
                     catch(IOException ex) {
@@ -95,6 +95,31 @@ public class ConnectedClients {
                 });
             }
         });
+    }
+
+    /**
+     * Send a packet to a WebSocket connection of a user with given session ID.
+     * NOTE: a user can be logged in multiple times from different devices.
+     * 
+     * @param packet        Packet to send
+     * @param userId        User ID
+     * @param sessionId     Session ID of a WebSocket connection
+     */
+    public void sendPacket(Packet packet, Long userId, String sessionId) {
+        UserEntry recentry = connections.get(userId);
+        if (recentry != null) {
+            recentry.sessions.stream().
+                    filter((session) -> (session.getId().equals(sessionId))).
+                    forEach((session) -> {
+                        try {
+                            String msg = packet.toJSON();
+                            session.getBasicRemote().sendText(msg);
+                        }
+                        catch(IOException ex) {
+                            Log.warning(TAG, "problem occurred while sending notification to user (" + userId + " / " + sessionId + "), reason: " + ex.getLocalizedMessage());
+                        }
+                    });
+        }
     }
 
     /**

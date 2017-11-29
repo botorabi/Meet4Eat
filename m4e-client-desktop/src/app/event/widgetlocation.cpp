@@ -85,6 +85,8 @@ void WidgetLocation::setupUI( event::ModelEventPtr event, event::ModelLocationPt
 
 void WidgetLocation::enableVotingUI( bool enable )
 {
+    _enableVotingUI = enable;
+
     if ( !_event.valid() )
     {
         log_error << TAG << "cannot upate voting UI, invalid event" << std::endl;
@@ -105,6 +107,9 @@ void WidgetLocation::enableVotingUI( bool enable )
 
 void WidgetLocation::updateVotes( ModelLocationVotesPtr votes )
 {
+    if ( !_enableVotingUI )
+        return;
+
     if ( ( votes->getEventId() != _event->getId() ) || ( votes->getLocationId() != _location->getId() ) )
         return;
 

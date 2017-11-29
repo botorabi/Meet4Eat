@@ -25,6 +25,11 @@ namespace webapp
 WebApp::WebApp( QObject* p_parent ) :
  QObject( p_parent )
 {
+    int keepaliveperiod = M4E_PERIOD_SRV_UPDATE_STATUS * 1000 * 60;
+    _p_connTimer = new QTimer( this );
+    _p_connTimer->setSingleShot( false );
+    _p_connTimer->setInterval( keepaliveperiod );
+    connect( _p_connTimer, SIGNAL( timeout() ), this, SLOT( onTimerUpdate() ) );
 }
 
 WebApp::~WebApp()
@@ -60,6 +65,9 @@ void WebApp::shutdownConnection()
         log_warning << TAG << "there is no connection to shutdown!" << std::endl;
         return;
     }
+
+    log_verbose << TAG << "shutting down the connection" << std::endl;
+
     // first close the real-time communication connection
     getOrCreateConnection()->closeConnection();
     // now sign-off
@@ -189,6 +197,7 @@ comm::Connection* WebApp::getOrCreateConnection()
         _p_connection = new comm::Connection( this );
 
         connect( _p_connection, SIGNAL( onClosedConnection() ), this, SLOT( onClosedConnection() ) );
+        connect( _p_connection, SIGNAL( onChannelSystemPacket( m4e::comm::PacketPtr ) ), this, SLOT( onChannelSystemPacket( m4e::comm::PacketPtr ) ) );
 
         setupServerURL( _p_connection );
     }
@@ -283,6 +292,24 @@ void WebApp::resetAllResources()
     _p_chatSystem = nullptr;
 }
 
+void WebApp::onTimerUpdate()
+{
+    log_debug << TAG << "ping the connection..." << std::endl;
+    comm::PacketPtr packet = new comm::Packet();
+    if ( _p_user )
+    {
+        packet->setSourceId( _p_user->getUserId() );
+        packet->setChannel( comm::Packet::CHANNEL_SYSTEM );
+        packet->setTime( QDateTime::currentDateTime() );
+        QJsonDocument doc;
+        QJsonObject obj;
+        obj.insert( "cmd", "ping" );
+        doc.setObject( obj );
+        packet->setData( doc );
+        getOrCreateConnection()->sendPacket( packet );
+    }
+}
+
 void WebApp::onRESTAppInfo( QString version )
 {
     log_info << TAG << "web app version: " << version << std::endl;
@@ -339,6 +366,8 @@ void WebApp::onResponseSignInResult( bool success, QString userId, m4e::user::Us
 
         // after a successful sign-in start the real-time communication
         getOrCreateConnection()->connectServer();
+        // start the keepalive timer of the websocket connection
+        _p_connTimer->start();
     }
     else
     {
@@ -353,6 +382,8 @@ void WebApp::onResponseSignOutResult( bool success, user::UserAuthentication::Au
 {
     log_verbose << TAG << "user was signed off (" << code << "), reason: " << reason << std::endl;
     emit onUserSignedOff( success );
+    // stop the keepalive timer of the websocket connection
+    _p_connTimer->stop();
 }
 
 void WebApp::onResponseUserData( bool success, m4e::user::ModelUserPtr user )
@@ -389,7 +420,23 @@ void WebApp::onClosedConnection()
 {
     log_debug << TAG << "closed server connection" << std::endl;
     emit onServerConnectionClosed();
+
     _authState = AuthNoConnection;
+    // stop the keepalive timer of the websocket connection
+    _p_connTimer->stop();
+}
+
+void WebApp::onChannelSystemPacket( comm::PacketPtr packet )
+{
+    QJsonObject data = packet->getData().object();
+    QString cmd = data.value( "cmd" ).toString( "" );
+
+    if ( cmd == "ping" )
+    {
+        qint64 ts = ( qint64 )data.value( "pong" ).toDouble();
+        qint64 now = QDateTime::currentMSecsSinceEpoch();
+        log_debug << TAG << " got pong, roundtrip time: " << ( now - ts ) << " ms" << std::endl;
+    }
 }
 
 } // namespace webapp

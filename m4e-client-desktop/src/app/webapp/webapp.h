@@ -239,6 +239,11 @@ class WebApp : public QObject
     protected slots:
 
         /**
+         * @brief Periodic update timer used for keeping the connection alive.
+         */
+        void                            onTimerUpdate();
+
+        /**
          * @brief This signal is emitted when the server info arrives.
          *
          * @param version   The web application version
@@ -309,6 +314,13 @@ class WebApp : public QObject
          */
         void                            onClosedConnection();
 
+        /**
+         * @brief This signal notifies about a new incoming network packet in channel 'System'.
+         *
+         * @param packet Arrived System channel packet
+         */
+        void                            onChannelSystemPacket( m4e::comm::PacketPtr packet );
+
     protected:
 
         template< class T >
@@ -337,6 +349,8 @@ class WebApp : public QObject
         QString                         _userID;
 
         QString                         _webAppVersion;
+
+        QTimer*                         _p_connTimer     = nullptr;
 
         RESTAppInfo*                    _p_restAppInfo   = nullptr;
 
