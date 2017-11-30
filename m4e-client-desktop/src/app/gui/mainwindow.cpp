@@ -266,7 +266,10 @@ void MainWindow::showSettingsDialog()
     if ( !_p_settingsDlg )
         _p_settingsDlg = new settings::DialogSettings( _p_webApp, this );
 
-    _p_settingsDlg->exec();
+    if ( !_p_settingsDlg->isVisible() )
+        _p_settingsDlg->exec();
+    else
+        _p_settingsDlg->show();
 }
 
 void MainWindow::mouseDoubleClickEvent( QMouseEvent* p_event )

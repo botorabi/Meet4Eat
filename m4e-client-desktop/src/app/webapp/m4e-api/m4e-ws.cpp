@@ -32,10 +32,17 @@ Meet4EatWebSocket::Meet4EatWebSocket( QObject* p_parent ) :
     _p_webSocket->setSslConfiguration( conf );
 #endif
 
+    int keepaliveperiod = M4E_PERIOD_SRV_UPDATE_STATUS * 1000 * 60;
+    _p_pingTimer = new QTimer( this );
+    _p_pingTimer->setSingleShot( false );
+    _p_pingTimer->setInterval( keepaliveperiod );
+
+    connect( _p_pingTimer, SIGNAL( timeout() ), this, SLOT( onPingTimer() ) );
     connect( _p_webSocket, SIGNAL( connected() ), this, SLOT( onConnected() ) );
     connect( _p_webSocket, SIGNAL( error( QAbstractSocket::SocketError) ), this, SLOT( onError( QAbstractSocket::SocketError ) ) );
     connect( _p_webSocket, SIGNAL( disconnected() ), this, SLOT( onDisconnected() ) );
     connect( _p_webSocket, SIGNAL( textMessageReceived( QString ) ), this, SLOT( onTextMessageReceived( QString ) ) );
+    connect( _p_webSocket, SIGNAL( pong( quint64, QByteArray ) ), this, SLOT( onPongReceived( quint64, QByteArray ) ) );
 }
 
 Meet4EatWebSocket::~Meet4EatWebSocket()
@@ -57,6 +64,20 @@ void Meet4EatWebSocket::setWsURL( const QString& wsURL )
     url = url.replace( "http", "ws" );
 
     _wsURL = url + M4E_WS_SRV_RESOURCE_PATH;
+}
+
+void Meet4EatWebSocket::enablePing( bool enable )
+{
+    // if a connection already exists then update the ping timer
+    if ( _p_webSocket->state() == QAbstractSocket::ConnectedState )
+    {
+        if ( enable )
+            _p_pingTimer->start();
+        else
+            _p_pingTimer->stop();
+    }
+
+    _enablePing = enable;
 }
 
 bool Meet4EatWebSocket::establishConnection()
@@ -99,12 +120,17 @@ void Meet4EatWebSocket::onConnected()
 {
     log_info << TAG << "connection established" << std::endl;
     emit onConnectionEstablished();
+
+    if ( _enablePing )
+        _p_pingTimer->start();
 }
 
 void Meet4EatWebSocket::onDisconnected()
 {
     log_info << TAG << "disconnected from server" << std::endl;
     emit onConnectionClosed();
+
+    _p_pingTimer->stop();
 }
 
 void Meet4EatWebSocket::onError( QAbstractSocket::SocketError error )
@@ -133,6 +159,18 @@ void Meet4EatWebSocket::onTextMessageReceived( QString message )
         log_warning << TAG << "invalid net packet received!" << std::endl;
         log_warning << TAG << " packet content: " << message << std::endl;
     }
+}
+
+void Meet4EatWebSocket::onPingTimer()
+{
+    log_verbose << TAG << "sending ping..." << std::endl;
+    if ( _p_webSocket )
+        _p_webSocket->ping();
+}
+
+void Meet4EatWebSocket::onPongReceived( quint64 elapsedTime, const QByteArray& /*payload*/ )
+{
+    log_verbose << TAG << "  pong received: " << elapsedTime << " ms" << std::endl;
 }
 
 bool Meet4EatWebSocket::setupNetworkRequest( QNetworkRequest& request )

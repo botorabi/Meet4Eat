@@ -9,6 +9,10 @@
 # etc. Adapt them to your external server URLs.
 #
 
+# This email receives a copy of all mails sent to a user during account
+#  registration and activation. Let it empty if not needed.
+mail.notification=admin@mail.com
+
 url.registration=https://localhost:8181/m4e/register.html
 url.activation=https://localhost:8181/m4e/activate.html
 url.requestPasswordReset=https://localhost:8181/m4e/requestpassword.html

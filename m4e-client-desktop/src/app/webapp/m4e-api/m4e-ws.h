@@ -63,6 +63,13 @@ class Meet4EatWebSocket : public QObject
         void                    setWsURL( const QString& wsURL );
 
         /**
+         * @brief Enable/disable periodic WebSocket server pings. The Internval is defined by M4E_PERIOD_SRV_UPDATE_STATUS
+         *
+         * @param enable    Pass true to enable, false for disable
+         */
+        void                    enablePing( bool enable );
+
+        /**
          * @brief Establish a WebSocket connection to server. If there is already a connection then it will be closed first.
          * The results are delivered by signals 'onConnectionEstablished'.
          *
@@ -99,6 +106,10 @@ class Meet4EatWebSocket : public QObject
         void                    onError( QAbstractSocket::SocketError error );
 
         void                    onTextMessageReceived( QString message );
+
+        void                    onPingTimer();
+
+        void                    onPongReceived( quint64 elapsedTime, const QByteArray& payload );
 
     signals:
 
@@ -148,7 +159,11 @@ class Meet4EatWebSocket : public QObject
 
         QString                 _wsURL;
 
-        QWebSocket*             _p_webSocket;
+        QWebSocket*             _p_webSocket    = nullptr;
+
+        QTimer*                 _p_pingTimer    = nullptr;
+
+        bool                    _enablePing     = false;
 
         QString                 _webAppProtVersion;
 };
