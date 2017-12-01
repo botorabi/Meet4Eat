@@ -132,6 +132,9 @@
                   <height>90</height>
                  </size>
                 </property>
+                <property name="flat">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
               <item>
@@ -236,6 +239,9 @@ QPushButton:hover {
   border-radius:  4px;
 }</string>
                     </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -268,6 +274,9 @@ QPushButton:hover {
   border: 5px solid white;
   border-radius:  4px;
 }</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -441,6 +450,9 @@ QPushButton:hover {
   border-radius: 2px;
 }</string>
                     </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -480,6 +492,9 @@ QPushButton:hover {
   background-color: rgb(50,82,95);
   border-radius: 2px;
 }</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -541,6 +556,9 @@ QPushButton:hover {
   border-radius: 13px;
 }</string>
                     </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -579,6 +597,9 @@ QPushButton:hover {
   background-color: rgb(50,82,95);
   border-radius: 13px;
 }</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -715,6 +736,9 @@ QPushButton:hover {
   border-radius: 16px;
 }</string>
                          </property>
+                         <property name="flat">
+                          <bool>true</bool>
+                         </property>
                         </widget>
                        </item>
                        <item>
@@ -744,6 +768,9 @@ QPushButton:hover {
   background-color: rgb(50,82,95);
   border-radius: 16px;
 }</string>
+                         </property>
+                         <property name="flat">
+                          <bool>true</bool>
                          </property>
                         </widget>
                        </item>

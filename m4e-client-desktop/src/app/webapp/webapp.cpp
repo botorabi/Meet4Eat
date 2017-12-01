@@ -305,7 +305,8 @@ void WebApp::resetAllResources()
 
 void WebApp::onTimerUpdate()
 {
-    log_debug << TAG << "ping the connection..." << std::endl;
+    log_debug << TAG << "real-time connection's average ping: " << getOrCreateConnection()->getAveragePing() << " ms" << std::endl;
+    log_debug << TAG << "ping the application server..." << std::endl;
     comm::PacketPtr packet = new comm::Packet();
     if ( _p_user )
     {

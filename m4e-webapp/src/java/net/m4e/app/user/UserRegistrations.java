@@ -178,7 +178,7 @@ public class UserRegistrations {
             sendccmail.setRecipients(Arrays.asList(bccEmail));
             sendccmail.setSubject("Notification - Meet4Eat User Activation");
             sendccmail.setHtmlBody(false);
-            body = "Copy of Email to " + user.getEmail() + "\n---n\n" + body;
+            body = "Copy of Email to " + user.getEmail() + "\n---\n\n" + body;
             sendccmail.setBody(body);
             event.fireAsync(sendccmail);
         }
@@ -295,7 +295,7 @@ public class UserRegistrations {
             sendccmail.setRecipients(Arrays.asList(bccEmail));
             sendccmail.setSubject("Notification - Password Reset");
             sendccmail.setHtmlBody(false);
-            body = "Copy of Email to " + user.getEmail() + "\n---n\n" + body;
+            body = "Copy of Email to " + user.getEmail() + "\n---\n\n" + body;
             sendccmail.setBody(body);
             event.fireAsync(sendccmail);
         }

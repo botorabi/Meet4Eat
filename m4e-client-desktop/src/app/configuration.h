@@ -90,6 +90,9 @@
  */
 #define M4E_PERIOD_SRV_UPDATE_STATUS 15
 
+/* Keep-alive interval (in minutes) used in WebSocket connection, when it is enabled */
+#define M4E_PERIOD_SRV_CONN_KEEPALIVE 1
+
 /* The period (in minutes) for trying to reconnect a server after a
  * loss of connection.
  */

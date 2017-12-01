@@ -21,6 +21,8 @@ Connection::Connection( QObject* p_parent ) :
  QObject( p_parent )
 {
     _p_ws  = new webapp::Meet4EatWebSocket( this );
+    _p_ws->setupKeepAlive( true, M4E_PERIOD_SRV_CONN_KEEPALIVE * 60 * 1000 );
+
     connect( _p_ws, SIGNAL( onReceivedPacket( m4e::comm::PacketPtr ) ), this, SLOT( onReceivedPacket( m4e::comm::PacketPtr ) ) );
     connect( _p_ws, SIGNAL( onConnectionEstablished() ), this, SLOT( onConnectionEstablished() ) );
     connect( _p_ws, SIGNAL( onConnectionClosed() ), this, SLOT( onConnectionClosed() ) );
@@ -53,6 +55,11 @@ void Connection::closeConnection()
 bool Connection::sendPacket( PacketPtr packet )
 {
     return _p_ws->sendPacket( packet );
+}
+
+quint64 Connection::getAveragePing() const
+{
+    return _p_ws->getAveragePing();
 }
 
 void Connection::onConnectionEstablished()
