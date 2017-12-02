@@ -8,9 +8,7 @@
 package net.m4e.app.chat;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.PostConstruct;
@@ -102,7 +100,7 @@ public class ChatSystem {
     }
 
     /**
-     * Send a chat message to all event members.
+     * Send a chat message to all event members. The sender must be a member of the event, otherwise the request is ignored.
      * 
      * @param sender        Message sender
      * @param receiverId    Recipient ID (event ID)
@@ -111,6 +109,11 @@ public class ChatSystem {
     private void sendMessageEvent(UserEntity sender, Long receiverId, Packet packet) {
         Events events = new Events(entityManager);
         Set<Long> receiverids = events.getMembers(receiverId);
+        EventEntity event = events.findEvent(receiverId);
+        if ((event == null) || !events.getUserIsEventOwnerOrMember(sender, event)) {
+            Log.warning(TAG, "user " + sender.getId() + " tries to send to an event chat without being a member of the event, or the event is invalid!");
+            return;
+        }
         receiverids.add(sender.getId());
         packet.setSourceId(sender.getId().toString());
         packet.setSource(sender.getName());
