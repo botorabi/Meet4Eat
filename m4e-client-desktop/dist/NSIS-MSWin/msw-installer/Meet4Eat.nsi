@@ -26,7 +26,7 @@
   
   ;Name and file
   Name "${INSTALLER_NAME}-v${VERSION}"
-  OutFile "..\${INSTALLER_NAME}-Setup-v${VERSION}.exe"
+  OutFile "..\${INSTALLER_NAME}-mswin-v${VERSION}.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\${INSTALLER_NAME}"
