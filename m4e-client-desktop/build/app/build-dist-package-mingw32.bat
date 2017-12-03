@@ -11,7 +11,6 @@ set APP_NAME=Meet4Eat
 set PATH_SRC=..\..\src
 set PATH_BUILD=..\..\bin\qmake-mingw32-release-batch
 set PATH_DEPLOYMENT=..\..\dist\NSIS-MSWin\%APP_NAME%
-set PATH_DEPLOYMENT_TEMPLATE=..\..\dist\NSIS-MSWin\mingw32-deployment-template
 
 @echo ##########################
 @echo Cleaning build directories
@@ -97,6 +96,7 @@ cd %CWD%
 copy %PATH_DEPLOYMENT%\..\extra-libs\* %PATH_DEPLOYMENT%\
 copy %PATH_DEPLOYMENT%\..\app.ico %PATH_DEPLOYMENT%\
 copy %PATH_DEPLOYMENT%\..\LICENSE %PATH_DEPLOYMENT%\
+copy %PATH_DEPLOYMENT%\..\README.md %PATH_DEPLOYMENT%\
 
 @cd %PATH_DEPLOYMENT%
 @echo #######################################################

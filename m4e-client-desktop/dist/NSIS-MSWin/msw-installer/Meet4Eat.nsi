@@ -5,7 +5,6 @@
 ;--------------------------------
 
 ; NOTE: pass the version string using /DVERSION="x.x.x" parameter of makensis.exe
-; NOTE: pass the language string using /DLANGUAGE=<"German" | "English"> parameter of makensis.exe
 
 ;Include Modern UI
 
@@ -18,6 +17,7 @@
   !define COMPANY_NAME      "VR Fun"  
   !define INSTALLER_NAME 	"Meet4Eat"
   !define SRC_FOLDER     	..\Meet4Eat
+  !define LANGUAGE          English
   
   !define MUI_ICON          "app.ico"
   !define MUI_UNICON        "app.ico"
@@ -91,11 +91,16 @@ Section "Main" SecMain
   ; copy all files
   File /r ${SRC_FOLDER}\*
 
+  ;set the proper registry view before adding any keys
+  SetRegView 64
+
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" "DisplayName" "${PROGRAM_NAME}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" "DisplayIcon" "$\"$INSTDIR\app.ico$\""
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" "Publisher" "${COMPANY_NAME}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" "DisplayVersion" "${VERSION}"
+  ;add autostart entry
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${PROGRAM_NAME}" "$INSTDIR\${PROGRAM_NAME}.exe"
 
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -134,14 +139,20 @@ Section "Uninstall"
   RMDir /r "$SMPROGRAMS\${PROGRAM_NAME}"
   Delete "$DESKTOP\${PROGRAM_NAME}.lnk"
 
+  ;set the proper registry view before deleting any keys
+  SetRegView 64
+
+  ;remove the autostart entry
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Run\${PROGRAM_NAME}"
+
   DeleteRegKey HKLM "Software\${INSTALLER_NAME}"
 
   ;remove app's registry key
-  DeleteRegKey HKCU "Software\${COMPANY_NAME}\${INSTALLER_NAME}"
-  DeleteRegKey /ifempty HKCU "Software\${COMPANY_NAME}"
+  DeleteRegKey HKLM "Software\${COMPANY_NAME}\${INSTALLER_NAME}"
+  DeleteRegKey /ifempty HKLM "Software\${COMPANY_NAME}"
 
   ;remove Uninstaller And Unistall Registry Entries
-  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"  
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"  
 
 SectionEnd
 
