@@ -55,6 +55,8 @@ class Core
 
         m4e::gui::MainWindow*       _p_mainWindow   = nullptr;
 
+        bool                        _silentStart    = false;
+
         SingleProc*                 _p_singleProc   = nullptr;
 };
 

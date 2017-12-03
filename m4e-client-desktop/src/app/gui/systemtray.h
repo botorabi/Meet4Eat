@@ -59,6 +59,13 @@ class SystemTray : QObject
          */
         void                        showMessage( const QString& title, const QString& message, bool warning = false, int duration = 2000 );
 
+        /**
+         * @brief Check if the system tray is available. Some platforms may not support it.
+         *
+         * @return Return true if the system tray is available.
+         */
+        static bool                 isTrayAvailable();
+
     protected slots:
 
         /**

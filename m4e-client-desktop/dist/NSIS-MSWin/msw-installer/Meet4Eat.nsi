@@ -100,7 +100,7 @@ Section "Main" SecMain
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" "Publisher" "${COMPANY_NAME}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" "DisplayVersion" "${VERSION}"
   ;add autostart entry
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${PROGRAM_NAME}" "$INSTDIR\${PROGRAM_NAME}.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${PROGRAM_NAME}" '"$INSTDIR\${PROGRAM_NAME}.exe" --silent'
 
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
