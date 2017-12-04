@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>346</width>
-    <height>415</height>
+    <height>449</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -21,6 +21,31 @@
   </property>
   <property name="windowTitle">
    <string>Settings</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#WidgetSettings {
+  border: 1px solid rgb(151,167, 187);
+}
+QWidget {
+  color: white;
+  background-color: rgb(28,52,62);
+}
+QLineEdit {
+  background-color: rgb(101,117, 137);  
+}
+QPushButton {
+  background-color: rgb(111,127, 147);
+}
+QPushButton:hover {
+  background-color: rgb(151,167, 187);
+}
+QPushButton:disabled {
+  background-color: rgb(91,107,127);
+}
+QLineEdit {
+  border-radius: 0;
+  padding: 6px;
+}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -164,8 +189,18 @@
            <property name="toolTip">
             <string>Sign out from your account.</string>
            </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-style: outset;
+  min-width: 5em;
+  padding: 6px;
+}</string>
+           </property>
            <property name="text">
             <string>Sign out</string>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -174,8 +209,18 @@
            <property name="toolTip">
             <string>Sign in into your account.</string>
            </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-style: outset;
+  min-width: 5em;
+  padding: 6px;
+}</string>
+           </property>
            <property name="text">
             <string>Sign in</string>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

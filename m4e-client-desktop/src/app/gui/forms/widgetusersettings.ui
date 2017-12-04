@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>359</width>
-    <height>382</height>
+    <width>362</width>
+    <height>431</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,6 +25,8 @@ QGroupBox {
 }
 QLineEdit {
   background-color: rgb(101,117, 137);  
+  border-radius: 0;
+  padding: 6px;
 }
 QTextEdit {
   background-color: rgb(101,117, 137);  

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>291</width>
-    <height>114</height>
+    <height>118</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,6 +51,9 @@ QDateTimeEdit {
 }
 QPushButton {
   background: rgb(101,117, 137);
+}
+QPushButton:hover {
+  background-color: rgb(151,167, 187);
 }
 QPushButton::checked {
   border: 2px solid white;
@@ -111,6 +114,12 @@ QPushButton::checked {
             <property name="focusPolicy">
              <enum>Qt::StrongFocus</enum>
             </property>
+            <property name="styleSheet">
+             <string notr="true">QLineEdit {
+  border-radius: 0;
+  padding: 6px;
+}</string>
+            </property>
             <property name="maxLength">
              <number>32</number>
             </property>
@@ -121,8 +130,18 @@ QPushButton::checked {
           </item>
           <item>
            <widget class="QPushButton" name="pushButtonSearch">
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+  border-style: outset;
+  min-width: 4em;
+  padding: 6px;
+}</string>
+            </property>
             <property name="text">
              <string>Search</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -136,7 +155,14 @@ QPushButton::checked {
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="comboBoxSearch"/>
+         <widget class="QComboBox" name="comboBoxSearch">
+          <property name="styleSheet">
+           <string notr="true">QComboBox {
+  border-radius: 0;
+  padding: 6px;
+}</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
