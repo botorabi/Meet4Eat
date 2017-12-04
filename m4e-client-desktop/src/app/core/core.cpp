@@ -14,6 +14,7 @@
 #include "singleproc.h"
 #include <settings/appsettings.h>
 #include <gui/mainwindow.h>
+#include <gui/systemtray.h>
 #include <QDebug>
 #include <QApplication>
 #include <assert.h>
@@ -78,14 +79,18 @@ void Core::initialize( int &argc, char* argv[] )
     // check the cmd line options
     QCommandLineOption optverbose( { "v", "vebose" }, "Enable verbose output." );
     QCommandLineOption optlogfile( { "l", "logfile" }, "Create a log file in given directory <dir>.", "dir" );
+    QCommandLineOption optsilent( { "s", "silent" }, "Start the application in minimized mode, used for auto-starting while user logon." );
 
     QCommandLineParser parser;
     parser.setApplicationDescription( M4E_APP_DESCRIPTION );
     parser.addHelpOption();
     parser.addOption( optverbose );
     parser.addOption( optlogfile );
+    parser.addOption( optsilent );
 
     parser.process( *_p_app );
+
+    _silentStart = parser.isSet( optsilent );
 
     if ( parser.isSet( optverbose ) )
     {
@@ -142,7 +147,16 @@ void Core::start()
     }
 #endif
 
-    _p_mainWindow->show();
+    if ( !gui::SystemTray::isTrayAvailable() )
+    {
+        _p_mainWindow->setWindowState( Qt::WindowMinimized );
+        _p_mainWindow->show();
+    }
+    else if ( !_silentStart  )
+    {
+        _p_mainWindow->show();
+    }
+
     _p_app->exec();
 }
 

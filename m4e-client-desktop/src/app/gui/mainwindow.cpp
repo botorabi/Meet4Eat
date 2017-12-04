@@ -243,22 +243,30 @@ void MainWindow::restoreWindowGeometry()
 
 void MainWindow::onBtnCloseClicked()
 {
-    QString quitmsg = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_QUIT_MSG, "" );
-    if ( quitmsg.isEmpty() )
+    // before hiding the window check if a system tray is available. if not then just minimize the window, otherwise the app will get inaccessible.
+    if ( !SystemTray::isTrayAvailable() )
     {
-        common::DialogMessage msg( this );
-        QString text = QApplication::translate( "MainWindow", "The application will be running in the background.\nQuit the application by using the system tray menu."
-                                                              "\n\nShould this message be displayed next time?" );
-        msg.setupUI( QApplication::translate( "MainWindow", "Quit Application" ),
-                     text,
-                     common::DialogMessage::BtnYes |  common::DialogMessage::BtnNo );
-
-        if ( msg.exec() == common::DialogMessage::BtnNo )
-        {
-            settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_QUIT_MSG, "no" );
-        }
+        onBtnMinimizeClicked();
     }
-    hide();
+    else
+    {
+        QString quitmsg = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_QUIT_MSG, "" );
+        if ( quitmsg.isEmpty() )
+        {
+            common::DialogMessage msg( this );
+            QString text = QApplication::translate( "MainWindow", "The application will be running in the background.\nQuit the application by using the system tray menu."
+                                                                  "\n\nShould this message be displayed next time?" );
+            msg.setupUI( QApplication::translate( "MainWindow", "Quit Application" ),
+                         text,
+                         common::DialogMessage::BtnYes |  common::DialogMessage::BtnNo );
+
+            if ( msg.exec() == common::DialogMessage::BtnNo )
+            {
+                settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_QUIT_MSG, "no" );
+            }
+        }
+        hide();
+    }
 }
 
 void MainWindow::showSettingsDialog()
@@ -266,7 +274,10 @@ void MainWindow::showSettingsDialog()
     if ( !_p_settingsDlg )
         _p_settingsDlg = new settings::DialogSettings( _p_webApp, this );
 
-    _p_settingsDlg->exec();
+    if ( !_p_settingsDlg->isVisible() )
+        _p_settingsDlg->exec();
+    else
+        _p_settingsDlg->show();
 }
 
 void MainWindow::mouseDoubleClickEvent( QMouseEvent* p_event )

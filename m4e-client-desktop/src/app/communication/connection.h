@@ -81,6 +81,14 @@ class Connection : public QObject
          */
         bool                    sendPacket( m4e::comm::PacketPtr packet );
 
+        /**
+         * @brief Get the average ping time. The real-time connection is regularly pinged in order to
+         * keep it alive.
+         *
+         * @return The average ping time
+         */
+        quint64                 getAveragePing() const;
+
     signals:
 
         /**

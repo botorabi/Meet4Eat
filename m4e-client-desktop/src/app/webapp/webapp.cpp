@@ -30,6 +30,8 @@ WebApp::WebApp( QObject* p_parent ) :
     _p_connTimer->setSingleShot( false );
     _p_connTimer->setInterval( keepaliveperiod );
     connect( _p_connTimer, SIGNAL( timeout() ), this, SLOT( onTimerUpdate() ) );
+
+    _lastServerURL = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
 }
 
 WebApp::~WebApp()
@@ -47,6 +49,15 @@ void WebApp::establishConnection()
     _userID        = "";
     _webAppVersion = "";
     _authState     = AuthNoConnection;
+
+    // if the server URL was changed then clean the document cache, otherwise documents with same etag can get different document IDs
+    //  and mess up the caching!
+    QString server = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_SRV, M4E_SETTINGS_KEY_SRV_URL, "" );
+    if ( server != _lastServerURL )
+    {
+        getOrCreateDocumentCache()->clearCache();
+        _lastServerURL = server;
+    }
 
     //! NOTE: the user login process consists of following steps:
     // 1. get the app server info
@@ -294,7 +305,8 @@ void WebApp::resetAllResources()
 
 void WebApp::onTimerUpdate()
 {
-    log_debug << TAG << "ping the connection..." << std::endl;
+    log_debug << TAG << "real-time connection's average ping: " << getOrCreateConnection()->getAveragePing() << " ms" << std::endl;
+    log_debug << TAG << "ping the application server..." << std::endl;
     comm::PacketPtr packet = new comm::Packet();
     if ( _p_user )
     {

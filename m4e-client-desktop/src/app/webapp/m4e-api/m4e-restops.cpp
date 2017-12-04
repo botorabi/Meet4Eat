@@ -100,7 +100,7 @@ void Meet4EatRESTOperations::startRequest( const QUrl& url, enum QNetworkAccessM
 
         default:
         {
-            log_warning << TAG << "invalid access method: " + op << std::endl;
+            log_warning << TAG << "invalid access method: " << op << std::endl;
         }
     }
 

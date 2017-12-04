@@ -63,6 +63,36 @@ class Meet4EatWebSocket : public QObject
         void                    setWsURL( const QString& wsURL );
 
         /**
+         * @brief Enable/disable periodic WebSocket server pings for keeping the connection alive.
+         *
+         * @param enable    Pass true to enable, false for disable
+         * @param interval  The ping interval in milliseconds, minimum is 60000 (one minute)
+         */
+        void                    setupKeepAlive( bool enable, int interval );
+
+        /**
+         * @brief Get the WebSocket connection keep-alive setup. It will be reset to 0 on calling setupKeepAlive.
+         *
+         * @param enable        true if the keep-alive is active, otherwise false
+         * @param interval      The ping interval
+         */
+        void                    getSetupKeepAlive( bool& enable, int& interval );
+
+        /**
+         * @brief Get the time stamp of last life sign using the keep-alive mechanism.
+         *
+         * @return The last lifesign time stamp in milliseconds since epoche
+         */
+        quint64                 getLastLifeSign() const { return _lastLifeSign; }
+
+        /**
+         * @brief Get the average ping, useful only if the keep-alive is enabled.
+         *
+         * @return The average ping time in milliseconds
+         */
+        quint64                 getAveragePing() const {  return _pingAverage; }
+
+        /**
          * @brief Establish a WebSocket connection to server. If there is already a connection then it will be closed first.
          * The results are delivered by signals 'onConnectionEstablished'.
          *
@@ -99,6 +129,10 @@ class Meet4EatWebSocket : public QObject
         void                    onError( QAbstractSocket::SocketError error );
 
         void                    onTextMessageReceived( QString message );
+
+        void                    onPingTimer();
+
+        void                    onPongReceived( quint64 elapsedTime, const QByteArray& payload );
 
     signals:
 
@@ -148,7 +182,17 @@ class Meet4EatWebSocket : public QObject
 
         QString                 _wsURL;
 
-        QWebSocket*             _p_webSocket;
+        QWebSocket*             _p_webSocket    = nullptr;
+
+        QTimer*                 _p_pingTimer    = nullptr;
+
+        bool                    _pingEnable     = false;
+
+        int                     _pingIntrerval  = 60000;
+
+        quint64                 _pingAverage    = 0;
+
+        quint64                 _lastLifeSign   = 0;
 
         QString                 _webAppProtVersion;
 };

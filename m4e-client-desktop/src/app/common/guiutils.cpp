@@ -76,7 +76,7 @@ bool GuiUtils::createImageFromFile( QWidget* p_parent, QString dir, QPixmap& ima
     QString filename = QFileDialog::getOpenFileName( p_parent,
                                                      QApplication::translate( "GuiUtils", "Open Image" ),
                                                      dir,
-                                                     QApplication::translate( "GuiUtils", "Image Files (*.png *.jpg *.bmp *.svg)" ) );
+                                                     QApplication::translate( "GuiUtils", "Image Files (*.png *.jpg *.jpeg *.bmp *.svg);;All Files (*.*)" ) );
 
     if ( filename.isEmpty() )
     {

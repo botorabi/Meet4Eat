@@ -7,8 +7,8 @@
 @echo: 
 @echo ###################################################
 @echo Setup the build tools paths
-@set PATH_QT=C:\Qt\5.9.3\mingw53_32\bin
-@set PATH_MINGW=C:\Qt\Tools\mingw530_32\bin
+@set PATH_QT=D:\Dev\Qt\5.9.3\mingw53_32\bin
+@set PATH_MINGW=D:\Dev\Qt\Tools\mingw530_32\bin
 @echo Using PATH_QT=%PATH_QT%
 @echo Using PATH_MINGW=%PATH_MINGW%
 

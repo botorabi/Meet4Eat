@@ -134,9 +134,10 @@ public class UserRegistrations {
      * 
      * @param user          User, mail recipient
      * @param activationURL The base URL used for activating the user account
+     * @param bccEmail      Optional email address used for BCC, let it null in order to ignore it.
      * @param event         Mail event sent out to mail observer.
      */
-    public void registerUserAccount(UserEntity user, String activationURL, Event event) {
+    public void registerUserAccount(UserEntity user, String activationURL, String bccEmail, Event event) {
         // create a registration entry
         UserRegistrationEntity reg = new UserRegistrationEntity();
         reg.setUser(user);
@@ -170,6 +171,17 @@ public class UserRegistrations {
         sendmail.setHtmlBody(false);
         sendmail.setBody(body);
         event.fireAsync(sendmail);
+
+        //! NOTE we do not user BCC on the user mail as the mail header may unveil the bccEmail
+        if (bccEmail != null) {
+            SendEmailEvent sendccmail = new SendEmailEvent();
+            sendccmail.setRecipients(Arrays.asList(bccEmail));
+            sendccmail.setSubject("Notification - Meet4Eat User Activation");
+            sendccmail.setHtmlBody(false);
+            body = "Copy of Email to " + user.getEmail() + "\n---\n\n" + body;
+            sendccmail.setBody(body);
+            event.fireAsync(sendccmail);
+        }
     }
 
     /**
@@ -219,10 +231,11 @@ public class UserRegistrations {
      * 
      * @param email         Email of the user who requests a password reset
      * @param resetURL      The base URL used for performing the password reset
+     * @param bccEmail      Optional email address used for BCC, let it null in order to ignore it.
      * @param event         Mail event sent out to mail observer.
      * @throws Exception    Throws exception if no user with given email address was found.
      */
-    public void requestPasswordReset(String email, String resetURL, Event event) throws Exception {
+    public void requestPasswordReset(String email, String resetURL, String bccEmail, Event event) throws Exception {
         Users users = new Users(entityManager);
         UserEntity user = users.findUserByEmail(email);
         if ((user == null) || (user.getStatus().getIsDeleted())) {
@@ -275,6 +288,17 @@ public class UserRegistrations {
         sendmail.setHtmlBody(false);
         sendmail.setBody(body);
         event.fireAsync(sendmail);
+
+        //! NOTE we do not user BCC on the user mail as the mail header may unveil the bccEmail
+        if (bccEmail != null) {
+            SendEmailEvent sendccmail = new SendEmailEvent();
+            sendccmail.setRecipients(Arrays.asList(bccEmail));
+            sendccmail.setSubject("Notification - Password Reset");
+            sendccmail.setHtmlBody(false);
+            body = "Copy of Email to " + user.getEmail() + "\n---\n\n" + body;
+            sendccmail.setBody(body);
+            event.fireAsync(sendccmail);
+        }
     }
 
     /**

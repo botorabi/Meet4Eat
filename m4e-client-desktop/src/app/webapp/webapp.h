@@ -350,6 +350,8 @@ class WebApp : public QObject
 
         QString                         _webAppVersion;
 
+        QString                         _lastServerURL;
+
         QTimer*                         _p_connTimer     = nullptr;
 
         RESTAppInfo*                    _p_restAppInfo   = nullptr;

@@ -184,9 +184,10 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
 
         // get the activation URL
-        String activationurl = getLinkURL("url.activation", request, "/activate.html");
+        String activationurl = getAccRegCfgLinkURL("url.activation", request, "/activate.html");
+        String adminemail    = getAccRegCfgNotificationMail();
         UserRegistrations register = new UserRegistrations(entityManager);
-        register.registerUserAccount(newuser, activationurl, sendMailEvent);
+        register.registerUserAccount(newuser, activationurl, adminemail, sendMailEvent);
 
         //! NOTE on successful entity creation the new ID is sent back by results.data field.
         jsonresponse.add("id", newuser.getId());
@@ -254,9 +255,10 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
                 return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
             }
             // create the activation URL
-            String url = getLinkURL("url.passwordReset", request, "/resetpassword.html");
+            String url = getAccRegCfgLinkURL("url.passwordReset", request, "/resetpassword.html");
+            String adminemail = getAccRegCfgNotificationMail();
             UserRegistrations register = new UserRegistrations(entityManager);
-            register.requestPasswordReset(email, url, sendMailEvent);
+            register.requestPasswordReset(email, url, adminemail, sendMailEvent);
         }
         catch(Exception ex) {
             Log.error(TAG, "cannot process password reset request, reason: " + ex.getLocalizedMessage());
@@ -589,7 +591,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
      * @param defaultPage   Last part of the URL if no valid configuration exists in app
      * @return 
      */
-    private String getLinkURL(String configName, HttpServletRequest request, String defaultPage) {
+    private String getAccRegCfgLinkURL(String configName, HttpServletRequest request, String defaultPage) {
         // first try to get the link from account registration config
         Properties props = AppConfiguration.getInstance().getAccountRegistrationConfig();
         String link = (props != null) ? props.getProperty(configName) : null;
@@ -598,5 +600,16 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
             return AppConfiguration.getInstance().getHTMLBaseURL(request) + defaultPage;
         }
         return link;
+    }
+
+    /**
+     * Get the notification mail address as configured in account registration configuration file.
+     * 
+     * @return Return the configured notification email address, or null if it is not configured.
+     */
+    private String getAccRegCfgNotificationMail() {
+        Properties props = AppConfiguration.getInstance().getAccountRegistrationConfig();
+        String mail = (props != null) ? props.getProperty("mail.notification") : null;
+        return mail;
     }
 }

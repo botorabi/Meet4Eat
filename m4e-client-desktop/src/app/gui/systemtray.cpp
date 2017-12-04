@@ -172,6 +172,11 @@ void SystemTray::showMessage( const QString& title, const QString& message, bool
     _p_systemTray->showMessage( title, message, warning ? QSystemTrayIcon::Warning : QSystemTrayIcon::Information, duration );
 }
 
+bool SystemTray::isTrayAvailable()
+{
+    return QSystemTrayIcon::isSystemTrayAvailable();
+}
+
 void SystemTray::onUserSignedIn( bool success, QString /*userId*/ )
 {
     QString title = QApplication::translate( "SystemTray", "Meet4Eat - User Sign In" );
