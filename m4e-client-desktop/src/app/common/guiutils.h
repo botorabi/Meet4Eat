@@ -87,6 +87,13 @@ class GuiUtils
          * @param p_widget Widget to bring to front
          */
         static void         bringWidgetToFront( QWidget* p_widget );
+
+        /**
+         * @brief Adapt the look&feel of given widget and its children to the current platfom.
+         *
+         * @param p_widget Widget to adapt
+         */
+        static void         adaptLookAndFeel( QWidget* p_widget );
 };
 
 } // namespace common

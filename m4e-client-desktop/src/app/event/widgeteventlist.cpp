@@ -10,6 +10,7 @@
 #include "widgeteventlist.h"
 #include <core/log.h>
 #include <common/dialogmessage.h>
+#include <common/guiutils.h>
 #include "widgeteventitem.h"
 #include <QApplication>
 #include <QListWidgetItem>
@@ -81,6 +82,8 @@ void WidgetEventList::setupUI()
     {
         addEvent( ev );
     }
+
+    common::GuiUtils::adaptLookAndFeel( this );
 }
 
 void WidgetEventList::setupListView()
