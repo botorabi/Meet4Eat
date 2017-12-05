@@ -127,5 +127,20 @@ void GuiUtils::bringWidgetToFront( QWidget* p_widget )
     p_widget->activateWindow();
 }
 
+void GuiUtils::adaptLookAndFeel( QWidget* p_widget )
+{
+#ifdef Q_OS_MAC
+    // get rid of the focus outline on MacOS
+    p_widget->setAttribute( Qt::WA_MacShowFocusRect, false );
+    const QList< QWidget* >& c = p_widget->findChildren< QWidget* >();
+    QList< QWidget* >::const_iterator p_beg = c.begin(), p_end = c.end();
+    for ( ; p_beg != p_end; ++p_beg )
+    {
+        QWidget* p_w = const_cast< QWidget* >( *p_beg );
+        p_w->setAttribute( Qt::WA_MacShowFocusRect, false );
+    }
+#endif
+}
+
 } // namespace common
 } // namespace m4e

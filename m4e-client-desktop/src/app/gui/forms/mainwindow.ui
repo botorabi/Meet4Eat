@@ -21,7 +21,8 @@
    <property name="styleSheet">
     <string notr="true">#centralWidget {
   background: transparent;
-}</string>
+}
+</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_7">
     <property name="spacing">
@@ -816,7 +817,7 @@ QPushButton:hover {
                   <property name="styleSheet">
                    <string notr="true">#widgetEventItems {
   background-color: rgb(28,52,62);
-  border: 0;
+  border: 0px;
 }</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_5">
