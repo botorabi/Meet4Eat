@@ -40,6 +40,7 @@ public class AuthorityConfig {
      * Extend the list whenever new REST beans are created which need protected access.
      */
     private final Class[] accessBeanClasses = {
+        net.m4e.update.UpdateCheckEntityFacadeREST.class,
         net.m4e.system.core.AppInfoEntityFacadeREST.class,
         net.m4e.system.maintenance.MaintenanceFacadeREST.class,
         net.m4e.app.user.UserEntityFacadeREST.class,
