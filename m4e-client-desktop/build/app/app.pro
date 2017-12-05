@@ -186,3 +186,5 @@ RESOURCES += \
 DISTFILES +=
 
 RC_FILE = ../../src/app/gui/resources/app.rc
+
+ICON = ../../src/app/gui/resources/AppIcon.icns

@@ -282,7 +282,7 @@ QPushButton:hover {
               <widget class="QWidget" name="widgetMyMails" native="true">
                <property name="minimumSize">
                 <size>
-                 <width>250</width>
+                 <width>294</width>
                  <height>0</height>
                 </size>
                </property>
