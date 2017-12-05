@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>859</width>
-    <height>608</height>
+    <width>730</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -145,6 +145,9 @@ QPushButton::checked {
                 </item>
                 <item>
                  <widget class="QLineEdit" name="lineEditName">
+                  <property name="focusPolicy">
+                   <enum>Qt::ClickFocus</enum>
+                  </property>
                   <property name="maxLength">
                    <number>32</number>
                   </property>
@@ -209,6 +212,9 @@ QPushButton::checked {
                 </item>
                 <item>
                  <widget class="QLineEdit" name="lineEditOwner">
+                  <property name="focusPolicy">
+                   <enum>Qt::ClickFocus</enum>
+                  </property>
                   <property name="maxLength">
                    <number>32</number>
                   </property>
@@ -269,6 +275,9 @@ QPushButton::checked {
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBoxIsPublic">
+                  <property name="focusPolicy">
+                   <enum>Qt::ClickFocus</enum>
+                  </property>
                   <property name="toolTip">
                    <string>Public events are open to any user.</string>
                   </property>
@@ -374,6 +383,9 @@ QPushButton::checked {
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="focusPolicy">
+                <enum>Qt::ClickFocus</enum>
+               </property>
                <property name="sizeAdjustPolicy">
                 <enum>QAbstractScrollArea::AdjustToContents</enum>
                </property>
@@ -441,6 +453,9 @@ QPushButton::checked {
                      <height>16777215</height>
                     </size>
                    </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
+                   </property>
                    <property name="displayFormat">
                     <string>dd.MM.yyyy - HH:mm</string>
                    </property>
@@ -506,6 +521,9 @@ QPushButton::checked {
                    <width>100</width>
                    <height>16777215</height>
                   </size>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
                  </property>
                  <property name="dateTime">
                   <datetime>
@@ -608,6 +626,9 @@ QPushButton::checked {
                       <width>100</width>
                       <height>16777215</height>
                      </size>
+                    </property>
+                    <property name="focusPolicy">
+                     <enum>Qt::ClickFocus</enum>
                     </property>
                     <property name="calendarPopup">
                      <bool>true</bool>
@@ -870,7 +891,12 @@ QPushButton::checked {
                   <item>
                    <widget class="QComboBox" name="comboBoxSearchMember">
                     <property name="focusPolicy">
-                     <enum>Qt::ClickFocus</enum>
+                     <enum>Qt::NoFocus</enum>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QComboBox {
+  border: 0;
+}</string>
                     </property>
                    </widget>
                   </item>
@@ -902,14 +928,16 @@ QPushButton::checked {
   </layout>
  </widget>
  <tabstops>
-  <tabstop>lineEditName</tabstop>
-  <tabstop>lineEditOwner</tabstop>
+  <tabstop>lineEditSearchMember</tabstop>
   <tabstop>checkBoxIsPublic</tabstop>
   <tabstop>textEditDescription</tabstop>
+  <tabstop>lineEditName</tabstop>
   <tabstop>dateTimeEditStart</tabstop>
   <tabstop>timeEditVotingTimeBegin</tabstop>
   <tabstop>timeEditDayTime</tabstop>
   <tabstop>comboBoxSearchMember</tabstop>
+  <tabstop>lineEditOwner</tabstop>
+  <tabstop>pushButtonAddMember</tabstop>
  </tabstops>
  <resources>
   <include location="../resources/application.qrc"/>

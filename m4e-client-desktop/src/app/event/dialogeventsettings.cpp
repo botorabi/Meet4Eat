@@ -359,7 +359,7 @@ void DialogEventSettings::onLineEditSeachtReturnPressed()
     QString keyword = _p_ui->lineEditSearchMember->text();
     keyword = keyword.trimmed();
 
-    if ( keyword.length() < 3 )
+    if ( keyword.length() < 6 )
         return;
 
     if ( keyword.length() > 32 )

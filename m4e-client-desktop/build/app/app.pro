@@ -18,6 +18,7 @@ INCLUDEPATH += ../../src/app ../../src
 SOURCES += \
     ../../src/app/main.cpp \
     ../../src/app/common/basedialog.cpp \
+    ../../src/app/common/btnresize.cpp \
     ../../src/app/common/dialogmessage.cpp \
     ../../src/app/common/guiutils.cpp \
     ../../src/app/communication/connection.cpp \
@@ -86,6 +87,7 @@ SOURCES += \
 HEADERS += \
     ../../src/app/configuration.h \
     ../../src/app/common/basedialog.h \
+    ../../src/app/common/btnresize.h \
     ../../src/app/common/dialogmessage.h \
     ../../src/app/common/guiutils.h \
     ../../src/app/common/modelbase.h \
@@ -184,3 +186,5 @@ RESOURCES += \
 DISTFILES +=
 
 RC_FILE = ../../src/app/gui/resources/app.rc
+
+ICON = ../../src/app/gui/resources/AppIcon.icns

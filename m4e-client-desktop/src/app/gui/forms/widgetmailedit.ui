@@ -58,6 +58,9 @@ QDateTimeEdit {
 QPushButton {
   background: rgb(101,117, 137);
 }
+QPushButton:hover {
+  background-color: rgb(151,167, 187);
+}
 QPushButton::checked {
   border: 2px solid white;
   font-weight: bold;
@@ -169,6 +172,13 @@ QPushButton::checked {
               <property name="focusPolicy">
                <enum>Qt::TabFocus</enum>
               </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+  border-style: outset;
+  min-width: 4em;
+  padding: 6px;
+}</string>
+              </property>
               <property name="text">
                <string>Send</string>
               </property>
@@ -177,6 +187,9 @@ QPushButton::checked {
                 <width>32</width>
                 <height>32</height>
                </size>
+              </property>
+              <property name="flat">
+               <bool>true</bool>
               </property>
              </widget>
             </item>

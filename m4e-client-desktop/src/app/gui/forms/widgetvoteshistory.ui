@@ -14,8 +14,27 @@
    <string>Event</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget {
+   <string notr="true">#WidgetVotesHistory {
+  border: 1px solid rgb(151,167, 187);
+}
+QWidget {
   color: white;
+  background-color: rgb(28,52,62);
+}
+QLineEdit {
+  background-color: rgb(101,117, 137);  
+}
+QPushButton {
+  background-color: rgb(111,127, 147);
+  border-style: outset;
+  min-width: 3em;
+  padding: 6px;
+}
+QPushButton:hover {
+  background-color: rgb(151,167, 187);
+}
+QPushButton[enabled=&quot;false&quot;] {
+  background-color: rgb(31,47,67);
 }
 QGroupBox {
   border-radius: 0px;
@@ -25,33 +44,19 @@ QGroupBox {
 QListWidget {
   background-color: transparent; 
 }
-QLineEdit {
-  background-color: rgb(101,117, 137);  
-}
 QTextEdit {
   background-color: rgb(101,117, 137);  
 }
 QPlainTextEdit {
   background-color: rgb(101,117, 137);  
 }
-QComboBox {
-  background-color: rgb(101,117, 137);  
-}
-QCheckBox::indicator {
-  border: 2px solid rgb(80,112,125);
-}
-QCheckBox::indicator:checked {
-  background-color: white;
-}
 QDateTimeEdit {
   background-color: rgb(101,117, 137);  
+  border-radius: 0;
+  padding: 6px;
 }
 QPushButton {
   background: rgb(101,117, 137);
-}
-QPushButton::checked {
-  border: 2px solid white;
-  font-weight: bold;
 }
 </string>
   </property>
@@ -181,6 +186,9 @@ QPushButton::checked {
               <widget class="QPushButton" name="pushButtonUpdate">
                <property name="text">
                 <string>-&gt;</string>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
                </property>
               </widget>
              </item>

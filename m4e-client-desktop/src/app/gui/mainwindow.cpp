@@ -52,11 +52,13 @@ MainWindow::MainWindow() :
  QMainWindow( nullptr ),
  _p_ui( new Ui::MainWindow )
 {
-    setWindowFlags( Qt::Window /*| Qt::FramelessWindowHint*/ | Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint );
     setAttribute( Qt::WA_NoSystemBackground );
     setAttribute( Qt::WA_TranslucentBackground );
 
     _p_ui->setupUi( this );
+    _p_ui->pushButtonResizer->setControlledWidget( this );
+
     restoreWindowGeometry();
 
     // prepare the start of webapp, it connects the application to the webapp server
@@ -308,6 +310,11 @@ void MainWindow::mouseMoveEvent( QMouseEvent* p_event )
 {
     if ( _dragging )
     {
+        if ( ( windowState() & Qt::WindowMaximized ) != 0 )
+        {
+            setWindowState( windowState() & ~Qt::WindowMaximized );
+        }
+
         move( p_event->globalPos() - _draggingPos );
     }
 }
