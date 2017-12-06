@@ -450,6 +450,10 @@ void MainWindow::onWebServerInfo( bool success, QString /*version*/ )
             showSettingsDialog();
         }
     }
+    else
+    {
+        _p_webApp->getUpdateCheck()->requestGetUpdateInfo();
+    }
 }
 
 void MainWindow::onAuthState( bool success, bool authenticated )
@@ -686,6 +690,25 @@ void MainWindow::onResponseCountUnreadMails( bool success, int count )
     }
 }
 
+void MainWindow::onResponseGetUpdateInfo( bool success, update::ModelUpdateInfoPtr updateInfo )
+{
+    if ( success )
+    {
+        if ( !updateInfo->getVersion().isEmpty() )
+        {
+            log_info << TAG << " there is a client update: " << updateInfo->getVersion() << std::endl;
+        }
+        else
+        {
+            log_debug << TAG << " there client is up to date" << std::endl;
+        }
+    }
+    else
+    {
+        log_warning << TAG << "could not get client update information!" << std::endl;
+    }
+}
+
 void MainWindow::onUserOnlineStatusChanged( QString senderId, QString senderName, bool online )
 {
     QString text;
@@ -745,6 +768,8 @@ void MainWindow::registerSignals( webapp::WebApp* p_webApp )
                                             SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
     reconnectSignal( p_webApp->getMailBox(), SIGNAL( onResponseCountUnreadMails( bool, int ) ), this,
                                              SLOT( onResponseCountUnreadMails( bool, int ) ) );
+    reconnectSignal( p_webApp->getUpdateCheck(), SIGNAL( onResponseGetUpdateInfo( bool, m4e::update::ModelUpdateInfoPtr ) ), this,
+                                                 SLOT( onResponseGetUpdateInfo( bool, m4e::update::ModelUpdateInfoPtr ) ) );
 }
 
 void MainWindow::updateStatus( const QString& text, bool online )

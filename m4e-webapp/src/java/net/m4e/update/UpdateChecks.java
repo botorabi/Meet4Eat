@@ -53,9 +53,8 @@ public class UpdateChecks {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", entity.getId())
             .add("name", entity.getName())
-            .add("platform" , entity.getPlatform())
+            .add("os" , entity.getOS())
             .add("flavor" , entity.getFlavor())
-            .add("version" , entity.getVersion())
             .add("udpateVersion" , entity.getUpdateVersion())
             .add("releaseDate" , entity.getReleaseDate())
             .add("url" , entity.getUrl());
@@ -90,20 +89,21 @@ public class UpdateChecks {
         if (jsonString == null) {
             throw new Exception("Invalid input");
         }
-        String name, flavor, version, platform;
+        String name, flavor, clientver, os, osver;
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
             JsonObject jobject = jreader.readObject();
-            name     = jobject.getString("name", null);
-            flavor   = jobject.getString("flavor", null);
-            platform = jobject.getString("platform", null);
-            version  = jobject.getString("version", null);
+            name       = jobject.getString("name", null);
+            flavor     = jobject.getString("flavor", null);
+            os         = jobject.getString("os", null);
+            osver      = jobject.getString("osVersion", null);
+            clientver  = jobject.getString("clientVersion", null);
         }
         catch(Exception ex) {
             throw new Exception("Invalid input format");
         }
 
-        if ((name == null) || (platform == null) || (version == null)) {
+        if ((name == null) || (os == null) || (osver == null) || (clientver == null)) {
             throw new Exception("Incomplete request information");
         }
 
@@ -116,12 +116,11 @@ public class UpdateChecks {
             query.setParameter("flavor", flavor);
         }
         query.setParameter("name", name);
-        query.setParameter("platform", platform);
-        query.setParameter("version", version);
+        query.setParameter("os", os);
         UpdateCheckEntity result = query.getSingleResult();
 
         JsonObjectBuilder update = Json.createObjectBuilder();
-        if (result == null) {
+        if ((result == null) || (result.getUpdateVersion().equals(clientver))) {
             update.add("updateVersion", "")
                   .add("url", "")
                   .add("releaseDate", 0L);

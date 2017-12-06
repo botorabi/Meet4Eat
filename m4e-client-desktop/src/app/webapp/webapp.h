@@ -21,6 +21,7 @@
 #include <notification/notifications.h>
 #include <mailbox/mailbox.h>
 #include <chat/chatsystem.h>
+#include <update/updatecheck.h>
 #include <QObject>
 
 
@@ -91,6 +92,13 @@ class WebApp : public QObject
          * @return Web application version
          */
         const QString&                  getWebAppVersion() const;
+
+        /**
+         * @brief Get the client update checker.
+         *
+         * @return The update checker
+         */
+        update::UpdateCheck*            getUpdateCheck();
 
         /**
          * @brief Get current web app authentication state
@@ -328,6 +336,8 @@ class WebApp : public QObject
 
         RESTAppInfo*                    getOrCreateAppInfo();
 
+        update::UpdateCheck*            getOrCreateUpdateCheck();
+
         user::UserAuthentication*       getOrCreateUserAuth();
 
         comm::Connection*               getOrCreateConnection();
@@ -355,6 +365,8 @@ class WebApp : public QObject
         QTimer*                         _p_connTimer     = nullptr;
 
         RESTAppInfo*                    _p_restAppInfo   = nullptr;
+
+        update::UpdateCheck*            _p_updateCheck   = nullptr;
 
         user::UserAuthentication*       _p_userAuth      = nullptr;
 

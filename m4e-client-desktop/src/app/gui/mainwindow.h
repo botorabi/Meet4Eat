@@ -240,6 +240,14 @@ class MainWindow : public QMainWindow
         void                        onResponseCountUnreadMails( bool success, int count );
 
         /**
+         * @brief Get the results of update check iformation.
+         *
+         * @param success       true if the update information could successfully be retrieved, otherwise false
+         * @param updateInfo    The update check information
+         */
+        void                        onResponseGetUpdateInfo( bool success, m4e::update::ModelUpdateInfoPtr updateInfo );
+
+        /**
          * @brief Notify about a user's online status.
          *
          * @param senderId      User ID

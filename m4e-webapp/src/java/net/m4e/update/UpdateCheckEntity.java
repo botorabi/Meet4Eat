@@ -35,7 +35,7 @@ import javax.persistence.NamedQuery;
      */
     @NamedQuery(
       name = "UpdateCheckEntity.findUpdate",
-      query = "SELECT u FROM UpdateCheckEntity u WHERE u.name = :name AND u.platform = :platform AND u.version = :version ORDER BY u.releaseDate DESC"
+      query = "SELECT u FROM UpdateCheckEntity u WHERE u.name = :name AND u.os = :os ORDER BY u.releaseDate DESC"
     ),
     /**
      * Try to find an update entry for a flavor given the client name, platform, and version.
@@ -48,7 +48,7 @@ import javax.persistence.NamedQuery;
      */
     @NamedQuery(
       name = "UpdateCheckEntity.findFlavorUpdate",
-      query = "SELECT u FROM UpdateCheckEntity u WHERE u.flavor = :flavor AND u.name = :name AND u.platform = :platform AND u.version = :version ORDER BY u.releaseDate DESC"
+      query = "SELECT u FROM UpdateCheckEntity u WHERE u.flavor = :flavor AND u.name = :name AND u.os = :os ORDER BY u.releaseDate DESC"
     )
 })
 public class UpdateCheckEntity implements Serializable {
@@ -71,19 +71,19 @@ public class UpdateCheckEntity implements Serializable {
     private String name = "";
 
     /**
-     * Platform can be an operation system such as MSWin, MacOS, Linux, etc.
+     * Operating system can be MSWin, MacOS, Linux, etc.
      */
-    private String platform = "";
+    private String os = "";
+
+    /**
+     * The OS version
+     */
+    private String osVersion = "";
 
     /**
      * Application flavor
      */
     private String flavor = "";
-
-    /**
-     * Current version of application requesting for update check
-     */
-    private String version = "";
 
     /**
      * Available update version
@@ -135,21 +135,21 @@ public class UpdateCheckEntity implements Serializable {
     }
 
     /**
-     * Get the platform such as MSWin, MacOS, Linux
+     * Get the operating system such as MSWin, MacOS, Linux
      * 
-     * @return The platform
+     * @return The operating system
      */
-    public String getPlatform() {
-        return platform;
+    public String getOS() {
+        return os;
     }
 
     /**
-     * Set the platform
+     * Set the operating system.
      * 
-     * @param platform The platform
+     * @param os The operating system
      */
-    public void setPlatform(String platform) {
-        this.platform = platform;
+    public void setOS(String os) {
+        this.os = os;
     }
 
     /**
@@ -169,24 +169,6 @@ public class UpdateCheckEntity implements Serializable {
      */
     public void setFlavor(String flavor) {
         this.flavor = flavor;
-    }
-
-    /**
-     * Get the current version of requesting application.
-     * 
-     * @return Current version
-     */
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * Set the current application version.
-     * 
-     * @param version The current version
-     */
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     /**

@@ -94,6 +94,11 @@ const QString& WebApp::getWebAppVersion() const
     return _webAppVersion;
 }
 
+update::UpdateCheck* WebApp::getUpdateCheck()
+{
+    return getOrCreateUpdateCheck();
+}
+
 WebApp::AuthState WebApp::getAuthState() const
 {
     return _authState;
@@ -179,6 +184,16 @@ RESTAppInfo* WebApp::getOrCreateAppInfo()
         setupServerURL( _p_restAppInfo );
     }
     return _p_restAppInfo;
+}
+
+update::UpdateCheck* WebApp::getOrCreateUpdateCheck()
+{
+    if ( !_p_updateCheck )
+    {
+        _p_updateCheck = new update::UpdateCheck( this );
+    }
+    setupServerURL( _p_updateCheck );
+    return _p_updateCheck;
 }
 
 user::UserAuthentication* WebApp::getOrCreateUserAuth()

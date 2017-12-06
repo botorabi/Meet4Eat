@@ -11,7 +11,7 @@
 
 #include <configuration.h>
 #include <webapp/m4e-api/m4e-rest.h>
-#include <QJsonDocument>
+
 
 namespace m4e
 {
