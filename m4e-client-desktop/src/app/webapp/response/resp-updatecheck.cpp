@@ -30,7 +30,7 @@ void ResponseUpdateCheck::onRESTResponseSuccess( const QJsonDocument& results )
     bool res = checkStatus( results, datadoc, errcode, errstring );
     if ( !res )
     {
-        emit _p_requester->onRESTUpdateInfoError( errcode, errstring );
+        emit _p_requester->onRESTUpdateErrorGetInfo( errcode, errstring );
         return;
     }
 
@@ -38,17 +38,17 @@ void ResponseUpdateCheck::onRESTResponseSuccess( const QJsonDocument& results )
     if ( !info->fromJSON( datadoc ) )
     {
         log_warning << TAG << "could not get update info, invalid format" << std::endl;
-        emit _p_requester->onRESTUpdateInfoError( "", "Invalid format" );
+        emit _p_requester->onRESTUpdateErrorGetInfo( "", "Invalid format" );
     }
     else
     {
-        emit _p_requester->onRESTUpdateInfo( info );
+        emit _p_requester->onRESTUpdatetGetInfo( info );
     }
 }
 
 void ResponseUpdateCheck::onRESTResponseError( const QString& reason )
 {
-    emit _p_requester->onRESTUpdateInfoError( "", reason );
+    emit _p_requester->onRESTUpdateErrorGetInfo( "", reason );
 }
 
 } // namespace webapp

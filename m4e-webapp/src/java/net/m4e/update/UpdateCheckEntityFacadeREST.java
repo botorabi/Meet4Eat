@@ -19,6 +19,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -54,7 +55,7 @@ public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<U
     }
 
     /**
-     * Create a new update entry in database.
+     * Create a new client update entry in database.
      * 
      * @param entity    The entity to create
      * @return          JSON response
@@ -69,6 +70,23 @@ public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<U
         super.create(entity);
         jsonresponse.add("id", entity.getId().toString());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Update entry was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    }
+
+    /**
+     * Update an existing client update entry in database.
+     * 
+     * @param entity    The entity to create
+     * @return          JSON response
+     */
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
+    public String editUpdate(UpdateCheckEntity entity) {
+        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        super.edit(entity);
+        jsonresponse.add("id", entity.getId().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Update entry was successfully updated.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
     /**

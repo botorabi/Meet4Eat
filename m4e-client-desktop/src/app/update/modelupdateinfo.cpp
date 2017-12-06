@@ -30,7 +30,7 @@ bool ModelUpdateInfo::fromJSON( const QString& input )
 bool ModelUpdateInfo::fromJSON( const QJsonDocument& input )
 {
     QJsonObject data      = input.object();
-    QString     version   = data.value( "version" ).toString( "" );
+    QString     version   = data.value( "updateVersion" ).toString( "" );
     QString     url       = data.value( "url" ).toString( "" );
     qint64      reldate   = ( qint64 )data.value( "releaseDate" ).toDouble( 0.0 );
 

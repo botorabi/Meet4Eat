@@ -19,8 +19,8 @@ UpdateCheck::UpdateCheck( QObject* p_parent ) :
  QObject( p_parent )
 {
     _p_restUpdateCheck = new webapp::RESTUpdateCheck( this );
-    connect( _p_restUpdateCheck, SIGNAL( onRESTUpdateInfo( m4e::update::ModelUpdateInfoPtr ) ), this, SLOT( onRESTUpdateInfo( m4e::update::ModelUpdateInfoPtr ) ) );
-    connect( _p_restUpdateCheck, SIGNAL( onRESTUpdateInfoError( QString, QString ) ), this, SLOT( onRESTUpdateInfoError( QString, QString ) ) );
+    connect( _p_restUpdateCheck, SIGNAL( onRESTUpdatetGetInfo( m4e::update::ModelUpdateInfoPtr ) ), this, SLOT( onRESTUpdatetGetInfo( m4e::update::ModelUpdateInfoPtr ) ) );
+    connect( _p_restUpdateCheck, SIGNAL( onRESTUpdateErrorGetInfo( QString, QString ) ), this, SLOT( onRESTUpdateErrorGetInfo( QString, QString ) ) );
 }
 
 UpdateCheck::~UpdateCheck()
@@ -65,7 +65,7 @@ void UpdateCheck::requestGetUpdateInfo()
     _p_restUpdateCheck->requestUpdateInfo( request );
 }
 
-void UpdateCheck::onRESTUpdatetGetInfo( update::ModelUpdateInfoPtr updateInfo )
+void UpdateCheck::onRESTUpdatetGetInfo( m4e::update::ModelUpdateInfoPtr updateInfo )
 {
     _updateInfo = updateInfo;
     emit onResponseGetUpdateInfo( true, updateInfo );

@@ -55,7 +55,7 @@ public class UpdateChecks {
             .add("name", entity.getName())
             .add("os" , entity.getOS())
             .add("flavor" , entity.getFlavor())
-            .add("udpateVersion" , entity.getUpdateVersion())
+            .add("version" , entity.getVersion())
             .add("releaseDate" , entity.getReleaseDate())
             .add("url" , entity.getUrl());
         return json;
@@ -89,21 +89,21 @@ public class UpdateChecks {
         if (jsonString == null) {
             throw new Exception("Invalid input");
         }
-        String name, flavor, clientver, os, osver;
+
+        String name, flavor, clientver, os;
         try {
             JsonReader jreader = Json.createReader(new StringReader(jsonString));
             JsonObject jobject = jreader.readObject();
             name       = jobject.getString("name", null);
-            flavor     = jobject.getString("flavor", null);
             os         = jobject.getString("os", null);
-            osver      = jobject.getString("osVersion", null);
             clientver  = jobject.getString("clientVersion", null);
+            flavor     = jobject.getString("flavor", null);
         }
         catch(Exception ex) {
             throw new Exception("Invalid input format");
         }
 
-        if ((name == null) || (os == null) || (osver == null) || (clientver == null)) {
+        if ((name == null) || (os == null) || (clientver == null)) {
             throw new Exception("Incomplete request information");
         }
 
@@ -117,16 +117,21 @@ public class UpdateChecks {
         }
         query.setParameter("name", name);
         query.setParameter("os", os);
-        UpdateCheckEntity result = query.getSingleResult();
+
+        UpdateCheckEntity result = null;
+        try {
+            result = query.getSingleResult();
+        }
+        catch(Exception ex) {}
 
         JsonObjectBuilder update = Json.createObjectBuilder();
-        if ((result == null) || (result.getUpdateVersion().equals(clientver))) {
+        if ((result == null) || (result.getVersion().equals(clientver))) {
             update.add("updateVersion", "")
                   .add("url", "")
                   .add("releaseDate", 0L);
         }
         else {
-            update.add("updateVersion", result.getUpdateVersion())
+            update.add("updateVersion", result.getVersion())
                   .add("url", result.getUrl())
                   .add("releaseDate", result.getReleaseDate());
         }

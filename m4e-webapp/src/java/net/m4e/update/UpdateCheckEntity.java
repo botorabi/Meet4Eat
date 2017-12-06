@@ -76,11 +76,6 @@ public class UpdateCheckEntity implements Serializable {
     private String os = "";
 
     /**
-     * The OS version
-     */
-    private String osVersion = "";
-
-    /**
      * Application flavor
      */
     private String flavor = "";
@@ -88,7 +83,7 @@ public class UpdateCheckEntity implements Serializable {
     /**
      * Available update version
      */
-    private String updateVersion = "";
+    private String version = "";
 
     /**
      * Update release date in seconds since epoch
@@ -172,21 +167,21 @@ public class UpdateCheckEntity implements Serializable {
     }
 
     /**
-     * Get the update for given version.
+     * Get the update  version.
      * 
      * @return Update version
      */
-    public String getUpdateVersion() {
-        return updateVersion;
+    public String getVersion() {
+        return version;
     }
 
     /**
      * Set the update version.
      * 
-     * @param updateVersion The update version
+     * @param version The update version
      */
-    public void setUpdateVersion(String updateVersion) {
-        this.updateVersion = updateVersion;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     /**

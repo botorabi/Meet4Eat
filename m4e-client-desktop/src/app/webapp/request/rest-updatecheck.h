@@ -63,7 +63,7 @@ class RESTUpdateCheck : public Meet4EatREST
          *
          * @param info   Update information
          */
-        void                    onRESTUpdateInfo( m4e::update::ModelUpdateInfoPtr info );
+        void                    onRESTUpdatetGetInfo( m4e::update::ModelUpdateInfoPtr info );
 
         /**
          * @brief Signal is emitted when there were a problem communicating to server or the results status were not ok.
@@ -71,7 +71,7 @@ class RESTUpdateCheck : public Meet4EatREST
          * @param errorCode Error code if any exits
          * @param reason    Error string
          */
-        void                    onRESTUpdateInfoError( QString errorCode, QString reason );
+        void                    onRESTUpdateErrorGetInfo( QString errorCode, QString reason );
 };
 
 } // namespace webapp

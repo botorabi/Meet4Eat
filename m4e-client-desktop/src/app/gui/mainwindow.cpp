@@ -700,12 +700,12 @@ void MainWindow::onResponseGetUpdateInfo( bool success, update::ModelUpdateInfoP
         }
         else
         {
-            log_debug << TAG << " there client is up to date" << std::endl;
+            log_debug << TAG << " the client is up to date" << std::endl;
         }
     }
     else
     {
-        log_warning << TAG << "could not get client update information!" << std::endl;
+        log_warning << TAG << "could not get client update information, reason: " << _p_webApp->getUpdateCheck()->getLastError() << std::endl;
     }
 }
 

@@ -23,7 +23,7 @@ QJsonDocument ModelRequestUpdateInfo::toJSON()
     obj.insert( "name", getName() );
     obj.insert( "os", getOS() );
     obj.insert( "flavor", getFlavor() );
-    obj.insert( "version", getVersion() );
+    obj.insert( "clientVersion", getVersion() );
 
     QJsonDocument doc( obj );
     return doc;
