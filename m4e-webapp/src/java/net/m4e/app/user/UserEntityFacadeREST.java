@@ -108,7 +108,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         //! NOTE Acutally, this check should not be needed (see AuthFilter), but just to be on the safe side!
         if (sessionuser == null) {
             Log.error(TAG, "*** Internal error, cannot create user, no user in session found!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
         UserEntity reqentity;
@@ -118,7 +118,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not create new user, validation failed, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);
         }
 
         // validate and adapt requested user roles
@@ -130,7 +130,7 @@ public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEnti
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not create new user, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
 
         //! NOTE on successful entity creation the new ID is sent back by results.data field.

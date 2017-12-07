@@ -8,6 +8,7 @@
 
 package net.m4e.update;
 
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -57,16 +58,27 @@ public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<U
     /**
      * Create a new client update entry in database.
      * 
-     * @param entity    The entity to create
-     * @return          JSON response
+     * @param entityJson    The update check entity in JSON format
+     * @return              JSON response
      */
     @POST
     @Path("create")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
-    public String createUpdate(UpdateCheckEntity entity) {
+    public String createUpdate(String entityJson) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        UpdateCheckEntity entity;
+        try {
+            UpdateCheckEntityInputValidator validator = new UpdateCheckEntityInputValidator(entityManager);
+            entity = validator.validateNewEntityInput(entityJson);
+            entity.setReleaseDate((new Date()).getTime());
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not create new update check entity, validation failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);
+        }
+
         super.create(entity);
         jsonresponse.add("id", entity.getId().toString());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Update entry was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
@@ -75,16 +87,41 @@ public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<U
     /**
      * Update an existing client update entry in database.
      * 
-     * @param entity    The entity to create
-     * @return          JSON response
+     * @param id            Entity ID
+     * @param entityJson    The update check entity in JSON format
+     * @return              JSON response
      */
     @PUT
+    @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
-    public String editUpdate(UpdateCheckEntity entity) {
+    public String editUpdate(@PathParam("id") Long id, String entityJson) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+        // validate the entity
+        UpdateCheckEntity reqentity;
+        try {
+            UpdateCheckEntityInputValidator validator = new UpdateCheckEntityInputValidator(entityManager);
+            reqentity = validator.validateUpdateEntityInput(entityJson);
+        }
+        catch (Exception ex) {
+            Log.warning(TAG, "*** Could not update an update check entity, validation failed, reason: " + ex.getLocalizedMessage());
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);
+        }
+        UpdateCheckEntity entity = super.find(id);
+        if (entity == null) {
+            Log.warning(TAG, "*** Could not update an update check entity, invalid ID");
+            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Invalid ID", ResponseResults.CODE_BAD_REQUEST, null);            
+        }
+        // take over the new values
+        entity.setName(reqentity.getName());
+        entity.setOS(reqentity.getOS());
+        entity.setFlavor(reqentity.getFlavor());
+        entity.setVersion(reqentity.getVersion() );
+        entity.setUrl(reqentity.getUrl());
+        // update the entry in database
         super.edit(entity);
+
         jsonresponse.add("id", entity.getId().toString());
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Update entry was successfully updated.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
@@ -137,7 +174,7 @@ public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<U
         }
         UpdateChecks checks = new UpdateChecks(entityManager);
         JsonObjectBuilder exp = checks.exportUpdateJSON(entity);
-        return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Update entry", ResponseResults.CODE_OK, exp.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Update entry", ResponseResults.CODE_OK, exp.build().toString());
     }
 
     /**
@@ -152,7 +189,7 @@ public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<U
         List<UpdateCheckEntity> entities = super.findAll();
         UpdateChecks checks = new UpdateChecks(entityManager);
         JsonArrayBuilder exp = checks.exportUpdatesJSON(entities);
-        return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Update entries", ResponseResults.CODE_OK, exp.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Update entries", ResponseResults.CODE_OK, exp.build().toString());
     }
 
     /**
@@ -170,7 +207,7 @@ public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<U
         List<UpdateCheckEntity> entities =  super.findRange(new int[]{from, to});
         UpdateChecks checks = new UpdateChecks(entityManager);
         JsonArrayBuilder exp = checks.exportUpdatesJSON(entities);
-        return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Update entries", ResponseResults.CODE_OK, exp.build().toString());
+        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Update entries", ResponseResults.CODE_OK, exp.build().toString());
     }
 
     /**

@@ -161,9 +161,12 @@ function Meet4EatREST() {
 	 * @returns {Meet4EatUpdateCheckREST}    REST API for update check operations
 	 */
 	self.buildUpdateCheckREST = function() {
-		var check = new Meet4EatUpdateCheckREST();
-		check.initialize(self._urlUpdateCheck, self._requestJSON);
-		return check;
+		var base = new Meet4EatBaseREST();
+		base.initialize(self._urlUpdateCheck, self._requestJSON);
+		// extend the base REST module by Meet4EatUpdateCheckREST
+		var check = new Meet4EatUpdateCheckREST(base);
+		check.initialize();
+		return base;
 	};
 
 	/**
@@ -488,93 +491,37 @@ function Meet4EatMaintenanceREST() {
 
 /**
  * Update check REST services
+ * 
+ * @param {Meet4EatBaseREST}  baseModule Base REST module
  */
-function Meet4EatUpdateCheckREST() {
+function Meet4EatUpdateCheckREST(baseModule) {
 
 	/* self ref */
 	var self = this;
 
+	/* Base module */
+	var base = baseModule;
+
 	/* API version */
 	self._version = "1.0.0";
 
-	/* Root URL for REST requests */
-	self._rootPath = "";
-
-	/* Function for contacting the server via JSON */
-	self._fcnRequestJson = null;
-
 	/**
 	 * Initialize the instance.
-	 * 
-	 * @param {string} rootPath			Root URL
-	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
-	self.initialize = function (rootPath, fcnRequestJson) {
-		self._rootPath = rootPath;
-		self._fcnRequestJson = fcnRequestJson;
-	};
+	self.initialize = function () {};
 
 	/**
-	 * Create a new update entry.
+	 * Perform a check by simulating a client update check request.
 	 * 
-	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 * @param {array}    fields           An array containing the entry fields
+	 * @param {function} resultsCallback   Callback which is used when the results arrive.
+	 * @param {array}    fields            An array containing the request fields:
+	 *                                       name              Client name
+	 *                                       os                Operation system
+	 *                                       clientVersion     Client version
+	 *                                       flavor            Flavor
 	 */
-	self.createUpdateEntry = function(resultsCallback, fields) {
-		self._fcnRequestJson(self._rootPath + "/create", fields, 'POST', resultsCallback);
-	};
-
-	/**
-	 * Update an existing update entry.
-	 * 
-	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 * @param {array}    fields           An array containing the entry fields
-	 */
-	self.updateUpdateEntry = function(resultsCallback, fields) {
-		self._fcnRequestJson(self._rootPath, fields, 'PUT', resultsCallback);
-	};
-
-	/**
-	 * Delete an update entry with given ID.
-	 * 
-	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 * @param {integer}  id               The update entry ID
-	 */
-	self.deleteUpdateEntry = function(resultsCallback, id) {
-		self._fcnRequestJson(self._rootPath + "/" + id, null, 'DELETE', resultsCallback);
-	};
-
-	/**
-	 * Get all update entries.
-	 * 
-	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 */
-	self.getAllUpdateEntries = function(resultsCallback) {
-		self._fcnRequestJson(self._rootPath, null, 'GET', resultsCallback);
-	};
-
-	/**
-	 * Get an update entry given its ID.
-	 * 
-	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 * @param {integer}  id                The update entry ID
-	 */
-	self.getUpdateEntry = function(resultsCallback, id) {
-		self._fcnRequestJson(self._rootPath + "/" + id, null, 'GET', resultsCallback);
-	};
-
-	/**
-	 * Perform an update check.
-	 * 
-	 * @param {function} resultsCallback  Callback which is used when the results arrive.
-	 * @param {array}    request          An array containing the request fields:
-	 *                                     'name'            client name
-	 *                                     'os'              operation system
-	 *                                     'clientVersion'   client version
-	 *                                     optional 'flavor' client flavor, e.g. Beta-Test
-	 */
-	self.checkForUpdate = function(resultsCallback, request) {
-		self._fcnRequestJson(self._rootPath + "/check", request, 'POST', resultsCallback);
+	base.performCheck = function(resultsCallback, fields) {
+		base._fcnRequestJson(base._rootPath + '/check', fields, 'POST', resultsCallback);
 	};
 }
 

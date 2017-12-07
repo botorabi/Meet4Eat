@@ -17,6 +17,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import net.m4e.system.core.Log;
 
 
 /**
@@ -41,6 +42,59 @@ public class UpdateChecks {
      */
     public UpdateChecks(EntityManager entityManager) {
         this.entityManager = entityManager;
+    }
+
+    /**
+     * Import an update check entity from a JSON description.
+     * 
+     * @param updateCheckJson   The update check entry in JSON format
+     * @return                  An update check entity or null if the JSON input was not valid or incomplete.
+     */
+    public UpdateCheckEntity importUpdateCheckJSON(String updateCheckJson) {
+        if (updateCheckJson == null) {
+            return null;
+        }
+
+        String id, name, flavor, version, os, url;
+        long releasedate = 0L;
+        try {
+            JsonReader jreader = Json.createReader(new StringReader(updateCheckJson));
+            JsonObject jobject = jreader.readObject();
+            id          = jobject.getString("id", null);
+            name        = jobject.getString("name", null);
+            os          = jobject.getString("os", null);
+            version     = jobject.getString("version", null);
+            flavor      = jobject.getString("flavor", "");
+            url         = jobject.getString("url", null);
+        }
+        catch(Exception ex) {
+            Log.warning(TAG, "invalid update check entry detected: " + ex.getLocalizedMessage());
+            return null;
+        }
+
+        if ((name == null) || (os == null) || (version == null) || (url == null)) {
+            return null;
+        }
+
+        UpdateCheckEntity entity = new UpdateCheckEntity();
+        if ((id != null) && !id.isEmpty()) {
+            try {
+                entity.setId(Long.parseLong(id));
+            }
+            catch(NumberFormatException ex) {
+                Log.warning(TAG, "invalid update check entry ID");
+                return null;
+            }
+        }
+        else {
+            entity.setId(0L);
+        }
+        entity.setName(name);
+        entity.setOS(os);
+        entity.setVersion(version);
+        entity.setUrl(url);
+        entity.setFlavor(flavor);
+        return entity;
     }
 
     /**
@@ -85,7 +139,6 @@ public class UpdateChecks {
      * @throws Exception    Throws an exception if the input is invalid or imcomplete
      */
     public JsonObjectBuilder checkForUpdate(String jsonString) throws Exception {
-
         if (jsonString == null) {
             throw new Exception("Invalid input");
         }

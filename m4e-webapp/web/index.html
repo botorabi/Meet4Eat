@@ -19,6 +19,7 @@
 		<script src="public/libs/js/Meet4Eat-UI_Event.js"></script>
 		<script src="public/libs/js/Meet4Eat-UI_User.js"></script>
 		<script src="public/libs/js/Meet4Eat-UI_Image.js"></script>
+		<script src="public/libs/js/Meet4Eat-UI_UpdateCheck.js"></script>
 		<script src="public/libs/js/Meet4Eat-UI.js"></script>
 		<link rel="stylesheet" href="public/libs/css/bootstrap.css" type="text/css">
 		<link rel="stylesheet" href="public/libs/css/dataTables.bootstrap.css" type="text/css">
@@ -613,14 +614,14 @@
 							<h2 class="page-header">Maintenance</h2>
 							<div class="">
 								<button class="btn btn-default btn-primary" onclick="getMeet4EatUI().onBtnMaintenancePurge()">Purge Resources</button>
-								<p class="help-block">Perform system purge. All unnecessary resrouces are removed.</p>
+								<p class="help-block">Perform system purge. All unnecessary resources are removed.</p>
 							</div>
 						</div>
 					</div>
 					<!-- /.row -->
 					<div class="row">
 						<div class="col-sm-12">
-							<h2 class="page-header">Client Updates</h2>
+							<h2 class="page-header">Client Updates <a id="page_update_entry_new" class="btn btn-sm btn-primary pull-right" onclick="getMeet4EatUI().onBtnUpdateEntryNew()">New Update Entry</a></h2>
 							<div class="col-lg-12">
 								<div class="panel panel-default">
 									<div class="panel-heading">
@@ -648,6 +649,7 @@
 								</div>
 								<!-- /.panel -->
 							</div>
+
 						</div>
 					</div>
 				</div>
@@ -701,6 +703,55 @@
 		</div>
 		<!-- /.modal -->
 
+		<!-- Modal used for update check entry dialog -->
+		<div class="modal fade" id="dialog_updates_edit" tabindex="-1" role="dialog" aria-labelledby="dialog_updates_title" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="dialog_updates_title">Update Check Entry</h4>
+					</div>
+					<div class="modal-body">
+						<form role="form" id="page_update_edit_form">
+							<input name="id" hidden>
+							<div class="form-group">
+								<label>Name</label>
+								<input class="form-control" maxlength="255" name="name" placeholder="Client name">
+								<p class="help-block">This is the client name.</p>
+							</div>
+							<div class="form-group">
+								<label>Operation System</label>
+								<input class="form-control" maxlength="255" name="os" placeholder="MSWin, MacOS, Linux,...">
+								<p class="help-block">Name of the operation system</p>
+							</div>
+							<div class="form-group">
+								<label>Flavor</label>
+								<input class="form-control" maxlength="255" name="flavor" placeholder="Client flavor, e.g. Beta-Test">
+								<p class="help-block">Client flavor, let empty for regular releases</p>
+							</div>
+							<div class="form-group">
+								<label>Version</label>
+								<input class="form-control" maxlength="128" name="version" placeholder="Latest version">
+								<p class="help-block">The latest client version</p>
+							</div>
+							<div class="form-group">
+								<label>URL</label>
+								<input class="form-control" maxlength="128" name="url" placeholder="The download URL">
+								<p class="help-block">URL for downloading the installation package</p>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer btn-toolbar">
+						<button type="button" class="btn btn-primary col-sm-3 pull-right" data-dismiss="modal" onclick="getMeet4EatUI().onBtnUpdateEntryEditApply()">Apply</button>
+						<button type="button" class="btn btn-primary col-sm-3 pull-right" data-dismiss="modal" onclick="getMeet4EatUI().onBtnUpdateEntryEditCancel()">Cancel</button>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+		<!-- /.modal -->
+	
 		<div id="display_error"></div>
 		<script>
 			var m4eUI   = null;
