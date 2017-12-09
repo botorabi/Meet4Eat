@@ -119,6 +119,7 @@ public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<U
         entity.setFlavor(reqentity.getFlavor());
         entity.setVersion(reqentity.getVersion() );
         entity.setUrl(reqentity.getUrl());
+        entity.setIsActive(reqentity.getIsActive());
         // update the entry in database
         super.edit(entity);
 

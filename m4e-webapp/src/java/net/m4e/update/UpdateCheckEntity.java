@@ -96,6 +96,11 @@ public class UpdateCheckEntity implements Serializable {
     private String url = "";
 
     /**
+     * Is the update active? An update can get deactivated at any time.
+     */
+    private boolean active = true;
+
+    /**
      * Get ID.
      * @return ID
      */
@@ -218,6 +223,24 @@ public class UpdateCheckEntity implements Serializable {
      */
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    /**
+     * Is the update active?
+     * 
+     * @return Return true if the update is active.
+     */
+    public boolean getIsActive() {
+        return active;
+    }
+
+    /**
+     * Activate/deactivate the update.
+     * 
+     * @param active The active state
+     */
+    public void setIsActive(boolean active) {
+        this.active = active;
     }
 
     @Override

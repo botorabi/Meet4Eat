@@ -56,7 +56,7 @@ public class UpdateChecks {
         }
 
         String id, name, flavor, version, os, url;
-        long releasedate = 0L;
+        boolean active;
         try {
             JsonReader jreader = Json.createReader(new StringReader(updateCheckJson));
             JsonObject jobject = jreader.readObject();
@@ -66,6 +66,7 @@ public class UpdateChecks {
             version     = jobject.getString("version", null);
             flavor      = jobject.getString("flavor", "");
             url         = jobject.getString("url", null);
+            active      = jobject.getBoolean("active", true);
         }
         catch(Exception ex) {
             Log.warning(TAG, "invalid update check entry detected: " + ex.getLocalizedMessage());
@@ -94,6 +95,7 @@ public class UpdateChecks {
         entity.setVersion(version);
         entity.setUrl(url);
         entity.setFlavor(flavor);
+        entity.setIsActive(active);
         return entity;
     }
 
@@ -111,7 +113,8 @@ public class UpdateChecks {
             .add("flavor" , entity.getFlavor())
             .add("version" , entity.getVersion())
             .add("releaseDate" , entity.getReleaseDate())
-            .add("url" , entity.getUrl());
+            .add("url" , entity.getUrl())
+            .add("active" , entity.getIsActive());                
         return json;
     }
 
@@ -178,7 +181,7 @@ public class UpdateChecks {
         catch(Exception ex) {}
 
         JsonObjectBuilder update = Json.createObjectBuilder();
-        if ((result == null) || (result.getVersion().equals(clientver))) {
+        if ((result == null) || !result.getIsActive() || (result.getVersion().equals(clientver))) {
             update.add("updateVersion", "")
                   .add("url", "")
                   .add("releaseDate", 0L);

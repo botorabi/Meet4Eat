@@ -147,16 +147,11 @@ void Core::start()
     }
 #endif
 
-    if ( !gui::SystemTray::isTrayAvailable() )
+    if ( _silentStart || !gui::SystemTray::isTrayAvailable() )
     {
         _p_mainWindow->setWindowState( Qt::WindowMinimized );
-        _p_mainWindow->show();
     }
-    else if ( !_silentStart  )
-    {
-        _p_mainWindow->show();
-    }
-
+    _p_mainWindow->show();
     _p_app->exec();
 }
 

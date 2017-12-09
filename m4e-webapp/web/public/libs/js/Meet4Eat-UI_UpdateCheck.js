@@ -109,6 +109,8 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 			obj[item.name] = item.value;
 			return obj;
 		}, {});
+		inputfields['active'] = $("#page_update_edit_form input[name='active']").prop('checked');
+
 		var fields = {};
 		var newentry = (inputfields.id === null) || (inputfields.id === "");
 		fields['id'] = inputfields.id;
@@ -117,6 +119,7 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 		fields['flavor'] = inputfields.flavor;
 		fields['version'] = inputfields.version;
 		fields['url'] = inputfields.url;
+		fields['active'] = inputfields.active;
 		self._createOrUpdateUpdateCheckEntry(fields, function(results) {
 			if (results.status === "ok") {
 				base.showModalBox("Changes were successfully applied to update entry.", "Entry Update", "Dismiss");
@@ -164,6 +167,7 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 					{ "data": "version" },
 					{ "data": "releasedate" },
 					{ "data": "url" },
+					{ "data": "active" },
 					{ "data": "ops" }
 				]});
 		}
@@ -193,6 +197,7 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 				"version" : entryFields.version,
 				"releasedate" : releasedate,
 				"url" : entryFields.url,
+				"active" : entryFields.active,
 				"ops" :	"<a role='button' onclick='getMeet4EatUI().onBtnUpdateEntryDelete(\"" + entryFields.id + "\")'>DELETE</a> | " +
 						"<a role='button' onclick='getMeet4EatUI().onBtnUpdateEntryEdit(\"" + entryFields.id + "\")'>EDIT</a>"
 			});
@@ -202,7 +207,7 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 		if (entryFields.id === "") {
 			base.showModalBox("updateUiUpdateCheckEntryTableUpdate Cannot update the entry, invalid id!", "Internal Error", "Dismiss");
 			return;
-		}
+		}		
 		var entry = self._getCheckEntryTable().row('#' + entryFields.id);
 		if (entry) {
 			var cols = entry.data();
@@ -220,6 +225,9 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 			}
 			if (entryFields.url) {
 				cols.url = entryFields.url;
+			}
+			if (entryFields.active) {
+				cols.active = entryFields.active;
 			}
 			if (entryFields.releasedate) {
 				//! TODO
@@ -252,6 +260,7 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 				$("#page_update_edit_form input[name='flavor']").val(entry.flavor);
 				$("#page_update_edit_form input[name='version']").val(entry.version);
 				$("#page_update_edit_form input[name='url']").val(entry.url);
+				$("#page_update_edit_form input[name='active']").prop('checked', entry.active);
 				$('#dialog_updates_edit').modal("show");
 			},
 			error: function(err) {
