@@ -19,7 +19,7 @@ function Meet4EatREST() {
 	var self = this;
 
 	/* API version */
-	self._version = "0.8.3";
+	self._version = "0.9.0";
 
 	/* Root path of web service */
 	self._webRoot = "/m4e";
@@ -41,6 +41,9 @@ function Meet4EatREST() {
 
 	/* URL for accessing images */
 	self._urlImages = self._webRoot + '/webresources/rest/docs';
+
+	/* URL for accessing the update checker */
+	self._urlUpdateCheck = self._webRoot + '/webresources/rest/update';
 
 	/* Last time the server was accessed */
 	self._lastAccessTime = 0;
@@ -150,6 +153,20 @@ function Meet4EatREST() {
 		var maintenance = new Meet4EatMaintenanceREST();
 		maintenance.initialize(self._urlMaintenance, self._requestJSON);
 		return maintenance;
+	};
+
+	/**
+	 * Build a REST api for client update check operations.
+	 * 
+	 * @returns {Meet4EatUpdateCheckREST}    REST API for update check operations
+	 */
+	self.buildUpdateCheckREST = function() {
+		var base = new Meet4EatBaseREST();
+		base.initialize(self._urlUpdateCheck, self._requestJSON);
+		// extend the base REST module by Meet4EatUpdateCheckREST
+		var check = new Meet4EatUpdateCheckREST(base);
+		check.initialize();
+		return base;
 	};
 
 	/**
@@ -469,6 +486,42 @@ function Meet4EatMaintenanceREST() {
 	 */
 	self.maintenancePurge = function(resultsCallback) {
 		self._fcnRequestJson(self._rootPath + "/purge", null, 'GET', resultsCallback);
+	};
+}
+
+/**
+ * Update check REST services
+ * 
+ * @param {Meet4EatBaseREST}  baseModule Base REST module
+ */
+function Meet4EatUpdateCheckREST(baseModule) {
+
+	/* self ref */
+	var self = this;
+
+	/* Base module */
+	var base = baseModule;
+
+	/* API version */
+	self._version = "1.0.0";
+
+	/**
+	 * Initialize the instance.
+	 */
+	self.initialize = function () {};
+
+	/**
+	 * Perform a check by simulating a client update check request.
+	 * 
+	 * @param {function} resultsCallback   Callback which is used when the results arrive.
+	 * @param {array}    fields            An array containing the request fields:
+	 *                                       name              Client name
+	 *                                       os                Operation system
+	 *                                       clientVersion     Client version
+	 *                                       flavor            Flavor
+	 */
+	base.performCheck = function(resultsCallback, fields) {
+		base._fcnRequestJson(base._rootPath + '/check', fields, 'POST', resultsCallback);
 	};
 }
 

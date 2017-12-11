@@ -25,7 +25,7 @@ function Meet4EatUI() {
 	var self = this;
 
 	/* UI version */
-	self._version              = "0.8.4";
+	self._version              = "0.9.0";
 
 	self._m4eAppInfo           = {'clientVersion' : '0.0.0', 'serverVersion' : '0.0.0', 'viewVersion' : '0'};
 	self._m4eAuthUser          = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
@@ -36,12 +36,14 @@ function Meet4EatUI() {
 	self._m4eRESTUserReg       = null;
 	self._m4eRESTEvents        = null;
 	self._m4eRESTMaintenance   = null;
+	self._m4eRESTUpdateCheck   = null;	
 	self._eventEventDatePicker = null;
 	self._lastMenuItem         = null;
 
 	self._uiModuleUser         = null;
 	self._uiModuleEvent        = null;
 	self._uiModuleImage        = null;
+	self._uiModuleUpdateCheck  = null;
 
 	/**
 	 * Initialize the Meet4Eat UI.
@@ -54,6 +56,7 @@ function Meet4EatUI() {
 		self._m4eRESTUserReg     = self._m4eREST.buildUserRegistrationREST();
 		self._m4eRESTEvents      = self._m4eREST.buildEventREST();
 		self._m4eRESTMaintenance = self._m4eREST.buildMaintenanceREST();
+		self._m4eRESTUpdateCheck = self._m4eREST.buildUpdateCheckREST();
 
 		self._m4eAppInfo.clientVersion = self._m4eREST.getVersion();
 		self._m4eAppInfo.viewVersion   = self._version;
@@ -70,6 +73,10 @@ function Meet4EatUI() {
 		if (typeof(Meet4EatUI_Image) === typeof(Function)) {
 			self._uiModuleImage = new Meet4EatUI_Image(self);
 			self._uiModuleImage.initialize();
+		}
+		if (typeof(Meet4EatUI_UpdateCheck) === typeof(Function)) {
+			self._uiModuleUpdateCheck = new Meet4EatUI_UpdateCheck(self);
+			self._uiModuleUpdateCheck.initialize();
 		}
 
 		self._setupUi();
@@ -527,6 +534,8 @@ function Meet4EatUI() {
 				self.showModalBox("Cannot retrieve server stats! Reason: " + err, "Connection Problem", "Dismiss");
 			}
 		});
+
+		self.setupUiModuleUpdateCheck();
 	};
 
 	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/

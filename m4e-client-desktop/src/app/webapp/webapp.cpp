@@ -94,6 +94,11 @@ const QString& WebApp::getWebAppVersion() const
     return _webAppVersion;
 }
 
+update::UpdateCheck* WebApp::getUpdateCheck()
+{
+    return getOrCreateUpdateCheck();
+}
+
 WebApp::AuthState WebApp::getAuthState() const
 {
     return _authState;
@@ -179,6 +184,16 @@ RESTAppInfo* WebApp::getOrCreateAppInfo()
         setupServerURL( _p_restAppInfo );
     }
     return _p_restAppInfo;
+}
+
+update::UpdateCheck* WebApp::getOrCreateUpdateCheck()
+{
+    if ( !_p_updateCheck )
+    {
+        _p_updateCheck = new update::UpdateCheck( this );
+    }
+    setupServerURL( _p_updateCheck );
+    return _p_updateCheck;
 }
 
 user::UserAuthentication* WebApp::getOrCreateUserAuth()
@@ -305,8 +320,8 @@ void WebApp::resetAllResources()
 
 void WebApp::onTimerUpdate()
 {
-    log_debug << TAG << "real-time connection's average ping: " << getOrCreateConnection()->getAveragePing() << " ms" << std::endl;
-    log_debug << TAG << "ping the application server..." << std::endl;
+    log_verbose << TAG << "real-time connection's average ping: " << getOrCreateConnection()->getAveragePing() << " ms" << std::endl;
+    log_verbose << TAG << "ping the application server..." << std::endl;
     comm::PacketPtr packet = new comm::Packet();
     if ( _p_user )
     {
@@ -447,7 +462,7 @@ void WebApp::onChannelSystemPacket( comm::PacketPtr packet )
     {
         qint64 ts = ( qint64 )data.value( "pong" ).toDouble();
         qint64 now = QDateTime::currentMSecsSinceEpoch();
-        log_debug << TAG << " got pong, roundtrip time: " << ( now - ts ) << " ms" << std::endl;
+        log_verbose << TAG << " got pong, roundtrip time: " << ( now - ts ) << " ms" << std::endl;
     }
 }
 

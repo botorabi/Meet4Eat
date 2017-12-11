@@ -234,7 +234,7 @@ function Meet4EatUI_User(baseModule) {
 
 	self._updateUiUserTableAdd = function(userFields) {
 		if (userFields.id === "") {
-			base.showModalBox("updateUiUserTableNew: Cannot add user, invalid user id!", "Internal Error", "Dismiss");
+			base.showModalBox("updateUiUserTableAdd: Cannot add user, invalid user id!", "Internal Error", "Dismiss");
 			return;
 		}
 		var lastlogin = "-";

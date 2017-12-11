@@ -176,6 +176,8 @@ void WidgetEventPanel::setupUI()
     _p_clientArea->setViewMode( QListView::IconMode );
     _p_clientArea->setWrapping( true );
     _p_clientArea->setSpacing( 10 );
+
+    common::GuiUtils::adaptLookAndFeel( this );
 }
 
 void WidgetEventPanel::scheduleEnableBuzz( int msec )

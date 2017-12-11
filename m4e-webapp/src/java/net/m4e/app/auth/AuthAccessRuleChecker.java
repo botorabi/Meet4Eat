@@ -172,7 +172,7 @@ public class AuthAccessRuleChecker {
         }
 
         for (Map.Entry<String /*access*/, List<String /*role*/>> acc: accessRules.entrySet()) {
-            text +=" | Access roles[" + acc.getKey() + "]: " + String.join(",", acc.getValue());
+            text +=" | Access roles [" + acc.getKey() + "]: " + String.join(",", acc.getValue());
         }
         return text;
     }

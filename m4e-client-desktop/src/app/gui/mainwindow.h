@@ -102,6 +102,8 @@ class MainWindow : public QMainWindow
 
         void                        onBtnStatusClicked();
 
+        void                        onBtnSoftwareUpdateClicked();
+
         void                        onBtnLogoClicked();
 
         void                        onBtnCollapseLogsClicked();
@@ -240,6 +242,14 @@ class MainWindow : public QMainWindow
         void                        onResponseCountUnreadMails( bool success, int count );
 
         /**
+         * @brief Get the results of update check iformation.
+         *
+         * @param success       true if the update information could successfully be retrieved, otherwise false
+         * @param updateInfo    The update check information
+         */
+        void                        onResponseGetUpdateInfo( bool success, m4e::update::ModelUpdateInfoPtr updateInfo );
+
+        /**
          * @brief Notify about a user's online status.
          *
          * @param senderId      User ID
@@ -266,7 +276,7 @@ class MainWindow : public QMainWindow
 
         void                        customEvent( QEvent* p_event );
 
-        void                        updateStatus( const QString& text, bool online );
+        void                        setupStatusUI( const QString& text, bool online );
 
         void                        addLogText( const QString& text );
 
@@ -293,6 +303,8 @@ class MainWindow : public QMainWindow
         void                        clearWidgetMyEvents();
 
         void                        createWidgetEvent( const QString& eventId );
+
+        void                        setupSoftwareUpdateUI( update::ModelUpdateInfoPtr updateInfo );
 
         void                        scheduleConnectionRecovery();
 
@@ -331,6 +343,8 @@ class MainWindow : public QMainWindow
         int                         _lastUnreadMails = 0;
 
         QString                     _currentEventSelection;
+
+        update::ModelUpdateInfoPtr  _updateInfo;
 };
 
 } // namespace gui

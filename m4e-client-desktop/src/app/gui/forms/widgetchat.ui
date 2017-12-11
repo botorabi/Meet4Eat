@@ -201,39 +201,6 @@ QGroupBox {
               <number>0</number>
              </property>
              <item>
-              <widget class="QPushButton" name="pushButtonEmotie">
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton {
-  background-color: rgb(28,52,62);
-  border: 1px solid rgb(131,147, 167);
-  border-image: url(:/icon-user.png);
-}
-QPushButton:hover {
-  border: 5px solid white;
-  border-radius:  4px;
-}</string>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
               <widget class="QLineEdit" name="lineEditChat">
                <property name="minimumSize">
                 <size>
@@ -253,7 +220,7 @@ QPushButton:hover {
               <widget class="QPushButton" name="pushButtonChatSend">
                <property name="minimumSize">
                 <size>
-                 <width>0</width>
+                 <width>68</width>
                  <height>30</height>
                 </size>
                </property>
@@ -263,8 +230,17 @@ QPushButton:hover {
                  <height>30</height>
                 </size>
                </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton {
+  border-style: outset;
+  min-width: 4em;
+}</string>
+               </property>
                <property name="text">
                 <string>Send</string>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -367,22 +343,6 @@ QScrollBar::vertical {
     <hint type="destinationlabel">
      <x>223</x>
      <y>229</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButtonEmotie</sender>
-   <signal>clicked()</signal>
-   <receiver>WidgetChat</receiver>
-   <slot>onBtnEmotieClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>25</x>
-     <y>218</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>33</x>
-     <y>230</y>
     </hint>
    </hints>
   </connection>

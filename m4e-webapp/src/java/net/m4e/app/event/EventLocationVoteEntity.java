@@ -34,7 +34,7 @@ import javax.persistence.NamedQuery;
      * eventId                  The event containing the locations
      */
     @NamedQuery(
-      name="EventLocationVoteEntity.findVotes",
+      name = "EventLocationVoteEntity.findVotes",
       query = "SELECT vote FROM EventLocationVoteEntity vote WHERE vote.creationTime >= :timeBegin AND vote.creationTime <= :timeEnd AND vote.eventId = :eventId"
     ),
     /**
@@ -46,7 +46,7 @@ import javax.persistence.NamedQuery;
      * locationId               The ID of event location
      */
     @NamedQuery(
-      name="EventLocationVoteEntity.findLocationVotes",
+      name = "EventLocationVoteEntity.findLocationVotes",
       query = "SELECT vote FROM EventLocationVoteEntity vote WHERE vote.creationTime >= :timeBegin AND vote.creationTime <= :timeEnd AND vote.locationId = :locationId"
     )
 })

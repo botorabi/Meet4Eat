@@ -18,6 +18,7 @@ INCLUDEPATH += ../../src/app ../../src
 SOURCES += \
     ../../src/app/main.cpp \
     ../../src/app/common/basedialog.cpp \
+    ../../src/app/common/btnresize.cpp \
     ../../src/app/common/dialogmessage.cpp \
     ../../src/app/common/guiutils.cpp \
     ../../src/app/communication/connection.cpp \
@@ -59,6 +60,9 @@ SOURCES += \
     ../../src/app/notification/notifications.cpp \
     ../../src/app/settings/appsettings.cpp \
     ../../src/app/settings/dialogsettings.cpp \
+    ../../src/app/update/modelrequpdateinfo.cpp \
+    ../../src/app/update/modelupdateinfo.cpp \
+    ../../src/app/update/updatecheck.cpp \
     ../../src/app/user/dialogsearchuser.cpp \
     ../../src/app/user/dialogusersettings.cpp \
     ../../src/app/user/modeluser.cpp \
@@ -74,18 +78,21 @@ SOURCES += \
     ../../src/app/webapp/request/rest-event.cpp \
     ../../src/app/webapp/request/rest-document.cpp \
     ../../src/app/webapp/request/rest-mailbox.cpp \
+    ../../src/app/webapp/request/rest-updatecheck.cpp \
     ../../src/app/webapp/request/rest-user.cpp \
     ../../src/app/webapp/response/resp-appinfo.cpp \
     ../../src/app/webapp/response/resp-authentication.cpp \
     ../../src/app/webapp/response/resp-document.cpp \
     ../../src/app/webapp/response/resp-event.cpp \
     ../../src/app/webapp/response/resp-mailbox.cpp \
+    ../../src/app/webapp/response/resp-updatecheck.cpp \
     ../../src/app/webapp/response/resp-user.cpp \
     ../../src/app/webapp/webapp.cpp
 
 HEADERS += \
     ../../src/app/configuration.h \
     ../../src/app/common/basedialog.h \
+    ../../src/app/common/btnresize.h \
     ../../src/app/common/dialogmessage.h \
     ../../src/app/common/guiutils.h \
     ../../src/app/common/modelbase.h \
@@ -130,6 +137,9 @@ HEADERS += \
     ../../src/app/notification/notifications.h \
     ../../src/app/settings/appsettings.h \
     ../../src/app/settings/dialogsettings.h \
+    ../../src/app/update/modelrequpdateinfo.h \
+    ../../src/app/update/modelupdateinfo.h \
+    ../../src/app/update/updatecheck.h \
     ../../src/app/user/dialogusersettings.h \
     ../../src/app/user/dialogsearchuser.h \
     ../../src/app/user/modeluser.h \
@@ -145,12 +155,14 @@ HEADERS += \
     ../../src/app/webapp/request/rest-document.h \
     ../../src/app/webapp/request/rest-event.h \
     ../../src/app/webapp/request/rest-mailbox.h \
+    ../../src/app/webapp/request/rest-updatecheck.h \
     ../../src/app/webapp/request/rest-user.h \
     ../../src/app/webapp/response/resp-appinfo.h \
     ../../src/app/webapp/response/resp-authentication.h \
     ../../src/app/webapp/response/resp-document.h \
     ../../src/app/webapp/response/resp-event.h \
     ../../src/app/webapp/response/resp-mailbox.h \
+    ../../src/app/webapp/response/resp-updatecheck.h \
     ../../src/app/webapp/response/resp-user.h \
     ../../src/app/webapp/webapp.h
 
@@ -184,3 +196,5 @@ RESOURCES += \
 DISTFILES +=
 
 RC_FILE = ../../src/app/gui/resources/app.rc
+
+ICON = ../../src/app/gui/resources/AppIcon.icns

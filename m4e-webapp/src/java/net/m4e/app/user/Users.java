@@ -410,7 +410,7 @@ public class Users {
      * 
      * @param entity        User entity to export
      * @param connections   Real-time user connections
-     * @return              A JSON object containing builder the proper entity fields
+     * @return              A JSON object containing builder with the proper entity fields
      */
     public JsonObjectBuilder exportUserJSON(UserEntity entity, ConnectedClients connections) {
         JsonObjectBuilder json = Json.createObjectBuilder();

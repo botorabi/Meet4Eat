@@ -19,10 +19,11 @@ namespace common
 BaseDialog::BaseDialog( QWidget* p_parent ) :
  QDialog( p_parent )
 {
-    setWindowFlags( Qt::Window /*| Qt::FramelessWindowHint*/ | Qt::CustomizeWindowHint );
+    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint );
 
     _p_ui = new Ui::BaseDlg();
     _p_ui->setupUi( this );
+    _p_ui->pushButtonResizer->setControlledWidget( this );
     _p_ui->labelTitle->setText( "" );
 }
 
@@ -73,6 +74,7 @@ void BaseDialog::setResizable( bool resizable )
         setMinimumSize( QSize( 0, 0 ) );
         setMaximumSize( QSize( 16777215, 16777215 ) );
     }
+    _p_ui->widgetFoot->setVisible( resizable );
 }
 
 void BaseDialog::onBtnCloseClicked()
