@@ -338,6 +338,64 @@ QPushButton:hover {
                    </spacer>
                   </item>
                   <item>
+                   <widget class="QPushButton" name="pushButtonSoftwareUpdate">
+                    <property name="minimumSize">
+                     <size>
+                      <width>200</width>
+                      <height>50</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>Roboto</family>
+                      <pointsize>11</pointsize>
+                     </font>
+                    </property>
+                    <property name="cursor">
+                     <cursorShape>PointingHandCursor</cursorShape>
+                    </property>
+                    <property name="toolTip">
+                     <string>Click to visit the download site.</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton {
+  color: white;
+  background: rgb(228,107, 0);
+  border: 1px solid rgb(188,67, 0);
+  border-radius: 2px;
+  text-align: center;
+}
+QPushButton::hover {
+  color: white;
+  background: rgb(188,67, 0);
+  border: 1px solid rgb(228,107, 0);
+  border-radius: 2px;
+}
+QPushButton::disabled {
+  color: white;
+  background: transparent;
+  border: 0px solid rgb(131,147, 167);
+  border-radius: 2px;
+  text-align: right;
+}
+</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
                    <layout class="QVBoxLayout" name="verticalLayout_8">
                     <item>
                      <spacer name="verticalSpacer_2">
@@ -1237,7 +1295,7 @@ QPushButton:hover {
    <hints>
     <hint type="sourcelabel">
      <x>372</x>
-     <y>576</y>
+     <y>574</y>
     </hint>
     <hint type="destinationlabel">
      <x>336</x>
@@ -1293,6 +1351,22 @@ QPushButton:hover {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButtonSoftwareUpdate</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onBtnSoftwareUpdateClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>582</x>
+     <y>79</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>686</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onBtnCloseClicked()</slot>
@@ -1309,5 +1383,6 @@ QPushButton:hover {
   <slot>onBtnStatusClicked()</slot>
   <slot>onBtnRefreshEvents()</slot>
   <slot>onBtnResizePressed()</slot>
+  <slot>onBtnSoftwareUpdateClicked()</slot>
  </slots>
 </ui>

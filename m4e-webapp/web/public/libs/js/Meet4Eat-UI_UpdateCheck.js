@@ -122,7 +122,6 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 		fields['active'] = inputfields.active;
 		self._createOrUpdateUpdateCheckEntry(fields, function(results) {
 			if (results.status === "ok") {
-				base.showModalBox("Changes were successfully applied to update entry.", "Entry Update", "Dismiss");
 				if (newentry) {
 					fields.id = results.data.id;
 					self._updateUiUpdateCheckEntryTableAdd(fields);
@@ -150,6 +149,45 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 	 */
 	base.onBtnUpdateEntryClearForm = function() {
 		$("#page_update_edit_form :input").val("");
+	};
+
+	/**
+	 * Perform an update check.
+	 */
+	base.onBtnUpdateEntryCheck = function() {
+		var inputfields = $('#page_update_check_form').serializeArray().reduce(function(obj, item) {
+			obj[item.name] = item.value;
+			return obj;
+		}, {});
+		$('#update_check_results_version').text("");
+		$('#update_check_results_url').text("");
+		$('#update_check_results_releasedate').text("");
+		base._m4eRESTUpdateCheck.performCheck({
+			success: function(results, response) {
+				if (results.status === "ok") {
+					if (results.data.updateVersion === "") {
+						base.showModalBox("There is no update for given client specs!", "Update Check Results", "Dismiss");
+					}
+					else {
+						var entryFields = results.data;
+						$('#update_check_results_version').text(entryFields.updateVersion);
+						$('#update_check_results_url').text(entryFields.url);
+						var releasedate = "-";
+						if (entryFields.releaseDate && entryFields.releaseDate > 0) {
+							var timestamp = new Date(parseInt(entryFields.releaseDate));
+							releasedate = base._formatTime(timestamp);
+						}
+						$('#update_check_results_releasedate').text(releasedate);
+					}
+				}
+				else {
+					base.showModalBox(results.description, "Failed to Check for Update", "Dismiss");
+				}
+			},
+			error: function(err) {
+				base.showModalBox(err, "Cannot retrieve update check results", "Dismiss");
+			}
+		}, inputfields);
 	};
 
 	/**********************************************************************/
@@ -188,7 +226,7 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 			var timestamp = new Date(parseInt(entryFields.releaseDate));
 			releasedate = base._formatTime(timestamp);
 		}
-
+		var url = entryFields.url ? ("<a href='" + entryFields.url + "'>" + entryFields.url + "</a>") : "";
 		self._getCheckEntryTable().row.add({
 				"DT_RowId" : entryFields.id,
 				"name" : entryFields.name,
@@ -196,8 +234,8 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 				"flavor" : (entryFields.flavor ? entryFields.flavor : ""),
 				"version" : entryFields.version,
 				"releasedate" : releasedate,
-				"url" : entryFields.url,
-				"active" : entryFields.active,
+				"url" : url,
+				"active" : (entryFields.active ? "Yes" : "No"),
 				"ops" :	"<a role='button' onclick='getMeet4EatUI().onBtnUpdateEntryDelete(\"" + entryFields.id + "\")'>DELETE</a> | " +
 						"<a role='button' onclick='getMeet4EatUI().onBtnUpdateEntryEdit(\"" + entryFields.id + "\")'>EDIT</a>"
 			});
@@ -224,15 +262,11 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 				cols.version = entryFields.version;
 			}
 			if (entryFields.url) {
-				cols.url = entryFields.url;
+				var url = entryFields.url ? ("<a href='" + entryFields.url + "'>" + entryFields.url + "</a>") : "";
+				cols.url = url;
 			}
-			if (entryFields.active) {
-				cols.active = entryFields.active;
-			}
-			if (entryFields.releasedate) {
-				//! TODO
-				alert("TODO update releaseDate");
-			}
+			cols.active = (entryFields.active ? "Yes" : "No");
+
 			entry.data(cols);
 			entry.draw("page");
 		}

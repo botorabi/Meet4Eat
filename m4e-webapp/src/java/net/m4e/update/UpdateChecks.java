@@ -183,11 +183,13 @@ public class UpdateChecks {
         JsonObjectBuilder update = Json.createObjectBuilder();
         if ((result == null) || !result.getIsActive() || (result.getVersion().equals(clientver))) {
             update.add("updateVersion", "")
+                  .add("os", "")
                   .add("url", "")
                   .add("releaseDate", 0L);
         }
         else {
             update.add("updateVersion", result.getVersion())
+                  .add("os", result.getOS())
                   .add("url", result.getUrl())
                   .add("releaseDate", result.getReleaseDate());
         }

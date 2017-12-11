@@ -102,6 +102,8 @@ class MainWindow : public QMainWindow
 
         void                        onBtnStatusClicked();
 
+        void                        onBtnSoftwareUpdateClicked();
+
         void                        onBtnLogoClicked();
 
         void                        onBtnCollapseLogsClicked();
@@ -274,7 +276,7 @@ class MainWindow : public QMainWindow
 
         void                        customEvent( QEvent* p_event );
 
-        void                        updateStatus( const QString& text, bool online );
+        void                        setupStatusUI( const QString& text, bool online );
 
         void                        addLogText( const QString& text );
 
@@ -301,6 +303,8 @@ class MainWindow : public QMainWindow
         void                        clearWidgetMyEvents();
 
         void                        createWidgetEvent( const QString& eventId );
+
+        void                        setupSoftwareUpdateUI( update::ModelUpdateInfoPtr updateInfo );
 
         void                        scheduleConnectionRecovery();
 
@@ -339,6 +343,8 @@ class MainWindow : public QMainWindow
         int                         _lastUnreadMails = 0;
 
         QString                     _currentEventSelection;
+
+        update::ModelUpdateInfoPtr  _updateInfo;
 };
 
 } // namespace gui

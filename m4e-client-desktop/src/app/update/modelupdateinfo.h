@@ -37,6 +37,21 @@ class ModelUpdateInfo: public m4e::core::RefCount< ModelUpdateInfo >
          * @brief Construct an instance.
          */
                                         ModelUpdateInfo() {}
+
+        /**
+         * @brief Set the client operation system.
+         *
+         * @param name The client OS
+         */
+        void                            setOS( const QString& os ) { _os = os; }
+
+        /**
+         * @brief Get the client operation system.
+         *
+         * @return The client OS
+         */
+        const QString&                  getOS() const { return _os; }
+
         /**
          * @brief Set the client version.
          *
@@ -97,6 +112,7 @@ class ModelUpdateInfo: public m4e::core::RefCount< ModelUpdateInfo >
 
     protected:
 
+        QString                         _os;
         QString                         _version;
         QString                         _url;
         QDateTime                       _releaseDate;

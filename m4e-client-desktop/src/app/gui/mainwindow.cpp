@@ -88,8 +88,10 @@ MainWindow::MainWindow() :
     _p_recoveryTimer->setSingleShot( true );
     connect( _p_recoveryTimer, SIGNAL( timeout() ), this, SLOT( onRecoveryTimer() ) );
 
-    updateStatus( QApplication::translate( "MainWindow", "No Connection!" ), false );
+    setupStatusUI( QApplication::translate( "MainWindow", "No Connection!" ), false );
     _p_ui->pushButtonRefreshEvents->hide();
+
+    setupSoftwareUpdateUI( update::ModelUpdateInfoPtr() );
 
     clearWidgetClientArea();
 }
@@ -208,7 +210,7 @@ void MainWindow::onBtnStatusClicked()
     {
         if ( _recoverConnection )
         {
-            updateStatus( QApplication::translate( "MainWindow", "Connecting..." ), false );
+            setupStatusUI( QApplication::translate( "MainWindow", "Connecting..." ), false );
             _p_webApp->requestAuthState();
         }
         else
@@ -216,6 +218,14 @@ void MainWindow::onBtnStatusClicked()
             showSettingsDialog();
         }
     }
+}
+
+void MainWindow::onBtnSoftwareUpdateClicked()
+{
+    if ( !_updateInfo.valid() )
+        return;
+
+    QDesktopServices::openUrl(  QUrl( _updateInfo->getURL() ) );
 }
 
 void MainWindow::onBtnLogoClicked()
@@ -487,7 +497,7 @@ void MainWindow::onUserDataReady( user::ModelUserPtr user )
         text = QApplication::translate( "MainWindow", "No Connection!" );
     }
 
-    updateStatus( text, true );
+    setupStatusUI( text, true );
 
     // a shutdown may have been done before, so we have to re-register some signals
     registerSignals( _p_webApp );
@@ -510,7 +520,7 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
     else
     {
         log_info << TAG << "user could not sign in: " << userId << std::endl;
-        updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
+        setupStatusUI( QApplication::translate( "MainWindow", "Offline!" ), false );
         addLogText( "User failed to sign in!" );
 
         // show the dialog only on initial sign in
@@ -532,7 +542,7 @@ void MainWindow::onUserSignedIn( bool success, QString userId )
 
 void MainWindow::onUserSignedOff( bool success )
 {
-    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
+    setupStatusUI( QApplication::translate( "MainWindow", "Offline!" ), false );
 
     _enableKeepAlive = false;
     _recoverConnection = false;
@@ -551,7 +561,7 @@ void MainWindow::onServerConnectionClosed()
 {
     log_debug << TAG << "server connection was closed" << std::endl;
 
-    updateStatus( QApplication::translate( "MainWindow", "Offline!" ), false );
+    setupStatusUI( QApplication::translate( "MainWindow", "Offline!" ), false );
     clearWidgetMyEvents();
     clearWidgetClientArea();
 
@@ -707,6 +717,9 @@ void MainWindow::onResponseGetUpdateInfo( bool success, update::ModelUpdateInfoP
     {
         log_warning << TAG << "could not get client update information, reason: " << _p_webApp->getUpdateCheck()->getLastError() << std::endl;
     }
+
+    _updateInfo = updateInfo;
+    setupSoftwareUpdateUI( updateInfo );
 }
 
 void MainWindow::onUserOnlineStatusChanged( QString senderId, QString senderName, bool online )
@@ -772,7 +785,7 @@ void MainWindow::registerSignals( webapp::WebApp* p_webApp )
                                                  SLOT( onResponseGetUpdateInfo( bool, m4e::update::ModelUpdateInfoPtr ) ) );
 }
 
-void MainWindow::updateStatus( const QString& text, bool online )
+void MainWindow::setupStatusUI( const QString& text, bool online )
 {
     _p_ui->pushButtonStatus->setText( text );
     _p_ui->pushButtonStatus->setEnabled( !online );
@@ -829,6 +842,21 @@ void MainWindow::createWidgetEvent( const QString& eventId )
     p_eventpanel->setupEvent( eventId );
 
     _p_ui->widgetClientArea->layout()->addWidget( p_eventpanel );
+}
+
+void MainWindow::setupSoftwareUpdateUI( update::ModelUpdateInfoPtr updateInfo )
+{
+    if ( !updateInfo.valid() || updateInfo->getVersion().isEmpty() )
+    {
+        _p_ui->pushButtonSoftwareUpdate->setVisible( false );
+        return;
+    }
+
+    QString text = QApplication::translate( "MainWindow", "Software Update Available\nNew Version: " );
+    text += updateInfo->getVersion();
+
+    _p_ui->pushButtonSoftwareUpdate->setText( text );
+    _p_ui->pushButtonSoftwareUpdate->setVisible( true );
 }
 
 void MainWindow::scheduleConnectionRecovery()
