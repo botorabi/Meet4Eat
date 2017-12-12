@@ -20,10 +20,15 @@ namespace event
 static const QString PREFIX_TIMER_START = "START_";
 static const QString PREFIX_TIMER_END   = "END_";
 
+/* All alarms are updated every 24 hours, this is the day time when it happens */
+static const QTime M4E_TIMER_UPDATE_TIME( 0, 0, 0 );
+
 
 Events::Events( QObject* p_parent ) :
  QObject( p_parent )
 {
+    setupTimerUpdate( M4E_TIMER_UPDATE_TIME );
+
     _p_restEvent = new webapp::RESTEvent( this );
     connect( _p_restEvent, SIGNAL( onRESTEventGetEvents( QList< m4e::event::ModelEventPtr > ) ), this, SLOT( onRESTEventGetEvents( QList< m4e::event::ModelEventPtr > ) ) );
     connect( _p_restEvent, SIGNAL( onRESTEventErrorGetEvents( QString, QString ) ), this, SLOT( onRESTEventErrorGetEvents( QString, QString ) ) );
@@ -284,13 +289,14 @@ void Events::onRESTEventGetEvent( ModelEventPtr event )
         {
             //log_verbose << TAG << "  updating the local copy of event" << std::endl;
             _events[ i ] = event;
+            updateVotingTimer( event, true, true );
             emit onResponseGetEvent( true, event );
             return;
         }
     }
     log_verbose << TAG << "  add new event to local copy of events" << std::endl;
     _events.append( event );
-    updateVotingTimers();
+    updateVotingTimer( event, true, true );
     emit onResponseGetEvent( true, event );
 }
 
@@ -338,7 +344,10 @@ void Events::onRESTEventErrorNewEvent( QString errorCode, QString reason )
 
 void Events::onRESTEventUpdateEvent( QString eventId )
 {
-    updateVotingTimers();
+    ModelEventPtr event = getUserEvent( eventId );
+    if ( event.valid() )
+        updateVotingTimer( event, true, true );
+
     emit onResponseUpdateEvent( true, eventId );
 }
 
@@ -497,6 +506,13 @@ void Events::onAlarmVotingEnd()
     emit onLocationVotingEnd( event );
 }
 
+void Events::onAlarmUpdateTimer()
+{
+    log_verbose << "daily alarm time updating" << std::endl;
+    updateVotingTimers();
+    setupTimerUpdate( M4E_TIMER_UPDATE_TIME );
+}
+
 void Events::destroyVotingTimers()
 {
     QMap< QString/*id*/, QTimer* >::iterator iter = _alarms.begin(), iterend = _alarms.end();
@@ -506,6 +522,27 @@ void Events::destroyVotingTimers()
         delete iter.value();
     }
     _alarms.clear();
+}
+
+void Events::setupTimerUpdate( const QTime& updateTime )
+{
+    if ( !_p_alarmUpdateTimer )
+    {
+        _p_alarmUpdateTimer = new QTimer( this );
+        _p_alarmUpdateTimer->setSingleShot( true );
+        connect( _p_alarmUpdateTimer, SIGNAL( timeout() ), this, SLOT( onAlarmUpdateTimer() ) );
+    }
+
+    // the timer is meant to trigger every 24 hours
+    int interval = QTime::currentTime().msecsTo( updateTime );
+    if ( interval <= 0 )
+        interval += 24 * 60 * 60 * 1000;
+
+    if ( _p_alarmUpdateTimer->isActive() )
+        _p_alarmUpdateTimer->stop();
+
+    _p_alarmUpdateTimer->setInterval( interval );
+    _p_alarmUpdateTimer->start();
 }
 
 void Events::updateVotingTimers()
