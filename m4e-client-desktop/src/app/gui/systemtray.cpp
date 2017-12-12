@@ -119,6 +119,7 @@ void SystemTray::setupSystemTray()
     _enableAlarm = ( enablealarm == "yes" ) ? true : false;
 
     _p_systemTray = new QSystemTrayIcon( QIcon( M4E_SYSTRAY_ICON ), this );
+    _p_systemTray->setToolTip( QApplication::translate( "SystemTray", M4E_APP_NAME ) );
     connect( _p_systemTray, SIGNAL( activated( QSystemTrayIcon::ActivationReason ) ), this, SLOT( onActivated( QSystemTrayIcon::ActivationReason ) ) );
     connect( _p_systemTray, SIGNAL( messageClicked() ), this, SLOT( onMessageClicked() ) );
 
@@ -131,7 +132,7 @@ void SystemTray::setupSystemTray()
     p_action->setSeparator( true );
     p_menu->addAction( p_action );
 
-    p_action = new QAction( "Open Meet4Eat" );
+    p_action = new QAction( QApplication::translate( "SystemTray", "Open Meet4Eat" ) );
     p_action->setData( QVariant( MenuOpen ) );
     p_menu->addAction( p_action );
 
@@ -139,13 +140,13 @@ void SystemTray::setupSystemTray()
     p_action->setSeparator( true );
     p_menu->addAction( p_action );
 
-    p_action = new QAction( "Enable Notification" );
+    p_action = new QAction( QApplication::translate( "SystemTray", "Enable Notification" ) );
     p_action->setCheckable( true );
     p_action->setChecked( _enableNotification );
     p_action->setData( QVariant( MenuEnableNotification ) );
     p_menu->addAction( p_action );
 
-    p_action = new QAction( "Enable Alarm" );
+    p_action = new QAction( QApplication::translate( "SystemTray", "Enable Alarm" ) );
     p_action->setCheckable( true );
     p_action->setChecked( _enableAlarm );
     p_action->setData( QVariant( MenuEnableAlarm ) );
@@ -155,7 +156,7 @@ void SystemTray::setupSystemTray()
     p_action->setSeparator( true );
     p_menu->addAction( p_action );
 
-    p_action = new QAction( "Quit" );
+    p_action = new QAction( QApplication::translate( "SystemTray", "Quit" ) );
     p_action->setData( QVariant( MenuQuit ) );
     p_menu->addAction( p_action );
 
