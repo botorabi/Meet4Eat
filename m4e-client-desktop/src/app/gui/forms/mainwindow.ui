@@ -364,6 +364,7 @@ QPushButton:hover {
   border: 1px solid rgb(188,67, 0);
   border-radius: 2px;
   text-align: center;
+  padding: 10px;
 }
 QPushButton::hover {
   color: white;

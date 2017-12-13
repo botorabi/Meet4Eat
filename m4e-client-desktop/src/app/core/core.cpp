@@ -72,6 +72,7 @@ void Core::initialize( int &argc, char* argv[] )
 {
     _p_app = new QApplication( argc, argv );
     _p_app->setApplicationVersion( M4E_APP_VERSION );
+    _p_app->setQuitOnLastWindowClosed( false );
 
     unsigned int loglevel = Log::L_DEBUG;
     QString      logfile;
@@ -136,7 +137,6 @@ void Core::initialize( int &argc, char* argv[] )
 void Core::start()
 {
     assert( _p_mainWindow && "core was not initialized before" );
-
     // in debug build allow multiple instances of the app for debuggin purpose
 #ifndef QT_DEBUG
     // check if an app instance is already running
@@ -147,11 +147,24 @@ void Core::start()
     }
 #endif
 
+    // if the app is started in silent mode then check if auto-start is enabled!
+    QString autostart = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_AUTOSTART, "yes" );
+    bool enableautostart = ( autostart == "yes" );
+    if ( _silentStart && ! enableautostart )
+    {
+        log_info << "Auto-start is disabled, terminating the app" << std::endl;
+        return;
+    }
+
     if ( _silentStart || !gui::SystemTray::isTrayAvailable() )
     {
         _p_mainWindow->setWindowState( Qt::WindowMinimized );
     }
-    _p_mainWindow->show();
+    else
+    {
+        _p_mainWindow->show();
+    }
+
     _p_app->exec();
 }
 

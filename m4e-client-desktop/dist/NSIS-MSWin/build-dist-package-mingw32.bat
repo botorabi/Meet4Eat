@@ -1,16 +1,15 @@
 @echo ###################################################
 @echo Batch script for building Meet4Eat release
 @echo Author: A. Botorabi
-@echo Date of Creation: 24th Nov 2017
+@echo Date of Creation: 24th Nov 2017-2018
 @echo:
 @echo Use 'clean' to remove temporary build directories.
 @echo: 
 @echo ###################################################
 
 set APP_NAME=Meet4Eat
-set PATH_SRC=..\..\src
-set PATH_BUILD=..\..\bin\qmake-mingw32-release-batch
-set PATH_DEPLOYMENT=..\..\dist\NSIS-MSWin\%APP_NAME%
+set PATH_BUILD=build-app-Desktop-Qt-mswin
+set PATH_DEPLOYMENT=%APP_NAME%
 
 @echo ##########################
 @echo Cleaning build directories
@@ -18,22 +17,16 @@ set PATH_DEPLOYMENT=..\..\dist\NSIS-MSWin\%APP_NAME%
 rmdir /S /Q %PATH_BUILD%
 rmdir /S /Q %PATH_DEPLOYMENT%
 
-
 @REM for cleaning we are now done
 @if "%1"=="clean" goto DONE
-
 
 @echo #########################
 @echo Setting build environment
 @echo #########################
 
-@REM Be awre that the path BUILD_PATH below must have the same
-@REM  relative path to top dir as the "src" does, otherwise
-@REM  the source paths in the pro file won't match!
-
 set CWD=%cd%
 
-@REM following vars can also be set in the shell environmen
+@REM following vars can also be set in the shell environment
 @if "%PATH_QT%"=="" set PATH_QT=C:\Qt\5.9.3\mingw53_32\bin
 @if "%PATH_MINGW%"=="" set PATH_MINGW=C:\Qt\Tools\mingw530_32\bin
 @echo Using PATH_QT=%PATH_QT%
@@ -70,16 +63,13 @@ mkdir %PATH_BUILD%
 @echo ###############################
 @echo Building %APP_NAME% build files
 @echo ###############################
-copy app.pro %PATH_BUILD%
 cd %PATH_BUILD%
-
-%PATH_QT%\qmake.exe app.pro -r -spec win32-g++
+%PATH_QT%\qmake.exe ..\..\..\build\app\app.pro -r -spec win32-g++
 
 @echo ###################
 @echo Building %APP_NAME%
 @echo ###################
 %PATH_MINGW%\mingw32-make.exe -j4 -f Makefile.Release all
-
 cd %CWD%
 
 @echo ###################################
@@ -119,4 +109,4 @@ cmd /C .\make-installer.bat
 @cd %CWD%
 
 :DONE
-pause
+

@@ -56,9 +56,10 @@
 #define M4E_SETTINGS_CAT_SRV         "Server"
 #define M4E_SETTINGS_KEY_SRV_URL     "address"
 
-/* App settings category for server */
-#define M4E_SETTINGS_CAT_APP          "App"
-#define M4E_SETTINGS_KEY_APP_QUIT_MSG "quitmsg"
+/* App settings category for application */
+#define M4E_SETTINGS_CAT_APP           "App"
+#define M4E_SETTINGS_KEY_APP_QUIT_MSG  "quitmsg"
+#define M4E_SETTINGS_KEY_APP_AUTOSTART "autostart"
 
 /* App settings category for notifications */
 #define M4E_SETTINGS_CAT_NOTIFY       "Notify"

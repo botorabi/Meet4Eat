@@ -20,8 +20,8 @@ namespace event
 static const QString PREFIX_TIMER_START = "START_";
 static const QString PREFIX_TIMER_END   = "END_";
 
-/* All alarms are updated every 24 hours, this is the day time when it happens */
-static const QTime M4E_TIMER_UPDATE_TIME( 0, 0, 0 );
+/* All alarms are updated every 24 hours, this is the day time when it happens: shortly after midnight */
+static const QTime M4E_TIMER_UPDATE_TIME( 0, 5, 0 );
 
 
 Events::Events( QObject* p_parent ) :

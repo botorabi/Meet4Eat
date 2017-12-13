@@ -283,6 +283,10 @@ void MainWindow::onBtnCloseClicked()
 
 void MainWindow::showSettingsDialog()
 {
+    // don't show the dialog if the main window is minimized
+    if ( !isVisible() )
+        return;
+
     if ( !_p_settingsDlg )
         _p_settingsDlg = new settings::DialogSettings( _p_webApp, this );
 
@@ -457,6 +461,7 @@ void MainWindow::onWebServerInfo( bool success, QString /*version*/ )
         else
         {
             log_debug << TAG << "the server seems to be unreachable!" << std::endl;
+            addLogText( "Application server seems to be unreachable!" );
             showSettingsDialog();
         }
     }

@@ -5,9 +5,10 @@
 /m4e-webapp/web/WEB-INF/accountregistration.cfg
 /m4e-client-desktop/build/**/*.pro.user*
 /m4e-client-desktop/build/build-app-*
-/m4e-client-desktop/bin/
+/m4e-client-desktop/dist/Installers/
 /m4e-client-desktop/dist/NSIS-MSWin/Meet4Eat/
 /m4e-client-desktop/dist/NSIS-MSWin/msw-installer/nsis/
 /m4e-client-desktop/dist/NSIS-MSWin/Meet4Eat-mswin-*
+/m4e-client-desktop/dist/NSIS-MSWin/build-app-Desktop-Qt-mswin
 .DS_Store
 /m4e-client-desktop/dist/MacOS/build-app-Desktop-Qt-macos/

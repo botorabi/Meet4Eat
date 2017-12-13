@@ -28,7 +28,8 @@ enum MenuIDs
     MenuOpen                = 100,
     MenuQuit                = 101,
     MenuEnableNotification  = 102,
-    MenuEnableAlarm         = 103
+    MenuEnableAlarm         = 103,
+    MenuEnableAutoStart     = 104
 };
 
 
@@ -100,6 +101,10 @@ void SystemTray::onMenuTriggert( QAction* p_action )
             settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_ALARM, _enableAlarm ? "yes" : "no" );
         break;
 
+        case MenuEnableAutoStart:
+            settings::AppSettings::get()->writeSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_AUTOSTART, p_action->isChecked() ? "yes" : "no" );
+        break;
+
         default:
             log_warning << TAG << "unsupported tray menu option: " << id << std::endl;
     }
@@ -114,9 +119,12 @@ void SystemTray::setupSystemTray()
 {
     QString enablealarm = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_ALARM, "yes" );
     QString enableevent = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_NOTIFY, M4E_SETTINGS_KEY_NOTIFY_EVENT, "yes" );
+    QString autostart   = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_AUTOSTART, "yes" );
 
-    _enableNotification = ( enableevent == "yes" ) ? true : false;
-    _enableAlarm = ( enablealarm == "yes" ) ? true : false;
+    _enableNotification = ( enableevent == "yes" );
+    _enableAlarm = ( enablealarm == "yes" );
+
+    bool enableautostart = ( autostart == "yes" );
 
     _p_systemTray = new QSystemTrayIcon( QIcon( M4E_SYSTRAY_ICON ), this );
     _p_systemTray->setToolTip( QApplication::translate( "SystemTray", M4E_APP_NAME ) );
@@ -150,6 +158,16 @@ void SystemTray::setupSystemTray()
     p_action->setCheckable( true );
     p_action->setChecked( _enableAlarm );
     p_action->setData( QVariant( MenuEnableAlarm ) );
+    p_menu->addAction( p_action );
+
+    p_action = new QAction();
+    p_action->setSeparator( true );
+    p_menu->addAction( p_action );
+
+    p_action = new QAction( QApplication::translate( "SystemTray", "Start on Logon" ) );
+    p_action->setData( QVariant( MenuEnableAutoStart ) );
+    p_action->setCheckable( true );
+    p_action->setChecked( enableautostart );
     p_menu->addAction( p_action );
 
     p_action = new QAction();
