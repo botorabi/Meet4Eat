@@ -1,5 +1,5 @@
 #!/bin/bash
-# Meet4Eat Deployment Package Builder for MacOS
+# Meet4Eat Deployment Package Builder for Linux
 # Copyright 2017-2018
 # https://m4e.org
 
@@ -12,7 +12,7 @@ fi
 DIR_INSTALL=Installers
 mkdir -p $DIR_INSTALL
 
-cd MacOs
-./build-dist-package-macox.sh $1 ../$DIR_INSTALL
+cd Linux
+./build-dist-package-linux.sh $1 ../$DIR_INSTALL
 cd ..
 

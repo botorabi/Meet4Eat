@@ -12,3 +12,4 @@
 /m4e-client-desktop/dist/NSIS-MSWin/build-app-Desktop-Qt-mswin
 .DS_Store
 /m4e-client-desktop/dist/MacOS/build-app-Desktop-Qt-macos/
+/m4e-client-desktop/dist/Linux/_tmp
