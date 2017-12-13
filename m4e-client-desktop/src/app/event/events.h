@@ -607,11 +607,18 @@ class Events : public QObject
          */
         void                                onAlarmVotingEnd();
 
+        /**
+         * @brief Called once every 24 hours and updates are timers.
+         */
+        void                                onAlarmUpdateTimer();
+
     protected:
 
         void                                setLastError( const QString& error ="", const QString& errorCode ="" );
 
         void                                destroyVotingTimers();
+
+        void                                setupTimerUpdate( const QTime& updateTime );
 
         void                                updateVotingTimers();
 
@@ -628,6 +635,8 @@ class Events : public QObject
         QString                             _lastErrorCode;
 
         QMap< QString/*id*/, QTimer* >      _alarms;
+
+        QTimer*                             _p_alarmUpdateTimer = nullptr;
 };
 
 } // namespace event

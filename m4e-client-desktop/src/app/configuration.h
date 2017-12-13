@@ -19,7 +19,7 @@
 /* App name and version */
 #define M4E_APP_NAME            "Meet4Eat"
 #define M4E_ORGANIZATION_NAME   "vr-fun"
-#define M4E_APP_VERSION         "0.9.0"
+#define M4E_APP_VERSION         "0.9.1"
 #define M4E_APP_COPYRIGHT       "(c) 2017"
 #define M4E_APP_URL             "https://m4e.org"
 #define M4E_APP_DESCRIPTION     M4E_APP_NAME " - A Social Collaboration App. " M4E_APP_COPYRIGHT ", for more information visit " M4E_APP_URL
@@ -56,9 +56,10 @@
 #define M4E_SETTINGS_CAT_SRV         "Server"
 #define M4E_SETTINGS_KEY_SRV_URL     "address"
 
-/* App settings category for server */
-#define M4E_SETTINGS_CAT_APP          "App"
-#define M4E_SETTINGS_KEY_APP_QUIT_MSG "quitmsg"
+/* App settings category for application */
+#define M4E_SETTINGS_CAT_APP           "App"
+#define M4E_SETTINGS_KEY_APP_QUIT_MSG  "quitmsg"
+#define M4E_SETTINGS_KEY_APP_AUTOSTART "autostart"
 
 /* App settings category for notifications */
 #define M4E_SETTINGS_CAT_NOTIFY       "Notify"
