@@ -40,4 +40,6 @@ echo "Application successfully created: " $DIR_DIST/$APP_NAME.app
 rm -f $DIR_DIST/$APP_NAME-macos-v$VERSION.pkg
 ${PKG_MAKER} --doc $APP_NAME-PkgMaker.pmdoc --out $DIR_DIST/$APP_NAME-macos-v$VERSION.pkg
 mv $DIR_DIST/$APP_NAME-macos-v$VERSION.pkg $DIR_INSTALL/
+rm -rf $DIR_BUILD
+rm -rf $APP_NAME.app
 echo "Package successfully created: " $DIR_INSTALL/$APP_NAME-macos-v$VERSION.pkg

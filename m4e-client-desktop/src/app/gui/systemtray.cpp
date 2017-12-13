@@ -160,6 +160,8 @@ void SystemTray::setupSystemTray()
     p_action->setData( QVariant( MenuEnableAlarm ) );
     p_menu->addAction( p_action );
 
+    //! NOTE currently there is no support for auto-start on MacOS
+#ifndef Q_OS_MACOS
     p_action = new QAction();
     p_action->setSeparator( true );
     p_menu->addAction( p_action );
@@ -169,6 +171,7 @@ void SystemTray::setupSystemTray()
     p_action->setCheckable( true );
     p_action->setChecked( enableautostart );
     p_menu->addAction( p_action );
+#endif
 
     p_action = new QAction();
     p_action->setSeparator( true );

@@ -150,7 +150,7 @@ void Core::start()
     // if the app is started in silent mode then check if auto-start is enabled!
     QString autostart = settings::AppSettings::get()->readSettingsValue( M4E_SETTINGS_CAT_APP, M4E_SETTINGS_KEY_APP_AUTOSTART, "yes" );
     bool enableautostart = ( autostart == "yes" );
-    if ( _silentStart && ! enableautostart )
+    if ( _silentStart && !enableautostart )
     {
         log_info << "Auto-start is disabled, terminating the app" << std::endl;
         return;
