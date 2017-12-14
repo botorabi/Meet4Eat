@@ -1,4 +1,5 @@
 /m4e-webapp/target/
+/m4e-webapp/nbproject/
 /m4e-webapp/src/main/webapp/WEB-INF/mailer.cfg
 /m4e-webapp/src/main/webapp/WEB-INF/accountregistration.cfg
 /m4e-client-desktop/build/**/*.pro.user*
