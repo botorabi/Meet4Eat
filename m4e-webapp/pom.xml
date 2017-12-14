@@ -54,11 +54,10 @@
             <version>1.1</version>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
     <build>
-        <name>m4e</name>
+        <finalName>m4e</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -77,6 +76,21 @@
                     <failOnMissingWebXml>${failOnMissingWebXml}</failOnMissingWebXml>
                 </configuration>
             </plugin>
+
+            <!-- Surefire -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <version>1.0.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
+
+
     </build>
 </project>
