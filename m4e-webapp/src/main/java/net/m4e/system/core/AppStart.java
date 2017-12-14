@@ -1,24 +1,37 @@
 /**
  * Copyright (c) 2017 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
- * 
+ * <p>
  * License: MIT License (MIT), read the LICENSE text in
- *          main directory for more details.
+ * main directory for more details.
  */
 
 package net.m4e.system.core;
 
 import java.util.Set;
+
+import javax.enterprise.inject.Produces;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.Application;
 
 /**
  * Central application configuration
- * 
+ *
  * @author boto
  * Date of creation Aug 20, 2017 
  */
 @javax.ws.rs.ApplicationPath(AppConfiguration.REST_BASE_URL)
 public class AppStart extends Application {
+
+    /**
+     * Injectable Entity-Manager.
+     *
+     * If multiple PersistenceContext are needed, add Qualifier.
+     */
+    @Produces
+    @PersistenceContext(unitName = AppConfiguration.PERSITENCE_UNIT_NAME)
+    private EntityManager entityManager;
 
     @Override
     public Set<Class<?>> getClasses() {
@@ -44,4 +57,5 @@ public class AppStart extends Application {
         resources.add(net.m4e.system.maintenance.MaintenanceFacadeREST.class);
         resources.add(net.m4e.update.UpdateCheckEntityFacadeREST.class);
     }
+
 }

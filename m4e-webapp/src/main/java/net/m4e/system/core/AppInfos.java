@@ -1,14 +1,18 @@
 /*
  * Copyright (c) 2017 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
- * 
+ *
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
 package net.m4e.system.core;
 
 import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.persistence.EntityManager;
+
 import net.m4e.common.Entities;
 
 /**
@@ -17,6 +21,7 @@ import net.m4e.common.Entities;
  * @author boto
  * Date of creation Aug 22, 2017
  */
+@Singleton
 public class AppInfos {
 
     /**
@@ -24,13 +29,14 @@ public class AppInfos {
      */
     private final static String TAG = "AppInfos";
 
-    private final EntityManager entityManager;
+    private EntityManager entityManager;
 
     /**
      * Create the instance for given entity manager.
      * 
      * @param entityManager   Entity manager
      */
+    @Inject
     public AppInfos(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
