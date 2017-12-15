@@ -2,12 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.m4e</groupId>
+    <groupId>org.m4e</groupId>
     <artifactId>m4e</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>Meet4Eat</name>
-    <url>m4e.com</url>
+    <url>m4e.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -93,7 +93,6 @@
             <scope>test</scope>
         </dependency>
 
-
     </dependencies>
 
     <build>
@@ -131,6 +130,6 @@
             </plugin>
         </plugins>
 
-
     </build>
+    <description>Meet4Eat is a social collaboration system providing an easy way to communicate with your colleagues and friends to make an appointment for a social event such as meeting for daily lunch. Visit "https://m4e.org" for more details.</description>
 </project>
