@@ -11,7 +11,6 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -26,29 +25,13 @@ import net.m4e.common.ResponseResults;
  */
 @Stateless
 @Path("/rest/appinfo")
-public class AppInfoEntityFacadeREST extends net.m4e.common.AbstractFacade<AppInfoEntity> {
-
-    /**
-     * Used for logging
-     */
-    private final static String TAG = "AppInfoEntityFacadeREST";
-
+public class AppInfoEntityFacadeREST {
 
     private final AppInfos autils;
 
     @Inject
     public AppInfoEntityFacadeREST(AppInfos autils) {
-        super(AppInfoEntity.class);
         this.autils = autils;
-    }
-
-    @Inject
-    private EntityManager entityManager;
-
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
     }
 
     /**
@@ -58,7 +41,7 @@ public class AppInfoEntityFacadeREST extends net.m4e.common.AbstractFacade<AppIn
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.app.auth.AuthRole(grantRoles = {AuthRole.VIRT_ROLE_GUEST})
+    @AuthRole(grantRoles = {AuthRole.VIRT_ROLE_GUEST})
     public String getInfo() {
         AppInfoEntity info = autils.getAppInfoEntity();
         if (info == null) {
