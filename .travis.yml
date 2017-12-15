@@ -1,6 +1,6 @@
 env:
   global:
-    - CC_TEST_REPORTER_ID=fa52b6f98a5ffb86596348fc3e58bd9cb7a5fc7bc1ba806e1ce023868e719430
+    - CC_TEST_REPORTER_ID=26827ca98dd393967ae64c4fd543c121f84e3de0dff90a7f5327303fe558a274
 
 language: java
 
