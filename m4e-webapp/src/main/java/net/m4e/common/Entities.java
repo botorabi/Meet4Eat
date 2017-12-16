@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2017 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
- * 
+ *
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
@@ -9,6 +9,8 @@ package net.m4e.common;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
@@ -18,7 +20,7 @@ import net.m4e.system.core.Log;
 
 /**
  * A collection of entity related utilities.
- * 
+ *
  * @author boto
  * Date of creation Aug 22, 2017
  */
@@ -36,6 +38,7 @@ public class Entities {
      * 
      * @param entityManager   Entity manager
      */
+    @Inject
     public Entities(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
@@ -67,7 +70,7 @@ public class Entities {
      * @param entity        Entity instance which is updated in database
      */
     public <T> void updateEntity(T entity)  {
-        entityManager.merge(entity);        
+        entityManager.merge(entity);
     }
 
    /**
