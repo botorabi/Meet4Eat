@@ -35,10 +35,21 @@ public class AppInfos {
      * Create the instance for given entity manager.
      *
      * @param entityManager the Entity manager
+     * @see this#AppInfos(Entities)
      */
-    @Inject
+
     public AppInfos(EntityManager entityManager) {
         this.eutils = new Entities(entityManager);
+    }
+
+    /**
+     * Create the instance with the given Entities.
+     *
+     * @param entities the Entities
+     */
+    @Inject
+    public AppInfos(Entities entities) {
+        this.eutils = entities;
     }
 
     /**
