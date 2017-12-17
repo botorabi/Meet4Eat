@@ -41,7 +41,7 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/mails")
-public class MailEntityFacadeREST extends net.m4e.common.AbstractFacade<MailEntity> {
+public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity> {
 
     /**
      * Used for logging

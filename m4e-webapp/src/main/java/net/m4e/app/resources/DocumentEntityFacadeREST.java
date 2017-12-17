@@ -21,7 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
-import net.m4e.common.AbstractFacade;
+import net.m4e.common.EntityAccess;
 import net.m4e.common.ResponseResults;
 
 /**
@@ -32,7 +32,7 @@ import net.m4e.common.ResponseResults;
  */
 @Stateless
 @Path("/rest/docs")
-public class DocumentEntityFacadeREST extends AbstractFacade<DocumentEntity> {
+public class DocumentEntityFacadeREST extends EntityAccess<DocumentEntity> {
 
     /**
      * Entity manager needed for entity retrieval and modifications.

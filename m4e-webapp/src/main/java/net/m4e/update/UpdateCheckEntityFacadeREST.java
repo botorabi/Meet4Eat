@@ -38,7 +38,7 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/update")
-public class UpdateCheckEntityFacadeREST extends net.m4e.common.AbstractFacade<UpdateCheckEntity> {
+public class UpdateCheckEntityFacadeREST extends net.m4e.common.EntityAccess<UpdateCheckEntity> {
 
     /**
      * Used for logging

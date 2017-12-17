@@ -53,7 +53,7 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/users")
-public class UserEntityFacadeREST extends net.m4e.common.AbstractFacade<UserEntity> {
+public class UserEntityFacadeREST extends net.m4e.common.EntityAccess<UserEntity> {
 
     /**
      * Used for logging

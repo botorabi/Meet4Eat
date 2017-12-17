@@ -28,7 +28,7 @@ import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.app.user.UserEntity;
-import net.m4e.common.AbstractFacade;
+import net.m4e.common.EntityAccess;
 import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.Log;
@@ -41,7 +41,7 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/locationvoting")
-public class EventLocationVoteEntityFacadeREST extends AbstractFacade<EventLocationVoteEntity> {
+public class EventLocationVoteEntityFacadeREST extends EntityAccess<EventLocationVoteEntity> {
 
     /**
      * Used for logging
