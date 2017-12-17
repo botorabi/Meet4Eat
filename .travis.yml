@@ -17,4 +17,7 @@ jdk:
   - oraclejdk8
 
 after_script:
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+  - cd src/main/java/
+  - ../../../../cc-test-reporter format-coverage -t jacoco  --add-prefix src/main/java/ ../../../target/jacoco-ut/jacoco.xml
+  - cd ../../../..
+  - ./cc-test-reporter upload-coverage --input w4e-webapp/src/main/java/coverage/codeclimate.json
