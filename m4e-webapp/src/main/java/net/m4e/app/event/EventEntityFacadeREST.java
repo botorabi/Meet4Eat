@@ -53,7 +53,7 @@ import net.m4e.app.user.Users;
  */
 @Stateless
 @Path("/rest/events")
-public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEntity> {
+public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEntity> {
 
     /**
      * Used for logging
@@ -70,29 +70,29 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
      * Event used for notifying other users
      */
     @Inject
-    Event<NotifyUsersEvent> notifyUsersEvent;
+    private Event<NotifyUsersEvent> notifyUsersEvent;
 
     /**
      * Event used for notifying other users
      */
     @Inject
-    Event<NotifyUserRelativesEvent> notifyUserRelativesEvent;
+    private Event<NotifyUserRelativesEvent> notifyUserRelativesEvent;
 
     /**
      * Central place to hold all client connections
      */
     @Inject
-    ConnectedClients connections;
+    private ConnectedClients connections;
 
     /**
      * Event utilities
      */
-    Events eventUtils;
+    private Events eventUtils;
 
     /**
      * User utilities
      */
-    Users userUtils;
+    private Users userUtils;
 
     /**
      * Create the event entity REST facade.
@@ -246,7 +246,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
         EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
         notifications.sendNotifyEventChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event);
 
-        Events utils = new Events(entityManager);
+        Events utils = getEvents();
         try {
             utils.markEventAsDeleted(event);
         }
@@ -442,7 +442,7 @@ public class EventEntityFacadeREST extends net.m4e.common.AbstractFacade<EventEn
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
-        Events utils = new Events(entityManager);
+        Events utils = getEvents();
         try {
             utils.removeMember(event, user2remove);
         }

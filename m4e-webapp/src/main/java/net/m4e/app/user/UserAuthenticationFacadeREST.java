@@ -38,7 +38,7 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/authentication")
-public class UserAuthenticationFacadeREST extends net.m4e.common.AbstractFacade<UserEntity> {
+public class UserAuthenticationFacadeREST extends net.m4e.common.EntityAccess<UserEntity> {
 
     /**
      * Used for logging

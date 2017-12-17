@@ -27,7 +27,7 @@ import net.m4e.common.ResponseResults;
  */
 @Stateless
 @Path("/rest/appinfo")
-public class AppInfoEntityFacadeREST extends net.m4e.common.AbstractFacade<AppInfoEntity> {
+public class AppInfoEntityFacadeREST extends net.m4e.common.EntityAccess<AppInfoEntity> {
 
     /**
      * Used for logging
