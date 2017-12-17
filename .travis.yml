@@ -1,6 +1,9 @@
 env:
   global:
     - CC_TEST_REPORTER_ID=26827ca98dd393967ae64c4fd543c121f84e3de0dff90a7f5327303fe558a274
+cache:
+  directories:
+  - $HOME/.m2
 
 language: java
 
