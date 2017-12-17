@@ -23,4 +23,4 @@ after_script:
   - cd src/main/java/
   - ../../../../cc-test-reporter format-coverage -t jacoco  --add-prefix src/main/java/ ../../../target/jacoco-ut/jacoco.xml
   - cd ../../../..
-  - ./cc-test-reporter upload-coverage --input w4e-webapp/src/main/java/coverage/codeclimate.json
+  - ./cc-test-reporter upload-coverage --input m4e-webapp/src/main/java/coverage/codeclimate.json
