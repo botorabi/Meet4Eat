@@ -11,38 +11,27 @@ package net.m4e.app.event;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Objects;
+
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+import javax.json.*;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.app.notification.NotifyUsersEvent;
-import net.m4e.common.ResponseResults;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
+import net.m4e.common.ResponseResults;
+import net.m4e.system.core.*;
 
 /**
  * REST services for Event entity operations.
@@ -53,7 +42,7 @@ import net.m4e.app.user.Users;
  */
 @Stateless
 @Path("/rest/events")
-public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEntity> {
+public class EventEntityFacadeREST /*extends net.m4e.common.AbstractFacade<EventEntity>*/ {
 
     /**
      * Used for logging
@@ -87,18 +76,21 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
     /**
      * Event utilities
      */
-    private Events eventUtils;
+    private final Events eventUtils;
 
     /**
      * User utilities
      */
-    private Users userUtils;
+    private final Users userUtils;
 
-    /**
-     * Create the event entity REST facade.
-     */
-    public EventEntityFacadeREST() {
-        super(EventEntity.class);
+    private final AppInfos autils;
+
+
+    @Inject
+    public EventEntityFacadeREST(final Events eventUtils, Users userUtils, AppInfos autils) {
+        this.eventUtils = eventUtils;
+        this.userUtils = userUtils;
+        this.autils = autils;
     }
 
     /**
@@ -166,7 +158,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event, invalid input.", ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
 
-        EventEntity event = super.find(id);
+        EventEntity event = eventUtils.findEvent(id);
         if (event == null) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find event for updating.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
@@ -229,7 +221,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
     public String remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventEntity event = super.find(id);
+        EventEntity event = eventUtils.findEvent(id);
         jsonresponse.add("id", id.toString());
         if (event == null) {
             Log.warning(TAG, "*** User was attempting to delete non-existing event!");
@@ -246,9 +238,8 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
         EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
         notifications.sendNotifyEventChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event);
 
-        Events utils = getEvents();
         try {
-            utils.markEventAsDeleted(event);
+            eventUtils.markEventAsDeleted(event);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not mark event as deleted, reason: " + ex.getLocalizedMessage());
@@ -270,7 +261,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
-        EventEntity event = super.find(id);
+        EventEntity event = eventUtils.findEvent(id);
         if ((event == null) || !event.getStatus().getIsActive()) {
             JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
             jsonresponse.add("id", id.toString());
@@ -292,7 +283,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String findAllEvents(@Context HttpServletRequest request) {
-        List<EventEntity> events = super.findAll();
+        List<EventEntity> events = eventUtils.findAllEvents();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         JsonArrayBuilder exportedevents = getEvents().exportUserEventsJSON(events, sessionuser, connections);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of events", ResponseResults.CODE_OK, exportedevents.build().toString());
@@ -311,7 +302,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
-        List<EventEntity> events = super.findRange(new int[]{from, to});
+        List<EventEntity> events = eventUtils.findRange(from, to);
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         JsonArrayBuilder exportedevents = getEvents().exportUserEventsJSON(events, sessionuser, connections);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of events", ResponseResults.CODE_OK, exportedevents.build().toString());
@@ -329,10 +320,9 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
     public String countREST() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         // NOTE the final event count is the count of EventEntity entries in database minus the count of events to be purged
-        AppInfos autils = new AppInfos(entityManager);
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         Long eventpurges = appinfo.getEventCountPurge();
-        jsonresponse.add("count", super.count() - eventpurges);
+        jsonresponse.add("count", eventUtils.count() - eventpurges);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of events", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
@@ -362,7 +352,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
 
         // check if both, member and event exist
         UserEntity  user2add  = getUsers().findUser(memberId);
-        EventEntity event     = super.find(eventId);
+        EventEntity event = eventUtils.findEvent(eventId);
         if ((user2add == null) || !user2add.getStatus().getIsActive()) {
             user2add = null;
         }
@@ -424,7 +414,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
 
         // check if both, member and event exist
         UserEntity  user2remove  = getUsers().findUser(memberId);
-        EventEntity event        = super.find(eventId);
+        EventEntity event = eventUtils.findEvent(eventId);
         if ((user2remove == null) || !user2remove.getStatus().getIsActive()) {
             user2remove = null;
         }
@@ -442,9 +432,8 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
-        Events utils = getEvents();
         try {
-            utils.removeMember(event, user2remove);
+            eventUtils.removeMember(event, user2remove);
         }
         catch (Exception ex) {
             Log.warning(TAG, "*** Could not remove member from event, reason: " + ex.getLocalizedMessage());
@@ -482,7 +471,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
 
         jsonresponse.add("eventId", eventId.toString());
 
-        EventEntity event = super.find(eventId);
+        EventEntity event = eventUtils.findEvent(eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
             Log.warning(TAG, "*** Cannot notify event members: non-existing event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed notify event members, invalid event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
@@ -643,7 +632,7 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
         // check if both, member and event exist
         EventLocations       locutils   = new EventLocations(entityManager);
         EventLocationEntity  loc2remove = locutils.findLocation(locationId);
-        EventEntity          event      = super.find(eventId);
+        EventEntity event = eventUtils.findEvent(eventId);
         if ((loc2remove == null) || !loc2remove.getStatus().getIsActive()) {
             loc2remove = null;
         }
@@ -676,15 +665,6 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Location was succssfully removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
 
-    /**
-     * Get the entity manager.
-     * 
-     * @return   Entity manager
-     */
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
-    }
 
     /**
      * Get the event utils.
@@ -692,9 +672,6 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
      * @return Event utils
      */
     private Events getEvents() {
-        if (eventUtils == null) {
-            eventUtils = new Events(entityManager);
-        }
         return eventUtils;
     }
 
@@ -704,9 +681,6 @@ public class EventEntityFacadeREST extends net.m4e.common.EntityAccess<EventEnti
      * @return User utils
      */
     private Users getUsers() {
-        if (userUtils == null) {
-            userUtils = new Users(entityManager);
-        }
         return userUtils;
     }
 }

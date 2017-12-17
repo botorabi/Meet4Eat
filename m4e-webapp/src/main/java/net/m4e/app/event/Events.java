@@ -9,34 +9,23 @@
 package net.m4e.app.event;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+import javax.json.*;
 import javax.persistence.EntityManager;
+
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.mailbox.MailEntity;
 import net.m4e.app.mailbox.Mails;
-import net.m4e.common.Entities;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.common.Strings;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
+import net.m4e.common.Entities;
+import net.m4e.common.Strings;
+import net.m4e.system.core.*;
 
 /**
  * A collection of event related utilities
@@ -51,15 +40,30 @@ public class Events {
      */
     private final static String TAG = "Events";
 
-    private final EntityManager entityManager;
+    private final Entities eutils;
+
+    private final Users userutils;
+    private final AppInfos autils;
+    private final Mails mails;
+
+
 
     /**
      * Create an instance of event utilities.
      * 
      * @param entityManager    Entity manager
      */
+    @Deprecated
     public Events(EntityManager entityManager) {
-        this.entityManager = entityManager;
+        this(new Entities(entityManager), new Users(entityManager), new AppInfos(entityManager), new Mails(entityManager));
+    }
+
+    @Inject
+    public Events(final Entities eutils, final Users users, AppInfos autils, Mails mails) {
+        this.eutils = eutils;
+        this.userutils = users;
+        this.autils = autils;
+        this.mails = mails;
     }
 
     /**
@@ -104,8 +108,6 @@ public class Events {
      * @param event         Event entity
      */
     public void createEventEntity(EventEntity event) {
-        Entities eutils = new Entities(entityManager);
-
         // photo and members are shared objects, so remove them before event creation
         DocumentEntity photo = event.getPhoto();
         event.setPhoto(null);
@@ -127,7 +129,6 @@ public class Events {
      * @param event         Event entity
      */
     public void deleteEvent(EventEntity event) {
-        Entities eutils = new Entities(entityManager);
         eutils.deleteEntity(event);
     }
 
@@ -137,7 +138,6 @@ public class Events {
      * @param event       Event entity to update
      */
     public void updateEvent(EventEntity event) {
-        Entities eutils = new Entities(entityManager);
         eutils.updateEntity(event);
     }
 
@@ -148,7 +148,6 @@ public class Events {
      * @return Return an entity if found, otherwise return null.
      */
     public EventEntity findEvent(Long id) {
-        Entities eutils = new Entities(entityManager);
         EventEntity event = eutils.findEntity(EventEntity.class, id);
         return event;
     }
@@ -162,7 +161,6 @@ public class Events {
      * @return              Return the location entity if it was found and it is active, otherwise null.
      */
     public EventLocationEntity findEventLocation(Long eventId, Long locationId) {
-        Entities eutils = new Entities(entityManager);
         EventEntity event = eutils.findEntity(EventEntity.class, eventId);
         if ((event == null) || !event.getStatus().getIsActive()){
             return null;
@@ -188,10 +186,9 @@ public class Events {
      * @throws Exception  Throws an exception if something goes wrong.
      */
     public void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
-        Entities entities = new Entities(entityManager);
         // make sure that the resource URL is set
         image.setResourceURL("/Event/Image");
-        entities.updateEntityPhoto(event, image);
+        eutils.updateEntityPhoto(event, image);
     }
 
     /**
@@ -303,7 +300,6 @@ public class Events {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void markEventAsDeleted(EventEntity event) throws Exception {
-        Entities eutils = new Entities(entityManager);
         StatusEntity status = event.getStatus();
         if (status == null) {
             throw new Exception("Event has no status field!");
@@ -312,7 +308,7 @@ public class Events {
         eutils.updateEntity(event);
 
         // update the app stats
-        AppInfos autils = new AppInfos(entityManager);
+
         AppInfoEntity appinfo = autils.getAppInfoEntity();
         if (appinfo == null) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
@@ -327,7 +323,6 @@ public class Events {
      * @return List of events which are marked as deleted.
      */
     public List<EventEntity> getMarkedAsDeletedEvents() {
-        Entities eutils = new Entities(entityManager);
         List<EventEntity> events = eutils.findAllEntities(EventEntity.class);
         List<EventEntity> deletedevents = new ArrayList<>();
         // speed up the task by using parallel processing
@@ -346,7 +341,6 @@ public class Events {
      * @return List of event locations which are marked as deleted.
      */
     public List<EventLocationEntity> getMarkedAsDeletedEventLocations() {
-        Entities eutils = new Entities(entityManager);
         List<EventLocationEntity> eventlocs = eutils.findAllEntities(EventLocationEntity.class);
         List<EventLocationEntity> deletedeventlocs = new ArrayList<>();
         // speed up the task by using parallel processing
@@ -366,7 +360,6 @@ public class Events {
      * @param member    The new member
      */
     void createEventJoiningMail(EventEntity event, UserEntity member) {
-        Mails mails = new Mails(entityManager);
         MailEntity mail = new MailEntity();
         mail.setSenderId(0L);
         mail.setReceiverId(member.getId());
@@ -391,7 +384,6 @@ public class Events {
      * @param member    Member who left the event
      */
     void createEventLeavingMail(EventEntity event, UserEntity member) {
-        Mails mails = new Mails(entityManager);
         MailEntity mailuser = new MailEntity();
         mailuser.setSenderId(0L);
         mailuser.setReceiverId(member.getId());
@@ -401,8 +393,7 @@ public class Events {
         mailuser.setContent("Hi " + member.getName() + ",\n\nwe wanted to confirm that you have left the event '" +
                                 event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
 
-        Entities entities = new Entities(entityManager);
-        UserEntity ownerentity = entities.findEntity(UserEntity.class, event.getStatus().getIdOwner());
+        UserEntity ownerentity = eutils.findEntity(UserEntity.class, event.getStatus().getIdOwner());
 
         MailEntity mailowner = new MailEntity();
         mailowner.setSenderId(0L);
@@ -486,7 +477,7 @@ public class Events {
         String     ownername, ownerphotoetag;
         Long       ownerphotoid;
         Long       ownerid   = entity.getStatus().getIdOwner();
-        Users      userutils = new Users(entityManager);
+
         UserEntity owner     = userutils.findUser(ownerid);
         boolean    owneronline;
         if ((owner == null) || !owner.getStatus().getIsActive()) {
@@ -582,7 +573,6 @@ public class Events {
      * @return              All user relevant events in JSON format
      */
     public JsonObjectBuilder exportUserEventJSON(EventEntity event, UserEntity user, ConnectedClients connections) {
-        Users             userutils = new Users(entityManager);
         boolean           privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonObjectBuilder json      = Json.createObjectBuilder();
         boolean           doexp     = event.getStatus().getIsActive()&& 
@@ -605,7 +595,6 @@ public class Events {
      */
     public JsonArrayBuilder exportUserEventsJSON(List<EventEntity> events, UserEntity user, ConnectedClients connections) {
         //! NOTE: Although we could make use of method exportUserEventJSON here, we don't in the sake of performance!
-        Users            userutils = new Users(entityManager);
         boolean          privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonArrayBuilder allevents = Json.createArrayBuilder();
         events.stream()
@@ -615,5 +604,17 @@ public class Events {
             });
 
         return allevents;
+    }
+
+    public List<EventEntity> findAllEvents() {
+        return eutils.findAllEntities(EventEntity.class);
+    }
+
+    public List<EventEntity> findRange(int from, int to) {
+        return eutils.findRange(EventEntity.class, from, to);
+    }
+
+    public int count() {
+        return eutils.getEntityCount(EventEntity.class);
     }
 }

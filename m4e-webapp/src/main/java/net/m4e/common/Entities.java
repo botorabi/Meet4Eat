@@ -215,4 +215,18 @@ public class Entities {
             entity.setPhoto(img);
         }
     }
+
+    /**
+     * Find entities in given range, used usually for pagination.
+     *
+     * @return List of entities in given range.
+     */
+    public <T> List<T> findRange(Class<T> entityClass, int from,int to) {
+        javax.persistence.criteria.CriteriaQuery cq = entityManager.getCriteriaBuilder().createQuery();
+        cq.select(cq.from(entityClass));
+        javax.persistence.Query q = entityManager.createQuery(cq);
+        q.setMaxResults(to - from + 1);
+        q.setFirstResult(from);
+        return q.getResultList();
+    }
 }

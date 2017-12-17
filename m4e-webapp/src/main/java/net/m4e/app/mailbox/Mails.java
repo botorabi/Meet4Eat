@@ -8,20 +8,14 @@
 
 package net.m4e.app.mailbox;
 
-import net.m4e.app.user.*;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import java.util.*;
+
+import javax.inject.Inject;
+import javax.json.*;
+import javax.persistence.*;
+
+import net.m4e.app.user.UserEntity;
 import net.m4e.common.Entities;
 import net.m4e.system.core.Log;
 
@@ -45,6 +39,7 @@ public class Mails {
      * 
      * @param entityManager    Entity manager
      */
+    @Inject
     public Mails(EntityManager entityManager) {
         this.entityManager = entityManager;
     }

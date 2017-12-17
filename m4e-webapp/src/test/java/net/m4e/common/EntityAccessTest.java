@@ -7,11 +7,12 @@
  */
 package net.m4e.common;
 
-import org.junit.jupiter.api.Test;
 import javax.persistence.EntityManager;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -107,35 +108,4 @@ public class EntityAccessTest {
         entityAccess.find(FIND_ID);
     }
 
-    /**
-     * Test of findAll method, of class EntityAccess.
-     */
-    @Test
-    public void testFindAll() {
-        System.out.println("findAll");
-
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of findRange method, of class EntityAccess.
-     */
-    @Test
-    public void testFindRange() {
-        System.out.println("findRange");
-
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of count method, of class EntityAccess.
-     */
-    @Test
-    public void testCount() {
-        System.out.println("count");
-
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 }

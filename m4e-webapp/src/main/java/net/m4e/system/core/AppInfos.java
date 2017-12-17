@@ -37,7 +37,6 @@ public class AppInfos {
      * @param entityManager the Entity manager
      * @see this#AppInfos(Entities)
      */
-
     public AppInfos(EntityManager entityManager) {
         this.eutils = new Entities(entityManager);
     }
