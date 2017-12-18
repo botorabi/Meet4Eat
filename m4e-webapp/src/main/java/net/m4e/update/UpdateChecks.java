@@ -10,13 +10,11 @@ package net.m4e.update;
 
 import java.io.StringReader;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+import javax.inject.Inject;
+import javax.json.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import net.m4e.common.EntityManagerProvider;
 import net.m4e.system.core.Log;
 
 
@@ -38,10 +36,11 @@ public class UpdateChecks {
     /**
      * Create an instance of update checks.
      * 
-     * @param entityManager    Entity manager
+     * @param provider Entity manager provider
      */
-    public UpdateChecks(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public UpdateChecks(EntityManagerProvider provider) {
+        this.entityManager = provider.getEntityManager();
     }
 
     /**

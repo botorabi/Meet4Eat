@@ -9,6 +9,7 @@ package net.m4e.system.maintenance;
 
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import net.m4e.system.core.Log;
@@ -28,16 +29,23 @@ public class MaintenanceCronJobs {
      */
     private final static String TAG = "MaintenanceCronJobs";
 
+    private final Maintenance maintenance;
+
     /**
-     * Entity manager needed for entity retrieval and modifications.
+     * EJB's default constructor.
      */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
+    public MaintenanceCronJobs() {
+        this.maintenance = null;
+    }
 
     /**
      * Create the bean.
+     * 
+     * @param maintenance   The maintenance instance
      */
-    public MaintenanceCronJobs() {
+    @Inject
+    public MaintenanceCronJobs(Maintenance maintenance) {
+        this.maintenance = maintenance;
     }
 
     /**
@@ -46,10 +54,7 @@ public class MaintenanceCronJobs {
     @Schedule(hour="0", persistent=false)
     public void nightlyJobs(){
         Log.info(TAG, "starting midnight maintenance tasks");
-
-        Maintenance maintenance = new Maintenance(entityManager);
         int countpurges = maintenance.purgeExpiredResources();
-
         Log.info(TAG, " count of purged expired resource: " + countpurges);
     }
 }

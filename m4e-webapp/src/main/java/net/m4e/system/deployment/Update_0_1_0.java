@@ -10,6 +10,7 @@ package net.m4e.system.deployment;
 
 import net.m4e.system.core.AppUdateBaseHandler;
 import javax.persistence.EntityManager;
+import net.m4e.common.Entities;
 import net.m4e.system.core.Log;
 
 /**
@@ -47,10 +48,11 @@ public class Update_0_1_0 extends AppUdateBaseHandler {
      * Perform the update.
      * 
      * @param entityManager   For the case that any entity structure manipulation is needed
+     * @param entities        Entities contains entity related operations
      * @throws Exception This exception is thrown if something went wrong.
      */
     @Override
-    public void performUpdate(EntityManager entityManager) throws Exception {
+    public void performUpdate(EntityManager entityManager, Entities entities) throws Exception {
         Log.debug(TAG, "Updating to version: " + appVersion + " (" + incUpdateNumber + ")");
         Log.debug(TAG, " Updating to version: " + appVersion + " (" + incUpdateNumber + ") completed");
     }

@@ -10,19 +10,11 @@ package net.m4e.app.user;
 
 import java.io.StringReader;
 import javax.ejb.Stateless;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.json.*;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
@@ -38,24 +30,30 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/authentication")
-public class UserAuthenticationFacadeREST extends net.m4e.common.EntityAccess<UserEntity> {
+public class UserAuthenticationFacadeREST {
 
     /**
      * Used for logging
      */
     private final static String TAG = "UserAuthenticationFacadeREST";
 
-    /**
-     * Entity manager needed for entity retrieval and modifications.
-     */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
+    private final Users users;
 
     /**
-     * Construct the stateless bean.
+     * EJB's default constructor.
      */
-    public UserAuthenticationFacadeREST() {
-        super(UserEntity.class);
+    protected UserAuthenticationFacadeREST() {
+        this.users = null;
+    }
+
+    /**
+     * Create the bean.
+     * 
+     * @param users Injected Users instance
+     */
+    @Inject
+    public UserAuthenticationFacadeREST(Users users) {
+        this.users = users;
     }
 
     @GET
@@ -119,8 +117,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.EntityAccess<Us
         }
 
         // try to find the user in database
-        Users userutils = new Users(entityManager);
-        UserEntity existinguser = userutils.findUser(login);
+        UserEntity existinguser = users.findUser(login);
         if ((existinguser == null) || !existinguser.getStatus().getIsActive()) {
             Log.debug(TAG, "  User login attempt failed, no user with this login found, user (" + login+ ")");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_FOUND, null);
@@ -136,7 +133,7 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.EntityAccess<Us
         // store the user in client session
         session.setAttribute(AuthorityConfig.SESSION_ATTR_USER, existinguser);
         // update user
-        userutils.updateUserLastLogin(existinguser);
+        users.updateUserLastLogin(existinguser);
 
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", existinguser.getId().toString())
@@ -158,15 +155,5 @@ public class UserAuthenticationFacadeREST extends net.m4e.common.EntityAccess<Us
         }
         session.invalidate();
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User was successfully logged out.", ResponseResults.CODE_OK, null);
-    }
-
-    /**
-     * Get the entity manager.
-     * 
-     * @return Entity manager
-     */
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
     }
 }

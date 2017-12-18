@@ -9,6 +9,8 @@ package net.m4e.common;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
@@ -16,12 +18,14 @@ import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.system.core.Log;
 
+
 /**
  * A collection of entity related utilities.
  * 
  * @author boto
  * Date of creation Aug 22, 2017
  */
+@ApplicationScoped
 public class Entities {
 
     /**
@@ -31,13 +35,27 @@ public class Entities {
 
     private final EntityManager entityManager;
 
+    private final DocumentPool docPool;
+
+
     /**
-     * Create the instance for given entity manager.
-     * 
-     * @param entityManager   Entity manager
+     * Default constructor needed by the container.
      */
-    public Entities(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    protected Entities() {
+        entityManager = null;
+        docPool = null;
+    }
+
+    /**
+     * Create an Entities instance by injection.
+     * 
+     * @param provider  Entity manager provider
+     * @param docPool   Document pool
+     */
+    @Inject
+    public Entities(EntityManagerProvider provider, DocumentPool docPool) {
+        this.entityManager = provider.getEntityManager();
+        this.docPool = docPool;
     }
 
     /**
@@ -46,7 +64,7 @@ public class Entities {
      * @param <T>           Entity class type
      * @param entity        Entity instance which is created in database
      */
-    public <T> void createEntity(T entity) {
+    public <T> void create(T entity) {
         entityManager.persist(entity);
     }
 
@@ -56,7 +74,7 @@ public class Entities {
      * @param <T>           Entity class type
      * @param entity        Entity instance which is deleted in database
      */
-    public <T> void deleteEntity(T entity) {
+    public <T> void delete(T entity) {
         entityManager.remove(entityManager.merge(entity));        
     }
 
@@ -66,7 +84,7 @@ public class Entities {
      * @param <T>           Entity class type
      * @param entity        Entity instance which is updated in database
      */
-    public <T> void updateEntity(T entity)  {
+    public <T> void update(T entity)  {
         entityManager.merge(entity);        
     }
 
@@ -77,7 +95,7 @@ public class Entities {
      * @param entityClass   Pass the entity class
      * @return Total count of entities of given class
      */
-    public <T> int getEntityCount(Class<T> entityClass) {
+    public <T> int getCount(Class<T> entityClass) {
         javax.persistence.criteria.CriteriaQuery cq = entityManager.getCriteriaBuilder().createQuery();
         javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
         cq.select(entityManager.getCriteriaBuilder().count(rt));
@@ -92,13 +110,31 @@ public class Entities {
      * @param entityClass   Pass the entity class
      * @return List of found entities.
      */
-    public <T> List<T> findAllEntities(Class<T> entityClass) {
+    public <T> List<T> findAll(Class<T> entityClass) {
         javax.persistence.criteria.CriteriaQuery cq = entityManager.getCriteriaBuilder().createQuery();
         cq.select(cq.from(entityClass));
         javax.persistence.Query q = entityManager.createQuery(cq);
         List<T> res = q.getResultList();
         return res;
     }
+
+    /** 
+     * Find entities in given range, used usually for pagination. 
+     * 
+     * @param <T>           Entity class type
+     * @param entityClass   Pass the entity class
+     * @param from          Range begin
+     * @param to            Range end
+     * @return List of entities in given range. 
+     */ 
+    public <T> List<T> findRange(Class<T> entityClass, int from,int to) { 
+        javax.persistence.criteria.CriteriaQuery cq = entityManager.getCriteriaBuilder().createQuery(); 
+        cq.select(cq.from(entityClass)); 
+        javax.persistence.Query q = entityManager.createQuery(cq); 
+        q.setMaxResults(to - from + 1); 
+        q.setFirstResult(from); 
+        return q.getResultList(); 
+    } 
 
     /**
      * Try to find any entity given its ID.
@@ -108,7 +144,7 @@ public class Entities {
      * @param id            Entity's ID
      * @return Instance of found entity, or null if no entity with given ID was found.
      */
-    public <T> T findEntity(Class<T> entityClass, Long id) {
+    public <T> T find(Class<T> entityClass, Long id) {
         return entityManager.find(entityClass, id);
     }
 
@@ -121,7 +157,7 @@ public class Entities {
      * @param fieldValue    Value to check in given field
      * @return List of found entities.
      */
-    public <T> List<T> findEntityByField(Class<T> entityClass, String fieldName, String fieldValue) {
+    public <T> List<T> findByField(Class<T> entityClass, String fieldName, String fieldValue) {
         javax.persistence.criteria.CriteriaQuery cq = entityManager.getCriteriaBuilder().createQuery();
         javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
         cq.select(rt).where(entityManager.getCriteriaBuilder().equal(rt.get(fieldName), fieldValue));
@@ -195,13 +231,12 @@ public class Entities {
      * @param newPhoto      New photo
      * @throws Exception    Throws an exception if something goes wrong
      */
-    public <T extends EntityWithPhoto> void updateEntityPhoto(T entity, DocumentEntity newPhoto ) throws Exception {
-        DocumentPool imagepool = new DocumentPool(entityManager);
-        DocumentEntity img = imagepool.getOrCreatePoolDocument(newPhoto.getETag());
+    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto ) throws Exception {
+        DocumentEntity img = docPool.getOrCreatePoolDocument(newPhoto.getETag());
         // is the old photo the same as the new one?
-        if (!imagepool.compareETag(entity.getPhoto(), img.getETag())) {
+        if (!docPool.compareETag(entity.getPhoto(), img.getETag())) {
             // release the old photo
-            imagepool.releasePoolDocument(entity.getPhoto());
+            docPool.releasePoolDocument(entity.getPhoto());
             // was the document an existing one?
             if (img.getIsEmpty()) {
                 img.updateContent(newPhoto.getContent());

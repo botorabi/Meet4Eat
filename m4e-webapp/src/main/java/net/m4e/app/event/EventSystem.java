@@ -16,8 +16,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.json.JsonObject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import net.m4e.app.communication.ChannelEventEvent;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.communication.Packet;
@@ -41,6 +39,8 @@ public class EventSystem {
      */
     private final static String TAG = "EventSystem";
 
+    private final Events events;
+
     /**
      * Central place to hold all client connections
      */
@@ -48,10 +48,21 @@ public class EventSystem {
     ConnectedClients connections;
 
     /**
-     * Entity manager needed for entity retrieval and modifications.
+     * Default constructor for making the container happy.
      */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
+    protected EventSystem() {
+        this.events = null;
+    }
+
+    /**
+     * Create the bean and inject the necessary resources.
+     * 
+     * @param events    The Events instance
+     */
+    @Inject
+    public EventSystem(Events events) {
+        this.events = events;
+    }
 
     /**
      * Called on post-construction of the instance.
@@ -103,7 +114,6 @@ public class EventSystem {
      * @param packet        Chat packet to send
      */
     private void sendMessageEvent(UserEntity sender, Long eventId, Packet packet) {
-        Events events = new Events(entityManager);
         Set<Long> receiverids = events.getMembers(eventId);
         receiverids.add(sender.getId());
         packet.setSourceId(sender.getId().toString());

@@ -9,22 +9,10 @@
 package net.m4e.app.user;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
+import javax.enterprise.context.ApplicationScoped;
+import java.util.*;
+import javax.json.*;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.communication.ConnectedClients;
@@ -36,12 +24,14 @@ import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 
+
 /**
  * A collection of user related utilities
  * 
  * @author boto
  * Date of creation Aug 28, 2017
  */
+@ApplicationScoped
 public class Users {
 
     /**
@@ -49,15 +39,29 @@ public class Users {
      */
     private final static String TAG = "Users";
 
-    private final EntityManager entityManager;
+    private final Entities entities;
+
+    private final AppInfos appInfos;
+
 
     /**
+     * Defautl constructor, make the container happy.
+     */
+    protected Users() {
+        entities = null;
+        appInfos = null;
+    }
+
+     /**
      * Create an instance of user utilities.
      * 
-     * @param entityManager    Entity manager
+     * @param entities
+     * @param appInfos
      */
-    public Users(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public Users(Entities entities, AppInfos appInfos) {
+        this.entities = entities;
+        this.appInfos = appInfos;
     }
 
     /**
@@ -179,16 +183,15 @@ public class Users {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void createUserEntity(UserEntity user) throws Exception {
-        Entities eutils = new Entities(entityManager);
         // we have to remove the role collection and re-add it after entity creation,
         //   otherwise new roles are created instead of using existing ones!
         List<String> roles = user.getRolesAsString();
         user.setRoles(null);
-        eutils.createEntity(user);
+        entities.create(user);
         // now add set the roles
         if (roles.size() > 0) {
             addUserRoles(user, roles);
-            eutils.updateEntity(user);
+            entities.update(user);
         }
     }
 
@@ -198,9 +201,8 @@ public class Users {
      * @param user User entity to update
      */
     public void updateUser(UserEntity user) {
-        Entities eutils = new Entities(entityManager);
         try {
-            eutils.updateEntity(user);
+            entities.update(user);
         }
         catch (Exception ex) {
             Log.error(TAG, "*** Could not update user '" + user.getLogin() + "'");
@@ -216,10 +218,9 @@ public class Users {
      * @throws Exception    Throws exception if any problem occurred.
      */
     void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
-        Entities entities = new Entities(entityManager);
         // make sure that the resource URL is set
         image.setResourceURL("/User/Image");
-        entities.updateEntityPhoto(user, image);
+        entities.updatePhoto(user, image);
     }
 
     /**
@@ -230,22 +231,20 @@ public class Users {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void markUserAsDeleted(UserEntity user) throws Exception {
-        Entities eutils = new Entities(entityManager);
         StatusEntity status = user.getStatus();
         if (status == null) {
             throw new Exception("User has no status field!");
         }
         status.setDateDeletion((new Date().getTime()));
-        eutils.updateEntity(user);
+        entities.update(user);
 
         // update the app stats
-        AppInfos autils = new AppInfos(entityManager);
-        AppInfoEntity appinfo = autils.getAppInfoEntity();
+        AppInfoEntity appinfo = appInfos.getAppInfoEntity();
         if (appinfo == null) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementUserCountPurge(1L);
-        eutils.updateEntity(appinfo);
+        entities.update(appinfo);
     }
 
     /**
@@ -254,8 +253,7 @@ public class Users {
      * @return List of users which are marked as deleted.
      */
     public List<UserEntity> getMarkedAsDeletedUsers() {
-        Entities eutils = new Entities(entityManager);
-        List<UserEntity> users = eutils.findAllEntities(UserEntity.class);
+        List<UserEntity> users = entities.findAll(UserEntity.class);
         List<UserEntity> deletedusers = new ArrayList<>();
         for (UserEntity user: users) {
             if (user.getStatus().getIsDeleted()) {
@@ -272,8 +270,7 @@ public class Users {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void deleteUser(UserEntity user) throws Exception {
-        Entities eutils = new Entities(entityManager);
-        eutils.deleteEntity(user);
+        entities.delete(user);
     }
 
     /**
@@ -283,8 +280,7 @@ public class Users {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUser(Long id) {
-        Entities eutils = new Entities(entityManager);
-        UserEntity user = eutils.findEntity(UserEntity.class, id);
+        UserEntity user = entities.find(UserEntity.class, id);
         return user;
     }
 
@@ -295,12 +291,11 @@ public class Users {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUser(String login) {
-        Entities eutils = new Entities(entityManager);
-        List<UserEntity> entities = eutils.findEntityByField(UserEntity.class, "login", login);
-        if (entities.size() == 1) {
-            return entities.get(0);
+        List<UserEntity> foundentities = entities.findByField(UserEntity.class, "login", login);
+        if (foundentities.size() == 1) {
+            return foundentities.get(0);
         }
-        else if (entities.size() > 1) {
+        else if (foundentities.size() > 1) {
             Log.error(TAG, "*** Fatal error, more than one user with same login '" + login + "' exist in database!");
         }
         return null;
@@ -313,12 +308,11 @@ public class Users {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUserByEmail(String email) {
-        Entities eutils = new Entities(entityManager);
-        List<UserEntity> entities = eutils.findEntityByField(UserEntity.class, "email", email);
-        if (entities.size() == 1) {
-            return entities.get(0);
+        List<UserEntity> foundentities = entities.findByField(UserEntity.class, "email", email);
+        if (foundentities.size() == 1) {
+            return foundentities.get(0);
         }
-        else if (entities.size() > 1) {
+        else if (foundentities.size() > 1) {
             Log.error(TAG, "*** Fatal error, more than one user with same email '" + email + "' exist in database!");
         }
         return null;
@@ -341,8 +335,7 @@ public class Users {
      */
     public List<Long> getUserRelatives(UserEntity user) {
         Set<Long> relatives = new HashSet();
-        Entities eutils = new Entities(entityManager);
-        List<EventEntity> events = eutils.findAllEntities(EventEntity.class);
+        List<EventEntity> events = entities.findAll(EventEntity.class);
         for (EventEntity event: events) {
             if ((event.getStatus() == null) || !event.getStatus().getIsActive()) {
                 continue;
@@ -370,10 +363,9 @@ public class Users {
      * @param user User entity to update
      */
     public void updateUserLastLogin(UserEntity user) {
-        Entities eutils = new Entities(entityManager);
         user.setDateLastLogin((new Date().getTime()));
         try {
-            eutils.updateEntity(user);
+            entities.update(user);
         }
         catch (Exception ex) {
             Log.error(TAG, "*** Could not update user's last login timestamp '" + user.getLogin() + "'");
@@ -387,13 +379,12 @@ public class Users {
      * @param roles     User roles
      */
     public void addUserRoles(UserEntity user, List<String> roles) {
-        Entities eutils = new Entities(entityManager);
         for (String role: roles) {
             // ignore empty strings
             if (role.isEmpty()) {
                 continue;
             }
-            List<RoleEntity> ent = eutils.findEntityByField(RoleEntity.class, "name", role);
+            List<RoleEntity> ent = entities.findByField(RoleEntity.class, "name", role);
             if (ent.size() != 1) {
                 Log.error(TAG, "*** Unexpected count of role type found in database '" + role + "', count: " + ent.size());
                 continue;

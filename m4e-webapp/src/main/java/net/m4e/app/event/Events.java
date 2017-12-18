@@ -9,21 +9,10 @@
 package net.m4e.app.event;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import javax.json.*;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.persistence.EntityManager;
+import javax.enterprise.context.ApplicationScoped;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.mailbox.MailEntity;
@@ -33,10 +22,11 @@ import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.Strings;
 import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
+import net.m4e.system.core.AppInfos;
+
 
 /**
  * A collection of event related utilities
@@ -44,6 +34,7 @@ import net.m4e.app.user.Users;
  * @author boto
  * Date of creation Sep 4, 2017
  */
+@ApplicationScoped
 public class Events {
 
     /**
@@ -51,15 +42,39 @@ public class Events {
      */
     private final static String TAG = "Events";
 
-    private final EntityManager entityManager;
+    private final Users users;
+
+    private final Entities entities;
+
+    private final AppInfos appInfos;
+
+    private final Mails mails;
+
 
     /**
-     * Create an instance of event utilities.
-     * 
-     * @param entityManager    Entity manager
+     * Default constructor needed by the container.
      */
-    public Events(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    protected Events() {
+        this.entities = null;
+        this.users = null;
+        this.appInfos = null;
+        this.mails = null;
+    }
+
+    /**
+     * Create the Events instance.
+     * 
+     * @param entities  Entities instance
+     * @param users     Users instance
+     * @param appInfos  AppInfos instance
+     * @param mails     Mails instance
+     */
+    @Inject
+    public Events(Entities entities, Users users, AppInfos appInfos, Mails mails) {
+        this.entities = entities;
+        this.users = users;
+        this.appInfos = appInfos;
+        this.mails = mails;
     }
 
     /**
@@ -104,21 +119,19 @@ public class Events {
      * @param event         Event entity
      */
     public void createEventEntity(EventEntity event) {
-        Entities eutils = new Entities(entityManager);
-
         // photo and members are shared objects, so remove them before event creation
         DocumentEntity photo = event.getPhoto();
         event.setPhoto(null);
         Collection<UserEntity> members = event.getMembers();
         event.setMembers(null);
 
-        eutils.createEntity(event);
+        entities.create(event);
 
         // now re-add photo and members to event entity and update it
         event.setPhoto(photo);
         event.setMembers(members);
 
-        eutils.updateEntity(event);
+        entities.update(event);
     }
 
     /**
@@ -127,8 +140,7 @@ public class Events {
      * @param event         Event entity
      */
     public void deleteEvent(EventEntity event) {
-        Entities eutils = new Entities(entityManager);
-        eutils.deleteEntity(event);
+        entities.delete(event);
     }
 
     /**
@@ -137,8 +149,7 @@ public class Events {
      * @param event       Event entity to update
      */
     public void updateEvent(EventEntity event) {
-        Entities eutils = new Entities(entityManager);
-        eutils.updateEntity(event);
+        entities.update(event);
     }
 
     /**
@@ -148,8 +159,7 @@ public class Events {
      * @return Return an entity if found, otherwise return null.
      */
     public EventEntity findEvent(Long id) {
-        Entities eutils = new Entities(entityManager);
-        EventEntity event = eutils.findEntity(EventEntity.class, id);
+        EventEntity event = entities.find(EventEntity.class, id);
         return event;
     }
 
@@ -162,8 +172,7 @@ public class Events {
      * @return              Return the location entity if it was found and it is active, otherwise null.
      */
     public EventLocationEntity findEventLocation(Long eventId, Long locationId) {
-        Entities eutils = new Entities(entityManager);
-        EventEntity event = eutils.findEntity(EventEntity.class, eventId);
+        EventEntity event = entities.find(EventEntity.class, eventId);
         if ((event == null) || !event.getStatus().getIsActive()){
             return null;
         }
@@ -188,10 +197,9 @@ public class Events {
      * @throws Exception  Throws an exception if something goes wrong.
      */
     public void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
-        Entities entities = new Entities(entityManager);
         // make sure that the resource URL is set
         image.setResourceURL("/Event/Image");
-        entities.updateEntityPhoto(event, image);
+        entities.updatePhoto(event, image);
     }
 
     /**
@@ -303,22 +311,20 @@ public class Events {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void markEventAsDeleted(EventEntity event) throws Exception {
-        Entities eutils = new Entities(entityManager);
         StatusEntity status = event.getStatus();
         if (status == null) {
             throw new Exception("Event has no status field!");
         }
         status.setDateDeletion((new Date().getTime()));
-        eutils.updateEntity(event);
+        entities.update(event);
 
         // update the app stats
-        AppInfos autils = new AppInfos(entityManager);
-        AppInfoEntity appinfo = autils.getAppInfoEntity();
+        AppInfoEntity appinfo = appInfos.getAppInfoEntity();
         if (appinfo == null) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementEventCountPurge(1L);
-        eutils.updateEntity(appinfo);
+        entities.update(appInfos);
     }
 
     /**
@@ -327,8 +333,7 @@ public class Events {
      * @return List of events which are marked as deleted.
      */
     public List<EventEntity> getMarkedAsDeletedEvents() {
-        Entities eutils = new Entities(entityManager);
-        List<EventEntity> events = eutils.findAllEntities(EventEntity.class);
+        List<EventEntity> events = entities.findAll(EventEntity.class);
         List<EventEntity> deletedevents = new ArrayList<>();
         // speed up the task by using parallel processing
         events.stream().parallel()
@@ -346,8 +351,7 @@ public class Events {
      * @return List of event locations which are marked as deleted.
      */
     public List<EventLocationEntity> getMarkedAsDeletedEventLocations() {
-        Entities eutils = new Entities(entityManager);
-        List<EventLocationEntity> eventlocs = eutils.findAllEntities(EventLocationEntity.class);
+        List<EventLocationEntity> eventlocs = entities.findAll(EventLocationEntity.class);
         List<EventLocationEntity> deletedeventlocs = new ArrayList<>();
         // speed up the task by using parallel processing
         eventlocs.stream().parallel()
@@ -366,7 +370,6 @@ public class Events {
      * @param member    The new member
      */
     void createEventJoiningMail(EventEntity event, UserEntity member) {
-        Mails mails = new Mails(entityManager);
         MailEntity mail = new MailEntity();
         mail.setSenderId(0L);
         mail.setReceiverId(member.getId());
@@ -391,7 +394,6 @@ public class Events {
      * @param member    Member who left the event
      */
     void createEventLeavingMail(EventEntity event, UserEntity member) {
-        Mails mails = new Mails(entityManager);
         MailEntity mailuser = new MailEntity();
         mailuser.setSenderId(0L);
         mailuser.setReceiverId(member.getId());
@@ -401,8 +403,7 @@ public class Events {
         mailuser.setContent("Hi " + member.getName() + ",\n\nwe wanted to confirm that you have left the event '" +
                                 event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
 
-        Entities entities = new Entities(entityManager);
-        UserEntity ownerentity = entities.findEntity(UserEntity.class, event.getStatus().getIdOwner());
+        UserEntity ownerentity = entities.find(UserEntity.class, event.getStatus().getIdOwner());
 
         MailEntity mailowner = new MailEntity();
         mailowner.setSenderId(0L);
@@ -486,8 +487,7 @@ public class Events {
         String     ownername, ownerphotoetag;
         Long       ownerphotoid;
         Long       ownerid   = entity.getStatus().getIdOwner();
-        Users      userutils = new Users(entityManager);
-        UserEntity owner     = userutils.findUser(ownerid);
+        UserEntity owner     = users.findUser(ownerid);
         boolean    owneronline;
         if ((owner == null) || !owner.getStatus().getIsActive()) {
             owneronline = false;
@@ -582,8 +582,7 @@ public class Events {
      * @return              All user relevant events in JSON format
      */
     public JsonObjectBuilder exportUserEventJSON(EventEntity event, UserEntity user, ConnectedClients connections) {
-        Users             userutils = new Users(entityManager);
-        boolean           privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+        boolean           privuser  = users.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonObjectBuilder json      = Json.createObjectBuilder();
         boolean           doexp     = event.getStatus().getIsActive()&& 
                                       (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event));
@@ -605,8 +604,7 @@ public class Events {
      */
     public JsonArrayBuilder exportUserEventsJSON(List<EventEntity> events, UserEntity user, ConnectedClients connections) {
         //! NOTE: Although we could make use of method exportUserEventJSON here, we don't in the sake of performance!
-        Users            userutils = new Users(entityManager);
-        boolean          privuser  = userutils.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+        boolean          privuser  = users.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         JsonArrayBuilder allevents = Json.createArrayBuilder();
         events.stream()
             .filter((event) -> (event.getStatus().getIsActive() && (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event))))

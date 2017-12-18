@@ -8,7 +8,7 @@
 
 package net.m4e.update;
 
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
 import net.m4e.common.Strings;
 
 /**
@@ -23,15 +23,16 @@ public class UpdateCheckEntityInputValidator {
     private final int STRING_INPUT_MIN_LEN  = 1;
     private final int STRING_INPUT_MAX_LEN  = 255;
 
-    private final EntityManager entityManager;
+    private final UpdateChecks updateChecks;
 
     /**
      * Create an instance of input validator.
      * 
-     * @param entityManager    Entity manager
+     * @param updateChecks    Update checks instance
      */
-    public UpdateCheckEntityInputValidator(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public UpdateCheckEntityInputValidator(UpdateChecks updateChecks) {
+        this.updateChecks = updateChecks;
     }
 
     /**
@@ -43,8 +44,7 @@ public class UpdateCheckEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public UpdateCheckEntity validateNewEntityInput(String entityJson) throws Exception {
-        UpdateChecks updatechecks = new UpdateChecks(entityManager);
-        UpdateCheckEntity reqentity = updatechecks.importUpdateCheckJSON(entityJson);
+        UpdateCheckEntity reqentity = updateChecks.importUpdateCheckJSON(entityJson);
         if (reqentity == null) {
             throw new Exception("Failed to validate update check entry, invalid or incomplete input.");
         }
@@ -64,8 +64,7 @@ public class UpdateCheckEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public UpdateCheckEntity validateUpdateEntityInput(String entityJson) throws Exception {
-        UpdateChecks updatechecks = new UpdateChecks(entityManager);
-        UpdateCheckEntity reqentity = updatechecks.importUpdateCheckJSON(entityJson);
+        UpdateCheckEntity reqentity = updateChecks.importUpdateCheckJSON(entityJson);
         if (reqentity == null) {
             throw new Exception("Failed to validate update check entry, invalid input.");
         }

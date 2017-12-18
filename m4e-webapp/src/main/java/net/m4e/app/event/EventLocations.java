@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -26,6 +27,7 @@ import net.m4e.app.resources.DocumentEntity;
 import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.app.user.UserEntity;
+import net.m4e.common.EntityManagerProvider;
 import net.m4e.common.Strings;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
@@ -46,13 +48,23 @@ public class EventLocations {
 
     private final EntityManager entityManager;
 
+    private final Entities entities;
+
+    private final AppInfos appInfos;
+
+
     /**
-     * Create an instance of event utilities.
+     * Create an instance of Events.
      * 
-     * @param entityManager    Entity manager
+     * @param provider     The entity manager provider
+     * @param entities     The Entities instance
+     * @param appInfos     The AppInfos instance
      */
-    public EventLocations(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public EventLocations(EntityManagerProvider provider, Entities entities, AppInfos appInfos) {
+        this.entityManager = provider.getEntityManager();
+        this.entities = entities;
+        this.appInfos = appInfos;
     }
 
     /**
@@ -82,15 +94,14 @@ public class EventLocations {
         status.setDateLastUpdate(now.getTime());
         newlocation.setStatus(status);
 
-        Entities eutils = new Entities(entityManager);
-        eutils.createEntity(newlocation);
+        entities.create(newlocation);
         Collection<EventLocationEntity> locs = event.getLocations();
         if (locs == null) {
             locs = new ArrayList<>();
             event.setLocations(locs);
         }
         event.getLocations().add(newlocation);
-        eutils.updateEntity(event);
+        entities.update(event);
         return newlocation;
     }
 
@@ -102,8 +113,7 @@ public class EventLocations {
      * @throws Exception     Throws an exception if something went wrong.
      */
     public EventLocationEntity updateLocation(EventLocationEntity inputLocation) throws Exception {
-        Entities entityutils = new Entities(entityManager);
-        EventLocationEntity location = entityutils.findEntity(EventLocationEntity.class, inputLocation.getId());
+        EventLocationEntity location = entities.find(EventLocationEntity.class, inputLocation.getId());
         if ((location == null) || !location.getStatus().getIsActive()) {
             throw new Exception("Entity location does not exist.");
         }
@@ -118,7 +128,7 @@ public class EventLocations {
             updateEventLocationImage(location, inputLocation.getPhoto());
         }
 
-        entityutils.updateEntity(location);
+        entities.update(location);
         return location;
     }
 
@@ -132,10 +142,9 @@ public class EventLocations {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) throws Exception {
-        Entities entities = new Entities(entityManager);
         // make sure that the resource URL is set
         image.setResourceURL("/EventLoction/Image");
-        entities.updateEntityPhoto(location, image);
+        entities.updatePhoto(location, image);
     }
 
     /**
@@ -145,8 +154,7 @@ public class EventLocations {
      * @return      Return an entity if found, otherwise return null.
      */
     public EventLocationEntity findLocation(Long id) {
-        Entities entities = new Entities(entityManager);
-        EventLocationEntity location = entities.findEntity(EventLocationEntity.class, id);
+        EventLocationEntity location = entities.find(EventLocationEntity.class, id);
         return location;
     }
 
@@ -218,7 +226,6 @@ public class EventLocations {
         query.setParameter("timeEnd", voteend);
         query.setParameter("locationId", location.getId());
 
-        Entities entities = new Entities(entityManager);
         EventLocationVoteEntity voteentity;
         //! NOTE we expect maximal 1 result here
         List<EventLocationVoteEntity> voteentities = query.getResultList();
@@ -230,7 +237,7 @@ public class EventLocations {
             voteentity.setVoteTimeBegin(votebegin);
             voteentity.setVoteTimeEnd(voteend);
             voteentity.setCreationTime((new Date()).getTime() / 1000);
-            entities.createEntity(voteentity);
+            entities.create(voteentity);
         }
         else {
             voteentity = voteentities.get(0);
@@ -245,7 +252,7 @@ public class EventLocations {
             voteentity.removeUserName(voter.getName());            
         }
 
-        entities.updateEntity(voteentity);
+        entities.update(voteentity);
 
         return voteentity;
     }
@@ -267,17 +274,15 @@ public class EventLocations {
         }
         // mark the location entity as deleted
         locationToRemove.getStatus().setDateDeletion((new Date()).getTime());
-        Entities eutils = new Entities(entityManager);
-        eutils.updateEntity(locationToRemove);
+        entities.update(locationToRemove);
 
         // update the app stats
-        AppInfos autils = new AppInfos(entityManager);
-        AppInfoEntity appinfo = autils.getAppInfoEntity();
+        AppInfoEntity appinfo = appInfos.getAppInfoEntity();
         if (appinfo == null) {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementEventLocationCountPurge(1L);
-        eutils.updateEntity(appinfo);
+        entities.update(appinfo);
     }
 
     /**

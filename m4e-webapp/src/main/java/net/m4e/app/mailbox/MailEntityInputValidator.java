@@ -8,7 +8,8 @@
 
 package net.m4e.app.mailbox;
 
-import javax.persistence.EntityManager;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
 import net.m4e.common.Strings;
@@ -19,6 +20,7 @@ import net.m4e.common.Strings;
  * @author boto
  * Date of creation Oct 31, 2017
  */
+@ApplicationScoped
 public class MailEntityInputValidator {
 
     /* Min/max string length for user input fields */
@@ -26,15 +28,29 @@ public class MailEntityInputValidator {
     private final int USER_INPUT_MAX_LEN_SUBJECT  = 32;
     private final int USER_INPUT_MAX_ATTACHMENTS  = 5;
 
-    private final EntityManager entityManager;
+    private final Users users;
+
+    private final Mails mails;
+
 
     /**
-     * Create an instance of input validator.
-     * 
-     * @param entityManager    Entity manager
+     * Default constructor.
      */
-    public MailEntityInputValidator(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    protected MailEntityInputValidator() {
+        users = null;
+        mails = null;
+    }
+
+    /**
+     * Create the validator.
+     * 
+     * @param users  Users instance
+     * @param mails  Mails instance
+     */
+    @Inject
+    public MailEntityInputValidator(Users users, Mails mails) {
+        this.users = users;
+        this.mails = mails;
     }
 
     /**
@@ -46,7 +62,6 @@ public class MailEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public MailEntity validateNewEntityInput(String mailJson) throws Exception {
-        Mails mails = new Mails(entityManager);
         MailEntity mail = mails.importMailJSON(mailJson);
         if (mail == null) {
             throw new Exception("Failed to send mail, invalid input.");
@@ -54,7 +69,6 @@ public class MailEntityInputValidator {
         if (mail.getReceiverId() == 0L) {
             throw new Exception("Failed to send mail, invalid recipient.");
         }
-        Users users = new Users(entityManager);
         UserEntity recipient = users.findUser(mail.getReceiverId());
         if ((recipient == null) || !recipient.getStatus().getIsActive()) {
             throw new Exception("Failed to send mail, recipient does not exist.");

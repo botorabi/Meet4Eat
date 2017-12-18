@@ -8,6 +8,7 @@
 package net.m4e.system.core;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
@@ -27,23 +28,25 @@ import net.m4e.common.ResponseResults;
  */
 @Stateless
 @Path("/rest/appinfo")
-public class AppInfoEntityFacadeREST extends net.m4e.common.EntityAccess<AppInfoEntity> {
+public class AppInfoEntityFacadeREST {
+
+    private final AppInfos appInfos;
 
     /**
-     * Used for logging
+     * EJB's default constructor.
      */
-    private final static String TAG = "AppInfoEntityFacadeREST";
-
-    @PersistenceContext(unitName = AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
-
     public AppInfoEntityFacadeREST() {
-        super(AppInfoEntity.class);
+        this.appInfos = null;
     }
 
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
+    /**
+     * Create the REST bean.
+     * 
+     * @param appInfos 
+     */
+    @Inject
+    public AppInfoEntityFacadeREST(AppInfos appInfos) {
+        this.appInfos = appInfos;
     }
 
     /**
@@ -55,8 +58,7 @@ public class AppInfoEntityFacadeREST extends net.m4e.common.EntityAccess<AppInfo
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
     public String getInfo() {
-        AppInfos autils = new AppInfos(entityManager);
-        AppInfoEntity info = autils.getAppInfoEntity();
+        AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }

@@ -11,11 +11,14 @@ package net.m4e.app.user;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.SendEmailEvent;
 import net.m4e.common.Entities;
+import net.m4e.common.EntityManagerProvider;
 import net.m4e.system.core.Log;
 
 
@@ -25,6 +28,7 @@ import net.m4e.system.core.Log;
  * @author boto
  * Date of creation Oct 2, 2017
  */
+@ApplicationScoped
 public class UserRegistrations {
 
     /**
@@ -43,17 +47,33 @@ public class UserRegistrations {
     private final int PW_RESET_EXPIRATION_MINUTES = 30;
 
     /**
-     * Entity manager
+     * Entities instance injected during construction
      */
-    private final EntityManager entityManager;
+    private final Entities entities;
+
+    /**
+     * Users instance injected during construction
+     */
+    private final Users users;
+
+    /**
+     * Default constructor needed by the container.
+     */
+    protected UserRegistrations() {
+        entities = null;
+        users = null;
+    }
 
     /**
      * Create an instance.
      * 
-     * @param entityManager    Entity manager
+     * @param entities    Entities contains data access operations
+     * @param users       Users instance
      */
-    public UserRegistrations(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public UserRegistrations(Entities entities, Users users) {
+        this.entities = entities;
+        this.users = users;
     }
 
     /**
@@ -63,8 +83,7 @@ public class UserRegistrations {
      * @return Count of pending account registrations
      */
     public int getCountPendingAccountActivations() {
-        Entities entities = new Entities(entityManager);
-        return entities.getEntityCount(UserRegistrationEntity.class);
+        return entities.getCount(UserRegistrationEntity.class);
     }
 
     /**
@@ -74,8 +93,7 @@ public class UserRegistrations {
      * @return Count of pass word reset requests
      */
     public int getCountPendingPasswordResets() {
-        Entities entities = new Entities(entityManager);
-        return entities.getEntityCount(UserPasswordResetEntity.class);
+        return entities.getCount(UserPasswordResetEntity.class);
     }
 
     /**
@@ -89,11 +107,9 @@ public class UserRegistrations {
         int purgedpwresets = 0;
 
         Long now = (new Date()).getTime();
-        Entities entities = new Entities(entityManager);
-        Users users = new Users(entityManager);
 
         // purge expired account registrations
-        List<UserRegistrationEntity> regs = entities.findAllEntities(UserRegistrationEntity.class);
+        List<UserRegistrationEntity> regs = entities.findAll(UserRegistrationEntity.class);
         for (UserRegistrationEntity reg: regs) {
             Long duration = now - reg.getRequestDate();
             duration /= (1000 * 60 * 60);
@@ -101,7 +117,7 @@ public class UserRegistrations {
                 purgedregs++;
                 UserEntity user = reg.getUser();
                 reg.setUser(null);
-                entities.deleteEntity(reg);
+                entities.delete(reg);
                 if (user != null) {
                     try {
                         users.markUserAsDeleted(user);
@@ -113,13 +129,13 @@ public class UserRegistrations {
             }
         }
         // purge expired password reset requests
-        List<UserPasswordResetEntity> resets = entities.findAllEntities(UserPasswordResetEntity.class);
+        List<UserPasswordResetEntity> resets = entities.findAll(UserPasswordResetEntity.class);
         for (UserPasswordResetEntity reset: resets) {
             Long duration = now - reset.getRequestDate();
             duration /= (1000 * 60);
             if (duration > PW_RESET_EXPIRATION_MINUTES) {
                 purgedpwresets++;
-                entities.deleteEntity(reset);
+                entities.delete(reset);
             }
         }
         Log.info(TAG, "Purged expired account registrations: " + purgedregs);
@@ -143,8 +159,7 @@ public class UserRegistrations {
         reg.setUser(user);
         reg.setRequestDate((new Date()).getTime());
         String regtoken = reg.createActivationToken();
-        Entities entities = new Entities(entityManager);
-        entities.createEntity(reg);
+        entities.create(reg);
 
         // send an email to user
         String body = "";
@@ -194,8 +209,7 @@ public class UserRegistrations {
      * @throws Exception    Throws an exception if the activation was not successful.
      */
     public UserEntity activateUserAccount(String token) throws Exception {
-        Entities entities = new Entities(entityManager);
-        List<UserRegistrationEntity> regs = entities.findEntityByField(UserRegistrationEntity.class, "activationToken", token);
+        List<UserRegistrationEntity> regs = entities.findByField(UserRegistrationEntity.class, "activationToken", token);
         if (regs.size() > 1) {
             Log.error(TAG, "there are more than one registration entry with same token, count: " + regs.size());
             throw new Exception("Internal Registration Failure!");
@@ -206,7 +220,7 @@ public class UserRegistrations {
         UserRegistrationEntity registration = regs.get(0);
         UserEntity user = registration.getUser();
         // delete the registration entry
-        entities.deleteEntity(registration);
+        entities.delete(registration);
         
         if ((user == null) || (user.getStatus().getIsDeleted())) {
             throw new Exception("Internal error, user no longer exists.");            
@@ -216,7 +230,7 @@ public class UserRegistrations {
         duration /= (1000 * 60 * 60);
         if ( duration > REGISTER_EXPIRATION_HOURS) {
             // delete the entity if it is expired
-            entities.deleteEntity(user);
+            entities.delete(user);
             throw new Exception("Activation code was expired.");            
         }
         // activate the user
@@ -236,7 +250,6 @@ public class UserRegistrations {
      * @throws Exception    Throws exception if no user with given email address was found.
      */
     public void requestPasswordReset(String email, String resetURL, String bccEmail, Event event) throws Exception {
-        Users users = new Users(entityManager);
         UserEntity user = users.findUserByEmail(email);
         if ((user == null) || (user.getStatus().getIsDeleted())) {
             throw new Exception("There is no registered user with given email address!");
@@ -244,8 +257,7 @@ public class UserRegistrations {
 
         UserPasswordResetEntity reset = null;
         // if there is already a reset password entry then re-use it
-        Entities entities = new Entities(entityManager);
-        List<UserPasswordResetEntity> regs = entities.findAllEntities(UserPasswordResetEntity.class);
+        List<UserPasswordResetEntity> regs = entities.findAll(UserPasswordResetEntity.class);
         for (UserPasswordResetEntity reg : regs) {
             if (user.equals(reg.getUser())) {
                 reset = reg;
@@ -256,7 +268,7 @@ public class UserRegistrations {
         if (reset == null) {
             reset = new UserPasswordResetEntity();
             reset.setUser(user);
-            entities.createEntity(reset);
+            entities.create(reset);
         }
         reset.setRequestDate((new Date()).getTime());
         String resettoken = reset.createResetToken();
@@ -310,8 +322,7 @@ public class UserRegistrations {
      * @throws Exception    Throws an exception if the password reset was not successful.
      */
     public UserEntity processPasswordReset(String resetRoken, String newPassword) throws Exception {
-        Entities entities = new Entities(entityManager);
-        List<UserPasswordResetEntity> resets = entities.findEntityByField(UserPasswordResetEntity.class, "resetToken", resetRoken);
+        List<UserPasswordResetEntity> resets = entities.findByField(UserPasswordResetEntity.class, "resetToken", resetRoken);
         if (resets.size() > 1) {
             Log.error(TAG, "there are more than one password reset entry with same token, count: " + resets.size());
             throw new Exception("Internal Password Reset Failure!");
@@ -322,7 +333,7 @@ public class UserRegistrations {
         UserPasswordResetEntity reset = resets.get(0);
         UserEntity user = reset.getUser();
         // delete the registration entry
-        entities.deleteEntity(reset);
+        entities.delete(reset);
         if ((user == null) || (user.getStatus().getIsDeleted())) {
             throw new Exception("Internal error, user no longer exists.");            
         }

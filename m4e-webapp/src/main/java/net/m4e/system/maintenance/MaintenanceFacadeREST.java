@@ -8,10 +8,9 @@
 package net.m4e.system.maintenance;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
@@ -37,16 +36,28 @@ public class MaintenanceFacadeREST {
      */
     private final static String TAG = "MaintenanceFacadeREST";
 
-    /**
-     * Entity manager needed for entity retrieval and modifications.
-     */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
+    private final Maintenance maintenance;
+
+    private final AppInfos appInfos;
 
     /**
-     * Creates a new instance of MaintenanceResource
+     * EJB's default constructor.
      */
-    public MaintenanceFacadeREST() {
+    protected MaintenanceFacadeREST() {
+        this.maintenance = null;
+        this.appInfos = null;
+    }
+
+    /**
+     * Create the bean.
+     * 
+     * @param maintenance   The maintenance instance
+     * @param appInfos      AppInfos instance used for accessing application information such as version and stats
+     */
+    @Inject
+    public MaintenanceFacadeREST(Maintenance maintenance, AppInfos appInfos) {
+        this.maintenance = maintenance;
+        this.appInfos = appInfos;
     }
 
     /**
@@ -59,13 +70,11 @@ public class MaintenanceFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String stats() {
-        AppInfos autils = new AppInfos(entityManager);
-        AppInfoEntity info = autils.getAppInfoEntity();
+        AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
-        Maintenance mutils = new Maintenance(entityManager);
-        String appstats = mutils.exportInfoJSON(info).build().toString();
+        String appstats = maintenance.exportInfoJSON(info).build().toString();
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "System stats", ResponseResults.CODE_OK, appstats);
     }
 
@@ -80,8 +89,7 @@ public class MaintenanceFacadeREST {
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
     public String purgeResources() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        Maintenance mutils = new Maintenance(entityManager);
-        int countpurges = mutils.purgeAllResources();
+        int countpurges = maintenance.purgeAllResources();
         Log.info(TAG, "total count of " + countpurges + " resources were purged");
         jsonresponse.add("countPurges", countpurges);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "" +  countpurges + " resources were purged.", ResponseResults.CODE_OK, jsonresponse.build().toString());

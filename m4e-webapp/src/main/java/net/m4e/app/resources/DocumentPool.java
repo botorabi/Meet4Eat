@@ -11,8 +11,10 @@ package net.m4e.app.resources;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
+import javax.enterprise.context.ApplicationScoped;
 import net.m4e.common.Entities;
+import net.m4e.common.EntityManagerProvider;
 import net.m4e.system.core.Log;
 
 /**
@@ -25,6 +27,7 @@ import net.m4e.system.core.Log;
  * @author boto
  * Date of creation Sep 15, 2017
  */
+@ApplicationScoped
 public class DocumentPool {
 
     /**
@@ -32,15 +35,25 @@ public class DocumentPool {
      */
     private final static String TAG = "DocumentPool";
 
-    private final EntityManager entityManager;
+    private final Entities entities;
+
+
+    /**
+     * Default constructor needed by the container.
+     */
+    protected DocumentPool() {
+        entities = null;
+    }
 
     /**
      * Create an instance of document pool.
      * 
-     * @param entityManager    Entity manager
+     * @param provider    Entity manager provider
+     * @param entities    The Entities instance
      */
-    public DocumentPool(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public DocumentPool(EntityManagerProvider provider, Entities entities) {
+        this.entities = entities;
     }
 
     /**
@@ -79,8 +92,7 @@ public class DocumentPool {
             return false;
         }
         document.getStatus().decreaseRefCount();
-        Entities eutils = new Entities(entityManager);
-        eutils.updateEntity(document);
+        entities.update(document);
         return true;
     }
 
@@ -122,7 +134,6 @@ public class DocumentPool {
      * @return          The document instance, or null if it could not be created in database.
      */
     private DocumentEntity createDocument() {
-        Entities eutils = new Entities(entityManager);
         DocumentEntity document = new DocumentEntity();
         document.updateETag();
         StatusEntity status = new StatusEntity();
@@ -130,7 +141,7 @@ public class DocumentPool {
         status.setDateLastUpdate((new Date()).getTime());
         status.setReferenceCount(1L);
         document.setStatus(status);
-        eutils.createEntity(document);
+        entities.create(document);
         return document;
     }
 
@@ -144,14 +155,13 @@ public class DocumentPool {
      * @return              A document entity or null if no document with given etag was found.
      */
     private DocumentEntity findPoolDocument(String etag) {
-        Entities eutils = new Entities(entityManager);
-        List<DocumentEntity> documents = eutils.findEntityByField(DocumentEntity.class, "eTag", etag);
+        List<DocumentEntity> documents = entities.findByField(DocumentEntity.class, "eTag", etag);
         for (DocumentEntity doc: documents) {
             if ((doc.getStatus() != null) && doc.getStatus().getIsActive() && Objects.equals(doc.getETag(), etag)) {
                 // update the document reference count
                 doc.getStatus().increaseRefCount();
                 doc.getStatus().setDateLastUpdate((new Date()).getTime());
-                eutils.updateEntity(doc);
+                entities.update(doc);
                 return doc;
             }
         }

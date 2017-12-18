@@ -18,8 +18,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.json.JsonObject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.communication.Packet;
 import net.m4e.app.event.EventEntity;
@@ -43,17 +41,31 @@ public class ChatSystem {
      */
     private final static String TAG = "ChatSystem";
 
+    private final Events events;
+
     /**
      * Central place to hold all client connections
      */
     @Inject
     ConnectedClients connections;
 
+    
     /**
-     * Entity manager needed for entity retrieval and modifications.
+     * EJB's default constructor
      */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
+    protected ChatSystem() {
+        events = null;
+    }
+
+    /**
+     * Construct the chat system.
+     * 
+     * @param events The Events instance
+     */
+    @Inject
+    public ChatSystem(Events events) {
+        this.events = events;
+    }
 
     /**
      * Called on post-construction of the instance.
@@ -107,7 +119,6 @@ public class ChatSystem {
      * @param packet        Chat packet to send
      */
     private void sendMessageEvent(UserEntity sender, Long receiverId, Packet packet) {
-        Events events = new Events(entityManager);
         Set<Long> receiverids = events.getMembers(receiverId);
         EventEntity event = events.findEvent(receiverId);
         if ((event == null) || !events.getUserIsEventOwnerOrMember(sender, event)) {

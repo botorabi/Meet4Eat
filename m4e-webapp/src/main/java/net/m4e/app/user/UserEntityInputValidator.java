@@ -9,9 +9,11 @@
 package net.m4e.app.user;
 
 import java.util.List;
-import javax.persistence.EntityManager;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.common.Strings;
+
 
 /**
  * This class validates user entity related inputs from a client.
@@ -19,6 +21,7 @@ import net.m4e.common.Strings;
  * @author boto
  * Date of creation Sep 8, 2017
  */
+@ApplicationScoped
 public class UserEntityInputValidator {
 
     /* Min/max string length for user input fields */
@@ -31,15 +34,24 @@ public class UserEntityInputValidator {
     private final int USER_INPUT_MIN_LEN_EMAIL  = 3;
     private final int USER_INPUT_MAX_LEN_EMAIL  = 128;
 
-    private final EntityManager entityManager;
+    private final Users users;
+
+
+    /**
+     * Default constructor needed by the container.
+     */
+    protected UserEntityInputValidator() {
+        users = null;
+    }
 
     /**
      * Create an instance of input validator.
      * 
-     * @param entityManager    Entity manager
+     * @param users The users instance
      */
-    public UserEntityInputValidator(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public UserEntityInputValidator(Users users) {
+        this.users = users;
     }
 
     /**
@@ -51,7 +63,6 @@ public class UserEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public UserEntity validateNewEntityInput(String userJson) throws Exception {
-        Users users = new Users(entityManager);
         UserEntity reqentity = users.importUserJSON(userJson);
         if (reqentity == null) {
             throw new Exception("Failed to create user, invalid input.");
@@ -111,7 +122,6 @@ public class UserEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public UserEntity validateUpdateEntityInput(String userJson) throws Exception {
-        Users      users = new Users(entityManager);
         UserEntity reqentity = users.importUserJSON(userJson);
         if (reqentity == null) {
             throw new Exception("Failed to update user, invalid input.");

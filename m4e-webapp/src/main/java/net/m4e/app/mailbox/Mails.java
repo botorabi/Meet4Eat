@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -23,6 +25,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import net.m4e.common.Entities;
+import net.m4e.common.EntityManagerProvider;
 import net.m4e.system.core.Log;
 
 /**
@@ -31,6 +34,7 @@ import net.m4e.system.core.Log;
  * @author boto
  * Date of creation Oct 31, 2017
  */
+@ApplicationScoped
 public class Mails {
 
     /**
@@ -40,13 +44,27 @@ public class Mails {
 
     private final EntityManager entityManager;
 
+    private final Entities entities;
+
+
+    /**
+     * Default constructor needed by the container.
+     */
+    protected Mails() {
+        entityManager = null;
+        entities = null;
+    }
+
     /**
      * Create an instance of mailbox utilities.
      * 
-     * @param entityManager    Entity manager
+     * @param provider  The entity manager provider
+     * @param entities  Entities instance
      */
-    public Mails(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public Mails(EntityManagerProvider provider, Entities entities) {
+        this.entityManager = provider.getEntityManager();
+        this.entities = entities;
     }
 
     /**
@@ -56,8 +74,7 @@ public class Mails {
      * @throws Exception    Throws exception if any problem occurred.
      */
     public void createMail(MailEntity mail) throws Exception {
-        Entities entities = new Entities(entityManager);
-        entities.createEntity(mail);
+        entities.create(mail);
         createMailUser(entities, mail.getId(), mail.getSenderId());
         // sometimes ppl send mails to themselves, catch that
         if (!Objects.equals(mail.getSenderId(), mail.getReceiverId())) {
@@ -103,7 +120,7 @@ public class Mails {
         mailuser.setUserId(userId);
         mailuser.setTrashDate(0L);
         mailuser.setUnread(true);
-        entities.createEntity(mailuser);        
+        entities.create(mailuser);        
     }
 
     /**
@@ -201,8 +218,7 @@ public class Mails {
             throw new Exception("Mail was not trashed.");
         }
         mailuser.setTrashDate(trash ? (new Date()).getTime() : 0L);
-        Entities entities = new Entities(entityManager);
-        entities.updateEntity(mailuser);
+        entities.update(mailuser);
     }
 
     /**
@@ -219,8 +235,7 @@ public class Mails {
             throw new Exception("Mail does not exist.");
         }
         mailuser.setUnread(unread);
-        Entities entities = new Entities(entityManager);
-        entities.updateEntity(mailuser);
+        entities.update(mailuser);
     }
 
     /**

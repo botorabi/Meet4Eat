@@ -10,8 +10,10 @@ package net.m4e.system.core;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import net.m4e.common.Entities;
+import net.m4e.common.EntityManagerProvider;
 
 /**
  * This class cares about application updates. Whenever a new app version
@@ -34,20 +36,30 @@ public class AppUpdateManager {
     /**
      * Entity manager is used for accessing the database.
      */
-    private final EntityManager    entityManager;
+    private final EntityManager entityManager;
+
+    private final Entities entities;
+
+    private final  AppInfos appInfos;
 
     /**
      * List of all available update instances. See also class AppUpdateRegistry.
      */
     private final List<AppUdateBaseHandler> updateRegistry = new ArrayList();
 
+
     /**
      * Construct the update manager.
      * 
-     * @param entityManager   Entity manager
+     * @param provider
+     * @param entities
+     * @param appInfos
      */
-    public AppUpdateManager(EntityManager entityManager) {
-        this.entityManager   = entityManager;
+    @Inject
+    public AppUpdateManager(EntityManagerProvider provider, Entities entities, AppInfos appInfos) {
+        this.entityManager = provider.getEntityManager();
+        this.entities = entities;
+        this.appInfos = appInfos;
     }
 
     /**
@@ -74,8 +86,7 @@ public class AppUpdateManager {
         // sort all updates considering their incremental numbers
         sortUpdateRegistry();
 
-        Entities eutils = new Entities(entityManager);
-        List<AppInfoEntity> res = eutils.findAllEntities(AppInfoEntity.class);
+        List<AppInfoEntity> res = entities.findAll(AppInfoEntity.class);
         // check if there is already an app info entry in database
         if (res.size() > 0) {
             if (res.size() > 1) {
@@ -125,10 +136,8 @@ public class AppUpdateManager {
         AppInfoEntity info = new AppInfoEntity();
         info.setVersion(appVersion);
         info.setDataLastUpdate((new Date().getTime()));
-        AppInfos autils = new AppInfos(entityManager);
-        Entities eutils = new Entities(entityManager);
         try {
-            eutils.createEntity(info);
+            entities.create(info);
         }
         catch (Exception ex) {
             Log.error(TAG, "*** Problem occured while creating app information in database, reason: " + ex.getLocalizedMessage());
@@ -144,8 +153,7 @@ public class AppUpdateManager {
     private void updateAppVersionEntry(AppInfoEntity info, String appVersion) {
         info.setVersion(appVersion);
         info.setDataLastUpdate((new Date().getTime()));
-        AppInfos autils = new AppInfos(entityManager);
-        autils.updateAppInfoEntity(info);
+        appInfos.updateAppInfoEntity(info);
     }
 
     /**
@@ -181,7 +189,7 @@ public class AppUpdateManager {
         for (int i = indexcurrent; i <= indexnew; i++) {
             Log.info(TAG, "  Start updating to version " + updateRegistry.get(i).getAppVersion());
             try {
-                updateRegistry.get(i).performUpdate(entityManager);
+                updateRegistry.get(i).performUpdate(entityManager, entities);
                 Log.info(TAG, "  Successfully updated to version " + updateRegistry.get(i).getAppVersion());
             }
             catch (Exception ex) {
@@ -206,7 +214,7 @@ public class AppUpdateManager {
             return false;
         }
         try {
-            updater.performUpdate(entityManager);
+            updater.performUpdate(entityManager, entities);
             Log.info(TAG, "  Successfully updated to initial version " + updater.getAppVersion());
         }
         catch (Exception ex) {

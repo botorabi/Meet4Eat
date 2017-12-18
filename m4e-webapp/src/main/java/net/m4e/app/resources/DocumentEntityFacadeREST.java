@@ -9,19 +9,15 @@
 package net.m4e.app.resources;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
-import net.m4e.common.EntityAccess;
+import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
 
 /**
@@ -32,29 +28,24 @@ import net.m4e.common.ResponseResults;
  */
 @Stateless
 @Path("/rest/docs")
-public class DocumentEntityFacadeREST extends EntityAccess<DocumentEntity> {
+public class DocumentEntityFacadeREST {
+
+    private final Entities entities;
 
     /**
-     * Entity manager needed for entity retrieval and modifications.
+     * EJB's default constructor
      */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
-
-    /**
-     * Create the Document entity REST facade.
-     */
-    public DocumentEntityFacadeREST() {
-        super(DocumentEntity.class);
+    protected DocumentEntityFacadeREST() {
+        entities = null;
     }
 
     /**
-     * Get the entity manager.
-     * 
-     * @return   Entity manager
+     * Create the Document entity REST facade.
+     * @param entities
      */
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
+    @Inject
+    public DocumentEntityFacadeREST(Entities entities) {
+        this.entities = entities;
     }
 
     /**
@@ -71,7 +62,7 @@ public class DocumentEntityFacadeREST extends EntityAccess<DocumentEntity> {
     public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("id", id.toString());
-        DocumentEntity document = super.find(id);
+        DocumentEntity document = entities.find(DocumentEntity.class, id);
         if ((document == null) || !document.getStatus().getIsActive()) {
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }

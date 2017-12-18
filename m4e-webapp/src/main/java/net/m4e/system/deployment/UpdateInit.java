@@ -42,7 +42,7 @@ public class UpdateInit extends AppUdateBaseHandler {
     /**
      * Make sure to increment this number for every new update class.
      */
-    private static final int    INC_NUMBER = 0;
+    private static final int INC_NUMBER = 0;
 
     /**
      * Application version this update belongs to
@@ -61,45 +61,44 @@ public class UpdateInit extends AppUdateBaseHandler {
      * Perform the update.
      * 
      * @param entityManager   For the case that any entity structure manipulation is needed
+     * @param entities        Entities instance used for common entity operations
      * @throws Exception This exception is thrown if something went wrong.
      */
     @Override
-    public void performUpdate(EntityManager entityManager) throws Exception {
+    public void performUpdate(EntityManager entityManager, Entities entities) throws Exception {
         Log.debug(TAG, "Initial deployment setup, version: " + appVersion + " (" + incUpdateNumber + ")");
 
-        setupPermissions(entityManager);
-        setupRoles(entityManager);
-        setupAdminUser(entityManager);
+        setupPermissions(entities);
+        setupRoles(entities);
+        setupAdminUser(entities);
     }
 
     /**
      * Setup all permissions.
      * 
-     * @param entityManager     Entity manager
+     * @param entities  The Entities instance
      */
-    private void setupPermissions(EntityManager entityManager) {
-        Entities eutils = new Entities(entityManager);
+    private void setupPermissions(Entities entities) {
         Log.debug(TAG, "  Setup permissions in database");
         for (String permname: AuthorityConfig.getInstance().getDefaultPermissions()) {
             // check if the permission already exists in database (should actually not happen)
-            if (eutils.findEntityByField(PermissionEntity.class, "name", permname).size() > 0) {
+            if (entities.findByField(PermissionEntity.class, "name", permname).size() > 0) {
                 Log.debug(TAG, "  Permission " + permname + " already exists, skip its creation");
                 continue;
             }
             Log.debug(TAG, "  Create permission: " + permname);
             PermissionEntity pe = new PermissionEntity();
             pe.setName(permname);
-            eutils.createEntity(pe);
+            entities.create(pe);
         }        
     }
 
     /**
      * Setup all roles.
      * 
-     * @param entityManager     Entity manager
+     * @param entities  The Entities instance
      */
-    private void setupRoles(EntityManager entityManager) {
-        Entities eutils = new Entities(entityManager);
+    private void setupRoles(Entities entities) {
         Log.debug(TAG, "  Setup roles in database");
 
         for (Map.Entry<String, List<String>> role: AuthorityConfig.getInstance().getDefaultRoles().entrySet()) {
@@ -107,20 +106,20 @@ public class UpdateInit extends AppUdateBaseHandler {
             String       rolename = role.getKey();
             List<String> perms    = role.getValue();
             // check if the role already exists in database (should actually not happen)
-            if (eutils.findEntityByField(RoleEntity.class, "name", rolename).size() > 0) {
+            if (entities.findByField(RoleEntity.class, "name", rolename).size() > 0) {
                 Log.debug(TAG, "  Role " + rolename + " already exists, skip its creation");
                 continue;
             }
             Log.debug(TAG, "  Create role: " + rolename);
             RoleEntity roleentity = new RoleEntity();
             roleentity.setName(rolename);
-            eutils.createEntity(roleentity);
+            entities.create(roleentity);
 
             // set all associated permissions
             List<PermissionEntity> permentities = new ArrayList<>();
             for (String perm: perms) {
                 // find the permission by its name
-                List<PermissionEntity> pe = eutils.findEntityByField(PermissionEntity.class, "name", perm);
+                List<PermissionEntity> pe = entities.findByField(PermissionEntity.class, "name", perm);
                 if (pe.size() > 1) {
                     Log.warning(TAG, "*** More than one permisson entry found '" + perm + "' for role '" + rolename + "', taking the first one");
                 }
@@ -138,24 +137,23 @@ public class UpdateInit extends AppUdateBaseHandler {
 
             // update the role entity with assigned permissions
             roleentity.setPermissions(permentities);
-            eutils.updateEntity(roleentity);
+            entities.update(roleentity);
         }        
     }
 
     /**
      * Setup a user with administrator rights.
      * 
-     * @param entityManager     Entity manager
+     * @param entities  The Entities instance
      */
-    private void setupAdminUser(EntityManager entityManager) {
-        Entities eutils = new Entities(entityManager);
+    private void setupAdminUser(Entities entities) {
         Log.debug(TAG, "  Create user: admin");
         UserEntity user = new UserEntity();
         user.setName("Administrator");
         user.setLogin("admin");
         user.setEmail("dummy AT mail.com");
         user.setPassword(AuthorityConfig.getInstance().createPassword("admin"));
-        eutils.createEntity(user);
+        entities.create(user);
 
         // setup the entity status
         StatusEntity status = new StatusEntity();
@@ -167,14 +165,14 @@ public class UpdateInit extends AppUdateBaseHandler {
         user.setStatus(status);
 
         // setup the roles
-        List<RoleEntity> roles = eutils.findEntityByField(RoleEntity.class, "name", AuthRole.USER_ROLE_ADMIN);
+        List<RoleEntity> roles = entities.findByField(RoleEntity.class, "name", AuthRole.USER_ROLE_ADMIN);
         if (roles.size() < 1) {
             Log.error(TAG, "*** Counld not find role '" + AuthRole.USER_ROLE_ADMIN + "' for admin user");
             return;
         }
         user.setRoles(Arrays.asList(roles.get(0)));
 
-        eutils.updateEntity(user);
+        entities.update(user);
         Log.debug(TAG, "   User 'admin' was successfully created.");
     }
 }

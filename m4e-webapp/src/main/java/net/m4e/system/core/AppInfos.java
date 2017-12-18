@@ -8,7 +8,8 @@
 package net.m4e.system.core;
 
 import java.util.List;
-import javax.persistence.EntityManager;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import net.m4e.common.Entities;
 
 /**
@@ -17,6 +18,7 @@ import net.m4e.common.Entities;
  * @author boto
  * Date of creation Aug 22, 2017
  */
+@ApplicationScoped
 public class AppInfos {
 
     /**
@@ -24,15 +26,24 @@ public class AppInfos {
      */
     private final static String TAG = "AppInfos";
 
-    private final EntityManager entityManager;
+    private final Entities entities;
+
 
     /**
-     * Create the instance for given entity manager.
-     * 
-     * @param entityManager   Entity manager
+     * Default constructor needed by the container.
      */
-    public AppInfos(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    protected AppInfos() {
+        entities = null;
+    }
+
+    /**
+     * Create an AppInfos instance.
+     * 
+     * @param entities  Entities instance
+     */
+    @Inject
+    public AppInfos(Entities entities) {
+        this.entities = entities;
     }
 
     /**
@@ -44,8 +55,7 @@ public class AppInfos {
         //! TODO to speed up the access to this single entity we may consider a global scoped bean or 
         //        at least a session bean or something similar!
 
-        Entities eutils = new Entities(entityManager);
-        List<AppInfoEntity> infos = eutils.findAllEntities(AppInfoEntity.class);
+        List<AppInfoEntity> infos = entities.findAll(AppInfoEntity.class);
         if (infos.size() != 1) {
             Log.error(TAG, "*** Unexpected count of app info entity detected: " + infos.size());
             return null;
@@ -59,9 +69,8 @@ public class AppInfos {
      * @param info App info entity
      */
     public void updateAppInfoEntity(AppInfoEntity info) {
-        Entities eutils = new Entities(entityManager);
         try {
-            eutils.updateEntity(info);
+            entities.update(info);
         }
         catch (Exception ex) {
             Log.error(TAG, "*** Problem occured while updating app information in database, reason: " + ex.getMessage());

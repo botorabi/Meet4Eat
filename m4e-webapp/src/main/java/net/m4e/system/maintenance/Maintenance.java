@@ -13,9 +13,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
 import net.m4e.app.event.Events;
@@ -24,6 +25,7 @@ import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.UserRegistrations;
 import net.m4e.app.user.Users;
 import net.m4e.common.Entities;
+import net.m4e.common.EntityManagerProvider;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
@@ -35,6 +37,7 @@ import net.m4e.system.core.Log;
  * @author boto
  * Date of creation Sep 8, 2017
  */
+@ApplicationScoped
 public class Maintenance {
 
     /**
@@ -42,15 +45,55 @@ public class Maintenance {
      */
     private final static String TAG = "Maintenance";
 
-    private final EntityManager entityManager;
+    private final UserRegistrations userRegistration;
+
+    private final AppInfos appInfos;
+
+    private final Users users;
+
+    private final Events events;
+
+    private final Entities entities;
+
+    private final DocumentPool docPool;
+
 
     /**
-     * Create the instance for given entity manager.
-     * 
-     * @param entityManager   Entity manager
+     * Default constructor needed by the container.
      */
-    public Maintenance(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    protected Maintenance() {
+        appInfos = null;
+        userRegistration = null;
+        users = null;
+        events = null;
+        entities = null;
+        docPool = null;
+    }
+
+    /**
+     * Create the maintenance instance.
+     * 
+     * @param appInfos      The ppplication information instance
+     * @param registration  The user registration instance
+     * @param users         The Users instance
+     * @param events        The Events instance
+     * @param entities      The Entities instance
+     * @param docPool       The document pool instance
+     */
+    @Inject
+    public Maintenance(AppInfos appInfos,
+                       UserRegistrations registration,
+                       Users users,
+                       Events events,
+                       Entities entities,
+                       DocumentPool docPool) {
+
+        this.appInfos = appInfos;
+        this.userRegistration = registration;
+        this.users = users;
+        this.events = events;
+        this.entities = entities;
+        this.docPool = docPool;
     }
 
     /**
@@ -60,9 +103,8 @@ public class Maintenance {
      * @return          A JSON object containing builder the proper entity fields
      */
     public JsonObjectBuilder exportInfoJSON(AppInfoEntity entity) {
-        UserRegistrations regs = new UserRegistrations(entityManager);
-        int pendingaccounts = regs.getCountPendingAccountActivations();
-        int pendingpwresets = regs.getCountPendingPasswordResets();
+        int pendingaccounts = userRegistration.getCountPendingAccountActivations();
+        int pendingpwresets = userRegistration.getCountPendingPasswordResets();
 
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("version", entity.getVersion())
@@ -83,8 +125,7 @@ public class Maintenance {
      * @return Count of purged resources
      */
     public int purgeExpiredResources() {
-        UserRegistrations regutils = new UserRegistrations(entityManager);
-        return regutils.purgeExpiredRequests();
+        return userRegistration.purgeExpiredRequests();
     }
 
     /**
@@ -106,22 +147,16 @@ public class Maintenance {
      * @return Count of purged resources
      */
     private int purgeDeletedResources() {
-        Users        userutils   = new Users(entityManager);
-        Events       eventutils  = new Events(entityManager);
-        Entities     entityutils = new Entities(entityManager);
-        DocumentPool imagepool   = new DocumentPool(entityManager);
-
         int countpurges = 0;
-
-        List<UserEntity>  users  = userutils.getMarkedAsDeletedUsers();
-        List<EventEntity> events = entityutils.findAllEntities(EventEntity.class);
+        List<UserEntity>  theusers = users.getMarkedAsDeletedUsers();
+        List<EventEntity> theevents = entities.findAll(EventEntity.class);
 
         // first purge dead events and make sure that dead users are removed from remaining events
-        for (EventEntity event: events) {
+        for (EventEntity event: theevents) {
             try {
                 if (event.getStatus().getIsDeleted()) {
                     if (event.getPhoto() != null) {
-                        imagepool.releasePoolDocument(event.getPhoto());
+                        docPool.releasePoolDocument(event.getPhoto());
                     }
                     Collection<EventLocationEntity> locs = event.getLocations();
                     if (locs != null) {
@@ -129,15 +164,15 @@ public class Maintenance {
                         locs.stream()
                             .filter((loc) -> (loc.getPhoto() != null))
                             .forEachOrdered((loc) -> {
-                                imagepool.releasePoolDocument(loc.getPhoto());
+                                docPool.releasePoolDocument(loc.getPhoto());
                             });
                     }
-                    eventutils.deleteEvent(event);
+                    events.deleteEvent(event);
                     countpurges++;
                 }
                 else {
                     // remove dead members
-                    eventutils.removeAnyMember(event, users);
+                    events.removeAnyMember(event, theusers);
                     // purge deleted event locations
                     Collection<EventLocationEntity> locs = event.getLocations();
                     if (locs != null) {
@@ -145,10 +180,10 @@ public class Maintenance {
                         List<EventLocationEntity> deadlocs = locs.stream().filter(pred).collect(Collectors.toList());
                         // update event's location list
                         locs.removeAll(deadlocs);
-                        entityutils.updateEntity(event);
+                        entities.update(event);
                         // delete the locations
                         for (EventLocationEntity loc: deadlocs) {
-                            entityutils.deleteEntity(loc);
+                            entities.delete(loc);
                         }
                         countpurges += deadlocs.size();
                     }
@@ -160,12 +195,12 @@ public class Maintenance {
             }
         }
         // now remove all dead users
-        for (UserEntity user: users) {
+        for (UserEntity user: theusers) {
             try {
                 if (user.getPhoto() != null) {
-                    imagepool.releasePoolDocument(user.getPhoto());
+                    docPool.releasePoolDocument(user.getPhoto());
                 }
-                userutils.deleteUser(user);
+                users.deleteUser(user);
                 countpurges++;
             }
             catch(Exception ex) {
@@ -182,24 +217,21 @@ public class Maintenance {
      */
     public void updateAppInfo() {
         // update app info
-        AppInfos autils = new AppInfos(entityManager);
-        AppInfoEntity info = autils.getAppInfoEntity();
+        AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {
             Log.warning(TAG, "Could not update app info");
             return;
         }
 
         // update the purge counters
-        Users   userutils      = new Users(entityManager);
-        Events  eventutils     = new Events(entityManager);
-        int     purgeusers     = userutils.getMarkedAsDeletedUsers().size();
-        int     purgeevents    = eventutils.getMarkedAsDeletedEvents().size();
-        int     purgeeventlocs = eventutils.getMarkedAsDeletedEventLocations().size();
+        int     purgeusers     = users.getMarkedAsDeletedUsers().size();
+        int     purgeevents    = events.getMarkedAsDeletedEvents().size();
+        int     purgeeventlocs = events.getMarkedAsDeletedEventLocations().size();
 
         info.setEventCountPurge(new Long(purgeevents));
         info.setEventLocationCountPurge(new Long(purgeeventlocs));
         info.setUserCountPurge(new Long(purgeusers));
         info.setDateLastMaintenance((new Date().getTime()));
-        autils.updateAppInfoEntity(info);
+        appInfos.updateAppInfoEntity(info);
     }
 }

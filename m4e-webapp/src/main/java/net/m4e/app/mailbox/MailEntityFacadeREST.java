@@ -9,24 +9,14 @@
 package net.m4e.app.mailbox;
 
 import java.io.StringReader;
-import java.math.BigDecimal;
 import javax.ejb.Stateless;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.inject.Inject;
+import javax.json.*;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.servlet.http.HttpServletRequest;
+
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.user.UserEntity;
@@ -41,24 +31,29 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/mails")
-public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity> {
+public class MailEntityFacadeREST {
 
     /**
      * Used for logging
      */
     private final static String TAG = "MailEntityFacadeREST";
 
-    /**
-     * Entity manager needed for entity retrieval and modifications.
-     */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
+    private final MailEntityInputValidator validator;
+
+    private final Mails mails;
 
     /**
-     * Construct the stateless bean.
+     * EJB's default constructor.
      */
-    public MailEntityFacadeREST() {
-        super(MailEntity.class);
+    protected MailEntityFacadeREST() {
+        this.validator = null;
+        this.mails = null;
+    }
+
+    @Inject
+    public MailEntityFacadeREST(MailEntityInputValidator validator, Mails mails) {
+        this.validator = validator;
+        this.mails = mails;
     }
 
     /**
@@ -80,7 +75,6 @@ public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve user mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
-        Mails mails = new Mails(entityManager);
         JsonArrayBuilder usermails = mails.exportUserMails(sessionuser, from, to);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User mails were successfully retrieved.", ResponseResults.CODE_OK, usermails.build().toString());
     }
@@ -102,7 +96,6 @@ public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count of mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
-        Mails mails = new Mails(entityManager);
         long total  = mails.getCountTotalMails(sessionuser);
         long unread = mails.getCountUnreadMails(sessionuser);
         JsonObjectBuilder resp = Json.createObjectBuilder();
@@ -128,7 +121,6 @@ public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count of unread mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
-        Mails mails = new Mails(entityManager);
         long unread = mails.getCountUnreadMails(sessionuser);
         JsonObjectBuilder resp = Json.createObjectBuilder();
         resp.add("unreadMails", unread);
@@ -156,7 +148,6 @@ public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity
 
         MailEntity mail;
         try {
-            MailEntityInputValidator validator = new MailEntityInputValidator(entityManager);
             mail = validator.validateNewEntityInput(mailJson);
         }
         catch (Exception ex) {
@@ -168,7 +159,6 @@ public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity
 
         mail.setSenderId(sessionuser.getId());
         mail.setSenderName(sessionuser.getName());
-        Mails mails = new Mails(entityManager);
         try {
             mails.createMail(mail);
         }
@@ -212,7 +202,6 @@ public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity
 
         String op;
         try {
-            Mails mails = new Mails(entityManager);
             JsonReader jreader = Json.createReader(new StringReader(operationJson));
             JsonObject jobject = jreader.readObject();
             op = jobject.getString("operation", null);
@@ -225,15 +214,5 @@ public class MailEntityFacadeREST extends net.m4e.common.EntityAccess<MailEntity
 
         resp = resp.add("operation", op);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User mails were successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
-    }
-
-    /**
-     * Get the entity manager.
-     * 
-     * @return Entity manager
-     */
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
     }
 }

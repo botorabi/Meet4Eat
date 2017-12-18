@@ -9,6 +9,7 @@ package net.m4e.system.core;
 
 import java.io.InputStream;
 import javax.annotation.Resource;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
@@ -35,11 +36,20 @@ public class ContextListener implements ServletContextListener {
      */
     private final static String TAG = "ContextListener";
 
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
+    private final AppUpdateManager updateManager;
 
     @Resource
     private UserTransaction userTransaction;
+
+    /**
+     * Create the context listener
+     * 
+     * @param updateManager The update manager
+     */
+    @Inject
+    public ContextListener(AppUpdateManager updateManager) {
+        this.updateManager = updateManager;
+    }
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -50,13 +60,12 @@ public class ContextListener implements ServletContextListener {
         setupConfiguration(ctx);
 
         // handle a possible deployment update
-        AppUpdateManager um = new AppUpdateManager(entityManager);
         Throwable problem = null;
         try {
             String appversion = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_APP_VERSION);
             // embed the update tasks in user transaction
             userTransaction.begin();
-            um.checkForUpdate(appversion);
+            updateManager.checkForUpdate(appversion);
             userTransaction.commit();
         }
         catch(NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {

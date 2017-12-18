@@ -11,24 +11,15 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.json.*;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.app.user.UserEntity;
-import net.m4e.common.EntityAccess;
 import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.Log;
@@ -41,7 +32,7 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 @Path("/rest/locationvoting")
-public class EventLocationVoteEntityFacadeREST extends EntityAccess<EventLocationVoteEntity> {
+public class EventLocationVoteEntityFacadeREST {
 
     /**
      * Used for logging
@@ -49,22 +40,39 @@ public class EventLocationVoteEntityFacadeREST extends EntityAccess<EventLocatio
     private final static String TAG = "EventLocationVoteEntityFacadeREST";
 
     /**
-     * Entity manager needed for entity retrieval and modifications.
-     */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
-
-    /**
      * Event used for notifying other users
      */
     @Inject
-    Event<NotifyUsersEvent> notifyUsersEvent;
+    private Event<NotifyUsersEvent> notifyUsersEvent;
+
+    private final Events events;
+
+    private final Entities entities;
+
+    private final EventLocations eventLocations;
+
+
+    /**
+     * EJB's default constructor
+     */
+    protected EventLocationVoteEntityFacadeREST() {
+        events = null;
+        entities = null;
+        eventLocations = null;
+    }
 
     /**
      * Create the REST facade.
+     * 
+     * @param events
+     * @param entities
+     * @param eventLocations
      */
-    public EventLocationVoteEntityFacadeREST() {
-        super(EventLocationVoteEntity.class);
+    @Inject
+    public EventLocationVoteEntityFacadeREST(Events events, Entities entities, EventLocations eventLocations) {
+        this.events = events;
+        this.entities = entities;
+        this.eventLocations = eventLocations;
     }
 
     /**
@@ -88,13 +96,11 @@ public class EventLocationVoteEntityFacadeREST extends EntityAccess<EventLocatio
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
-        Entities entities = new Entities(entityManager);
-        EventEntity event = entities.findEntity(EventEntity.class, eventId);
+        EventEntity event = entities.find(EventEntity.class, eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
             Log.warning(TAG, "*** Cannot update event location vote, event does not exit!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, invalid event.", ResponseResults.CODE_BAD_REQUEST, null);
         }
-        Events events = new Events(entityManager);
         if (!events.getUserIsEventOwnerOrMember(sessionuser, event)) {
             Log.warning(TAG, "*** Cannot update event location vote, user is no member of event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, you are not a member of event.", ResponseResults.CODE_UNAUTHORIZED, null);
@@ -105,8 +111,7 @@ public class EventLocationVoteEntityFacadeREST extends EntityAccess<EventLocatio
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, invalid event location.", ResponseResults.CODE_BAD_REQUEST, null);
         }
 
-        EventLocations eventlocs = new EventLocations(entityManager);
-        EventLocationVoteEntity voteentity = eventlocs.createOrUpdateVote(sessionuser, event, loc, (vote > 0));
+        EventLocationVoteEntity voteentity = eventLocations.createOrUpdateVote(sessionuser, event, loc, (vote > 0));
         if (voteentity == null) {
             Log.warning(TAG, "*** Cannot update event location vote, outside of voting time window!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, invalid voting time window.", ResponseResults.CODE_BAD_REQUEST, null);
@@ -143,21 +148,18 @@ public class EventLocationVoteEntityFacadeREST extends EntityAccess<EventLocatio
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
-        Entities entities = new Entities(entityManager);
-        EventEntity event = entities.findEntity(EventEntity.class, eventId);
+        EventEntity event = entities.find(EventEntity.class, eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
             Log.warning(TAG, "*** Cannot get event location votes, event does not exit!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, invalid event.", ResponseResults.CODE_BAD_REQUEST, null);
         }
-        Events events = new Events(entityManager);
         if (!events.getUserIsEventOwnerOrMember(sessionuser, event)) {
             Log.warning(TAG, "*** Cannot get event location votes, user is no member of event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, you are not a member of event.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
-        EventLocations eventlocs = new EventLocations(entityManager);
-        List<EventLocationVoteEntity> votes = eventlocs.getVotes(event, timeBegin, timeEnd);
-        JsonArrayBuilder jsonresponse = eventlocs.exportLocationVotesJSON(votes);
+        List<EventLocationVoteEntity> votes = eventLocations.getVotes(event, timeBegin, timeEnd);
+        JsonArrayBuilder jsonresponse = eventLocations.exportLocationVotesJSON(votes);
 
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event location votes were successfully exported.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
@@ -180,26 +182,14 @@ public class EventLocationVoteEntityFacadeREST extends EntityAccess<EventLocatio
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
-        Entities entities = new Entities(entityManager);
-        EventLocationVoteEntity locationvotes = entities.findEntity(EventLocationVoteEntity.class, votesId);
+        EventLocationVoteEntity locationvotes = entities.find(EventLocationVoteEntity.class, votesId);
         if (locationvotes == null) {
             Log.warning(TAG, "*** Cannot get event location votes, invalid ID!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, invalid ID.", ResponseResults.CODE_BAD_REQUEST, null);
         }
 
-        EventLocations eventlocs = new EventLocations(entityManager);
-        JsonObjectBuilder jsonresponse = eventlocs.exportLocationVotesJSON(locationvotes);
+        JsonObjectBuilder jsonresponse = eventLocations.exportLocationVotesJSON(locationvotes);
 
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event location votes were successfully exported.", ResponseResults.CODE_OK, jsonresponse.build().toString());
-    }
-
-    /**
-     * Get the entity manager.
-     * 
-     * @return   Entity manager
-     */
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
     }
 }

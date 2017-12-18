@@ -10,7 +10,8 @@ package net.m4e.app.event;
 
 import java.util.Collection;
 import java.util.Objects;
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
+import javax.enterprise.context.ApplicationScoped;
 import net.m4e.common.Strings;
 
 /**
@@ -19,6 +20,7 @@ import net.m4e.common.Strings;
  * @author boto
  * Date of creation Sep 13, 2017
  */
+@ApplicationScoped
 public class EventEntityInputValidator {
 
     /* Min/max string length for user input fields */
@@ -27,15 +29,29 @@ public class EventEntityInputValidator {
     private final int EVENT_INPUT_MIN_LEN_DESC  = 0;
     private final int EVENT_INPUT_MAX_LEN_DESC  = 1000;
 
-    private final EntityManager entityManager;
+    private final Events events;
+
+    private final EventLocations  eventLocations;
+
+
+    /**
+     * Default constructor needed by container.
+     */
+    protected EventEntityInputValidator() {
+        this.events = null;
+        this.eventLocations = null;
+    }
 
     /**
      * Create an instance of input validator.
      * 
-     * @param entityManager    Entity manager
+     * @param events            Events instance
+     * @param eventLocations    Event locations instance
      */
-    public EventEntityInputValidator(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @Inject
+    public EventEntityInputValidator(Events events, EventLocations eventLocations) {
+        this.events = events;
+        this.eventLocations = eventLocations;
     }
 
    /**
@@ -47,8 +63,7 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventEntity validateNewEntityInput(String eventJson) throws Exception {
-        Events eventutils = new Events(entityManager);
-        EventEntity entity = eventutils.importEventJSON(eventJson);
+        EventEntity entity = events.importEventJSON(eventJson);
         if (entity == null) {
             throw new Exception("Failed to create event, invalid input.");
         }
@@ -73,8 +88,7 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventEntity validateUpdateEntityInput(String userJson) throws Exception {
-        Events  eventutils = new Events(entityManager);
-        EventEntity entity = eventutils.importEventJSON(userJson);
+        EventEntity entity = events.importEventJSON(userJson);
         if (entity == null) {
             throw new Exception("Failed to update event, invalid input.");
         }
@@ -99,8 +113,7 @@ public class EventEntityInputValidator {
      * @throws Exception     Throws an exception if the validation fails.
      */
     public EventLocationEntity validateLocationInput(String locationJson, EventEntity event) throws Exception {
-        EventLocations  locationutils = new EventLocations(entityManager);
-        EventLocationEntity entity = locationutils.importLocationJSON(locationJson);
+        EventLocationEntity entity = eventLocations.importLocationJSON(locationJson);
         if (entity == null) {
             throw new Exception("Failed to validate location input.");
         }

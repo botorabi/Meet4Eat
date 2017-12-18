@@ -20,6 +20,7 @@ import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.communication.Packet;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
+import net.m4e.common.Entities;
 import net.m4e.system.core.Log;
 
 /**
@@ -42,10 +43,27 @@ public class NotifyUsersListener {
     ConnectedClients connections;
 
     /**
-     * Entity manager needed for entity retrieval and modifications.
+     * The users
      */
-    @PersistenceContext(unitName = net.m4e.system.core.AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
+    private final Users users;
+
+
+    /**
+     * EJB's default constructor. Make the container happy.
+     */
+    protected NotifyUsersListener() {
+        this.users = null;  
+    }
+
+    /**
+     * Create the listener.
+     *
+     * @param users     Users instance
+     */
+    @Inject
+    public NotifyUsersListener(Users users) {
+        this.users = users;
+    }
 
     /**
      * Event observer for sending a notification from a user to other users.
@@ -106,7 +124,6 @@ public class NotifyUsersListener {
             return;
         }
 
-        Users users = new Users(entityManager);
         sender = users.findUser(senderid);
         if ((sender == null) || !sender.getStatus().getIsActive()) {
             Log.warning(TAG, "  attempt to send an event with an invalid sender!");
