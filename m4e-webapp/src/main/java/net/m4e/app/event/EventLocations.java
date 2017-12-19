@@ -15,12 +15,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+import javax.json.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import net.m4e.app.resources.DocumentEntity;
@@ -31,12 +28,14 @@ import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
 import net.m4e.system.core.Log;
 
+
 /**
  * A collection of event location related utilities
  *
  * @author boto
  * Date of creation Sep 13, 2017
  */
+@ApplicationScoped
 public class EventLocations {
 
     /**
@@ -44,23 +43,30 @@ public class EventLocations {
      */
     private final static String TAG = "EventLocations";
 
-    private final EntityManager entityManager;
+    @Inject
+    private EntityManager entityManager;
 
     private final Entities entities;
 
     private final AppInfos appInfos;
 
+    
+    /**
+     * Default constructor needed by the container.
+     */
+    protected EventLocations() {
+        entities = null;
+        appInfos = null;
+    }
 
     /**
      * Create an instance of Events.
      * 
-     * @param provider     The entity manager provider
      * @param entities     The Entities instance
      * @param appInfos     The AppInfos instance
      */
     @Inject
-    public EventLocations(EntityManagerProvider provider, Entities entities, AppInfos appInfos) {
-        this.entityManager = provider.getEntityManager();
+    public EventLocations(Entities entities, AppInfos appInfos) {
         this.entities = entities;
         this.appInfos = appInfos;
     }

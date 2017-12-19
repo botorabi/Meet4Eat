@@ -36,7 +36,8 @@ public class AppUpdateManager {
     /**
      * Entity manager is used for accessing the database.
      */
-    private final EntityManager entityManager;
+    @Inject
+    private EntityManager entityManager;
 
     private final Entities entities;
 
@@ -51,13 +52,11 @@ public class AppUpdateManager {
     /**
      * Construct the update manager.
      * 
-     * @param provider
      * @param entities
      * @param appInfos
      */
     @Inject
-    public AppUpdateManager(EntityManagerProvider provider, Entities entities, AppInfos appInfos) {
-        this.entityManager = provider.getEntityManager();
+    public AppUpdateManager(Entities entities, AppInfos appInfos) {
         this.entities = entities;
         this.appInfos = appInfos;
     }

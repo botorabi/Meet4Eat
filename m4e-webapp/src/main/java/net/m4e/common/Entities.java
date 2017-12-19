@@ -36,7 +36,8 @@ public class Entities {
      */
     private final static String TAG = "Entities";
 
-    private final EntityManager entityManager;
+    @Inject
+    private EntityManager entityManager;
 
     private final DocumentPool docPool;
 
@@ -45,19 +46,16 @@ public class Entities {
      * Default constructor needed by the container.
      */
     protected Entities() {
-        entityManager = null;
         docPool = null;
     }
 
     /**
      * Create an Entities instance by injection.
      * 
-     * @param provider  Entity manager provider
      * @param docPool   Document pool
      */
     @Inject
-    public Entities(EntityManagerProvider provider, DocumentPool docPool) {
-        this.entityManager = provider.getEntityManager();
+    public Entities(DocumentPool docPool) {
         this.docPool = docPool;
     }
 

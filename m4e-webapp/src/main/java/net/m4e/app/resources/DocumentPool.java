@@ -48,11 +48,10 @@ public class DocumentPool {
     /**
      * Create an instance of document pool.
      * 
-     * @param provider    Entity manager provider
      * @param entities    The Entities instance
      */
     @Inject
-    public DocumentPool(EntityManagerProvider provider, Entities entities) {
+    public DocumentPool(Entities entities) {
         this.entities = entities;
     }
 

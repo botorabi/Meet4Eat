@@ -26,12 +26,19 @@ public class AppStart extends Application {
 
     /**
      * Injectable Entity-Manager.
-     *
-     * If multiple PersistenceContext are needed, add Qualifier.
      */
-    @Produces
     @PersistenceContext(unitName = AppConfiguration.PERSITENCE_UNIT_NAME)
     private EntityManager entityManager;
+
+    /**
+     * Entity manager producer.
+     * 
+     * @return The entity manager
+     */
+    @Produces
+    public EntityManager getEntityManager() {
+        return entityManager;
+    }
 
     @Override
     public Set<Class<?>> getClasses() {

@@ -42,7 +42,8 @@ public class Mails {
      */
     private final static String TAG = "Mails";
 
-    private final EntityManager entityManager;
+    @Inject
+    private EntityManager entityManager;
 
     private final Entities entities;
 
@@ -51,19 +52,16 @@ public class Mails {
      * Default constructor needed by the container.
      */
     protected Mails() {
-        entityManager = null;
         entities = null;
     }
 
     /**
      * Create an instance of mailbox utilities.
      * 
-     * @param provider  The entity manager provider
      * @param entities  Entities instance
      */
     @Inject
-    public Mails(EntityManagerProvider provider, Entities entities) {
-        this.entityManager = provider.getEntityManager();
+    public Mails(Entities entities) {
         this.entities = entities;
     }
 

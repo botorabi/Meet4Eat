@@ -14,7 +14,6 @@ import javax.inject.Inject;
 import javax.json.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import net.m4e.common.EntityManagerProvider;
 import net.m4e.system.core.Log;
 
 
@@ -31,17 +30,14 @@ public class UpdateChecks {
      */
     private final static String TAG = "UpdateChecks";
 
-    private final EntityManager entityManager;
+    @Inject
+    private EntityManager entityManager;
+
 
     /**
      * Create an instance of update checks.
-     * 
-     * @param provider Entity manager provider
      */
-    @Inject
-    public UpdateChecks(EntityManagerProvider provider) {
-        this.entityManager = provider.getEntityManager();
-    }
+    public UpdateChecks() {}
 
     /**
      * Import an update check entity from a JSON description.
