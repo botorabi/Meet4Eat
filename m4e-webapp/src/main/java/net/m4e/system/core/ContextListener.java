@@ -10,8 +10,6 @@ package net.m4e.system.core;
 import java.io.InputStream;
 import javax.annotation.Resource;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;

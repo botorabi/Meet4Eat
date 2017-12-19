@@ -43,8 +43,7 @@ public class EventLocations {
      */
     private final static String TAG = "EventLocations";
 
-    @Inject
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     private final Entities entities;
 
@@ -55,6 +54,7 @@ public class EventLocations {
      * Default constructor needed by the container.
      */
     protected EventLocations() {
+        entityManager = null;
         entities = null;
         appInfos = null;
     }
@@ -62,11 +62,13 @@ public class EventLocations {
     /**
      * Create an instance of Events.
      * 
-     * @param entities     The Entities instance
-     * @param appInfos     The AppInfos instance
+     * @param entityManager The entity manager
+     * @param entities      The Entities instance
+     * @param appInfos      The AppInfos instance
      */
     @Inject
-    public EventLocations(Entities entities, AppInfos appInfos) {
+    public EventLocations(EntityManager entityManager, Entities entities, AppInfos appInfos) {
+        this.entityManager = entityManager;
         this.entities = entities;
         this.appInfos = appInfos;
     }

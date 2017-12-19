@@ -10,8 +10,6 @@ package net.m4e.system.maintenance;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import net.m4e.system.core.Log;
 
 

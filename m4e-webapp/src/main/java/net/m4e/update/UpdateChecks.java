@@ -30,14 +30,18 @@ public class UpdateChecks {
      */
     private final static String TAG = "UpdateChecks";
 
-    @Inject
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
 
     /**
      * Create an instance of update checks.
+     * 
+     * @param entityManager The injected entity manager
      */
-    public UpdateChecks() {}
+    @Inject
+    public UpdateChecks(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     /**
      * Import an update check entity from a JSON description.
