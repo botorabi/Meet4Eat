@@ -14,13 +14,11 @@ import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.communication.Packet;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
-import net.m4e.common.Entities;
 import net.m4e.system.core.Log;
 
 /**

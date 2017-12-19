@@ -8,7 +8,6 @@
 
 package net.m4e.app.mailbox;
 
-import net.m4e.app.user.*;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,8 +23,9 @@ import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import net.m4e.common.Entities;
-import net.m4e.common.EntityManagerProvider;
+
+import net.m4e.app.user.UserEntity;
+import net.m4e.common.*;
 import net.m4e.system.core.Log;
 
 /**

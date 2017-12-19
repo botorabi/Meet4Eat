@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2017 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
- * 
+ *
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
@@ -13,16 +13,15 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.ResponseResults;
 
 /**
  * REST API for getting application information.
- * 
+ *
  * @author boto
  * Date of creation Aug 16, 2017
  */
@@ -51,12 +50,12 @@ public class AppInfoEntityFacadeREST {
 
     /**
      * Get app version information.
-     * 
+     *
      * @return JSON response
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_GUEST})
+    @AuthRole(grantRoles = {AuthRole.VIRT_ROLE_GUEST})
     public String getInfo() {
         AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {

@@ -15,8 +15,6 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -27,8 +25,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
-import net.m4e.common.Entities;
-import net.m4e.common.ResponseResults;
+import net.m4e.common.*;
 import net.m4e.system.core.Log;
 
 

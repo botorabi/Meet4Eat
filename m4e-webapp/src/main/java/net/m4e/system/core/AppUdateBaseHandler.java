@@ -8,6 +8,7 @@
 package net.m4e.system.core;
 
 import javax.persistence.EntityManager;
+
 import net.m4e.common.Entities;
 
 /**

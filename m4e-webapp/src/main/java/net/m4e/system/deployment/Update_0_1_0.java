@@ -8,9 +8,10 @@
 
 package net.m4e.system.deployment;
 
+import net.m4e.common.Entities;
 import net.m4e.system.core.AppUdateBaseHandler;
 import javax.persistence.EntityManager;
-import net.m4e.common.Entities;
+
 import net.m4e.system.core.Log;
 
 /**

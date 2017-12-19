@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2017 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
- * 
+ *
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
@@ -9,19 +9,22 @@ package net.m4e.common;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
+
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.system.core.Log;
 
 
+
 /**
  * A collection of entity related utilities.
- * 
+ *
  * @author boto
  * Date of creation Aug 22, 2017
  */
@@ -127,7 +130,7 @@ public class Entities {
      * @param to            Range end
      * @return List of entities in given range. 
      */ 
-    public <T> List<T> findRange(Class<T> entityClass, int from,int to) { 
+    public <T> List<T> findRange(Class<T> entityClass, int from, int to) {
         javax.persistence.criteria.CriteriaQuery cq = entityManager.getCriteriaBuilder().createQuery(); 
         cq.select(cq.from(entityClass)); 
         javax.persistence.Query q = entityManager.createQuery(cq); 
@@ -231,7 +234,7 @@ public class Entities {
      * @param newPhoto      New photo
      * @throws Exception    Throws an exception if something goes wrong
      */
-    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto ) throws Exception {
+    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto) throws Exception {
         DocumentEntity img = docPool.getOrCreatePoolDocument(newPhoto.getETag());
         // is the old photo the same as the new one?
         if (!docPool.compareETag(entity.getPhoto(), img.getETag())) {

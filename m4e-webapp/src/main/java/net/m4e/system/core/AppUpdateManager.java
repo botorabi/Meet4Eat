@@ -12,8 +12,8 @@ import java.util.Date;
 import java.util.List;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import net.m4e.common.Entities;
-import net.m4e.common.EntityManagerProvider;
+
+import net.m4e.common.*;
 
 /**
  * This class cares about application updates. Whenever a new app version

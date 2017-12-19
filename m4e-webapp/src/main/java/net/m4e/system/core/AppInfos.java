@@ -1,22 +1,24 @@
 /*
  * Copyright (c) 2017 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
- * 
+ *
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
 package net.m4e.system.core;
 
 import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
 import net.m4e.common.Entities;
 
 /**
  * A collection of app info related utilities.
- * 
+ *
  * @author boto
- * Date of creation Aug 22, 2017
+ * @since Aug 22, 2017
  */
 @ApplicationScoped
 public class AppInfos {
@@ -48,11 +50,11 @@ public class AppInfos {
 
     /**
      * Get the application info entity. There is one single entry in database for this entity.
-     * 
+     *
      * @return App info entity, or null if there is some problem to retrieve it.
      */
     public AppInfoEntity getAppInfoEntity() {
-        //! TODO to speed up the access to this single entity we may consider a global scoped bean or 
+        //! TODO to speed up the access to this single entity we may consider a global scoped bean or
         //        at least a session bean or something similar!
 
         List<AppInfoEntity> infos = entities.findAll(AppInfoEntity.class);
@@ -65,8 +67,8 @@ public class AppInfos {
 
     /**
      * Update app info entity.
-     * 
-     * @param info App info entity
+     *
+     * @param info the App info entity
      */
     public void updateAppInfoEntity(AppInfoEntity info) {
         try {

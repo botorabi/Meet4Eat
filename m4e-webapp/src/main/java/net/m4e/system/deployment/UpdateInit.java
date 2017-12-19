@@ -8,6 +8,7 @@
 
 package net.m4e.system.deployment;
 
+import net.m4e.common.Entities;
 import net.m4e.system.core.AppUdateBaseHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +20,6 @@ import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.auth.PermissionEntity;
 import net.m4e.app.auth.RoleEntity;
-import net.m4e.common.Entities;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;

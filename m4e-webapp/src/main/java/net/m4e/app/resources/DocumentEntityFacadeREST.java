@@ -17,8 +17,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
-import net.m4e.common.Entities;
-import net.m4e.common.ResponseResults;
+import net.m4e.common.*;
 
 /**
  * REST services for Document entity operations

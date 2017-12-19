@@ -20,8 +20,7 @@ import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.app.user.UserEntity;
-import net.m4e.common.Entities;
-import net.m4e.common.ResponseResults;
+import net.m4e.common.*;
 import net.m4e.system.core.Log;
 
 /**

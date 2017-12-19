@@ -10,22 +10,21 @@ package net.m4e.app.event;
 
 import java.io.StringReader;
 import java.util.*;
-import javax.json.*;
-import javax.inject.Inject;
+
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.json.*;
+
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.mailbox.MailEntity;
 import net.m4e.app.mailbox.Mails;
-import net.m4e.common.Entities;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.common.Strings;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
-import net.m4e.system.core.AppInfos;
+import net.m4e.common.*;
+import net.m4e.system.core.*;
 
 
 /**
@@ -614,4 +613,5 @@ public class Events {
 
         return allevents;
     }
+
 }

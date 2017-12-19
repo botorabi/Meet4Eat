@@ -14,11 +14,10 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
+
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.SendEmailEvent;
-import net.m4e.common.Entities;
-import net.m4e.common.EntityManagerProvider;
+import net.m4e.common.*;
 import net.m4e.system.core.Log;
 
 

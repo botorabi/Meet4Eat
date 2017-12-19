@@ -7,10 +7,12 @@
  */
 package net.m4e.common;
 
-import org.junit.jupiter.api.Test;
 import javax.persistence.EntityManager;
-import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

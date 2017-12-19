@@ -11,26 +11,25 @@ package net.m4e.app.event;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Objects;
+
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
-import javax.servlet.http.HttpServletRequest;
 import javax.inject.Inject;
 import javax.json.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.app.notification.NotifyUsersEvent;
-import net.m4e.common.ResponseResults;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
-import net.m4e.common.Entities;
+import net.m4e.common.*;
+import net.m4e.system.core.*;
 
 /**
  * REST services for Event entity operations.
