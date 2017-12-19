@@ -54,9 +54,6 @@ public class AppInfos {
      * @return App info entity, or null if there is some problem to retrieve it.
      */
     public AppInfoEntity getAppInfoEntity() {
-        //! TODO to speed up the access to this single entity we may consider a global scoped bean or
-        //        at least a session bean or something similar!
-
         List<AppInfoEntity> infos = entities.findAll(AppInfoEntity.class);
         if (infos.size() != 1) {
             Log.error(TAG, "*** Unexpected count of app info entity detected: " + infos.size());
