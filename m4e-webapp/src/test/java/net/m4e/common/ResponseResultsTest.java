@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2017 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
- * 
+ *
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
@@ -11,25 +11,25 @@ import java.io.StringReader;
 
 import javax.json.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
  * Test class for ResponseResults
- * 
+ *
  * @author boto
- * Date of creation Dec 15, 2017
+ * @since Dec 15, 2017
  */
-public class ResponseResultsTest {
+class ResponseResultsTest {
 
     /**
      * Test of build method, of class ResponseResults.
      */
     @Test
-    public void testBuild() {
+    void testBuild() {
         String status      = "42";
         String description = "43";
         int    code        = 44;
@@ -37,17 +37,17 @@ public class ResponseResultsTest {
 
         ResponseResults result = ResponseResults.build(status, description, code, data);
 
-        assertEquals(result.getStatus(), status);
-        assertEquals(result.getDescription(), description);
-        assertEquals(result.getCode(), code);
-        assertEquals(result.getData(), data);
+        assertThat(result.getStatus()).isEqualTo(status);
+        assertThat(result.getDescription()).isEqualTo(description);
+        assertThat(result.getCode()).isEqualTo(code);
+        assertThat(result.getData()).isEqualTo(data);
     }
 
     /**
      * Test of toJSON method, of class ResponseResults.
      */
     @Test
-    public void testToJSON_4args() {
+    void testToJSON_4args() {
         String status      = "42";
         String description = "43";
         int    code        = 44;
@@ -61,7 +61,7 @@ public class ResponseResultsTest {
      * Test of toJSON method, of class ResponseResults.
      */
     @Test
-    public void testToJSON_0args() {
+    void testToJSON_0args() {
         ResponseResults instance = new ResponseResults();
         String result = instance.toJSON();
         checkToJson(result, ResponseResults.STATUS_NOT_OK, "", ResponseResults.CODE_OK, "");
@@ -71,7 +71,7 @@ public class ResponseResultsTest {
      * Test of getStatus method, of class ResponseResults.
      */
     @Test
-    public void testGetStatus() {
+    void testGetStatus() {
         ResponseResults instance = new ResponseResults();
         instance.setStatus("GET_STATUS");
         String result = instance.toJSON();
@@ -82,7 +82,7 @@ public class ResponseResultsTest {
      * Test of setStatus method, of class ResponseResults.
      */
     @Test
-    public void testSetStatus() {
+    void testSetStatus() {
         ResponseResults instance = new ResponseResults();
         instance.setStatus("SET_STATUS");
         String result = instance.toJSON();
@@ -104,7 +104,7 @@ public class ResponseResultsTest {
      * Test of setDescription method, of class ResponseResults.
      */
     @Test
-    public void testSetDescription() {
+    void testSetDescription() {
         ResponseResults instance = new ResponseResults();
         instance.setDescription("SET_DESC");
         String result = instance.toJSON();
@@ -115,7 +115,7 @@ public class ResponseResultsTest {
      * Test of getCode method, of class ResponseResults.
      */
     @Test
-    public void testGetCode() {
+    void testGetCode() {
         ResponseResults instance = new ResponseResults();
         instance.setCode(142);
         String result = instance.toJSON();
@@ -126,7 +126,7 @@ public class ResponseResultsTest {
      * Test of setCode method, of class ResponseResults.
      */
     @Test
-    public void testSetCode() {
+    void testSetCode() {
         ResponseResults instance = new ResponseResults();
         instance.setCode(242);
         String result = instance.toJSON();
@@ -137,7 +137,7 @@ public class ResponseResultsTest {
      * Test of getData method, of class ResponseResults.
      */
     @Test
-    public void testGetData() {
+    void testGetData() {
         ResponseResults instance = new ResponseResults();
         instance.setData("GET_DATA");
         String result = instance.toJSON();
@@ -148,12 +148,12 @@ public class ResponseResultsTest {
      * Test of setData method, of class ResponseResults.
      */
     @Test
-    public void testSetData() {
+    void testSetData() {
         ResponseResults instance = new ResponseResults();
         instance.setData("SET_DATA");
         String result = instance.toJSON();
         checkToJson(result, ResponseResults.STATUS_NOT_OK, "", ResponseResults.CODE_OK, "SET_DATA");
-    }    
+    }
 
     /**
      * Check the JSON conversion
@@ -162,10 +162,10 @@ public class ResponseResultsTest {
         JsonReader jreader = Json.createReader(new StringReader(jsonString));
         try {
             JsonObject jobject = jreader.readObject();
-            assertEquals(jobject.getString("status", ""), status);
-            assertEquals(jobject.getString("description", ""), description);
-            assertEquals(jobject.getString("data", ""), data);
-            assertEquals(jobject.getInt("code", 0), code);
+            assertThat(jobject.getString("status", "")).isEqualTo(status);
+            assertThat(jobject.getString("description", "")).isEqualTo(description);
+            assertThat(jobject.getString("data", "")).isEqualTo(data);
+            assertThat(jobject.getInt("code", 0)).isEqualTo(code);
         }
         catch(Exception ex) {
             fail("Invalid json format: " + ex.getLocalizedMessage());
