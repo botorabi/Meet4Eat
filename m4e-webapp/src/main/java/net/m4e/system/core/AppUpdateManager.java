@@ -135,7 +135,7 @@ public class AppUpdateManager {
     private void createAppVersionEntry(String appVersion) {
         AppInfoEntity info = new AppInfoEntity();
         info.setVersion(appVersion);
-        info.setDataLastUpdate((new Date().getTime()));
+        info.setDateLastUpdate((new Date().getTime()));
         try {
             entities.create(info);
         }
@@ -152,7 +152,7 @@ public class AppUpdateManager {
      */
     private void updateAppVersionEntry(AppInfoEntity info, String appVersion) {
         info.setVersion(appVersion);
-        info.setDataLastUpdate((new Date().getTime()));
+        info.setDateLastUpdate((new Date().getTime()));
         appInfos.updateAppInfoEntity(info);
     }
 

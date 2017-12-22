@@ -24,22 +24,6 @@ import javax.ws.rs.core.Application;
 @javax.ws.rs.ApplicationPath(AppConfiguration.REST_BASE_URL)
 public class AppStart extends Application {
 
-    /**
-     * Injectable Entity-Manager.
-     */
-    @PersistenceContext(unitName = AppConfiguration.PERSITENCE_UNIT_NAME)
-    private EntityManager entityManager;
-
-    /**
-     * Entity manager producer.
-     * 
-     * @return The entity manager
-     */
-    @Produces
-    public EntityManager getEntityManager() {
-        return entityManager;
-    }
-
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new java.util.HashSet<>();

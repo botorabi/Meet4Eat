@@ -117,7 +117,7 @@ public class AppInfoEntity implements Serializable {
      *
      * @param lastUpdate Date of last update
      */
-    public void setDataLastUpdate(Long lastUpdate) {
+    public void setDateLastUpdate(Long lastUpdate) {
         this.dateLastUpdate = lastUpdate;
     }
 

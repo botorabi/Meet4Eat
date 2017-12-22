@@ -7,30 +7,44 @@
  */
 package net.m4e.common;
 
-import java.io.StringReader;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import java.io.StringReader;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 /**
  * Test class for ResponseResults
  * 
  * @author boto
- * @since Dec 15, 2017
+ * Date of creation Dec 15, 2017
  */
+@RunWith(Arquillian.class)
 public class ResponseResultsTest {
+
+    @Deployment
+    public static JavaArchive createDeployment() {
+        return ShrinkWrap.create(JavaArchive.class)
+                .addClass(ResponseResults.class)
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+    }
 
     /**
      * Test of build method, of class ResponseResults.
      */
     @Test
     public void testBuild() {
-        System.out.println("build");
-
         String status      = "42";
         String description = "43";
         int    code        = 44;
@@ -38,10 +52,10 @@ public class ResponseResultsTest {
 
         ResponseResults result = ResponseResults.build(status, description, code, data);
 
-        assertThat(result.getStatus()).isEqualTo(status);
-        assertThat(result.getDescription()).isEqualTo(description);
-        assertThat(result.getCode()).isEqualTo(code);
-        assertThat(result.getData()).isEqualTo(data);
+        assertEquals(result.getStatus(), status);
+        assertEquals(result.getDescription(), description);
+        assertEquals(result.getCode(), code);
+        assertEquals(result.getData(), data);
     }
 
     /**
@@ -49,8 +63,6 @@ public class ResponseResultsTest {
      */
     @Test
     public void testToJSON_4args() {
-        System.out.println("toJSON");
-
         String status      = "42";
         String description = "43";
         int    code        = 44;
@@ -65,8 +77,6 @@ public class ResponseResultsTest {
      */
     @Test
     public void testToJSON_0args() {
-        System.out.println("toJSON");
-
         ResponseResults instance = new ResponseResults();
         String result = instance.toJSON();
         checkToJson(result, ResponseResults.STATUS_NOT_OK, "", ResponseResults.CODE_OK, "");
@@ -77,8 +87,6 @@ public class ResponseResultsTest {
      */
     @Test
     public void testGetStatus() {
-        System.out.println("getStatus");
-
         ResponseResults instance = new ResponseResults();
         instance.setStatus("GET_STATUS");
         String result = instance.toJSON();
@@ -169,10 +177,10 @@ public class ResponseResultsTest {
         JsonReader jreader = Json.createReader(new StringReader(jsonString));
         try {
             JsonObject jobject = jreader.readObject();
-            assertThat(jobject.getString("status", "")).isEqualTo(status);
-            assertThat(jobject.getString("description", "")).isEqualTo(description);
-            assertThat(jobject.getString("data", "")).isEqualTo(data);
-            assertThat(jobject.getInt("code", 0)).isEqualTo(code);
+            assertEquals(jobject.getString("status", ""), status);
+            assertEquals(jobject.getString("description", ""), description);
+            assertEquals(jobject.getString("data", ""), data);
+            assertEquals(jobject.getInt("code", 0), code);
         }
         catch(Exception ex) {
             fail("Invalid json format: " + ex.getLocalizedMessage());

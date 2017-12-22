@@ -20,6 +20,7 @@ import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.mailbox.MailEntity;
 import net.m4e.app.mailbox.Mails;
 import net.m4e.app.resources.DocumentEntity;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
@@ -49,15 +50,18 @@ public class Events {
 
     private final Mails mails;
 
+    private final DocumentPool docPool;
+
 
     /**
      * Default constructor needed by the container.
      */
     protected Events() {
-        this.entities = null;
-        this.users = null;
-        this.appInfos = null;
-        this.mails = null;
+        entities = null;
+        users = null;
+        appInfos = null;
+        mails = null;
+        docPool = null;
     }
 
     /**
@@ -69,11 +73,12 @@ public class Events {
      * @param mails     Mails instance
      */
     @Inject
-    public Events(Entities entities, Users users, AppInfos appInfos, Mails mails) {
+    public Events(Entities entities, Users users, AppInfos appInfos, Mails mails, DocumentPool docPool) {
         this.entities = entities;
         this.users = users;
         this.appInfos = appInfos;
         this.mails = mails;
+        this.docPool = docPool;
     }
 
     /**
@@ -198,7 +203,7 @@ public class Events {
     public void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
         // make sure that the resource URL is set
         image.setResourceURL("/Event/Image");
-        entities.updatePhoto(event, image);
+        docPool.updatePhoto(event, image);
     }
 
     /**

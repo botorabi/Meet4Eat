@@ -23,12 +23,12 @@ public interface EntityWithPhoto {
      * 
      * @return DocumentEntity containing the photo
      */
-    public DocumentEntity getPhoto();
+    DocumentEntity getPhoto();
 
     /**
      * Set entity's photo.
      * 
      * @param photo DocumentEntity containing the photo
      */
-    public void setPhoto(DocumentEntity photo);
+     void setPhoto(DocumentEntity photo);
 }

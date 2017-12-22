@@ -129,7 +129,6 @@ public class DocumentPool {
     /**
      * Create a document entity in database. Its reference count will be set to 1.
      * 
-     * @param document  The document which should be created
      * @return          The document instance, or null if it could not be created in database.
      */
     private DocumentEntity createDocument() {
@@ -165,5 +164,38 @@ public class DocumentPool {
             }
         }
         return null;
+    }
+
+    /**
+     * This method updates the photo of an entity by using the document pool.
+     * The given entity must implement the EntityWithPhoto interface.
+     * If the new photo is the same as the old photo (ETags are compared) then the call is ignored.
+     * If the new photo does not exist in the document pool then a new document entity is created and
+     * added to the pool and set in given entity. Make sure that 'newPhoto' provides the following information:
+     *
+     *   Document content: in this case it will be an image
+     *   Encoding
+     *   Resource URL
+     *
+     * @param <T>           The entity type
+     * @param entity        The entity which must implement the EntityWithPhoto interface
+     * @param newPhoto      New photo
+     * @throws Exception    Throws an exception if something goes wrong
+     */
+    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto) throws Exception {
+        DocumentEntity img = getOrCreatePoolDocument(newPhoto.getETag());
+        // is the old photo the same as the new one?
+        if (!compareETag(entity.getPhoto(), img.getETag())) {
+            // release the old photo
+            releasePoolDocument(entity.getPhoto());
+            // was the document an existing one?
+            if (img.getIsEmpty()) {
+                img.updateContent(newPhoto.getContent());
+                img.setType(DocumentEntity.TYPE_IMAGE);
+                img.setEncoding(newPhoto.getEncoding());
+                img.setResourceURL(newPhoto.getResourceURL());
+            }
+            entity.setPhoto(img);
+        }
     }
 }

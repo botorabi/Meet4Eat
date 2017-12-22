@@ -40,11 +40,6 @@ public class AppConfiguration {
     public final static String REST_BASE_URL = "webresources";
 
     /**
-     * The unit name for persistence as configured in persistence.xml
-     */
-    public final static String PERSITENCE_UNIT_NAME = "Meet4EatPU";
-
-    /**
      * Configuration token name for app version.
      */
     public final static String TOKEN_APP_VERSION = "AppVersion";

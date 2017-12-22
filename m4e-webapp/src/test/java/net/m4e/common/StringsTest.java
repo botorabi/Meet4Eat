@@ -1,62 +1,77 @@
 package net.m4e.common;
 
-import org.junit.jupiter.api.Test;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static net.m4e.common.Strings.checkMinMaxLength;
 import static net.m4e.common.Strings.limitStringLen;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 
-class StringsTest {
+@RunWith(Arquillian.class)
+public class StringsTest {
 
-    @Test
-    void limitStringLen_null() {
-        assertThat(limitStringLen(null, 0)).isEqualTo(null);
+    @Deployment
+    public static JavaArchive createDeployment() {
+        return ShrinkWrap.create(JavaArchive.class)
+                .addClass(Strings.class)
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
-    void limitStringLen_longer() {
-        assertThat(limitStringLen("Test", 3)).isEqualTo("Tes");
+    public void limitStringLen_null() {
+        assertEquals(limitStringLen(null, 0), null);
     }
 
     @Test
-    void limitStringLen_equal() {
-        assertThat(limitStringLen("Test", 4)).isEqualTo("Test");
+    public void limitStringLen_longer() {
+        assertEquals(limitStringLen("Test", 3), "Tes");
     }
 
     @Test
-    void limitStringLen_shorter() {
-        assertThat(limitStringLen("Test", 5)).isEqualTo("Test");
+    public void limitStringLen_equal() {
+        assertEquals(limitStringLen("Test", 4), "Test");
+    }
+
+    @Test
+    public void limitStringLen_shorter() {
+        assertEquals(limitStringLen("Test", 5), "Test");
     }
 
 
     @Test
-    void checkMinMaxLength_shorterThanMin() {
-        assertThat(checkMinMaxLength("Test", 5, 10)).isFalse();
+    public void checkMinMaxLength_shorterThanMin() {
+        assertFalse(checkMinMaxLength("Test", 5, 10));
     }
 
     @Test
-    void checkMinMaxLength_equalMin() {
-        assertThat(checkMinMaxLength("Test", 4, 10)).isTrue();
+    public void checkMinMaxLength_equalMin() {
+        assertTrue(checkMinMaxLength("Test", 4, 10));
     }
 
     @Test
-    void checkMinMaxLength_longerThanMin() {
-        assertThat(checkMinMaxLength("Test", 3, 10)).isTrue();
+    public void checkMinMaxLength_longerThanMin() {
+        assertTrue(checkMinMaxLength("Test", 3, 10));
     }
 
     @Test
-    void checkMinMaxLength_shorterThanMax() {
-        assertThat(checkMinMaxLength("Test", 0, 5)).isTrue();
+    public void checkMinMaxLength_shorterThanMax() {
+        assertTrue(checkMinMaxLength("Test", 0, 5));
     }
 
     @Test
-    void checkMinMaxLength_equalMax() {
-        assertThat(checkMinMaxLength("Test", 0, 4)).isTrue();
+    public void checkMinMaxLength_equalMax() {
+        assertTrue(checkMinMaxLength("Test", 0, 4));
     }
 
     @Test
-    void checkMinMaxLength_longerThanMax() {
-        assertThat(checkMinMaxLength("Test", 0, 3)).isFalse();
+    public void checkMinMaxLength_longerThanMax() {
+        assertFalse(checkMinMaxLength("Test", 0, 3));
     }
 }

@@ -7,18 +7,15 @@
  */
 package net.m4e.common;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.m4e.system.core.Log;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
-
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
-import net.m4e.system.core.Log;
+import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -38,27 +35,22 @@ public class Entities {
 
     private final EntityManager entityManager;
 
-    private final DocumentPool docPool;
-
 
     /**
      * Default constructor needed by the container.
      */
     protected Entities() {
         entityManager = null;
-        docPool = null;
     }
 
     /**
      * Create an Entities instance by injection.
      * 
      * @param entityManager The entity manager
-     * @param docPool       Document pool
      */
     @Inject
-    public Entities(EntityManager entityManager, DocumentPool docPool) {
+    public Entities(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.docPool = docPool;
     }
 
     /**
@@ -216,38 +208,5 @@ public class Entities {
         List<T> res = q.setMaxResults(maxResults).getResultList();
 
         return res;
-    }
-
-    /**
-     * This method updates the photo of an entity by using the document pool.
-     * The given entity must implement the EntityWithPhoto interface.
-     * If the new photo is the same as the old photo (ETags are compared) then the call is ignored.
-     * If the new photo does not exist in the document pool then a new document entity is created and
-     * added to the pool and set in given entity. Make sure that 'newPhoto' provides the following information:
-     * 
-     *   Document content: in this case it will be an image
-     *   Encoding
-     *   Resource URL
-     * 
-     * @param <T>           The entity type
-     * @param entity        The entity which must implement the EntityWithPhoto interface
-     * @param newPhoto      New photo
-     * @throws Exception    Throws an exception if something goes wrong
-     */
-    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto) throws Exception {
-        DocumentEntity img = docPool.getOrCreatePoolDocument(newPhoto.getETag());
-        // is the old photo the same as the new one?
-        if (!docPool.compareETag(entity.getPhoto(), img.getETag())) {
-            // release the old photo
-            docPool.releasePoolDocument(entity.getPhoto());
-            // was the document an existing one?
-            if (img.getIsEmpty()) {
-                img.updateContent(newPhoto.getContent());
-                img.setType(DocumentEntity.TYPE_IMAGE);
-                img.setEncoding(newPhoto.getEncoding());
-                img.setResourceURL(newPhoto.getResourceURL());
-            }
-            entity.setPhoto(img);
-        }
     }
 }

@@ -21,6 +21,7 @@ import javax.json.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import net.m4e.app.resources.DocumentEntity;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.*;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.app.user.UserEntity;
@@ -49,7 +50,9 @@ public class EventLocations {
 
     private final AppInfos appInfos;
 
-    
+    private final DocumentPool docPool;
+
+
     /**
      * Default constructor needed by the container.
      */
@@ -57,6 +60,7 @@ public class EventLocations {
         entityManager = null;
         entities = null;
         appInfos = null;
+        docPool = null;
     }
 
     /**
@@ -65,12 +69,14 @@ public class EventLocations {
      * @param entityManager The entity manager
      * @param entities      The Entities instance
      * @param appInfos      The AppInfos instance
+     * @param docPool       The document pool instance
      */
     @Inject
-    public EventLocations(EntityManager entityManager, Entities entities, AppInfos appInfos) {
+    public EventLocations(EntityManager entityManager, Entities entities, AppInfos appInfos, DocumentPool docPool) {
         this.entityManager = entityManager;
         this.entities = entities;
         this.appInfos = appInfos;
+        this.docPool = docPool;
     }
 
     /**
@@ -150,7 +156,7 @@ public class EventLocations {
     public void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) throws Exception {
         // make sure that the resource URL is set
         image.setResourceURL("/EventLoction/Image");
-        entities.updatePhoto(location, image);
+        docPool.updatePhoto(location, image);
     }
 
     /**

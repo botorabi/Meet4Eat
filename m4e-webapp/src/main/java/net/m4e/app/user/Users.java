@@ -33,6 +33,7 @@ import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.resources.DocumentEntity;
+import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.Entities;
 import net.m4e.system.core.*;
@@ -56,6 +57,8 @@ public class Users {
 
     private final AppInfos appInfos;
 
+    private final DocumentPool docPool;
+
 
     /**
      * Defautl constructor, make the container happy.
@@ -63,18 +66,21 @@ public class Users {
     protected Users() {
         entities = null;
         appInfos = null;
+        docPool = null;
     }
 
      /**
-     * Create an instance of user utilities.
-     * 
-     * @param entities
-     * @param appInfos
-     */
+      * Create an instance of user utilities.
+      *
+      * @param entities
+      * @param appInfos
+      * @param docPool
+      */
     @Inject
-    public Users(Entities entities, AppInfos appInfos) {
+    public Users(Entities entities, AppInfos appInfos, DocumentPool docPool) {
         this.entities = entities;
         this.appInfos = appInfos;
+        this.docPool = docPool;
     }
 
     /**
@@ -233,7 +239,7 @@ public class Users {
     void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
         // make sure that the resource URL is set
         image.setResourceURL("/User/Image");
-        entities.updatePhoto(user, image);
+        docPool.updatePhoto(user, image);
     }
 
     /**
