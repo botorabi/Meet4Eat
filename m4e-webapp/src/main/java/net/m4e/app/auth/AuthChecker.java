@@ -7,14 +7,15 @@
  */
 package net.m4e.app.auth;
 
+import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import javax.servlet.http.HttpServletRequest;
-import net.m4e.system.core.Log;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class performing authorization checks for accessing resources provided by Java Beans.
@@ -44,10 +45,9 @@ import net.m4e.system.core.Log;
 public class AuthChecker {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "AuthChecker";
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * A lookup for access rules with fix paths. In order to speed up the lookup, the resource path is used as key.
@@ -80,7 +80,7 @@ public class AuthChecker {
      * @param beanClasses   List of java beans
      */
     public void initialize(List<Class> beanClasses) {
-        Log.info(TAG, "Initializing authorization checker");
+        LOGGER.info("Initializing authorization checker");
         setupRules(beanClasses);
     }
 
@@ -92,7 +92,7 @@ public class AuthChecker {
     public void setGrantAlwaysRoles(List<String> roles) {
         grantAlwaysRoles.clear();
         grantAlwaysRoles.addAll(roles);
-        Log.debug(TAG, "Setting grant-always roles: " + String.join(",", roles));
+        LOGGER.debug("Setting grant-always roles: {}", String.join(",", roles));
     }
 
     /**
@@ -113,7 +113,7 @@ public class AuthChecker {
         // gather information from all bean classes about authorization relevant annotations
         Annotations autils = new Annotations();
         beanClasses.stream().map((cls) -> {
-            Log.debug(TAG, " adding rules for bean class " + cls.getName());
+            LOGGER.debug("Adding rules for bean class {}", cls.getName());
             return cls;
         }).forEach((cls) -> {
             // get the base path of the bean class (checking for class' Path annotation)
@@ -138,7 +138,7 @@ public class AuthChecker {
                 else {
                     accessRulesFixPath.put(fullrespath, rule);
                 }
-                Log.debug(TAG, "   adding rule: " + rule.toString() );
+                LOGGER.debug("Adding rule: {}", rule.toString());
             });
         });
     }
@@ -155,7 +155,7 @@ public class AuthChecker {
 
         // check for no-restriction access
         if (grantAlwaysRoles.stream().anyMatch((r) -> userRoles.contains(r))) {
-            Log.verbose(TAG, "Access granted to Grant-Always roles");
+            LOGGER.trace("Access granted to Grant-Always roles");
             return true;
         }
 
@@ -166,12 +166,12 @@ public class AuthChecker {
 
             // do some checks first
             if (!path.startsWith(basePath)) {
-                Log.warning(TAG, "Access denied: given path '" + path + "' does not start with expected base path '" + basePath + "'");
+                LOGGER.trace("Access denied: given path '{}' does not start with expected base path '{}'", path, basePath);
                 return false;
             }
 
             String respath = path.substring(basePath.length());
-            Log.verbose(TAG, "Checking resource path [" + request.getMethod() + "]: " + respath);
+            LOGGER.trace("Checking resource path [{}]: {}", request.getMethod(), respath);
 
             // first check for fix path match
             AuthAccessRuleChecker accrule = accessRulesFixPath.get(respath);
@@ -187,11 +187,10 @@ public class AuthChecker {
                     }
                 }
             }
-            
-            Log.debug(TAG, "Access granted: " + (grantaccess ? "Yes" : "No"));
+            LOGGER.trace("Access granted: {}", (grantaccess ? "Yes" : "No"));
         }
         catch(MalformedURLException | SecurityException ex) {
-            Log.error(TAG, "An exception happended during auth check: " + ex.getLocalizedMessage());
+            LOGGER.warn("An exception happened during auth check: {}", ex.getLocalizedMessage(), ex);
             return false;
         }
         return grantaccess;
