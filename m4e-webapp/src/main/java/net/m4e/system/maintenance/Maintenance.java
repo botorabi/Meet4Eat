@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,15 +8,6 @@
 
 package net.m4e.system.maintenance;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.EventLocationEntity;
 import net.m4e.app.event.Events;
@@ -24,10 +15,22 @@ import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.UserRegistrations;
 import net.m4e.app.user.Users;
-import net.m4e.common.*;
+import net.m4e.common.Entities;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
-import net.m4e.system.core.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import java.lang.invoke.MethodHandles;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 
 /**
@@ -40,9 +43,9 @@ import net.m4e.system.core.Log;
 public class Maintenance {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "Maintenance";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final UserRegistrations userRegistration;
 
@@ -189,7 +192,7 @@ public class Maintenance {
                 }
             }
             catch(Exception ex) {
-                Log.warning(TAG, "Could not delete event: " + event.getId() + ", name: " +
+                LOGGER.warn("Could not delete event: " + event.getId() + ", name: " +
                             event.getName() + ", reason: " + ex.getLocalizedMessage());
             }
         }
@@ -203,7 +206,7 @@ public class Maintenance {
                 countpurges++;
             }
             catch(Exception ex) {
-                Log.warning(TAG, "Could not delete user: " + user.getId() + ", name: " +
+                LOGGER.warn("Could not delete user: " + user.getId() + ", name: " +
                             user.getName() + ", reason: " + ex.getLocalizedMessage());
             }
         }
@@ -218,7 +221,7 @@ public class Maintenance {
         // update app info
         AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {
-            Log.warning(TAG, "Could not update app info");
+            LOGGER.warn("Could not update app info");
             return;
         }
 

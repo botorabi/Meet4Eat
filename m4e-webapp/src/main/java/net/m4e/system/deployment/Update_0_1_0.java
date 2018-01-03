@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -10,9 +10,11 @@ package net.m4e.system.deployment;
 
 import net.m4e.common.Entities;
 import net.m4e.system.core.AppUdateBaseHandler;
-import javax.persistence.EntityManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import net.m4e.system.core.Log;
+import javax.persistence.EntityManager;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Deployment updater for version "0.1.0"
@@ -23,9 +25,9 @@ import net.m4e.system.core.Log;
 public class Update_0_1_0 extends AppUdateBaseHandler {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "Update_0_1_0";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Make sure to increment this number for every new update class.
@@ -50,11 +52,10 @@ public class Update_0_1_0 extends AppUdateBaseHandler {
      * 
      * @param entityManager   For the case that any entity structure manipulation is needed
      * @param entities        Entities contains entity related operations
-     * @throws Exception This exception is thrown if something went wrong.
      */
     @Override
-    public void performUpdate(EntityManager entityManager, Entities entities) throws Exception {
-        Log.debug(TAG, "Updating to version: " + appVersion + " (" + incUpdateNumber + ")");
-        Log.debug(TAG, " Updating to version: " + appVersion + " (" + incUpdateNumber + ") completed");
+    public void performUpdate(EntityManager entityManager, Entities entities) {
+        LOGGER.debug("Updating to version: " + appVersion + " (" + incUpdateNumber + ")");
+        LOGGER.debug(" Updating to version: " + appVersion + " (" + incUpdateNumber + ") completed");
     }
 }

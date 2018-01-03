@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,15 +8,9 @@
 
 package net.m4e.app.user;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.UUID;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
 
 /**
  * This entity is used for resetting user password.
@@ -150,10 +144,7 @@ public class UserPasswordResetEntity implements Serializable {
             return false;
         }
         UserPasswordResetEntity other = (UserPasswordResetEntity) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

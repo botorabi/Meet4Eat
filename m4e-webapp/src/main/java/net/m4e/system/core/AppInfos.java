@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  *
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,12 +7,14 @@
  */
 package net.m4e.system.core;
 
-import java.util.List;
+import net.m4e.common.Entities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-
-import net.m4e.common.Entities;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 /**
  * A collection of app info related utilities.
@@ -24,9 +26,9 @@ import net.m4e.common.Entities;
 public class AppInfos {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "AppInfos";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Entities entities;
 
@@ -56,7 +58,7 @@ public class AppInfos {
     public AppInfoEntity getAppInfoEntity() {
         List<AppInfoEntity> infos = entities.findAll(AppInfoEntity.class);
         if (infos.size() != 1) {
-            Log.error(TAG, "*** Unexpected count of app info entity detected: " + infos.size());
+            LOGGER.error("*** Unexpected count of app info entity detected: " + infos.size());
             return null;
         }
         return infos.get(0);
@@ -72,7 +74,7 @@ public class AppInfos {
             entities.update(info);
         }
         catch (Exception ex) {
-            Log.error(TAG, "*** Problem occured while updating app information in database, reason: " + ex.getMessage());
+            LOGGER.error("*** Problem occured while updating app information in database, reason: " + ex.getMessage());
         }
     }
 }

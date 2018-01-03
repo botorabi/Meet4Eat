@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,20 +7,23 @@
  */
 package net.m4e.app.event;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Set;
+import net.m4e.app.communication.ChannelEventEvent;
+import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.communication.Packet;
+import net.m4e.app.user.UserEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.json.JsonObject;
-import net.m4e.app.communication.ChannelEventEvent;
-import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.communication.Packet;
-import net.m4e.app.user.UserEntity;
-import net.m4e.system.core.Log;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Set;
 
 
 /**
@@ -35,9 +38,9 @@ import net.m4e.system.core.Log;
 public class EventSystem {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "EventSystem";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Events events;
 
@@ -69,7 +72,7 @@ public class EventSystem {
      */
     @PostConstruct
     public void eventSystemInit() {
-        Log.info(TAG, "Starting the event system");
+        LOGGER.info("Starting the event system");
     }
 
     /**
@@ -81,7 +84,7 @@ public class EventSystem {
         Long senderid = event.getSenderId();
         UserEntity user = connections.getConnectedUser(senderid);
         if (user == null) {
-            Log.warning(TAG, "invalid sender id detected: " + senderid);
+            LOGGER.warn("invalid sender id detected: " + senderid);
             return;
         }
 
@@ -98,11 +101,11 @@ public class EventSystem {
                 sendMessageEvent(user, eventid, packet);
             }
             else {
-                Log.warning(TAG, "invalid receiver event ID detected, ignoting the event message!");
+                LOGGER.warn("invalid receiver event ID detected, ignoting the event message!");
             }
         }
         catch(NumberFormatException ex) {
-            Log.warning(TAG, "could not distribute event notification from sender " + senderid + ", reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("could not distribute event notification from sender " + senderid + ", reason: " + ex.getLocalizedMessage());
         }
     }
 

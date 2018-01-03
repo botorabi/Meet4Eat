@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,9 +7,10 @@
  */
 package net.m4e.app.communication;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import net.m4e.app.user.UserEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.ObservesAsync;
@@ -17,10 +18,8 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 import javax.websocket.Session;
-import net.m4e.app.user.UserEntity;
-import net.m4e.system.core.Log;
+import java.lang.invoke.MethodHandles;
 
 /**
  * All incoming messages are dispatched and distributed via proper events.
@@ -33,9 +32,9 @@ import net.m4e.system.core.Log;
 public class MessageDistribution {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "MessageDistribution";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Used for firing chat channel events
@@ -133,14 +132,14 @@ public class MessageDistribution {
         Long senderid = event.getSenderId();
         UserEntity user = connections.getConnectedUser(senderid);
         if (user == null) {
-            Log.warning(TAG, "invalid sender id detected: " + senderid);
+            LOGGER.warn("invalid sender id detected: " + senderid);
             return;
         }
 
         Packet packet = event.getPacket();
         JsonObject data = packet.getData();
         if (data == null) {
-            Log.warning(TAG, "invalid system command received from user: " + senderid);
+            LOGGER.warn("invalid system command received from user: " + senderid);
             return;
         }
 
@@ -157,7 +156,7 @@ public class MessageDistribution {
             connections.sendPacket(packet, senderid, event.getSessionId());
         }
         else {
-            Log.warning(TAG, "unsupported system command '" + cmd + "' received from user: " + senderid);
+            LOGGER.warn("unsupported system command '" + cmd + "' received from user: " + senderid);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,13 +8,16 @@
 
 package net.m4e.update;
 
-import java.io.StringReader;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import javax.json.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import net.m4e.system.core.Log;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 
 /**
@@ -26,9 +29,9 @@ import net.m4e.system.core.Log;
 public class UpdateChecks {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "UpdateChecks";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final EntityManager entityManager;
 
@@ -68,7 +71,7 @@ public class UpdateChecks {
             active      = jobject.getBoolean("active", true);
         }
         catch(Exception ex) {
-            Log.warning(TAG, "invalid update check entry detected: " + ex.getLocalizedMessage());
+            LOGGER.warn("invalid update check entry detected: " + ex.getLocalizedMessage());
             return null;
         }
 
@@ -82,7 +85,7 @@ public class UpdateChecks {
                 entity.setId(Long.parseLong(id));
             }
             catch(NumberFormatException ex) {
-                Log.warning(TAG, "invalid update check entry ID");
+                LOGGER.warn("invalid update check entry ID");
                 return null;
             }
         }

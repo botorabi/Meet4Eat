@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,25 +8,22 @@
 
 package net.m4e.update;
 
-import java.util.Date;
-import java.util.List;
+import net.m4e.app.auth.AuthRole;
+import net.m4e.common.Entities;
+import net.m4e.common.ResponseResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import net.m4e.app.auth.AuthRole;
-import net.m4e.common.*;
-import net.m4e.system.core.Log;
+import java.lang.invoke.MethodHandles;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -40,9 +37,9 @@ import net.m4e.system.core.Log;
 public class UpdateCheckEntityFacadeREST {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "UpdateCheckEntityFacadeREST";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Entities entities;
 
@@ -92,7 +89,7 @@ public class UpdateCheckEntityFacadeREST {
             entity.setReleaseDate((new Date()).getTime());
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not create new update check entity, validation failed, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not create new update check entity, validation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);
         }
 
@@ -121,12 +118,12 @@ public class UpdateCheckEntityFacadeREST {
             reqentity = validator.validateUpdateEntityInput(entityJson);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not update an update check entity, validation failed, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not update an update check entity, validation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);
         }
         UpdateCheckEntity entity = entities.find(UpdateCheckEntity.class, id);
         if (entity == null) {
-            Log.warning(TAG, "*** Could not update an update check entity, invalid ID");
+            LOGGER.warn("*** Could not update an update check entity, invalid ID");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Invalid ID", ResponseResults.CODE_BAD_REQUEST, null);            
         }
         // take over the new values
@@ -260,7 +257,7 @@ public class UpdateCheckEntityFacadeREST {
             checkresults = updateChecks.checkForUpdate(clientJson);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "cannot check for update, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("cannot check for update, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Cannot get update info, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);            
         }
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of update entries.", ResponseResults.CODE_OK, checkresults.build().toString());

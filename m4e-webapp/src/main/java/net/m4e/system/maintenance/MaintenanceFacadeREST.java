@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,19 +7,22 @@
  */
 package net.m4e.system.maintenance;
 
+import net.m4e.app.auth.AuthRole;
+import net.m4e.common.ResponseResults;
+import net.m4e.system.core.AppInfoEntity;
+import net.m4e.system.core.AppInfos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
-import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import net.m4e.app.auth.AuthRole;
-import net.m4e.common.ResponseResults;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import net.m4e.system.core.Log;
+import java.lang.invoke.MethodHandles;
 
 /**
  * REST Web Service for maintenance tasks
@@ -32,9 +35,9 @@ import net.m4e.system.core.Log;
 public class MaintenanceFacadeREST {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "MaintenanceFacadeREST";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Maintenance maintenance;
 
@@ -90,7 +93,7 @@ public class MaintenanceFacadeREST {
     public String purgeResources() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         int countpurges = maintenance.purgeAllResources();
-        Log.info(TAG, "total count of " + countpurges + " resources were purged");
+        LOGGER.info("total count of " + countpurges + " resources were purged");
         jsonresponse.add("countPurges", countpurges);
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "" +  countpurges + " resources were purged.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }

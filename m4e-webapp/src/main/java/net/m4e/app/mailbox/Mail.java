@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -25,12 +25,12 @@ public class Mail {
     /**
      * The 'unread' state of the mail. Once the mail is read by user this flag will be set to false.
      */
-    private boolean unread = true;
+    private boolean unread;
 
     /**
      * The timestamp of trashing the mail. Trashed mails will get purged after some period of time.
      */
-    private Long trashDate = 0L;
+    private Long trashDate;
 
     /**
      * Create a mail instance.

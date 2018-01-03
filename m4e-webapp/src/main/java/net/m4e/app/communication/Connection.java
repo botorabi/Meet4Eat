@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,22 +7,20 @@
  */
 
 package net.m4e.app.communication;
-import java.io.IOException;
-import java.util.Date;
+
+import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.user.UserEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.servlet.http.HttpSession;
-import javax.websocket.CloseReason;
-import javax.websocket.EndpointConfig;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
+import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.user.UserEntity;
-import net.m4e.system.core.Log;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.Date;
 
 /**
  * This is an WebSocket endpoint for client communication.
@@ -34,9 +32,9 @@ import net.m4e.system.core.Log;
 public class Connection {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "Connection";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * WebSocket protocol version. The packet header may differ from version 
@@ -68,11 +66,11 @@ public class Connection {
 
     @OnOpen
     public void open(Session session, EndpointConfig config) throws IOException {
-        Log.verbose(TAG, "new client connected, id: " + session.getId());
+        LOGGER.trace("new client connected, id: " + session.getId());
         httpSession = (HttpSession)config.getUserProperties().get(ConnectionConfigurator.KEY_HTTP_SESSION);
         if (httpSession == null) {
             // close the connection, no http session exists
-            Log.debug(TAG, "  closing websocket connection, no session was established before");
+            LOGGER.debug("  closing websocket connection, no session was established before");
             CloseReason reason = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "No HTTP session exists.");
             session.close(reason);
             return;
@@ -80,7 +78,7 @@ public class Connection {
         user = AuthorityConfig.getInstance().getSessionUser(httpSession);
         if (user == null) {
             // close the connection, user is not authorized
-            Log.debug(TAG, "  closing websocket connection, user was not authenticated before");
+            LOGGER.debug("  closing websocket connection, user was not authenticated before");
             CloseReason reason = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "User is not authenticated.");
             session.close(reason);
             return;
@@ -88,7 +86,7 @@ public class Connection {
 
         // store the user connection
         if (!connections.addConnection(user, session)) {
-            Log.warning(TAG, "  could not store user's connection");
+            LOGGER.warn("  could not store user's connection");
         }
 
         String response = createResponse("ok", "User " + user.getName() + " established a connection");
@@ -97,22 +95,22 @@ public class Connection {
 
     @OnClose
     public void close(Session session) {
-        Log.verbose(TAG, "client connection closed, id: " + session.getId());
+        LOGGER.trace("client connection closed, id: " + session.getId());
         if (!connections.removeConnection(user, session)) {
-            Log.warning(TAG, "  could not remove user's connection");
+            LOGGER.warn("  could not remove user's connection");
         }
     }
 
     @OnError
     public void onError(Throwable error) {
-        Log.verbose(TAG, "error on client connection");
+        LOGGER.trace("error on client connection");
     }
 
     @OnMessage
-    public void handleMessage(String message, Session session) throws IOException {
+    public void handleMessage(String message, Session session) {
         Packet packet = Packet.fromJSON(message);
         if (packet == null) {
-            Log.debug(TAG, "invalid message format received from client, ignoring it");
+            LOGGER.debug("invalid message format received from client, ignoring it");
             return;
         }
         msgHandler.dispatchMessage(packet, session);

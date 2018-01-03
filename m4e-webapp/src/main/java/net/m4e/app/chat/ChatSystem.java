@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,23 +7,26 @@
  */
 package net.m4e.app.chat;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
 import net.m4e.app.communication.ChannelChatEvent;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.ObservesAsync;
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.communication.Packet;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.Events;
 import net.m4e.app.user.UserEntity;
-import net.m4e.system.core.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.ObservesAsync;
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -37,9 +40,9 @@ import net.m4e.system.core.Log;
 public class ChatSystem {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "ChatSystem";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Events events;
 
@@ -72,7 +75,7 @@ public class ChatSystem {
      */
     @PostConstruct
     public void chatSystemInit() {
-        Log.info(TAG, "Starting the chat system");
+        LOGGER.info("Starting the chat system");
     }
 
     /**
@@ -84,7 +87,7 @@ public class ChatSystem {
         Long senderid = event.getSenderId();
         UserEntity user = connections.getConnectedUser(senderid);
         if (user == null) {
-            Log.warning(TAG, "invalid sender id detected: " + senderid);
+            LOGGER.warn("invalid sender id detected: " + senderid);
             return;
         }
 
@@ -93,7 +96,7 @@ public class ChatSystem {
         String receiveuser = data.getString("receiverUser", "");
         String receiveevent = data.getString("receiverEvent", "");
         if (receiveuser.isEmpty() && receiveevent.isEmpty()) {
-            Log.warning(TAG, "got invalid receiver from user " + senderid);
+            LOGGER.warn("got invalid receiver from user " + senderid);
             return;
         }
         try {
@@ -107,7 +110,7 @@ public class ChatSystem {
             }
         }
         catch(NumberFormatException ex) {
-            Log.warning(TAG, "could not distribute chat message from sender " + senderid + ", reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("could not distribute chat message from sender " + senderid + ", reason: " + ex.getLocalizedMessage());
         }
     }
 
@@ -122,7 +125,7 @@ public class ChatSystem {
         Set<Long> receiverids = events.getMembers(receiverId);
         EventEntity event = events.findEvent(receiverId);
         if ((event == null) || !events.getUserIsEventOwnerOrMember(sender, event)) {
-            Log.warning(TAG, "user " + sender.getId() + " tries to send to an event chat without being a member of the event, or the event is invalid!");
+            LOGGER.warn("user " + sender.getId() + " tries to send to an event chat without being a member of the event, or the event is invalid!");
             return;
         }
         receiverids.add(sender.getId());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,10 +7,13 @@
  */
 package net.m4e.system.maintenance;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import net.m4e.system.core.Log;
+import java.lang.invoke.MethodHandles;
 
 
 /**
@@ -23,9 +26,9 @@ import net.m4e.system.core.Log;
 public class MaintenanceCronJobs {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "MaintenanceCronJobs";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Maintenance maintenance;
 
@@ -51,8 +54,8 @@ public class MaintenanceCronJobs {
      */
     @Schedule(hour="0", persistent=false)
     public void nightlyJobs(){
-        Log.info(TAG, "starting midnight maintenance tasks");
+        LOGGER.info("starting midnight maintenance tasks");
         int countpurges = maintenance.purgeExpiredResources();
-        Log.info(TAG, " count of purged expired resource: " + countpurges);
+        LOGGER.info(" count of purged expired resource: " + countpurges);
     }
 }

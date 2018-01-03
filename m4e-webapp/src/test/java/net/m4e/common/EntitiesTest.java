@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -22,6 +22,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -91,7 +92,6 @@ public class EntitiesTest {
     private static JavaArchive addClasses(JavaArchive archive) {
         archive
                 .addClass(net.m4e.common.Entities.class)
-                .addClass(net.m4e.system.core.Log.class)
                 .addClass(net.m4e.common.EntityManagerProvider.class) // this contains the entity manager producer
                 .addClass(net.m4e.system.core.AppInfoEntity.class); // we use this entity for testing the Entities class
 
@@ -112,7 +112,7 @@ public class EntitiesTest {
      * Interface used for performing various entity operations.
      */
     interface EntityOperation {
-        void perform();
+        boolean perform();
     }
 
 
@@ -131,14 +131,15 @@ public class EntitiesTest {
      * Perform an entity operation.
      *
      * @param operation  The operation which is performed.
-     *
+     * @return           Return true if the operation was successful, otherwise false
      * @throws Exception
      */
-    private void performOp(EntityOperation operation) throws Exception {
+    private boolean performOp(EntityOperation operation) throws Exception {
+        boolean res;
         try {
 
             userTransaction.begin();
-            operation.perform();
+            res = operation.perform();
             userTransaction.commit();
 
         } catch (Exception e) {
@@ -149,6 +150,7 @@ public class EntitiesTest {
             }
             throw e;
         }
+        return res;
     }
 
     /**
@@ -168,13 +170,31 @@ public class EntitiesTest {
      *
      * @param entity    Entity to persist in database
      * @param <T>       Entity type to persist
+     * @return          Return the result of operation.
      */
-    private <T> void persistEntity(T entity) {
+    private <T> boolean persistEntity(T entity) {
         try {
-            performOp(() -> entities.create(entity));
+            return performOp(() -> entities.create(entity));
         } catch (Exception e) {
             fail("Could not create entity: " + e.getLocalizedMessage());
         }
+        return false;
+    }
+
+    /**
+     * Update the given entity in database.
+     *
+     * @param entity    Entity to update in database
+     * @param <T>       Entity type
+     * @return          Return the result of operation.
+     */
+    private <T> boolean updateEntity(T entity) {
+        try {
+            return performOp(() -> entities.update(entity));
+        } catch (Exception e) {
+            fail("Could not update entity: " + e.getLocalizedMessage());
+        }
+        return false;
     }
 
     /**
@@ -182,13 +202,15 @@ public class EntitiesTest {
      *
      * @param entity    Entity to delete from database
      * @param <T>       Entity type
+     * @return          Return the result of operation.
      */
-    private <T> void deleteEntity(T entity) {
+    private <T> boolean deleteEntity(T entity) {
         try {
-            performOp(() -> entities.delete(entity));
+            return performOp(() -> entities.delete(entity));
         } catch (Exception e) {
             fail("Could not delete entity: " + e.getLocalizedMessage());
         }
+        return false;
     }
 
     /**
@@ -196,12 +218,14 @@ public class EntitiesTest {
      */
     @Test
     public void testCreate() {
+        assertFalse(persistEntity(null));
+
         AppInfoEntity entity = new AppInfoEntity();
         entity.setVersion("1.0.0");
         entity.setDateLastUpdate(42L);
         entity.setDateLastMaintenance(43L);
         entity.incrementUserCountPurge(1L);
-        persistEntity(entity);
+        assertTrue(persistEntity(entity));
         assertNotEquals("Invalid entity", entity.getId(), null);
 
         AppInfoEntity expected = findEntity(AppInfoEntity.class, entity.getId());
@@ -218,13 +242,15 @@ public class EntitiesTest {
      */
     @Test
     public void testDelete() {
+        assertFalse(deleteEntity(null));
+
         AppInfoEntity entity = new AppInfoEntity();
-        persistEntity(entity);
+        assertTrue(persistEntity(entity));
         assertNotEquals("Invalid entity", entity.getId(), null);
 
         Long entityid = entity.getId();
 
-        deleteEntity(entity);
+        assertTrue(deleteEntity(entity));
 
         AppInfoEntity expected = findEntity(AppInfoEntity.class, entityid);
         assertEquals("Could not delete created entity", expected, null);
@@ -235,25 +261,22 @@ public class EntitiesTest {
      */
     @Test
     public void testUpdate() {
+        assertFalse(updateEntity(null));
+
         AppInfoEntity entity = new AppInfoEntity();
         entity.setVersion("1.0.0");
-        persistEntity(entity);
+        assertTrue(persistEntity(entity));
         assertNotEquals("Invalid entity", entity.getId(), null);
 
         assertEquals(entity.getVersion(), "1.0.0");
 
         entity.setVersion("1.1.1");
-        try {
-            performOp(() -> entities.update(entity));
-        } catch (Exception e) {
-            fail("Could not update entity: " + e.getLocalizedMessage());
-        }
+        assertTrue(updateEntity(entity));
 
         AppInfoEntity modified = findEntity(AppInfoEntity.class, entity.getId());
         assertEquals(modified.getVersion(), "1.1.1");
 
-        deleteEntity(modified);
-
+        assertTrue(deleteEntity(modified));
     }
 
     /**
@@ -356,11 +379,22 @@ public class EntitiesTest {
         assertNotEquals("Invalid entity", entity.getId(), null);
 
         List<String> searchFields = Arrays.asList("version");
-        List result = entities.search(AppInfoEntity.class, KEYWORD, searchFields, 10);
+        List<String> severalSearchFields = Arrays.asList("version", "version", "version");
+
+        List result = entities.searchForString(AppInfoEntity.class, KEYWORD, searchFields, 10);
         assertTrue("Search failed: " + result.size(), result.size() > 0);
 
-        result = entities.search(AppInfoEntity.class, KEYWORD_NO_HIT, searchFields, 10);
+        result = entities.searchForString(AppInfoEntity.class, KEYWORD_NO_HIT, new ArrayList(), 10);
+        assertTrue("Could not handle empty search fields", result.size() == 0);
+
+        result = entities.searchForString(AppInfoEntity.class, KEYWORD_NO_HIT, searchFields, 10);
         assertTrue("Search found wrong entities", result.size() == 0);
+
+        result = entities.searchForString(AppInfoEntity.class, "1", searchFields, 10);
+        assertTrue("Could not handle too short keyword", result.size() == 0);
+
+        result = entities.searchForString(AppInfoEntity.class, KEYWORD_NO_HIT, severalSearchFields, 10);
+        assertTrue("Could not handle several search fields", result.size() == 0);
 
         deleteEntity(entity);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,19 +8,16 @@
 
 package net.m4e.app.resources;
 
-import java.io.Serializable;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-
-import net.m4e.system.core.Log;
+import javax.persistence.*;
+import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Class entity for an document. A document can be e.g. an image or a PDF file.
@@ -32,9 +29,9 @@ import net.m4e.system.core.Log;
 public class DocumentEntity implements Serializable {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "DocumentEntity";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Content encoding type Base64
@@ -292,7 +289,7 @@ public class DocumentEntity implements Serializable {
             hash = hexstring.toString();
             eTag = hash;
         } catch (NoSuchAlgorithmException ex) {
-            Log.error(TAG, "Problem occurred while hashing an document content, reason: " + ex.getLocalizedMessage());
+            LOGGER.error("Problem occurred while hashing an document content, reason: " + ex.getLocalizedMessage());
         }
     }
 
@@ -318,10 +315,7 @@ public class DocumentEntity implements Serializable {
             return false;
         }
         DocumentEntity other = (DocumentEntity) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

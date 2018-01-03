@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,19 +8,22 @@
 
 package net.m4e.app.communication;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import net.m4e.app.event.EventNotifications;
+import net.m4e.app.notification.NotifyUserRelativesEvent;
+import net.m4e.app.user.UserEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.websocket.Session;
-import net.m4e.app.event.EventNotifications;
-import net.m4e.app.notification.NotifyUserRelativesEvent;
-import net.m4e.app.user.UserEntity;
-import net.m4e.system.core.Log;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -36,9 +39,9 @@ import net.m4e.system.core.Log;
 public class ConnectedClients {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "ConnectedClients";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Event used for notifying other users
@@ -90,7 +93,7 @@ public class ConnectedClients {
                         session.getBasicRemote().sendText(msg);
                     }
                     catch(IOException ex) {
-                        Log.warning(TAG, "problem occurred while sending notification to user (" + id + "), reason: " + ex.getLocalizedMessage());
+                        LOGGER.warn("problem occurred while sending notification to user (" + id + "), reason: " + ex.getLocalizedMessage());
                     }
                 });
             }
@@ -116,7 +119,7 @@ public class ConnectedClients {
                             session.getBasicRemote().sendText(msg);
                         }
                         catch(IOException ex) {
-                            Log.warning(TAG, "problem occurred while sending notification to user (" + userId + " / " + sessionId + "), reason: " + ex.getLocalizedMessage());
+                            LOGGER.warn("problem occurred while sending notification to user (" + userId + " / " + sessionId + "), reason: " + ex.getLocalizedMessage());
                         }
                     });
         }
@@ -151,7 +154,7 @@ public class ConnectedClients {
             connections.put(user.getId(), entry);
         }
         if (entry.sessions.contains(session)) {
-            Log.warning(TAG, "session for user " + user.getId() + " already exists!");
+            LOGGER.warn("session for user " + user.getId() + " already exists!");
             return false;
         }
         // store the user in session, we need it later while handling incoming messages

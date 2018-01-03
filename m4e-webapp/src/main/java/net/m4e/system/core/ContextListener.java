@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,18 +7,17 @@
  */
 package net.m4e.system.core;
 
-import java.io.InputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import javax.transaction.*;
+import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 
 
 /**
@@ -30,9 +29,9 @@ import javax.transaction.UserTransaction;
 public class ContextListener implements ServletContextListener {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "ContextListener";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final AppUpdateManager updateManager;
 
@@ -51,7 +50,7 @@ public class ContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        Log.info(TAG, "Starting the servlet container");
+        LOGGER.info("Starting the servlet container");
 
         // save the context parameters in app configuration
         ServletContext ctx = sce.getServletContext();
@@ -70,19 +69,19 @@ public class ContextListener implements ServletContextListener {
             problem = ex;
         }
         if (problem != null) {
-            Log.error( TAG, "problem occurred while update checking, reason: " + problem.getLocalizedMessage());
+            LOGGER.error("problem occurred while update checking, reason: " + problem.getLocalizedMessage());
             try {
                 userTransaction.rollback();
             }
             catch(SystemException ex) {
-                Log.error( TAG, "problem occurred while rolling back transaction, reason: " + ex.getLocalizedMessage());                
+                LOGGER.error("problem occurred while rolling back transaction, reason: " + ex.getLocalizedMessage());
             }
         }
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        Log.info(TAG, "Destroying the servlet container");
+        LOGGER.info("Destroying the servlet container");
     }
 
     /**
@@ -102,7 +101,7 @@ public class ContextListener implements ServletContextListener {
         InputStream configcontent = ctx.getResourceAsStream("/WEB-INF/" + accountregcfg);
         AppConfiguration.getInstance().setupAccountRegistrationConfig(configcontent);
         if (configcontent == null) {
-            Log.warning(TAG, "No account registration config file was found, using defaults!");
+            LOGGER.warn("No account registration config file was found, using defaults!");
         }        
     }
 }

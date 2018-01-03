@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,26 +7,6 @@
  */
 
 package net.m4e.app.user;
-
-import java.io.StringReader;
-import javax.inject.Inject;
-import javax.enterprise.context.ApplicationScoped;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonString;
 
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
@@ -36,7 +16,17 @@ import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.common.Entities;
-import net.m4e.system.core.*;
+import net.m4e.system.core.AppInfoEntity;
+import net.m4e.system.core.AppInfos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.json.*;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 
 
 /**
@@ -49,9 +39,9 @@ import net.m4e.system.core.*;
 public class Users {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "Users";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Entities entities;
 
@@ -144,11 +134,11 @@ public class Users {
         if (requestedRoles != null) {
             for (RoleEntity role: requestedRoles) {
                 if (!allowedroles.contains(role.getName())) {
-                    Log.warning(TAG, "*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
+                    LOGGER.warn("*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
                     continue;
                 }
                 if (!isadmin && role.getName().contentEquals(AuthRole.USER_ROLE_ADMIN)) {
-                    Log.warning(TAG, "*** Requesting user has no sufficient permission for requesting for  role '" + role.getName() + "', ignoring it.");
+                    LOGGER.warn("*** Requesting user has no sufficient permission for requesting for  role '" + role.getName() + "', ignoring it.");
                     continue;
                 }
                 res.add(role);
@@ -201,7 +191,7 @@ public class Users {
      * @param user          User entity
      * @throws Exception    Throws exception if any problem occurred.
      */
-    public void createUserEntity(UserEntity user) throws Exception {
+    public void createUserEntity(UserEntity user) {
         // we have to remove the role collection and re-add it after entity creation,
         //   otherwise new roles are created instead of using existing ones!
         List<String> roles = user.getRolesAsString();
@@ -224,7 +214,7 @@ public class Users {
             entities.update(user);
         }
         catch (Exception ex) {
-            Log.error(TAG, "*** Could not update user '" + user.getLogin() + "'");
+            LOGGER.error("*** Could not update user '" + user.getLogin() + "'");
         }
     }
 
@@ -288,7 +278,7 @@ public class Users {
      * @param user          User entity
      * @throws Exception    Throws exception if any problem occurred.
      */
-    public void deleteUser(UserEntity user) throws Exception {
+    public void deleteUser(UserEntity user) {
         entities.delete(user);
     }
 
@@ -315,7 +305,7 @@ public class Users {
             return foundentities.get(0);
         }
         else if (foundentities.size() > 1) {
-            Log.error(TAG, "*** Fatal error, more than one user with same login '" + login + "' exist in database!");
+            LOGGER.error("*** Fatal error, more than one user with same login '" + login + "' exist in database!");
         }
         return null;
     }
@@ -332,7 +322,7 @@ public class Users {
             return foundentities.get(0);
         }
         else if (foundentities.size() > 1) {
-            Log.error(TAG, "*** Fatal error, more than one user with same email '" + email + "' exist in database!");
+            LOGGER.error("*** Fatal error, more than one user with same email '" + email + "' exist in database!");
         }
         return null;
     }
@@ -387,7 +377,7 @@ public class Users {
             entities.update(user);
         }
         catch (Exception ex) {
-            Log.error(TAG, "*** Could not update user's last login timestamp '" + user.getLogin() + "'");
+            LOGGER.error("*** Could not update user's last login timestamp '" + user.getLogin() + "'");
         }
     }
 
@@ -405,7 +395,7 @@ public class Users {
             }
             List<RoleEntity> ent = entities.findByField(RoleEntity.class, "name", role);
             if (ent.size() != 1) {
-                Log.error(TAG, "*** Unexpected count of role type found in database '" + role + "', count: " + ent.size());
+                LOGGER.error("*** Unexpected count of role type found in database '" + role + "', count: " + ent.size());
                 continue;
             }
             if (user.getRoles() == null) {
@@ -476,7 +466,7 @@ public class Users {
             }
         }
         catch(Exception ex) {
-            Log.warning(TAG, "Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
             return null;
         }
 

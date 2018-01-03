@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,18 +8,20 @@
 
 package net.m4e.app.notification;
 
-import java.util.List;
+import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.communication.Packet;
+import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.Users;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ejb.Stateless;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-
-import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.communication.Packet;
-import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.Users;
-import net.m4e.system.core.Log;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 /**
  * Event listener for sending a notification to a group of users
@@ -29,10 +31,11 @@ import net.m4e.system.core.Log;
  */
 @Stateless
 public class NotifyUsersListener {
+
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "NotifyUsersListener";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Central place to hold all client connections
@@ -69,10 +72,10 @@ public class NotifyUsersListener {
      * @param event NotifyUser event
      */
     public void notifyUsers(@ObservesAsync NotifyUsersEvent event) {
-        Log.debug(TAG, "Sending out user notification");
+        LOGGER.debug("Sending out user notification");
 
         if (event == null) {
-            Log.warning(TAG, "  attempt to send an empty event!");
+            LOGGER.warn("  attempt to send an empty event!");
             return;
         }
 
@@ -107,10 +110,10 @@ public class NotifyUsersListener {
      * @param event NotifyUser event, for this event 'recipient IDs' are not used.
      */
     public void notifyUserRelatives(@ObservesAsync NotifyUserRelativesEvent event) {
-        Log.debug(TAG, "Sending out user notification to user's relatives");
+        LOGGER.debug("Sending out user notification to user's relatives");
 
         if (event == null) {
-            Log.warning(TAG, "  attempt to send an empty event!");
+            LOGGER.warn("  attempt to send an empty event!");
             return;
         }
 
@@ -118,13 +121,13 @@ public class NotifyUsersListener {
         UserEntity sender;
         Long senderid = event.getSenderId();
         if (senderid == 0L) {
-            Log.warning(TAG, "  attempt to send an event with an invalid sender ID!");
+            LOGGER.warn("  attempt to send an event with an invalid sender ID!");
             return;
         }
 
         sender = users.findUser(senderid);
         if ((sender == null) || !sender.getStatus().getIsActive()) {
-            Log.warning(TAG, "  attempt to send an event with an invalid sender!");
+            LOGGER.warn("  attempt to send an event with an invalid sender!");
             return;            
         }
 

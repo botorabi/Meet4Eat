@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,25 +8,23 @@
 
 package net.m4e.app.mailbox;
 
+import net.m4e.app.user.UserEntity;
+import net.m4e.common.Entities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.json.*;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-
-import net.m4e.app.user.UserEntity;
-import net.m4e.common.*;
-import net.m4e.system.core.Log;
 
 /**
  * A collection of mailbox related utilities
@@ -38,9 +36,9 @@ import net.m4e.system.core.Log;
 public class Mails {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "Mails";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final EntityManager entityManager;
 
@@ -71,9 +69,8 @@ public class Mails {
      * Given a mail entity filled with all its fields, create it in database.
      * 
      * @param mail          Mail entity
-     * @throws Exception    Throws exception if any problem occurred.
      */
-    public void createMail(MailEntity mail) throws Exception {
+    public void createMail(MailEntity mail) {
         entities.create(mail);
         createMailUser(entities, mail.getId(), mail.getSenderId());
         // sometimes ppl send mails to themselves, catch that
@@ -102,7 +99,7 @@ public class Mails {
                 createMail(newmail);
             }
             catch (Exception ex) {
-                Log.warning(TAG, "*** could not create mail, reason: " + ex.getLocalizedMessage());
+                LOGGER.warn("*** could not create mail, reason: " + ex.getLocalizedMessage());
             }
         }
     }
@@ -114,7 +111,7 @@ public class Mails {
      * @param mailId    Mail ID
      * @param userId    User ID
      */
-    private void createMailUser(Entities entities, Long mailId, Long userId) throws Exception {
+    private void createMailUser(Entities entities, Long mailId, Long userId) {
         MailUserEntity mailuser = new MailUserEntity();
         mailuser.setMailId(mailId);
         mailuser.setUserId(userId);
@@ -332,12 +329,12 @@ public class Mails {
             //! TODO get the attachments
         }
         catch(Exception ex) {
-            Log.warning(TAG, "Could not setup a mail entity out of given JSON string, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("Could not setup a mail entity out of given JSON string, reason: " + ex.getLocalizedMessage());
             throw new Exception("Invalid input");
         }
 
         if (receiverid ==  null) {
-            Log.warning(TAG, "Could not setup a mail entity out of given JSON string, missing recipient");
+            LOGGER.warn("Could not setup a mail entity out of given JSON string, missing recipient");
             throw new Exception("Missing mail recipient");
         }
         long recvid = 0;
@@ -346,7 +343,7 @@ public class Mails {
         }
         catch(NumberFormatException ex) {}
         if (recvid == 0L) {
-            Log.warning(TAG, "Could not setup a mail entity out of given JSON string, invalid recipient");
+            LOGGER.warn("Could not setup a mail entity out of given JSON string, invalid recipient");
             throw new Exception("Invalid mail recipient");            
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,12 +7,16 @@
  */
 package net.m4e.system.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Central place for application configuration. This is a singleton class.
@@ -30,9 +34,9 @@ import javax.servlet.http.HttpServletRequest;
 public class AppConfiguration {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "AppConfiguration";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Base URL for all RESTful services
@@ -139,10 +143,10 @@ public class AppConfiguration {
                 Properties props = new Properties();
                 props.load(configContent);
                 accountRegistrationConfig = props;
-                Log.info(TAG, "Successfully loaded account registration configuration");
+                LOGGER.info("Successfully loaded account registration configuration");
             }
             catch (IOException ex) {
-                Log.warning(TAG, "Could not load account registration configuration, reason: " + ex.getLocalizedMessage());
+                LOGGER.warn("Could not load account registration configuration, reason: " + ex.getLocalizedMessage());
             }
         }
     }

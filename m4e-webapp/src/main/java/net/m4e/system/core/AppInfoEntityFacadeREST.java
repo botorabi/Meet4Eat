@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  *
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,15 +7,17 @@
  */
 package net.m4e.system.core;
 
+import net.m4e.app.auth.AuthRole;
+import net.m4e.common.ResponseResults;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
-import net.m4e.app.auth.AuthRole;
-import net.m4e.common.ResponseResults;
 
 /**
  * REST API for getting application information.

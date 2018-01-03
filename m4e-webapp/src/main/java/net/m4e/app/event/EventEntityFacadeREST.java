@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,9 +8,19 @@
 
 package net.m4e.app.event;
 
-import java.io.StringReader;
-import java.util.List;
-import java.util.Objects;
+import net.m4e.app.auth.AuthRole;
+import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.notification.NotifyUserRelativesEvent;
+import net.m4e.app.notification.NotifyUsersEvent;
+import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.Users;
+import net.m4e.common.Entities;
+import net.m4e.common.ResponseResults;
+import net.m4e.system.core.AppInfoEntity;
+import net.m4e.system.core.AppInfos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
@@ -20,16 +30,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.notification.NotifyUserRelativesEvent;
-import net.m4e.app.notification.NotifyUsersEvent;
-import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.Users;
-import net.m4e.common.*;
-import net.m4e.system.core.*;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * REST services for Event entity operations.
@@ -43,9 +47,9 @@ import net.m4e.system.core.*;
 public class EventEntityFacadeREST {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "EventEntityFacadeREST";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Event used for notifying other users
@@ -154,7 +158,7 @@ public class EventEntityFacadeREST {
             reqentity = validator.validateNewEntityInput(eventJson);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not create new event, validation failed, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not create new event, validation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
 
@@ -163,7 +167,7 @@ public class EventEntityFacadeREST {
             newevent = events.createNewEvent(reqentity, sessionuser.getId());
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not create new event, reaon: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not create new event, reaon: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new event.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
@@ -205,7 +209,7 @@ public class EventEntityFacadeREST {
 
         // check if the event owner or a user with higher privilege is trying to modify the event
         if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
-            Log.warning(TAG, "*** User was attempting to update an event without proper privilege!");
+            LOGGER.warn("*** User was attempting to update an event without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
@@ -221,7 +225,7 @@ public class EventEntityFacadeREST {
                 events.updateEventImage(event, reqentity.getPhoto());
             }
             catch (Exception ex) {
-                Log.warning(TAG, "*** Event image could not be updated, reason: " + ex.getLocalizedMessage());
+                LOGGER.warn("*** Event image could not be updated, reason: " + ex.getLocalizedMessage());
             }
         }
         if (reqentity.getEventStart() > 0L) {
@@ -264,13 +268,13 @@ public class EventEntityFacadeREST {
         EventEntity event = entities.find(EventEntity.class, id);
         jsonresponse.add("id", id.toString());
         if (event == null) {
-            Log.warning(TAG, "*** User was attempting to delete non-existing event!");
+            LOGGER.warn("*** User was attempting to delete non-existing event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         // check if the event owner or a user with higher privilege is trying to remove the event
         if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
-            Log.warning(TAG, "*** User was attempting to remove an event without proper privilege!");
+            LOGGER.warn("*** User was attempting to remove an event without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
@@ -282,7 +286,7 @@ public class EventEntityFacadeREST {
             events.markEventAsDeleted(event);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not mark event as deleted, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not mark event as deleted, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete event.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
@@ -381,7 +385,7 @@ public class EventEntityFacadeREST {
     public String addMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if ((eventId == null) || (memberId == null)) {
-            Log.error(TAG, "*** Cannot add member to event, no valid inputs!");
+            LOGGER.error("*** Cannot add member to event, no valid inputs!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
@@ -400,13 +404,13 @@ public class EventEntityFacadeREST {
             event = null;
         }
         if ((event == null) || (user2add == null)) {
-            Log.warning(TAG, "*** Cannot add member to event: non-existing member or event!");
+            LOGGER.warn("*** Cannot add member to event: non-existing member or event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         // check if the event owner or a user with higher privilege is trying to modify the event
         if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
-            Log.warning(TAG, "*** User was attempting to modify (add member) an event without proper privilege!");
+            LOGGER.warn("*** User was attempting to modify (add member) an event without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
@@ -414,7 +418,7 @@ public class EventEntityFacadeREST {
             events.addMember(event, user2add);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not add member to event, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not add member to event, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
@@ -443,7 +447,7 @@ public class EventEntityFacadeREST {
     public String removeMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if ((eventId == null) || (memberId == null)) {
-            Log.error(TAG, "*** Cannot remove member from event, no valid inputs!");
+            LOGGER.error("*** Cannot remove member from event, no valid inputs!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
@@ -462,13 +466,13 @@ public class EventEntityFacadeREST {
             event = null;
         }
         if ((event == null) || (user2remove == null)) {
-            Log.warning(TAG, "*** Cannot remove member from event: non-existing member or event!");
+            LOGGER.warn("*** Cannot remove member from event: non-existing member or event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         // check if the member himself, event owner, or a user with higher privilege is trying to modify the event
         if ((!Objects.equals(memberId, sessionuser.getId())) && !users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
-            Log.warning(TAG, "*** User was attempting to modify (remove member) an event without proper privilege!");
+            LOGGER.warn("*** User was attempting to modify (remove member) an event without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
@@ -476,7 +480,7 @@ public class EventEntityFacadeREST {
             events.removeMember(event, user2remove);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not remove member from event, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not remove member from event, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
@@ -505,7 +509,7 @@ public class EventEntityFacadeREST {
     public String notifyMembers(@PathParam("eventId") Long eventId, String notificationJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if (eventId == null) {
-            Log.error(TAG, "*** Cannot notify event members, no valid inputs!");
+            LOGGER.error("*** Cannot notify event members, no valid inputs!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to notify event members, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
@@ -513,7 +517,7 @@ public class EventEntityFacadeREST {
 
         EventEntity event = entities.find(EventEntity.class, eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
-            Log.warning(TAG, "*** Cannot notify event members: non-existing event!");
+            LOGGER.warn("*** Cannot notify event members: non-existing event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed notify event members, invalid event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
@@ -541,26 +545,26 @@ public class EventEntityFacadeREST {
     public String getLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if ((eventId == null) || (locationId == null)) {
-            Log.error(TAG, "*** Cannot get event location, no valid inputs!");
+            LOGGER.error("*** Cannot get event location, no valid inputs!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         EventEntity event = events.findEvent(eventId);
         if (event == null) {
-            Log.warning(TAG, "*** Cannot get location: non-existing event!");
+            LOGGER.warn("*** Cannot get location: non-existing event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location. Event does not exist.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         // check if the event owner or a user with higher privilege is trying to modify the event locations
         if (!event.getIsPublic() && !users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
-            Log.warning(TAG, "*** User was attempting to get event information without proper privilege!");
+            LOGGER.warn("*** User was attempting to get event information without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
         EventLocationEntity location = eventLocations.findLocation(locationId);
         if ((location == null) || !location.getStatus().getIsActive()) {
-            Log.warning(TAG, "*** Failed to get event location, it does not exist!");
+            LOGGER.warn("*** Failed to get event location, it does not exist!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location. Location does not exist.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
@@ -586,20 +590,20 @@ public class EventEntityFacadeREST {
     public String putLocation(@PathParam("eventId") Long eventId, String locationJson, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if ((eventId == null) || (locationJson == null)) {
-            Log.error(TAG, "*** Cannot add location to event, no valid inputs!");
+            LOGGER.error("*** Cannot add location to event, no valid inputs!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
         EventEntity event = events.findEvent(eventId);
         if (event == null) {
-            Log.warning(TAG, "*** Cannot add location to event: non-existing event!");
+            LOGGER.warn("*** Cannot add location to event: non-existing event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         // check if the event owner or a user with higher privilege is trying to modify the event locations
         if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
-            Log.warning(TAG, "*** User was attempting to update an event without proper privilege!");
+            LOGGER.warn("*** User was attempting to update an event without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
@@ -608,7 +612,7 @@ public class EventEntityFacadeREST {
             inputlocation = validator.validateLocationInput(locationJson, event);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not add location, validation failed, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not add location, validation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
 
@@ -629,7 +633,7 @@ public class EventEntityFacadeREST {
             }
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not add/update location, reaon: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not add/update location, reaon: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location. " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
@@ -658,7 +662,7 @@ public class EventEntityFacadeREST {
     public String removeLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         if ((eventId == null) || (locationId == null)) {
-            Log.error(TAG, "*** Cannot remove location from event, no valid inputs!");
+            LOGGER.error("*** Cannot remove location from event, no valid inputs!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
@@ -678,13 +682,13 @@ public class EventEntityFacadeREST {
             event = null;
         }
         if ((event == null) || (loc2remove == null)) {
-            Log.warning(TAG, "*** Cannot remove location from event: non-existing location or event!");
+            LOGGER.warn("*** Cannot remove location from event: non-existing location or event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event. Event or location does not exist.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
         // check if the event owner or a user with higher privilege is trying to modify the event
         if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
-            Log.warning(TAG, "*** User was attempting to modify (remove location) an event without proper privilege!");
+            LOGGER.warn("*** User was attempting to modify (remove location) an event without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
 
@@ -692,7 +696,7 @@ public class EventEntityFacadeREST {
             eventLocations.markLocationAsDeleted(event, loc2remove);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not remove location from event, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not remove location from event, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 

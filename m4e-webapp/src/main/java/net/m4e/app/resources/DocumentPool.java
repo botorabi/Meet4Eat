@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,14 +8,17 @@
 
 package net.m4e.app.resources;
 
+import net.m4e.common.Entities;
+import net.m4e.common.EntityWithPhoto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.lang.invoke.MethodHandles;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.enterprise.context.ApplicationScoped;
-
-import net.m4e.common.*;
-import net.m4e.system.core.Log;
 
 /**
  * This class manages a pool of documents. Documents are handled as sharable entities which
@@ -31,9 +34,9 @@ import net.m4e.system.core.Log;
 public class DocumentPool {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "DocumentPool";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Entities entities;
 
@@ -87,7 +90,7 @@ public class DocumentPool {
             return false;
         }
         if (document.getStatus().getReferenceCount() < 1L) {
-            Log.warning(TAG, "No reference to given document exists.");
+            LOGGER.warn("No reference to given document exists.");
             return false;
         }
         document.getStatus().decreaseRefCount();

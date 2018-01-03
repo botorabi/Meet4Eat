@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -23,7 +23,7 @@ public class DefaultPermissions {
      * Default permissions
      * MODIFY permissions allow full access, i.e. read, write, and delete operations
      */
-    public static enum Perm {
+    public enum Perm {
         /**
          * Read server status
          */

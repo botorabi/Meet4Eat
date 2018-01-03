@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,13 +7,16 @@
  */
 package net.m4e.system.core;
 
+import net.m4e.common.Entities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-
-import net.m4e.common.*;
 
 /**
  * This class cares about application updates. Whenever a new app version
@@ -29,9 +32,9 @@ import net.m4e.common.*;
 public class AppUpdateManager {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "AppUpdateManager";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Entity manager is used for accessing the database.
@@ -90,27 +93,27 @@ public class AppUpdateManager {
         // check if there is already an app info entry in database
         if (res.size() > 0) {
             if (res.size() > 1) {
-                Log.error(TAG, "*** Error while checking the app info. More than one app info entry detected in database!");
+                LOGGER.error("*** Error while checking the app info. More than one app info entry detected in database!");
                 return;
             }
 
-            AppInfoEntity info = (AppInfoEntity) res.get(0);
+            AppInfoEntity info = res.get(0);
             String currentversion = info.getVersion();
             // app version was changed?
             if (!currentversion.contentEquals(appVersion)) {
-                Log.info(TAG, "A new version of application was deployed.");
+                LOGGER.info("A new version of application was deployed.");
                 if (performUpdate(currentversion, appVersion)) {
                     updateAppVersionEntry(info, appVersion);
                 }
             }
         }
         else { // perform the initialization of a new installation)
-            Log.info(TAG, "Initial version of application was deployed.");
+            LOGGER.info("Initial version of application was deployed.");
             if (performInitialUpdate()) {
                 createAppVersionEntry(appVersion);
             }
             else {
-                Log.warning(TAG, "*** Coult not perform the initial deployment setup!");
+                LOGGER.warn("*** Coult not perform the initial deployment setup!");
             }
         }
     }
@@ -140,7 +143,7 @@ public class AppUpdateManager {
             entities.create(info);
         }
         catch (Exception ex) {
-            Log.error(TAG, "*** Problem occured while creating app information in database, reason: " + ex.getLocalizedMessage());
+            LOGGER.error("*** Problem occurred while creating app information in database, reason: " + ex.getLocalizedMessage());
         }
     }
 
@@ -164,40 +167,40 @@ public class AppUpdateManager {
      * @return                  Return true if the update was successful, otherwise false.
      */
     private boolean performUpdate(String currentVersion, String newVersion) {
-        Log.info(TAG, "Start updating deployment...");
+        LOGGER.info("Start updating deployment...");
         int indexcurrent = updateRegistry.indexOf(findUpdater(currentVersion));
         int indexnew = updateRegistry.indexOf(findUpdater(newVersion));
         // check if there is an updater for this version
         if (indexnew < 0) {
-            Log.debug(TAG, "There is no need for update migration for this version: " + currentVersion);
-            Log.info(TAG, "Deployment updating successfully completed");
+            LOGGER.debug("There is no need for update migration for this version: " + currentVersion);
+            LOGGER.info("Deployment updating successfully completed");
             return true;
         }
 
         if (indexcurrent < 0) {
-            Log.warning(TAG, "   Current version had no updater, update to new version skipping potention versions in between!");
+            LOGGER.warn("   Current version had no updater, update to new version skipping potention versions in between!");
             indexcurrent = indexnew;
         }
 
         // do some deployment consistency checks
         indexcurrent++;
         if (indexcurrent > indexnew) {
-            Log.error(TAG, "*** New updater is older than the current updater (" + indexcurrent + " > " + indexnew + "). Check the deployed package, it may contain errors.");
+            LOGGER.error("*** New updater is older than the current updater (" + indexcurrent + " > " + indexnew + "). Check the deployed package, it may contain errors.");
             return false;
         }
         // go through every incremental update up to the current version
         for (int i = indexcurrent; i <= indexnew; i++) {
-            Log.info(TAG, "  Start updating to version " + updateRegistry.get(i).getAppVersion());
+            LOGGER.info("  Start updating to version " + updateRegistry.get(i).getAppVersion());
             try {
                 updateRegistry.get(i).performUpdate(entityManager, entities);
-                Log.info(TAG, "  Successfully updated to version " + updateRegistry.get(i).getAppVersion());
+                LOGGER.info("  Successfully updated to version " + updateRegistry.get(i).getAppVersion());
             }
             catch (Exception ex) {
-                Log.error(TAG, "***  Failed to perform the deployment update, reason: " + ex.getLocalizedMessage());
+                LOGGER.error("***  Failed to perform the deployment update, reason: " + ex.getLocalizedMessage());
                 return false;
             }
         }
-        Log.info(TAG, "Deployment updating successfully completed");
+        LOGGER.info("Deployment updating successfully completed");
         return true;
     }
 
@@ -215,10 +218,10 @@ public class AppUpdateManager {
         }
         try {
             updater.performUpdate(entityManager, entities);
-            Log.info(TAG, "  Successfully updated to initial version " + updater.getAppVersion());
+            LOGGER.info("  Successfully updated to initial version " + updater.getAppVersion());
         }
         catch (Exception ex) {
-            Log.error(TAG, "***  Failed to perform the initial deployment update, reason: " + ex.getLocalizedMessage());
+            LOGGER.error("***  Failed to perform the initial deployment update, reason: " + ex.getLocalizedMessage());
             return false;
         }
         return true;

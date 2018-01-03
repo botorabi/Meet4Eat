@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -25,12 +25,12 @@ public @interface AuthRole {
     /**
      * Name of user role: administrator
      */
-    public static final String USER_ROLE_ADMIN = "ADMIN";
+    String USER_ROLE_ADMIN = "ADMIN";
 
     /**
      * Name of user role: moderator
      */
-    public static final String USER_ROLE_MODERATOR = "MODERATOR";
+    String USER_ROLE_MODERATOR = "MODERATOR";
 
     /**
      * Name of virtual role GUEST. This role is set automatically by
@@ -39,7 +39,7 @@ public @interface AuthRole {
      * NOTE: Don't use this role explicitly in UserEntity. It should be only used 
      * on web resources.
      */
-    public static final String VIRT_ROLE_GUEST = "GUEST";
+    String VIRT_ROLE_GUEST = "GUEST";
 
     /**
      * Name of virtual role USER. This role is set automatically by
@@ -48,7 +48,7 @@ public @interface AuthRole {
      * NOTE: Don't use this role explicitly in UserEntity. It should be only used 
      * on web resources.
      */
-    public static final String VIRT_ROLE_USER = "USER";
+    String VIRT_ROLE_USER = "USER";
 
     /**
      * Name of virtual role ENDPOINT_CHECK. This is a special role which lets
@@ -61,7 +61,7 @@ public @interface AuthRole {
      * NOTE: Don't use this role explicitly in UserEntity. It should be only used 
      * on web resources.
      */
-    public static final String VIRT_ENDPOINT_CHECK = "ENDPOINT_CHECK";
+    String VIRT_ENDPOINT_CHECK = "ENDPOINT_CHECK";
 
     /**
      * List of roles which have access to a resource.

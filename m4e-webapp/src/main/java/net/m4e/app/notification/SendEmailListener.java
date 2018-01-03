@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,24 +7,22 @@
  */
 package net.m4e.app.notification;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Properties;
+import net.m4e.system.core.AppConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ejb.Stateless;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
-import javax.mail.Authenticator;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletContext;
-import net.m4e.system.core.AppConfiguration;
-import net.m4e.system.core.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
+import java.util.Properties;
 
 
 /**
@@ -37,9 +35,9 @@ import net.m4e.system.core.Log;
 public class SendEmailListener {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "SendEmailListener";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Inject
     ServletContext context;
@@ -58,7 +56,7 @@ public class SendEmailListener {
      * @param event Mail event
      */
     public void sendEmail(@ObservesAsync SendEmailEvent event) {
-        Log.debug(TAG, "Sending out an email");
+        LOGGER.debug("Sending out an email");
         assembleMail(event);
     }
 
@@ -70,7 +68,7 @@ public class SendEmailListener {
     private void assembleMail(SendEmailEvent event) {
         Properties cfg = getMailerConfig();
         if (cfg == null) {
-            Log.warning(TAG, "Cannot send e-mail, invalid configuration");
+            LOGGER.warn("Cannot send e-mail, invalid configuration");
             return;
         }
 
@@ -110,7 +108,7 @@ public class SendEmailListener {
             Transport.send(message);
         }
         catch (MessagingException | UnsupportedEncodingException ex){
-            Log.warning(TAG, "*** could not send out e-mail, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** could not send out e-mail, reason: " + ex.getLocalizedMessage());
         }
     }
 
@@ -127,12 +125,12 @@ public class SendEmailListener {
         try {
             String cfgfile = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
             if (cfgfile == null) {
-                Log.error(TAG, "*** Missing mailer configuration file entry in application configuration!");
+                LOGGER.error("*** Missing mailer configuration file entry in application configuration!");
                 return null;
             }
             InputStream configcontent = context.getResourceAsStream("/WEB-INF/" + cfgfile);
             if (configcontent == null) {
-                Log.error(TAG, "*** Missing mail config file in application!");
+                LOGGER.error("*** Missing mail config file in application!");
                 return null;
             }
             Properties cfg = new Properties();
@@ -140,7 +138,7 @@ public class SendEmailListener {
             mailServerConfig = cfg;
         }
         catch (IOException ex) {
-            Log.warning(TAG, "*** Could not read e-mail sender configuration, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not read e-mail sender configuration, reason: " + ex.getLocalizedMessage());
         }
 
         return mailServerConfig;

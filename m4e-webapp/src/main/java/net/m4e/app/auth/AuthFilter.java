@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,22 +7,20 @@
  */
 package net.m4e.app.auth;
 
+import net.m4e.app.user.UserEntity;
+import net.m4e.common.ResponseResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import net.m4e.common.ResponseResults;
-import net.m4e.system.core.Log;
-import net.m4e.app.user.UserEntity;
 
 
 /**
@@ -32,11 +30,11 @@ import net.m4e.app.user.UserEntity;
  * Date of creation Aug 18, 2017
  */
 public class AuthFilter implements Filter {
- 
+
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "AuthFilter";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Configuration parameter name for "basePath"
@@ -82,7 +80,7 @@ public class AuthFilter implements Filter {
      */
     @Override
     public void destroy() {
-        Log.debug(TAG, "Destroy");
+        LOGGER.debug("Destroy");
     }
 
     /**
@@ -97,12 +95,12 @@ public class AuthFilter implements Filter {
             publicBasePath = filterConfig.getInitParameter(PARAM_BASE_PATH_PUBLIC);
             protectedBasePath = filterConfig.getInitParameter(PARAM_BASE_PATH_PROTECTED);
 
-            Log.debug(TAG, "Initializing filter: " +
+            LOGGER.debug("Initializing filter: " +
                 "basePath(" + basePath + ") | " +
                 "publicBasePath(" + basePath + "/" + publicBasePath + ") | " + 
                 "protectedBasePath(" + basePath + "/" + protectedBasePath + ")");
         }
-        Log.debug(TAG, "Setup authorization check for protected path: " + basePath + "/" + protectedBasePath);
+        LOGGER.debug("Setup authorization check for protected path: " + basePath + "/" + protectedBasePath);
         // setup the auth checker
         authChecker.initialize(AuthorityConfig.getInstance().getAccessBeanClasses());
         // ADMIN role gets always access to resources
@@ -135,7 +133,7 @@ public class AuthFilter implements Filter {
         String             url         = httprequest.getRequestURL().toString();
         String             path        = new URL(url).getPath();
 
-        Log.verbose(TAG, "Requesting for resource: " + path);
+        LOGGER.trace("Requesting for resource: " + path);
 
         if (path.startsWith("/" + basePath)) {
 
@@ -143,7 +141,7 @@ public class AuthFilter implements Filter {
                 processRequest(request, response, chain);                    
             }
             else if (path.startsWith("/" + basePath + "/" + publicBasePath)) {
-                Log.verbose(TAG, "  Fechting public resource: " + path);
+                LOGGER.trace("  Fechting public resource: " + path);
                 processRequest(request, response, chain);
             }
             else if (path.startsWith("/" + basePath + "/" + protectedBasePath)) {
@@ -151,16 +149,16 @@ public class AuthFilter implements Filter {
                 UserEntity sessionuser = getSessionUser(httprequest);
                 List<String> userroles;
                 if (sessionuser != null) {
-                    Log.verbose(TAG, "   User '" + sessionuser.getLogin() + "' accessing protected resource: " + path);
+                    LOGGER.trace("   User '" + sessionuser.getLogin() + "' accessing protected resource: " + path);
                     userroles = sessionuser.getRolesAsString();
                     // authenticated users get automatically the role USER
                     if (userroles.contains(AuthRole.VIRT_ROLE_USER)) {
-                        Log.warning(TAG, "   *** Virtual user role " + AuthRole.VIRT_ROLE_USER + " was detected on user!");
+                        LOGGER.warn("   *** Virtual user role " + AuthRole.VIRT_ROLE_USER + " was detected on user!");
                     }
                     userroles.add(AuthRole.VIRT_ROLE_USER);
                 }
                 else {
-                    Log.verbose(TAG, "  Accessing protected resource: " + path);
+                    LOGGER.trace("  Accessing protected resource: " + path);
                     // non-authenticated users get automatically the role GUEST
                     userroles = new ArrayList();
                     userroles.add(AuthRole.VIRT_ROLE_GUEST);
@@ -169,7 +167,7 @@ public class AuthFilter implements Filter {
                     processRequest(request, response, chain);
                 }
                 else {
-                    Log.warning(TAG, "*** Access denied to protected resource: " + path);
+                    LOGGER.warn("*** Access denied to protected resource: " + path);
                     response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
                                                 "Denied access to: " + path, ResponseResults.CODE_FORBIDDEN, null));
                 }
@@ -196,7 +194,7 @@ public class AuthFilter implements Filter {
                 return (UserEntity)user;
             }
             else {
-                Log.error(TAG, "*** Unexpected session object type detected for '" + AuthorityConfig.SESSION_ATTR_USER + "'");
+                LOGGER.error("*** Unexpected session object type detected for '" + AuthorityConfig.SESSION_ATTR_USER + "'");
             }
         }
         return null;
@@ -218,7 +216,7 @@ public class AuthFilter implements Filter {
             chain.doFilter(request, response);
         }
         catch (IOException | ServletException ex) {
-            Log.error(TAG, "*** A problem occured while executing filters, reason: " + ex.getLocalizedMessage());
+            LOGGER.error("*** A problem occured while executing filters, reason: " + ex.getLocalizedMessage());
             response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
                                        "Problem occurred while processing filter chain, reason: " + ex.getLocalizedMessage(),
                                        ResponseResults.CODE_INTERNAL_SRV_ERROR, null));

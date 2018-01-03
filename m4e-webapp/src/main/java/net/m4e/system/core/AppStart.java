@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * <p>
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,12 +8,8 @@
 
 package net.m4e.system.core;
 
-import java.util.Set;
-
-import javax.enterprise.inject.Produces;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.Application;
+import java.util.Set;
 
 /**
  * Central application configuration

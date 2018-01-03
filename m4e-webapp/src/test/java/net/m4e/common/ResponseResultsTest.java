@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,11 +7,12 @@
  */
 package net.m4e.common;
 
-import java.io.StringReader;
-
-import javax.json.*;
-
 import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import java.io.StringReader;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -55,6 +56,15 @@ public class ResponseResultsTest {
 
         String result = ResponseResults.toJSON(status, description, code, data);
         checkToJson(result, status, description, code, data);
+
+        result = ResponseResults.toJSON(null, description, code, data);
+        checkToJson(result, "", description, code, data);
+
+        result = ResponseResults.toJSON(null, null, code, data);
+        checkToJson(result, "", "", code, data);
+
+        result = ResponseResults.toJSON(null, null, code, null);
+        checkToJson(result, "", "", code, "");
     }
 
     /**

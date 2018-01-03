@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,21 +7,27 @@
  */
 package net.m4e.app.event;
 
-import java.util.List;
-import javax.ejb.Stateless;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.json.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.app.user.UserEntity;
-import net.m4e.common.*;
-import net.m4e.system.core.Log;
+import net.m4e.common.Entities;
+import net.m4e.common.ResponseResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 /**
  * REST services for event location voting.
@@ -34,9 +40,9 @@ import net.m4e.system.core.Log;
 public class EventLocationVoteEntityFacadeREST {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "EventLocationVoteEntityFacadeREST";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Event used for notifying other users
@@ -91,28 +97,28 @@ public class EventLocationVoteEntityFacadeREST {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot set location vote, no user in session found!");
+            LOGGER.error("*** Internal error, cannot set location vote, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
         EventEntity event = entities.find(EventEntity.class, eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
-            Log.warning(TAG, "*** Cannot update event location vote, event does not exit!");
+            LOGGER.warn("*** Cannot update event location vote, event does not exit!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, invalid event.", ResponseResults.CODE_BAD_REQUEST, null);
         }
         if (!events.getUserIsEventOwnerOrMember(sessionuser, event)) {
-            Log.warning(TAG, "*** Cannot update event location vote, user is no member of event!");
+            LOGGER.warn("*** Cannot update event location vote, user is no member of event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, you are not a member of event.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
         EventLocationEntity loc = events.findEventLocation(eventId, locationId);
         if (loc == null) {
-            Log.warning(TAG, "*** Cannot update event location vote, event location does not exist!");
+            LOGGER.warn("*** Cannot update event location vote, event location does not exist!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, invalid event location.", ResponseResults.CODE_BAD_REQUEST, null);
         }
 
         EventLocationVoteEntity voteentity = eventLocations.createOrUpdateVote(sessionuser, event, loc, (vote > 0));
         if (voteentity == null) {
-            Log.warning(TAG, "*** Cannot update event location vote, outside of voting time window!");
+            LOGGER.warn("*** Cannot update event location vote, outside of voting time window!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to set location vote, invalid voting time window.", ResponseResults.CODE_BAD_REQUEST, null);
         }
 
@@ -143,17 +149,17 @@ public class EventLocationVoteEntityFacadeREST {
     public String getVotesByTime(@PathParam("eventId") Long eventId, @PathParam("timeBegin") Long timeBegin, @PathParam("timeEnd") Long timeEnd, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot get location votes, no user in session found!");
+            LOGGER.error("*** Internal error, cannot get location votes, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
         EventEntity event = entities.find(EventEntity.class, eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
-            Log.warning(TAG, "*** Cannot get event location votes, event does not exit!");
+            LOGGER.warn("*** Cannot get event location votes, event does not exit!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, invalid event.", ResponseResults.CODE_BAD_REQUEST, null);
         }
         if (!events.getUserIsEventOwnerOrMember(sessionuser, event)) {
-            Log.warning(TAG, "*** Cannot get event location votes, user is no member of event!");
+            LOGGER.warn("*** Cannot get event location votes, user is no member of event!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, you are not a member of event.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
@@ -177,13 +183,13 @@ public class EventLocationVoteEntityFacadeREST {
     public String getVotesById(@PathParam("votesId") Long votesId, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot get location votes, no user in session found!");
+            LOGGER.error("*** Internal error, cannot get location votes, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
         EventLocationVoteEntity locationvotes = entities.find(EventLocationVoteEntity.class, votesId);
         if (locationvotes == null) {
-            Log.warning(TAG, "*** Cannot get event location votes, invalid ID!");
+            LOGGER.warn("*** Cannot get event location votes, invalid ID!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get location votes, invalid ID.", ResponseResults.CODE_BAD_REQUEST, null);
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,14 +7,16 @@
  */
 package net.m4e.app.communication;
 
-import java.io.StringReader;
-import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.json.Json;
-import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
-import net.m4e.system.core.Log;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.Date;
 
 /**
  * This class is used for WebSocket communication.
@@ -24,9 +26,9 @@ import net.m4e.system.core.Log;
 public class Packet {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "Packet";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Packet channel for system notifications
@@ -125,7 +127,7 @@ public class Packet {
             packet.setTime(time);
         }
         catch (Exception ex) {
-            Log.debug(TAG, "Could not read JSON string, reason: " + ex.getLocalizedMessage());
+            LOGGER.debug("Could not read JSON string, reason: " + ex.getLocalizedMessage());
         }
         return packet;
     }

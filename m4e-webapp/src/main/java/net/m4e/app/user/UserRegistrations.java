@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,17 +8,19 @@
 
 package net.m4e.app.user;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.notification.SendEmailEvent;
+import net.m4e.common.Entities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.notification.SendEmailEvent;
-import net.m4e.common.*;
-import net.m4e.system.core.Log;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -31,9 +33,9 @@ import net.m4e.system.core.Log;
 public class UserRegistrations {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "UserRegistrations";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Amount of hours for expiring a new registration.
@@ -122,7 +124,7 @@ public class UserRegistrations {
                         users.markUserAsDeleted(user);
                     }
                     catch(Exception ex) {
-                        Log.warning(TAG, "could not mark the user as deleted, id: " + user.getId());
+                        LOGGER.warn("could not mark the user as deleted, id: " + user.getId());
                     }
                 }
             }
@@ -137,8 +139,8 @@ public class UserRegistrations {
                 entities.delete(reset);
             }
         }
-        Log.info(TAG, "Purged expired account registrations: " + purgedregs);
-        Log.info(TAG, "Purged expired password reset requests: " + purgedpwresets);
+        LOGGER.info("Purged expired account registrations: " + purgedregs);
+        LOGGER.info("Purged expired password reset requests: " + purgedpwresets);
 
         return purgedpwresets + purgedregs;
     }
@@ -210,7 +212,7 @@ public class UserRegistrations {
     public UserEntity activateUserAccount(String token) throws Exception {
         List<UserRegistrationEntity> regs = entities.findByField(UserRegistrationEntity.class, "activationToken", token);
         if (regs.size() > 1) {
-            Log.error(TAG, "there are more than one registration entry with same token, count: " + regs.size());
+            LOGGER.error("there are more than one registration entry with same token, count: " + regs.size());
             throw new Exception("Internal Registration Failure!");
         }
         if (regs.size() < 1) {
@@ -323,7 +325,7 @@ public class UserRegistrations {
     public UserEntity processPasswordReset(String resetRoken, String newPassword) throws Exception {
         List<UserPasswordResetEntity> resets = entities.findByField(UserPasswordResetEntity.class, "resetToken", resetRoken);
         if (resets.size() > 1) {
-            Log.error(TAG, "there are more than one password reset entry with same token, count: " + resets.size());
+            LOGGER.error("there are more than one password reset entry with same token, count: " + resets.size());
             throw new Exception("Internal Password Reset Failure!");
         }
         if (resets.size() < 1) {

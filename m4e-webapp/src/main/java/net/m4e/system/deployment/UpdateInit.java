@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,21 +8,20 @@
 
 package net.m4e.system.deployment;
 
-import net.m4e.common.Entities;
-import net.m4e.system.core.AppUdateBaseHandler;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import javax.persistence.EntityManager;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.auth.PermissionEntity;
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.system.core.Log;
 import net.m4e.app.user.UserEntity;
+import net.m4e.common.Entities;
+import net.m4e.system.core.AppUdateBaseHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.persistence.EntityManager;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 
 /**
  * Deployment updater for initial version of app installation.
@@ -35,9 +34,9 @@ import net.m4e.app.user.UserEntity;
 public class UpdateInit extends AppUdateBaseHandler {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "UpdateInit";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Make sure to increment this number for every new update class.
@@ -62,11 +61,10 @@ public class UpdateInit extends AppUdateBaseHandler {
      * 
      * @param entityManager   For the case that any entity structure manipulation is needed
      * @param entities        Entities instance used for common entity operations
-     * @throws Exception This exception is thrown if something went wrong.
      */
     @Override
-    public void performUpdate(EntityManager entityManager, Entities entities) throws Exception {
-        Log.debug(TAG, "Initial deployment setup, version: " + appVersion + " (" + incUpdateNumber + ")");
+    public void performUpdate(EntityManager entityManager, Entities entities) {
+        LOGGER.debug("Initial deployment setup, version: " + appVersion + " (" + incUpdateNumber + ")");
 
         setupPermissions(entities);
         setupRoles(entities);
@@ -79,14 +77,14 @@ public class UpdateInit extends AppUdateBaseHandler {
      * @param entities  The Entities instance
      */
     private void setupPermissions(Entities entities) {
-        Log.debug(TAG, "  Setup permissions in database");
+        LOGGER.debug("  Setup permissions in database");
         for (String permname: AuthorityConfig.getInstance().getDefaultPermissions()) {
             // check if the permission already exists in database (should actually not happen)
             if (entities.findByField(PermissionEntity.class, "name", permname).size() > 0) {
-                Log.debug(TAG, "  Permission " + permname + " already exists, skip its creation");
+                LOGGER.debug("  Permission " + permname + " already exists, skip its creation");
                 continue;
             }
-            Log.debug(TAG, "  Create permission: " + permname);
+            LOGGER.debug("  Create permission: " + permname);
             PermissionEntity pe = new PermissionEntity();
             pe.setName(permname);
             entities.create(pe);
@@ -99,7 +97,7 @@ public class UpdateInit extends AppUdateBaseHandler {
      * @param entities  The Entities instance
      */
     private void setupRoles(Entities entities) {
-        Log.debug(TAG, "  Setup roles in database");
+        LOGGER.debug("  Setup roles in database");
 
         for (Map.Entry<String, List<String>> role: AuthorityConfig.getInstance().getDefaultRoles().entrySet()) {
 
@@ -107,10 +105,10 @@ public class UpdateInit extends AppUdateBaseHandler {
             List<String> perms    = role.getValue();
             // check if the role already exists in database (should actually not happen)
             if (entities.findByField(RoleEntity.class, "name", rolename).size() > 0) {
-                Log.debug(TAG, "  Role " + rolename + " already exists, skip its creation");
+                LOGGER.debug("  Role " + rolename + " already exists, skip its creation");
                 continue;
             }
-            Log.debug(TAG, "  Create role: " + rolename);
+            LOGGER.debug("  Create role: " + rolename);
             RoleEntity roleentity = new RoleEntity();
             roleentity.setName(rolename);
             entities.create(roleentity);
@@ -121,10 +119,10 @@ public class UpdateInit extends AppUdateBaseHandler {
                 // find the permission by its name
                 List<PermissionEntity> pe = entities.findByField(PermissionEntity.class, "name", perm);
                 if (pe.size() > 1) {
-                    Log.warning(TAG, "*** More than one permisson entry found '" + perm + "' for role '" + rolename + "', taking the first one");
+                    LOGGER.warn("*** More than one permisson entry found '" + perm + "' for role '" + rolename + "', taking the first one");
                 }
                 else if (pe.size() < 1) {
-                    Log.error(TAG, "*** Could not find permission '" + perm + "' for role '" + rolename + "'");
+                    LOGGER.error("*** Could not find permission '" + perm + "' for role '" + rolename + "'");
                     continue;
                 }
                 permentities.addAll(pe);
@@ -133,7 +131,7 @@ public class UpdateInit extends AppUdateBaseHandler {
             for (PermissionEntity ent: permentities) {
                 text += " | " + ent.getName();
             }
-            Log.debug(TAG, "   Setting role permissions: " + text);
+            LOGGER.debug("   Setting role permissions: " + text);
 
             // update the role entity with assigned permissions
             roleentity.setPermissions(permentities);
@@ -147,7 +145,7 @@ public class UpdateInit extends AppUdateBaseHandler {
      * @param entities  The Entities instance
      */
     private void setupAdminUser(Entities entities) {
-        Log.debug(TAG, "  Create user: admin");
+        LOGGER.debug("  Create user: admin");
         UserEntity user = new UserEntity();
         user.setName("Administrator");
         user.setLogin("admin");
@@ -167,12 +165,12 @@ public class UpdateInit extends AppUdateBaseHandler {
         // setup the roles
         List<RoleEntity> roles = entities.findByField(RoleEntity.class, "name", AuthRole.USER_ROLE_ADMIN);
         if (roles.size() < 1) {
-            Log.error(TAG, "*** Counld not find role '" + AuthRole.USER_ROLE_ADMIN + "' for admin user");
+            LOGGER.error("*** Counld not find role '" + AuthRole.USER_ROLE_ADMIN + "' for admin user");
             return;
         }
         user.setRoles(Arrays.asList(roles.get(0)));
 
         entities.update(user);
-        Log.debug(TAG, "   User 'admin' was successfully created.");
+        LOGGER.debug("   User 'admin' was successfully created.");
     }
 }

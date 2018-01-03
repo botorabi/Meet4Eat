@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,11 +8,15 @@
 
 package net.m4e.app.auth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.m4e.system.core.Log;
+
 
 /**
  * This class holds information about authorization rules and checks a resource 
@@ -24,19 +28,19 @@ import net.m4e.system.core.Log;
 public class AuthAccessRuleChecker {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "AuthAccessRuleChecker";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Resource path
      */
-    private String resourcePath = "";
+    private String resourcePath;
 
     /**
      * Resource path as regular expression (used to detect {} place holders in path)
      */
-    private String resourcePathRegexp = "";
+    private String resourcePathRegexp;
 
     /**
      * Lookup for access methods and rules for defined resourcePath
@@ -130,7 +134,7 @@ public class AuthAccessRuleChecker {
             }
         }
         catch(Exception ex) {
-            Log.error(TAG, "Error while checking the resource path: " + ex.getLocalizedMessage());
+            LOGGER.error("Error while checking the resource path: " + ex.getLocalizedMessage());
             return false;
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,11 +8,12 @@
 
 package net.m4e.app.event;
 
+import net.m4e.common.Strings;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.enterprise.context.ApplicationScoped;
-import net.m4e.common.Strings;
 
 /**
  * This class validates event entity related inputs from a client.

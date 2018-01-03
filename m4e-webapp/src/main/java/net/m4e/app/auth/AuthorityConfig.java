@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,15 +7,18 @@
  */
 package net.m4e.app.auth;
 
+import net.m4e.app.user.UserEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.lang.invoke.MethodHandles;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import net.m4e.system.core.Log;
-import net.m4e.app.user.UserEntity;
 
 /**
  * Central place for holding all authority related configuration
@@ -26,9 +29,9 @@ import net.m4e.app.user.UserEntity;
 public class AuthorityConfig {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "AuthorityConfig";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Session attribute name for user.
@@ -161,7 +164,7 @@ public class AuthorityConfig {
             res = hexstring.toString();
         }
         catch (NoSuchAlgorithmException ex) {
-            Log.error(TAG, "Problem occurred while hashing a string, reason: " + ex.getLocalizedMessage());
+            LOGGER.error("Problem occurred while hashing a string, reason: " + ex.getLocalizedMessage());
         }
         return res;
     }

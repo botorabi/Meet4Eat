@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,24 +8,32 @@
 
 package net.m4e.app.user;
 
-import java.io.StringReader;
-import javax.ejb.Stateless;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import java.util.*;
-import javax.json.*;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.notification.SendEmailEvent;
-import net.m4e.common.*;
+import net.m4e.common.Entities;
+import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppConfiguration;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
-import net.m4e.system.core.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import javax.json.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * REST services for User entity operations
@@ -38,9 +46,9 @@ import net.m4e.system.core.Log;
 public class UserEntityFacadeREST {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "UserEntityFacadeREST";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * The entities
@@ -132,7 +140,7 @@ public class UserEntityFacadeREST {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         //! NOTE Acutally, this check should not be needed (see AuthFilter), but just to be on the safe side!
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot create user, no user in session found!");
+            LOGGER.error("*** Internal error, cannot create user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create user, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
@@ -141,7 +149,7 @@ public class UserEntityFacadeREST {
             reqentity = validator.validateNewEntityInput(userJson);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not create new user, validation failed, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not create new user, validation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);
         }
 
@@ -153,7 +161,7 @@ public class UserEntityFacadeREST {
             newuser = users.createNewUser(reqentity, sessionuser.getId());
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not create new user, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not create new user, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
 
@@ -179,7 +187,7 @@ public class UserEntityFacadeREST {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser != null) {
-            Log.error(TAG, "*** an already authenticated user tries a user registration!");
+            LOGGER.error("*** an already authenticated user tries a user registration!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to register user, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
@@ -188,7 +196,7 @@ public class UserEntityFacadeREST {
             reqentity = validator.validateNewEntityInput(userJson);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not register a new user, validation failed, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not register a new user, validation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
         }
 
@@ -202,7 +210,7 @@ public class UserEntityFacadeREST {
             newuser.getStatus().setEnabled(false);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not register a new user, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not register a new user, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to register a new user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
@@ -232,17 +240,17 @@ public class UserEntityFacadeREST {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser != null) {
-            Log.error(TAG, "*** an already authenticated user tries a user activation!");
+            LOGGER.error("*** an already authenticated user tries a user activation!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user account, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
-        Log.verbose(TAG, "activating user account, token: " + token);
+        LOGGER.trace("activating user account, token: " + token);
         UserEntity user;
         try {
             user = registration.activateUserAccount(token);
         }
         catch (Exception ex) {
-            Log.debug(TAG, "user activation failed, reason: " + ex.getLocalizedMessage());
+            LOGGER.debug("user activation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to activate user account! Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
         jsonresponse.add("userName", user.getName());
@@ -264,7 +272,7 @@ public class UserEntityFacadeREST {
     public String requestPasswordReset(String requestJson, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser != null) {
-            Log.error(TAG, "*** an already authenticated user tries to reset the password!");
+            LOGGER.error("*** an already authenticated user tries to reset the password!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }
 
@@ -273,7 +281,7 @@ public class UserEntityFacadeREST {
             JsonObject jobject = jreader.readObject();
             String email = jobject.getString("email", null);
             if (email == null) {
-                Log.error(TAG, "cannot process password reset request, invalid input");
+                LOGGER.error("cannot process password reset request, invalid input");
                 return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
             }
             // create the activation URL
@@ -282,7 +290,7 @@ public class UserEntityFacadeREST {
             registration.requestPasswordReset(email, url, adminemail, sendMailEvent);
         }
         catch(Exception ex) {
-            Log.error(TAG, "cannot process password reset request, reason: " + ex.getLocalizedMessage());
+            LOGGER.error("cannot process password reset request, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password! Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, null);           
         }
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Request for user password reset was successfully processed.", ResponseResults.CODE_OK, null);
@@ -306,7 +314,7 @@ public class UserEntityFacadeREST {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser != null) {
-            Log.error(TAG, "*** an already authenticated user tries to reset an user password");
+            LOGGER.error("*** an already authenticated user tries to reset an user password");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, logout first.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
 
@@ -316,13 +324,13 @@ public class UserEntityFacadeREST {
             JsonObject jobject = jreader.readObject();
             String newpassword = jobject.getString("password", null);
             if (newpassword == null) {
-                Log.error(TAG, "cannot process password reset request, invalid input");
+                LOGGER.error("cannot process password reset request, invalid input");
                 return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to reset user password, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
             }
             user = registration.processPasswordReset(token, newpassword);
         }
         catch (Exception ex) {
-            Log.debug(TAG, "user password reset failed! Reason: " + ex.getLocalizedMessage());
+            LOGGER.debug("user password reset failed! Reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
         jsonresponse.add("userName", user.getName());
@@ -347,7 +355,7 @@ public class UserEntityFacadeREST {
         jsonresponse.add("userId", id.toString());
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Cannot update user, no user in session found!");
+            LOGGER.error("*** Cannot update user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, no authentication.",
                                              ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
@@ -369,7 +377,7 @@ public class UserEntityFacadeREST {
 
         // check if a user is updating itself or a user with higher privilege is trying to modify a user
         if (!users.userIsOwnerOrAdmin(sessionuser, user.getStatus())) {
-            Log.warning(TAG, "*** User was attempting to update another user without proper privilege!");
+            LOGGER.warn("*** User was attempting to update another user without proper privilege!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update user, insufficient privilege.",
                                              ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
         }
@@ -393,7 +401,7 @@ public class UserEntityFacadeREST {
                 needupdate = true;
             }
             catch (Exception ex) {
-                Log.warning(TAG, "*** User image could not be updated, reason: " + ex.getLocalizedMessage());
+                LOGGER.warn("*** User image could not be updated, reason: " + ex.getLocalizedMessage());
             }
         }
 
@@ -433,18 +441,18 @@ public class UserEntityFacadeREST {
 
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Cannot delete user, no user in session found!");
+            LOGGER.error("*** Cannot delete user, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_UNAUTHORIZED, jsonresponse.build().toString());
         }
 
         if (sessionuser.getId().equals(id)) {
-            Log.warning(TAG, "*** User was attempting to delete iteself! Call a doctor.");
+            LOGGER.warn("*** User was attempting to delete iteself! Call a doctor.");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete yourself.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());            
         }
 
         UserEntity user = entities.find(UserEntity.class, id);
         if ((user == null) || !user.getStatus().getIsActive()) {
-            Log.warning(TAG, "*** User was attempting to delete non-existing user!");
+            LOGGER.warn("*** User was attempting to delete non-existing user!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
         }
 
@@ -452,7 +460,7 @@ public class UserEntityFacadeREST {
             users.markUserAsDeleted(user);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not mark user as deleted, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not mark user as deleted, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete user.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
         }
 
@@ -481,7 +489,7 @@ public class UserEntityFacadeREST {
         if (keyword.contains("@")) {
             searchfields.add("email");
         }
-        List<UserEntity> hits = entities.search(UserEntity.class, keyword, searchfields, 10);
+        List<UserEntity> hits = entities.searchForString(UserEntity.class, keyword, searchfields, 10);
         for (UserEntity hit: hits) {
             // exclude non-active users and admins from hit list
             if (!hit.getStatus().getIsActive() || users.checkUserRoles(hit, Arrays.asList(AuthRole.USER_ROLE_ADMIN)) ) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,16 +8,17 @@
 
 package net.m4e.app.event;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import net.m4e.app.notification.NotifyUserRelativesEvent;
+import net.m4e.app.notification.NotifyUsersEvent;
+import net.m4e.app.user.UserEntity;
+
 import javax.enterprise.event.Event;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import net.m4e.app.notification.NotifyUserRelativesEvent;
-import net.m4e.app.notification.NotifyUsersEvent;
-import net.m4e.app.user.UserEntity;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -51,7 +52,7 @@ public class EventNotifications {
         Modify("modify");
 
         private final String value;
-        private ChangeType(String value) {
+        ChangeType(String value) {
             this.value = value;
         }
 

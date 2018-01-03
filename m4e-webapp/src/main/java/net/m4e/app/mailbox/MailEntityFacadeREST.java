@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,20 +8,22 @@
 
 package net.m4e.app.mailbox;
 
-import java.io.StringReader;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.json.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.servlet.http.HttpServletRequest;
-
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.ResponseResults;
-import net.m4e.system.core.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.json.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
 
 /**
  * REST services for mailbox functionality
@@ -34,9 +36,9 @@ import net.m4e.system.core.Log;
 public class MailEntityFacadeREST {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "MailEntityFacadeREST";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final MailEntityInputValidator validator;
 
@@ -71,7 +73,7 @@ public class MailEntityFacadeREST {
     public String getMails(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot retrieve user mails, no user in session found!");
+            LOGGER.error("*** Internal error, cannot retrieve user mails, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve user mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
@@ -92,7 +94,7 @@ public class MailEntityFacadeREST {
     public String getCount(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot retrieve count of mails, no user in session found!");
+            LOGGER.error("*** Internal error, cannot retrieve count of mails, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count of mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
@@ -117,7 +119,7 @@ public class MailEntityFacadeREST {
     public String getCountUnread(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot retrieve count of unread mails, no user in session found!");
+            LOGGER.error("*** Internal error, cannot retrieve count of unread mails, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count of unread mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
@@ -142,7 +144,7 @@ public class MailEntityFacadeREST {
     public String send(String mailJson, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot create mail, no user in session found!");
+            LOGGER.error("*** Internal error, cannot create mail, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create a mail, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
@@ -151,7 +153,7 @@ public class MailEntityFacadeREST {
             mail = validator.validateNewEntityInput(mailJson);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not send mail, validation failed, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not send mail, validation failed, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);
         }
 
@@ -163,7 +165,7 @@ public class MailEntityFacadeREST {
             mails.createMail(mail);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** Could not send mail, problem occurred while creating mail entity, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not send mail, problem occurred while creating mail entity, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Problem occurred while sending mail", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
 
@@ -196,7 +198,7 @@ public class MailEntityFacadeREST {
         resp.add("id", id.toString());
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            Log.error(TAG, "*** Internal error, cannot delete user mail, no user in session found!");
+            LOGGER.error("*** Internal error, cannot delete user mail, no user in session found!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete the mail, no authentication.", ResponseResults.CODE_UNAUTHORIZED, resp.build().toString());
         }
 
@@ -208,7 +210,7 @@ public class MailEntityFacadeREST {
             mails.performMailOperation(sessionuser.getId(), id, op);
         }
         catch(Exception ex) {
-            Log.warning(TAG, "*** Could not perform mail operation, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not perform mail operation, reason: " + ex.getLocalizedMessage());
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to perform mail operation, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, resp.build().toString());
         }
 

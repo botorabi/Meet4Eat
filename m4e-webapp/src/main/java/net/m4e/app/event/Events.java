@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,13 +7,6 @@
  */
 
 package net.m4e.app.event;
-
-import java.io.StringReader;
-import java.util.*;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.*;
 
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
@@ -24,8 +17,19 @@ import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
-import net.m4e.common.*;
-import net.m4e.system.core.*;
+import net.m4e.common.Entities;
+import net.m4e.common.Strings;
+import net.m4e.system.core.AppInfoEntity;
+import net.m4e.system.core.AppInfos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.json.*;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 
 
 /**
@@ -38,9 +42,9 @@ import net.m4e.system.core.*;
 public class Events {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "Events";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Users users;
 
@@ -296,7 +300,7 @@ public class Events {
      * @param usersToRemove Users to remove
      * @throws Exception    Throws exception if any problem occurred.
      */
-    public void removeAnyMember(EventEntity event, List<UserEntity> usersToRemove) throws Exception {
+    public void removeAnyMember(EventEntity event, List<UserEntity> usersToRemove) {
         for (UserEntity user: usersToRemove) {
             Collection<UserEntity> members = event.getMembers();
             if (members == null) {
@@ -386,7 +390,7 @@ public class Events {
             mails.createMail(mail);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** could not create mail, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** could not create mail, reason: " + ex.getLocalizedMessage());
         }
     }
 
@@ -422,7 +426,7 @@ public class Events {
             mails.createMail(mailowner);
         }
         catch (Exception ex) {
-            Log.warning(TAG, "*** could not create mail, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** could not create mail, reason: " + ex.getLocalizedMessage());
         }
     }
 
@@ -544,7 +548,7 @@ public class Events {
             votingbegin    = new Long(jobject.getInt("votingTimeBegin", 0));
         }
         catch(Exception ex) {
-            Log.warning(TAG, "Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
             return null;
         }
 

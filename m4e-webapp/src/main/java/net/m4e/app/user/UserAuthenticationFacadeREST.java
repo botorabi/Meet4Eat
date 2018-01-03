@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  * 
  * License: MIT License (MIT), read the LICENSE text in
@@ -8,19 +8,25 @@
 
 package net.m4e.app.user;
 
-import java.io.StringReader;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.json.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.common.ResponseResults;
-import net.m4e.system.core.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
 
 /**
  * REST services for user authentication and creation
@@ -33,9 +39,9 @@ import net.m4e.system.core.Log;
 public class UserAuthenticationFacadeREST {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "UserAuthenticationFacadeREST";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Users users;
 
@@ -88,7 +94,7 @@ public class UserAuthenticationFacadeREST {
     public String login(String input, @Context HttpServletRequest request) {
         // roughly check the input
         if (input == null || input.isEmpty()) {
-            Log.debug(TAG, "*** Invalid login attempt");
+            LOGGER.debug("*** Invalid login attempt");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_BAD_REQUEST, null);
         }
         // try to get login and password
@@ -104,32 +110,32 @@ public class UserAuthenticationFacadeREST {
             passwd = "";
         }
         if (login.isEmpty() || passwd.isEmpty()) {
-            Log.debug(TAG, "*** No valid login data");
+            LOGGER.debug("*** No valid login data");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_BAD_REQUEST, null);           
         }
-        Log.verbose(TAG, "User tries to login: " + login);
+        LOGGER.trace("User tries to login: " + login);
 
         HttpSession session = request.getSession();
         Object      user    = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (user != null) {
-            Log.debug(TAG, "  User login attempt failed, user is already logged in, user (" + login+ ")");
+            LOGGER.debug("  User login attempt failed, user is already logged in, user (" + login+ ")");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user. A user is already logged in.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }
 
         // try to find the user in database
         UserEntity existinguser = users.findUser(login);
         if ((existinguser == null) || !existinguser.getStatus().getIsActive()) {
-            Log.debug(TAG, "  User login attempt failed, no user with this login found, user (" + login+ ")");
+            LOGGER.debug("  User login attempt failed, no user with this login found, user (" + login+ ")");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_NOT_FOUND, null);
         }
         // check user password
         String saltedpasswd = AuthorityConfig.getInstance().createPassword(existinguser.getPassword() + session.getId());
         if (!saltedpasswd.contentEquals(passwd)) {
-            Log.debug(TAG, "  User login attempt failed, wrong password, user (" + login + ")");
+            LOGGER.debug("  User login attempt failed, wrong password, user (" + login + ")");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to login user.", ResponseResults.CODE_UNAUTHORIZED, null);
         }
 
-        Log.verbose(TAG, " User successfully logged in: " + login);
+        LOGGER.trace(" User successfully logged in: " + login);
         // store the user in client session
         session.setAttribute(AuthorityConfig.SESSION_ATTR_USER, existinguser);
         // update user
@@ -150,7 +156,7 @@ public class UserAuthenticationFacadeREST {
         HttpSession session = request.getSession(true);
         Object user = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (user == null) {
-            Log.debug(TAG, "*** Invalid logout attempt");
+            LOGGER.debug("*** Invalid logout attempt");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to logout user. User was not logged in before.", ResponseResults.CODE_NOT_ACCEPTABLE, null);
         }
         session.invalidate();

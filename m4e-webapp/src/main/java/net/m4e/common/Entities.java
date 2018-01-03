@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  *
  * License: MIT License (MIT), read the LICENSE text in
@@ -7,13 +7,15 @@
  */
 package net.m4e.common;
 
-import net.m4e.system.core.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +31,9 @@ import java.util.List;
 public class Entities {
 
     /**
-     * Used for logging
+     * Logger.
      */
-    private final static String TAG = "Entities";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final EntityManager entityManager;
 
@@ -58,9 +60,15 @@ public class Entities {
      * 
      * @param <T>           Entity class type
      * @param entity        Entity instance which is created in database
+     * @return              Return false if the passed entity was null, otherwise return true.
      */
-    public <T> void create(T entity) {
+    public <T> boolean create(T entity) {
+        if (entity == null) {
+            LOGGER.error("Cannot create entity, a null object was passed.");
+            return false;
+        }
         entityManager.persist(entity);
+        return true;
     }
 
     /**
@@ -68,9 +76,15 @@ public class Entities {
      * 
      * @param <T>           Entity class type
      * @param entity        Entity instance which is deleted in database
+     * @return              Return false if the passed entity was null, otherwise return true.
      */
-    public <T> void delete(T entity) {
-        entityManager.remove(entityManager.merge(entity));        
+    public <T> boolean delete(T entity) {
+        if (entity == null) {
+            LOGGER.error("Cannot delete entity, a null object was passed.");
+            return false;
+        }
+        entityManager.remove(entityManager.merge(entity));
+        return true;
     }
 
     /**
@@ -78,9 +92,15 @@ public class Entities {
      * 
      * @param <T>           Entity class type
      * @param entity        Entity instance which is updated in database
+     * @return              Return false if the passed entity was null, otherwise return true.
      */
-    public <T> void update(T entity)  {
-        entityManager.merge(entity);        
+    public <T> boolean update(T entity) {
+        if (entity == null) {
+            LOGGER.error("Cannot update entity, a null object was passed.");
+            return false;
+        }
+        entityManager.merge(entity);
+        return true;
     }
 
    /**
@@ -164,6 +184,8 @@ public class Entities {
     /**
      * Search the database for an entity type and given keyword in fields. The keyword is
      * used to search for similarities in fields.
+     *
+     * NOTE: The searchFields must contain names of entity fields which must be of type String.
      * 
      * @param <T>           Entity class type
      * @param entityClass   Pass the entity class
@@ -172,14 +194,14 @@ public class Entities {
      * @param maxResults    Maximal count of results.
      * @return              A List of search hits.
      */
-    public <T> List<T> search(Class<T> entityClass, String keyword, List<String> searchFields, int maxResults) {
+    public <T> List<T> searchForString(Class<T> entityClass, String keyword, List<String> searchFields, int maxResults) {
         List<T> results = new ArrayList<>();
         if (searchFields.size() < 1) {
-            Log.warning(TAG, "Cannot search for keyword '" + keyword + "', no search fields defined!");
+            LOGGER.warn("Cannot search for keyword '" + keyword + "', no search fields defined!");
             return results;
         }
         if (keyword.length() < 3) {
-            Log.warning(TAG, "Cannot search for keyword '" + keyword + "', need at least 3 characters!");
+            LOGGER.warn("Cannot search for keyword '" + keyword + "', need at least 3 characters!");
             return results;
         }
 
