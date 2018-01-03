@@ -24,8 +24,9 @@ class UserAuthenticationFacadeRESTTest {
     private final static String NON_EXISTING_USER = "nonexisting";
     private final static String PASSWORD = "password";
 
+    private final static String SESSION_ID = "session_id";
 
-    private final static String RIGHT_CREDENTIALS = String.format("{\"login\":\"%s\", \"password\":\"%s\"}", EXISTING_USER, PASSWORD);
+    private final static String RIGHT_CREDENTIALS = String.format("{\"login\":\"%s\", \"password\":\"%s\"}", EXISTING_USER, hashPassword(PASSWORD, SESSION_ID));
 
     @Mock
     Users users;
@@ -40,7 +41,7 @@ class UserAuthenticationFacadeRESTTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(session.getId()).thenReturn("0");
+        Mockito.when(session.getId()).thenReturn(SESSION_ID);
 
         Mockito.when(request.getSession()).thenReturn(session);
         userAuthentication = new UserAuthenticationFacadeREST(users);
@@ -52,6 +53,11 @@ class UserAuthenticationFacadeRESTTest {
         userEntity.setId(1L);
         Mockito.when(users.findUser(EXISTING_USER)).thenReturn(userEntity);
         Mockito.when(users.findUser(NON_EXISTING_USER)).thenReturn(null);
+    }
+
+    private static String hashPassword(String plainPassword, String salt) {
+        return AuthorityConfig.getInstance().createPassword(
+                AuthorityConfig.getInstance().createPassword(plainPassword) + salt);
     }
 
     @NotNull
@@ -77,7 +83,7 @@ class UserAuthenticationFacadeRESTTest {
 
     @Test
     void login_wrongCredentials() {
-        String input = "{\"login\":\"testuser\", \"password\":\"wrongpassword\"}";
+        String input = "{\"login\":\"testuser\", \"password\":\"" + hashPassword("wrong", "salt") + "\"}";
 
 
         String response = userAuthentication.login(input, request);
