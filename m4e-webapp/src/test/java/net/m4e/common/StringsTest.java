@@ -8,64 +8,63 @@
 package net.m4e.common;
 
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static net.m4e.common.Strings.checkMinMaxLength;
 import static net.m4e.common.Strings.limitStringLen;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class StringsTest {
-
+class StringsTest {
     @Test
-    public void limitStringLen_null() {
-        assertEquals(limitStringLen(null, 0), null);
+    void limitStringLen_null() {
+        assertThat(limitStringLen(null, 0)).isEqualTo(null);
     }
 
     @Test
-    public void limitStringLen_longer() {
-        assertEquals(limitStringLen("Test", 3), "Tes");
+    void limitStringLen_longer() {
+        assertThat(limitStringLen("Test", 3)).isEqualTo("Tes");
     }
 
     @Test
-    public void limitStringLen_equal() {
-        assertEquals(limitStringLen("Test", 4), "Test");
+    void limitStringLen_equal() {
+        assertThat(limitStringLen("Test", 4)).isEqualTo("Test");
     }
 
     @Test
-    public void limitStringLen_shorter() {
-        assertEquals(limitStringLen("Test", 5), "Test");
+    void limitStringLen_shorter() {
+        assertThat(limitStringLen("Test", 5)).isEqualTo("Test");
     }
 
 
     @Test
-    public void checkMinMaxLength_shorterThanMin() {
-        assertFalse(checkMinMaxLength("Test", 5, 10));
-        assertFalse(checkMinMaxLength(null, 5, 10));
+    void checkMinMaxLength_shorterThanMin() {
+        assertThat(checkMinMaxLength("Test", 5, 10)).isFalse();
+        assertThat(checkMinMaxLength(null, 5, 10)).isFalse();
     }
 
     @Test
-    public void checkMinMaxLength_equalMin() {
-        assertTrue(checkMinMaxLength("Test", 4, 10));
+    void checkMinMaxLength_equalMin() {
+        assertThat(checkMinMaxLength("Test", 4, 10)).isTrue();
     }
 
     @Test
-    public void checkMinMaxLength_longerThanMin() {
-        assertTrue(checkMinMaxLength("Test", 3, 10));
+    void checkMinMaxLength_longerThanMin() {
+        assertThat(checkMinMaxLength("Test", 3, 10)).isTrue();
     }
 
     @Test
-    public void checkMinMaxLength_shorterThanMax() {
-        assertTrue(checkMinMaxLength("Test", 0, 5));
+    void checkMinMaxLength_shorterThanMax() {
+        assertThat(checkMinMaxLength("Test", 0, 5)).isTrue();
     }
 
     @Test
-    public void checkMinMaxLength_equalMax() {
-        assertTrue(checkMinMaxLength("Test", 0, 4));
+    void checkMinMaxLength_equalMax() {
+        assertThat(checkMinMaxLength("Test", 0, 4)).isTrue();
     }
 
     @Test
-    public void checkMinMaxLength_longerThanMax() {
-        assertFalse(checkMinMaxLength("Test", 0, 3));
+    void checkMinMaxLength_longerThanMax() {
+        assertThat(checkMinMaxLength("Test", 0, 3)).isFalse();
     }
 }
