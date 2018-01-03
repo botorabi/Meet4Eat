@@ -8,14 +8,11 @@
 
 package net.m4e.app.auth;
 
+import java.lang.invoke.MethodHandles;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -134,6 +131,10 @@ public class AuthAccessRuleChecker {
             }
         }
         catch(Exception ex) {
+            /*TODO: possible Exceptions are: NullPointerException and PatternSyntaxException
+                   NPE shouldn't be handled like this.
+                   PSE should be handled at construction-time (fail-fast)
+            */
             LOGGER.error("Error while checking the resource path: " + ex.getLocalizedMessage());
             return false;
         }

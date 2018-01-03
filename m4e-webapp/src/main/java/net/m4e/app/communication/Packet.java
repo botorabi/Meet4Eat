@@ -7,16 +7,14 @@
  */
 package net.m4e.app.communication;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
+
+import javax.json.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is used for WebSocket communication.
@@ -24,6 +22,7 @@ import java.util.Date;
  * @author boto Date of creation Oct 4, 2017
  */
 public class Packet {
+    //TODO: (https://github.com/botorabi/Meet4Eat/issues/7) Generify? Enables to use explicit classes instead of JSON
 
     /**
      * Logger.

@@ -29,6 +29,9 @@ public class Mail {
 
     /**
      * The timestamp of trashing the mail. Trashed mails will get purged after some period of time.
+     * //TODO: Better Documentation.
+     * //TODO: Maybe user long (no NPE) or explicit TimeStamp (Instant?)
+     * //TODO: https://github.com/botorabi/Meet4Eat/issues/10
      */
     private Long trashDate;
 

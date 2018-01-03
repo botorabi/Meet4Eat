@@ -18,6 +18,7 @@ import java.util.List;
  * Date of creation Aug 21, 2017
  */
 public class DefaultPermissions {
+    //TODO: https://github.com/botorabi/Meet4Eat/issues/9
 
     /**
      * Default permissions

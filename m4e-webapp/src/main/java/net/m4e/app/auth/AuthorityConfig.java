@@ -7,18 +7,17 @@
  */
 package net.m4e.app.auth;
 
-import net.m4e.app.user.UserEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.lang.invoke.MethodHandles;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import net.m4e.app.user.UserEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Central place for holding all authority related configuration
@@ -27,6 +26,8 @@ import java.util.Map;
  * Date of creation Aug 22, 2017
  */
 public class AuthorityConfig {
+
+    //TODO: see https://github.com/botorabi/Meet4Eat/issues/8
 
     /**
      * Logger.
@@ -135,6 +136,7 @@ public class AuthorityConfig {
         for (int i = 0; i < PW_HASH_ITERATOIN; i++) {
             pw = createHash(pw);
             if (pw == null) {
+                //TODO: better handling
                 return null;
             }
         }
@@ -151,6 +153,8 @@ public class AuthorityConfig {
         String res = null;
         try {
             MessageDigest diggest = MessageDigest.getInstance("SHA-512");
+            //TODO: Better use explicit password-hash
+            //TODO: Refactor to Interface
             diggest.update(string.getBytes());
             byte data[] = diggest.digest();
             StringBuilder hexstring = new StringBuilder();
@@ -164,6 +168,7 @@ public class AuthorityConfig {
             res = hexstring.toString();
         }
         catch (NoSuchAlgorithmException ex) {
+            //TODO: Fail-fast or better Exceptionhandling
             LOGGER.error("Problem occurred while hashing a string, reason: " + ex.getLocalizedMessage());
         }
         return res;
