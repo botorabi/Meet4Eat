@@ -26,7 +26,7 @@ class UserAuthenticationFacadeRESTTest {
 
     private final static String SESSION_ID = "session_id";
 
-    private final static String RIGHT_CREDENTIALS = String.format("{\"login\":\"%s\", \"password\":\"%s\"}", EXISTING_USER, hashPassword(PASSWORD, SESSION_ID));
+    private final static String RIGHT_CREDENTIALS = String.format("{\"login\":\"%s\", \"password\":\"%s\"}", EXISTING_USER, clientSideHash(PASSWORD, SESSION_ID));
 
     @Mock
     Users users;
@@ -55,10 +55,11 @@ class UserAuthenticationFacadeRESTTest {
         Mockito.when(users.findUser(NON_EXISTING_USER)).thenReturn(null);
     }
 
-    private static String hashPassword(String plainPassword, String salt) {
+    private static String clientSideHash(String plainPassword, String salt) {
         return AuthorityConfig.getInstance().createPassword(
                 AuthorityConfig.getInstance().createPassword(plainPassword) + salt);
     }
+
 
     @NotNull
     private JsonPathAssert assertThat(@Nullable String string) {
@@ -83,7 +84,7 @@ class UserAuthenticationFacadeRESTTest {
 
     @Test
     void login_wrongCredentials() {
-        String input = "{\"login\":\"testuser\", \"password\":\"" + hashPassword("wrong", "salt") + "\"}";
+        String input = "{\"login\":\"testuser\", \"password\":\"" + clientSideHash("wrong", "salt") + "\"}";
 
 
         String response = userAuthentication.login(input, request);
