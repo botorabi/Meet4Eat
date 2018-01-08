@@ -195,6 +195,13 @@
                         <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
                     </systemPropertyVariables>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jboss.arquillian.extension</groupId>
+                        <artifactId>arquillian-jacoco</artifactId>
+                        <version>1.0.0.Alpha9</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <!-- Adding header to file -->

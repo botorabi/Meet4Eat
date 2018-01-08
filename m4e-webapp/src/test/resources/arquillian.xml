@@ -15,5 +15,7 @@
             </property>
         </configuration>
     </container>
+
+    <extension qualifier="jacoco"/>
 </arquillian>
 
