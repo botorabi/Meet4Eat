@@ -17,14 +17,13 @@ import java.util.List;
  * @author boto
  * Date of creation Aug 21, 2017
  */
-public class DefaultPermissions {
-    //TODO: https://github.com/botorabi/Meet4Eat/issues/9
+public interface AppPermissions {
 
     /**
-     * Default permissions
+     * Available permissions
      * MODIFY permissions allow full access, i.e. read, write, and delete operations
      */
-    public enum Perm {
+    enum Perm {
         /**
          * Read server status
          */
@@ -72,26 +71,15 @@ public class DefaultPermissions {
     }
 
     /**
-     * List of permission names
-     */
-    private final List<String> perms;
-
-    /**
-     * Construct the instance.
-     */
-    public DefaultPermissions() {
-        perms = new ArrayList<>();
-        for(Perm perm: Perm.values()) {
-            perms.add(perm.name());
-        }
-    }
-
-    /**
-     * Get the default permission names.
+     * Get the permission names.
      * 
      * @return List of permission names
      */
-    public List<String> getPermissionNames() {
+    static List<String> getPermissionNames() {
+        List<String> perms = new ArrayList<>();
+        for(Perm perm: Perm.values()) {
+            perms.add(perm.name());
+        }
         return perms;
     }
 }

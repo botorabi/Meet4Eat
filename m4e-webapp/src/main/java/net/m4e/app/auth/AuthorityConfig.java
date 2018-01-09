@@ -108,21 +108,21 @@ public class AuthorityConfig {
     }
 
     /**
-     * Get the names of default permissions.
+     * Get the names of application permissions.
      * 
-     * @return List of default permission names
+     * @return List of permission names
      */
-    public List<String> getDefaultPermissions() {
-        return new DefaultPermissions().getPermissionNames();
+    public List<String> getApplicationPermissions() {
+        return AppPermissions.getPermissionNames();
     }
 
     /**
-     * Get all default roles and their permissions.
+     * Get all application roles and their permissions.
      * 
-     * @return All default roles and their permissions
+     * @return All roles and their permissions
      */
-    public Map<String, List<String>> getDefaultRoles() {
-        return new DefaultRoles().getRoles();
+    public Map<String, List<String>> getApplicationRoles() {
+        return AppRoles.getRoles();
     }
 
     /**

@@ -106,12 +106,11 @@ public class Users {
      * 
      * @param user      User for role checking
      * @param roles     Roles to check against user's roles
-     * @return          Return true if at least one role matches or both, user's
-     *                    and given roles are empty.
+     * @return          Return true if at least one of given roles matches.
      */
     public boolean checkUserRoles(UserEntity user, List<String> roles) {
-        if (user.getRolesAsString().isEmpty() && roles.isEmpty()) {
-            return true;
+        if (user.getRolesAsString().isEmpty() || roles.isEmpty()) {
+            return false;
         }
         return user.getRolesAsString().stream().anyMatch((role) -> (roles.contains(role)));
     }

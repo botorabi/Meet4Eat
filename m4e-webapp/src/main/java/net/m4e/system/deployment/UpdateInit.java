@@ -78,7 +78,7 @@ public class UpdateInit extends AppUdateBaseHandler {
      */
     private void setupPermissions(Entities entities) {
         LOGGER.debug("  Setup permissions in database");
-        for (String permname: AuthorityConfig.getInstance().getDefaultPermissions()) {
+        for (String permname: AuthorityConfig.getInstance().getApplicationPermissions()) {
             // check if the permission already exists in database (should actually not happen)
             if (entities.findByField(PermissionEntity.class, "name", permname).size() > 0) {
                 LOGGER.debug("  Permission " + permname + " already exists, skip its creation");
@@ -99,7 +99,7 @@ public class UpdateInit extends AppUdateBaseHandler {
     private void setupRoles(Entities entities) {
         LOGGER.debug("  Setup roles in database");
 
-        for (Map.Entry<String, List<String>> role: AuthorityConfig.getInstance().getDefaultRoles().entrySet()) {
+        for (Map.Entry<String, List<String>> role: AuthorityConfig.getInstance().getApplicationRoles().entrySet()) {
 
             String       rolename = role.getKey();
             List<String> perms    = role.getValue();

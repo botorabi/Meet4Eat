@@ -20,12 +20,12 @@ import java.util.Map;
  * @author boto
  * Date of creation Aug 23, 2017
  */
-public class DefaultRoles {
+public interface AppRoles {
 
     /**
      * Roles
      */
-    public enum Roles {
+    enum Roles {
         /**
          * System administrator
          */
@@ -57,54 +57,37 @@ public class DefaultRoles {
     }
 
     /**
-     * Lookup for roles and associated permissions
-     */
-    private final Map<String, List<String>> roles;
-
-    /**
-     * Construct the instance.
-     */
-    public DefaultRoles() {
-        roles = new HashMap<>();
-        setupRoles();
-    }
-
-    /**
      * Get all roles along their permissions.
      * 
      * @return All roles and their permissions
      */
-    public Map<String, List<String>> getRoles() {
-        return roles;
-    }
-
-    /**
-     * Setup all default roles and their permissions.
-     */
-    private void setupRoles() {
+    static Map<String, List<String>> getRoles() {
+        Map<String, List<String>> roles = new HashMap<>();
         roles.put(Roles.ADMIN.name(), Arrays.asList(
-            DefaultPermissions.Perm.READ_SERVER_STATUS.name(),
-            DefaultPermissions.Perm.MODIFY_PERMS.name(),
-            DefaultPermissions.Perm.MODIFY_ROLES.name(),
-            DefaultPermissions.Perm.MODIFY_USER.name(),
-            DefaultPermissions.Perm.MODIFY_EVENT.name(),
-            DefaultPermissions.Perm.MODIFY_USER_ROLES.name()));
+                AppPermissions.Perm.READ_SERVER_STATUS.name(),
+                AppPermissions.Perm.MODIFY_PERMS.name(),
+                AppPermissions.Perm.MODIFY_ROLES.name(),
+                AppPermissions.Perm.MODIFY_USER.name(),
+                AppPermissions.Perm.MODIFY_EVENT.name(),
+                AppPermissions.Perm.MODIFY_USER_ROLES.name()));
 
         roles.put(Roles.MODERATOR.name(), Arrays.asList(
-            DefaultPermissions.Perm.READ_SERVER_STATUS.name(),
-            DefaultPermissions.Perm.READ_EVENT.name(),
-            DefaultPermissions.Perm.MODIFY_EVENT.name(),
-            DefaultPermissions.Perm.READ_USER.name(),
-            DefaultPermissions.Perm.READ_USER_ROLES.name(),
-            DefaultPermissions.Perm.MODIFY_USER_ROLES.name()));
+                AppPermissions.Perm.READ_SERVER_STATUS.name(),
+                AppPermissions.Perm.READ_EVENT.name(),
+                AppPermissions.Perm.MODIFY_EVENT.name(),
+                AppPermissions.Perm.READ_USER.name(),
+                AppPermissions.Perm.READ_USER_ROLES.name(),
+                AppPermissions.Perm.MODIFY_USER_ROLES.name()));
 
         roles.put(Roles.USER.name(), Arrays.asList(
-            DefaultPermissions.Perm.READ_SERVER_STATUS.name(),
-            DefaultPermissions.Perm.READ_EVENT.name(),
-            DefaultPermissions.Perm.READ_USER.name(),
-            DefaultPermissions.Perm.READ_USER_ROLES.name()));
+                AppPermissions.Perm.READ_SERVER_STATUS.name(),
+                AppPermissions.Perm.READ_EVENT.name(),
+                AppPermissions.Perm.READ_USER.name(),
+                AppPermissions.Perm.READ_USER_ROLES.name()));
 
         roles.put(Roles.GUEST.name(), Arrays.asList(
-            DefaultPermissions.Perm.READ_SERVER_STATUS.name()));
+                AppPermissions.Perm.READ_SERVER_STATUS.name()));
+
+        return roles;
     }
 }
