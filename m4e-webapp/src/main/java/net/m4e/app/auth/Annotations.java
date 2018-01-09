@@ -64,7 +64,7 @@ public class Annotations {
             String accessmethod = getAccessMethod(method);
             String[] grantroles = (authrole == null) ? null : authrole.grantRoles();
             // catch empty role list (default value)
-            if ((grantroles.length == 1) && grantroles[0].isEmpty()) {
+            if ((grantroles == null) || ((grantroles.length == 1) && grantroles[0].isEmpty())) {
                 continue;
             }
 
@@ -88,7 +88,7 @@ public class Annotations {
             String accessmethod = getAccessMethod(method);
             String[] grantperms = (authrole == null) ? null : authrole.grantPermissions();
             // catch empty perms list (default value)
-            if ((grantperms.length == 1) && grantperms[0].isEmpty()) {
+            if ((grantperms == null) || ((grantperms.length == 1) && grantperms[0].isEmpty())) {
                 continue;
             }
 
