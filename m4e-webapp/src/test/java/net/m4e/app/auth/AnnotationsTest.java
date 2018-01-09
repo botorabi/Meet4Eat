@@ -7,18 +7,13 @@
  */
 package net.m4e.app.auth;
 
+import java.util.*;
+
+import javax.ws.rs.*;
+
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,6 +50,9 @@ class AnnotationsTest {
         @Path("severalPerms")
         @AuthRole(grantPermissions={"READ_SERVER_STATUS", "MODIFY_EVENT"})
         public void severalPerms() {}
+
+        public void nonAnnotated() {
+        }
     }
 
     Annotations annotations;
