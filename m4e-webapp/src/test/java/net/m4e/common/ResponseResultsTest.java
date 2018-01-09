@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Test class for ResponseResults
  *
  * @author boto
- * @since Dec 15, 2017
+ * Date of creation Dec 15, 2017
  */
 class ResponseResultsTest {
 

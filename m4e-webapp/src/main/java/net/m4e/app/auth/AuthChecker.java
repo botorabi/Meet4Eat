@@ -121,7 +121,7 @@ public class AuthChecker {
             // get the base path of the bean class (checking for class' Path annotation)
             String classrulepath = autils.getClassPath(cls);
 
-            //! NOTE Currently we check access only againes roles, but AuthRole provides also definition of
+            //! NOTE Currently we check access only against roles, but AuthRole provides also definition of
             //        permissions (see Annotations.getMethodsAuthPermissions), so in future it is possible
             //        to provide a more fine-grained access control if needed.
             autils.getMethodsAuthRoles(cls).entrySet().stream().forEach((pathentry) -> {
