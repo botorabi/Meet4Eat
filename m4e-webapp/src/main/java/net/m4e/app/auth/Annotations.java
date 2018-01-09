@@ -105,8 +105,8 @@ public class Annotations {
      * @param accessMethod      Access method
      * @param grants            Permissions or roles which are granted access to method
      */
-    private void addGrantAccess(Map<String, Map<String, List<String>>> rules, String path, String accessMethod, String[] grants) {
-        if ((path != null) && (accessMethod != null) && (grants != null)) {
+    protected void addGrantAccess(Map<String, Map<String, List<String>>> rules, String path, String accessMethod, String[] grants) {
+        if ((rules != null) && (path != null) && (accessMethod != null) && (grants != null)) {
             Map<String /*access*/, List<String /*grant*/>> accessmethods = rules.get(path);
             if (accessmethods == null) {
                 accessmethods = new HashMap<>();
