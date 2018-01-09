@@ -9,11 +9,7 @@
 package net.m4e.app.auth;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -66,21 +62,13 @@ public class Annotations {
             net.m4e.app.auth.AuthRole authrole = method.getDeclaredAnnotation(net.m4e.app.auth.AuthRole.class);
             String path = (p == null) ? "" : p.value();
             String accessmethod = getAccessMethod(method);
-            String[] rolesgrant = (authrole == null) ? null : authrole.grantRoles();
-
-            if ((path != null) && (accessmethod != null) && (rolesgrant != null)) {
-                Map<String /*access*/, List<String /*roles*/>> accessmethods = rules.get(path);
-                if (accessmethods == null) {
-                    accessmethods = new HashMap<>();
-                    rules.put(path, accessmethods);
-                }
-                List<String /*roles*/> accessroles = accessmethods.get(accessmethod);
-                if (accessroles == null) {
-                    accessroles = new ArrayList<>();
-                    accessmethods.put(accessmethod, accessroles);
-                }
-                accessroles.addAll(Arrays.asList(rolesgrant));
+            String[] grantroles = (authrole == null) ? null : authrole.grantRoles();
+            // catch empty role list (default value)
+            if ((grantroles.length == 1) && grantroles[0].isEmpty()) {
+                continue;
             }
+
+            addGrantAccess(rules, path, accessmethod, grantroles);
         }       
         return rules;
     }
@@ -98,23 +86,39 @@ public class Annotations {
             net.m4e.app.auth.AuthRole authrole = method.getDeclaredAnnotation(net.m4e.app.auth.AuthRole.class);
             String path = (p == null) ? "" : p.value();
             String accessmethod = getAccessMethod(method);
-            String[] permsgrant = (authrole == null) ? null : authrole.grantPermissions();
-
-            if ((path != null) && (accessmethod != null) && (permsgrant != null)) {
-                Map<String /*access*/, List<String /*perms*/>> accessmethods = rules.get(path);
-                if (accessmethods == null) {
-                    accessmethods = new HashMap<>();
-                    rules.put(path, accessmethods);
-                }
-                List<String /*perms*/> accessperms = accessmethods.get(accessmethod);
-                if (accessperms == null) {
-                    accessperms = new ArrayList<>();
-                    accessmethods.put(accessmethod, accessperms);
-                }
-                accessperms.addAll(Arrays.asList(permsgrant));
+            String[] grantperms = (authrole == null) ? null : authrole.grantPermissions();
+            // catch empty perms list (default value)
+            if ((grantperms.length == 1) && grantperms[0].isEmpty()) {
+                continue;
             }
+
+            addGrantAccess(rules, path, accessmethod, grantperms);
         }       
         return rules;
+    }
+
+    /**
+     * Add access roles and permissions to given method.
+     *
+     * @param rules             Method's rules lookup
+     * @param path              Access path
+     * @param accessMethod      Access method
+     * @param grants            Permissions or roles which are granted access to method
+     */
+    private void addGrantAccess(Map<String, Map<String, List<String>>> rules, String path, String accessMethod, String[] grants) {
+        if ((path != null) && (accessMethod != null) && (grants != null)) {
+            Map<String /*access*/, List<String /*grant*/>> accessmethods = rules.get(path);
+            if (accessmethods == null) {
+                accessmethods = new HashMap<>();
+                rules.put(path, accessmethods);
+            }
+            List<String /*roles*/> access = accessmethods.get(accessMethod);
+            if (access == null) {
+                access = new ArrayList<>();
+                accessmethods.put(accessMethod, access);
+            }
+            access.addAll(Arrays.asList(grants));
+        }
     }
 
     /**
