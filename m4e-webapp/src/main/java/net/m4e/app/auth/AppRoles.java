@@ -7,10 +7,7 @@
  */
 package net.m4e.app.auth;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Basic authorization roles are defined here. They are used for initial
@@ -20,12 +17,9 @@ import java.util.Map;
  * @author boto
  * Date of creation Aug 23, 2017
  */
-public interface AppRoles {
+public enum AppRoles {
 
-    /**
-     * Roles
-     */
-    enum Roles {
+
         /**
          * System administrator
          */
@@ -53,8 +47,8 @@ public interface AppRoles {
          * decide weather to grant access or not. The authorization checker will always
          * grant access to a resource marked with this role.
          */
-        NOCHECK
-    }
+        NOCHECK;
+
 
     /**
      * Get all roles along their permissions.
@@ -63,30 +57,30 @@ public interface AppRoles {
      */
     static Map<String, List<String>> getRoles() {
         Map<String, List<String>> roles = new HashMap<>();
-        roles.put(Roles.ADMIN.name(), Arrays.asList(
-                AppPermissions.Perm.READ_SERVER_STATUS.name(),
-                AppPermissions.Perm.MODIFY_PERMS.name(),
-                AppPermissions.Perm.MODIFY_ROLES.name(),
-                AppPermissions.Perm.MODIFY_USER.name(),
-                AppPermissions.Perm.MODIFY_EVENT.name(),
-                AppPermissions.Perm.MODIFY_USER_ROLES.name()));
+        roles.put(AppRoles.ADMIN.name(), Arrays.asList(
+                AppPermissions.READ_SERVER_STATUS.name(),
+                AppPermissions.MODIFY_PERMS.name(),
+                AppPermissions.MODIFY_ROLES.name(),
+                AppPermissions.MODIFY_USER.name(),
+                AppPermissions.MODIFY_EVENT.name(),
+                AppPermissions.MODIFY_USER_ROLES.name()));
 
-        roles.put(Roles.MODERATOR.name(), Arrays.asList(
-                AppPermissions.Perm.READ_SERVER_STATUS.name(),
-                AppPermissions.Perm.READ_EVENT.name(),
-                AppPermissions.Perm.MODIFY_EVENT.name(),
-                AppPermissions.Perm.READ_USER.name(),
-                AppPermissions.Perm.READ_USER_ROLES.name(),
-                AppPermissions.Perm.MODIFY_USER_ROLES.name()));
+        roles.put(AppRoles.MODERATOR.name(), Arrays.asList(
+                AppPermissions.READ_SERVER_STATUS.name(),
+                AppPermissions.READ_EVENT.name(),
+                AppPermissions.MODIFY_EVENT.name(),
+                AppPermissions.READ_USER.name(),
+                AppPermissions.READ_USER_ROLES.name(),
+                AppPermissions.MODIFY_USER_ROLES.name()));
 
-        roles.put(Roles.USER.name(), Arrays.asList(
-                AppPermissions.Perm.READ_SERVER_STATUS.name(),
-                AppPermissions.Perm.READ_EVENT.name(),
-                AppPermissions.Perm.READ_USER.name(),
-                AppPermissions.Perm.READ_USER_ROLES.name()));
+        roles.put(AppRoles.USER.name(), Arrays.asList(
+                AppPermissions.READ_SERVER_STATUS.name(),
+                AppPermissions.READ_EVENT.name(),
+                AppPermissions.READ_USER.name(),
+                AppPermissions.READ_USER_ROLES.name()));
 
-        roles.put(Roles.GUEST.name(), Arrays.asList(
-                AppPermissions.Perm.READ_SERVER_STATUS.name()));
+        roles.put(AppRoles.GUEST.name(), Arrays.asList(
+                AppPermissions.READ_SERVER_STATUS.name()));
 
         return roles;
     }

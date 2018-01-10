@@ -11,75 +11,68 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Default authorization permissions are defined here. They are used for initial
- * application setup.
- * 
- * @author boto
- * Date of creation Aug 21, 2017
+ * Available permissions
+ * MODIFY permissions allow full access, i.e. read, write, and delete operations
  */
-public interface AppPermissions {
+public enum AppPermissions {
 
     /**
-     * Available permissions
-     * MODIFY permissions allow full access, i.e. read, write, and delete operations
+     * Read server status
      */
-    enum Perm {
-        /**
-         * Read server status
-         */
-        READ_SERVER_STATUS,
-        /**
-         * Read permissions
-         */
-        READ_PERMS,
-        /**
-         * Modify permissions
-         */
-        MODIFY_PERMS,
-        /**
-         * Read roles
-         */
-        READ_ROLES,
-        /**
-         * Modify roles
-         */
-        MODIFY_ROLES,
-        /**
-         * Read events
-         */
-        READ_EVENT,
-        /**
-         * Modify events
-         */
-        MODIFY_EVENT,
-        /**
-         * Read user
-         */
-        READ_USER,
-        /**
-         * Modify user
-         */
-        MODIFY_USER,
-        /**
-         * Read user roles
-         */
-        READ_USER_ROLES,
-        /**
-         * Modify user roles
-         */
-        MODIFY_USER_ROLES
-    }
+    READ_SERVER_STATUS,
+    /**
+     * Read permissions
+     */
+    READ_PERMS,
+    /**
+     * Modify permissions
+     */
+    MODIFY_PERMS,
+    /**
+     * Read roles
+     */
+    READ_ROLES,
+    /**
+     * Modify roles
+     */
+    MODIFY_ROLES,
+    /**
+     * Read events
+     */
+    READ_EVENT,
+    /**
+     * Modify events
+     */
+    MODIFY_EVENT,
+    /**
+     * Read user
+     */
+    READ_USER,
+    /**
+     * Modify user
+     */
+    MODIFY_USER,
+    /**
+     * Read user roles
+     */
+    READ_USER_ROLES,
+    /**
+     * Modify user roles
+     */
+    MODIFY_USER_ROLES;
 
     /**
      * Get the permission names.
-     * 
+     *
      * @return List of permission names
      */
     static List<String> getPermissionNames() {
         List<String> perms = new ArrayList<>();
-        for(Perm perm: Perm.values()) {
+        for (AppPermissions perm : AppPermissions.values()) {
             perms.add(perm.name());
         }
         return perms;
     }
-}
+    }
+
+
