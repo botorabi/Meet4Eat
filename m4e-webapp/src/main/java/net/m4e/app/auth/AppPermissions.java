@@ -7,12 +7,14 @@
  */
 package net.m4e.app.auth;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
- * Available permissions
- * MODIFY permissions allow full access, i.e. read, write, and delete operations
+ * Application's default authorization permissions are defined here. They are used for initial
+ * application setup.
+ *
+ * @author boto
+ * Date of creation Aug 21, 2017
  */
 public enum AppPermissions {
 
@@ -73,6 +75,6 @@ public enum AppPermissions {
         }
         return perms;
     }
-    }
+}
 
 

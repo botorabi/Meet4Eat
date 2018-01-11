@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
- * 
+ *
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
@@ -11,48 +11,37 @@ import java.util.*;
 
 /**
  * Basic authorization roles are defined here. They are used for initial
- * application setup. They can be extended by more fine grained roles and 
+ * application setup. They can be extended by more fine grained roles and
  * permissions.
- * 
+ *
  * @author boto
  * Date of creation Aug 23, 2017
  */
 public enum AppRoles {
 
+    /**
+     * System administrator
+     */
+    ADMIN,
 
-        /**
-         * System administrator
-         */
-        ADMIN,
+    /**
+     * Moderator
+     */
+    MODERATOR,
 
-        /**
-         * Moderator
-         */
-        MODERATOR,
+    /**
+     * Authenticated user (already logged in)
+     */
+    USER,
 
-        /**
-         * Authenticated user (already logged in)
-         */
-        USER,
-
-        /**
-         * Guest with limited rights
-         */
-        GUEST,
-
-        /**
-         * This is a special role which lets the business logic perform the
-         * authorization check depending on more complex conditions.
-         * For instance, the business logic may check for resource ownership and
-         * decide weather to grant access or not. The authorization checker will always
-         * grant access to a resource marked with this role.
-         */
-        NOCHECK;
-
+    /**
+     * Guest with limited rights
+     */
+    GUEST;
 
     /**
      * Get all roles along their permissions.
-     * 
+     *
      * @return All roles and their permissions
      */
     static Map<String, List<String>> getRoles() {
