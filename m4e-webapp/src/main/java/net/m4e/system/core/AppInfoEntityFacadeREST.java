@@ -12,6 +12,8 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.GenericResponseResult;
 import net.m4e.common.ResponseResults;
@@ -24,6 +26,7 @@ import net.m4e.common.ResponseResults;
  */
 @Stateless
 @Path("/rest/appinfo")
+@Api("infos")
 public class AppInfoEntityFacadeREST {
 
     private final AppInfos appInfos;
@@ -53,6 +56,7 @@ public class AppInfoEntityFacadeREST {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @AuthRole(grantRoles = {AuthRole.VIRT_ROLE_GUEST})
+    @ApiOperation("Get app version information")
     public GenericResponseResult<AppInfo> getInfo() {
         AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {

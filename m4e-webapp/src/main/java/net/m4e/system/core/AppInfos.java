@@ -7,14 +7,15 @@
  */
 package net.m4e.system.core;
 
-import net.m4e.common.Entities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.lang.invoke.MethodHandles;
-import java.util.List;
+
+import net.m4e.common.Entities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A collection of app info related utilities.
