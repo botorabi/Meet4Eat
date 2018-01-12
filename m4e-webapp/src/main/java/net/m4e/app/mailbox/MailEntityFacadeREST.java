@@ -8,6 +8,7 @@
 
 package net.m4e.app.mailbox;
 
+import io.swagger.annotations.Api;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.user.UserEntity;
@@ -33,6 +34,7 @@ import java.lang.invoke.MethodHandles;
  */
 @Stateless
 @Path("/rest/mails")
+@Api(value = "Mails services")
 public class MailEntityFacadeREST {
 
     /**

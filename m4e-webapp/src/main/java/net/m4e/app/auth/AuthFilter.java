@@ -137,12 +137,18 @@ public class AuthFilter implements Filter {
 
         if (path.startsWith("/" + basePath)) {
 
-            if (path.compareTo("/" + basePath + "/index.html") == 0) {
-                processRequest(request, response, chain);                    
+            boolean allowaccess = false;
+
+            if (path.equals("/" + basePath + "/") || path.matches("/" + basePath + "/.*\\.html")) {
+                allowaccess = true;
             }
             else if (path.startsWith("/" + basePath + "/" + publicBasePath)) {
-                LOGGER.trace("  Fechting public resource: " + path);
-                processRequest(request, response, chain);
+                LOGGER.trace("  Fetching public resource: " + path);
+                allowaccess = true;
+            }
+            // check for swagger access
+            else if (path.matches("/" + basePath + "/" + protectedBasePath + "/swagger\\..*")) {
+                allowaccess = true;
             }
             else if (path.startsWith("/" + basePath + "/" + protectedBasePath)) {
                 // get the user roles out of the http session
@@ -160,20 +166,21 @@ public class AuthFilter implements Filter {
                 else {
                     LOGGER.trace("  Accessing protected resource: " + path);
                     // non-authenticated users get automatically the role GUEST
-                    userroles = new ArrayList();
+                    userroles = new ArrayList<>();
                     userroles.add(AuthRole.VIRT_ROLE_GUEST);
                 }
                 if (authChecker.checkAccess("/" + basePath + "/" + protectedBasePath, httprequest, userroles)) {
-                    processRequest(request, response, chain);
-                }
-                else {
-                    LOGGER.warn("*** Access denied to protected resource: " + path);
-                    response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
-                                                "Denied access to: " + path, ResponseResults.CODE_FORBIDDEN, null));
+                    allowaccess = true;
                 }
             }
-            else {
+
+            if (allowaccess) {
                 processRequest(request, response, chain);
+            }
+            else {
+                LOGGER.warn("*** Access denied to protected resource: " + path);
+                response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
+                        "Denied access to: " + path, ResponseResults.CODE_FORBIDDEN, null));
             }
         }
     }

@@ -23,15 +23,12 @@ public class AppStart extends Application {
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new java.util.HashSet<>();
         addRestResourceClasses(resources);
+        // add swagger resources
+        resources.add(io.swagger.jaxrs.listing.ApiListingResource.class);
+        resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
         return resources;
     }
 
-    /**
-     * Do not modify addRestResourceClasses() method.
-     * It is automatically populated with
-     * all resources defined in the project.
-     * If required, comment out calling this method in getClasses().
-     */
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(net.m4e.app.event.EventEntityFacadeREST.class);
         resources.add(net.m4e.app.event.EventLocationVoteEntityFacadeREST.class);
@@ -43,5 +40,4 @@ public class AppStart extends Application {
         resources.add(net.m4e.system.maintenance.MaintenanceFacadeREST.class);
         resources.add(net.m4e.update.UpdateCheckEntityFacadeREST.class);
     }
-
 }
