@@ -223,14 +223,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <excludes>
-                        <exclude>**/Messages.*</exclude>
-                    </excludes>
-                    <systemPropertyVariables>
-                        <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
-                    </systemPropertyVariables>
-                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.jboss.arquillian.extension</groupId>
