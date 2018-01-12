@@ -8,13 +8,10 @@
 
 package net.m4e.app.mailbox;
 
-import io.swagger.annotations.Api;
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.user.UserEntity;
-import net.m4e.common.ResponseResults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -23,8 +20,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.io.StringReader;
-import java.lang.invoke.MethodHandles;
+
+import io.swagger.annotations.*;
+import net.m4e.app.auth.AuthRole;
+import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.user.UserEntity;
+import net.m4e.common.GenericResponseResult;
+import net.m4e.common.ResponseResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST services for mailbox functionality
@@ -72,19 +76,21 @@ public class MailEntityFacadeREST {
     @Path("{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String getMails(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
+    @ApiOperation(value = "Get user mails in given range", notes = "Pass 0/0 in order to get all mails")
+    public GenericResponseResult<List<MailEntity>> getMails(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            LOGGER.error("*** Internal error, cannot retrieve user mails, no user in session found!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve user mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
+            LOGGER.error("Cannot retrieve user mails, no user in session found!");
+            return GenericResponseResult.unauthorized("Failed to retrieve user mails, no authentication.");
         }
 
-        JsonArrayBuilder usermails = mails.exportUserMails(sessionuser, from, to);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User mails were successfully retrieved.", ResponseResults.CODE_OK, usermails.build().toString());
+        List<MailEntity> userMails = mails.getMails(sessionuser, from, to).stream().map(Mail::getMailEntity).collect(Collectors.toList());
+
+        return GenericResponseResult.ok("User mails were successfully retrieved.", userMails);
     }
 
     /**
-     * Get the count of total and unread mails.
+     *Get the count of total and unread mails.
      * 
      * @param request    HTTP request
      * @return           JSON response
@@ -93,24 +99,35 @@ public class MailEntityFacadeREST {
     @Path("count")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String getCount(@Context HttpServletRequest request) {
+    @ApiOperation(value = "Get the count of total and unread mails")
+    public GenericResponseResult<MailCount> getCount(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            LOGGER.error("*** Internal error, cannot retrieve count of mails, no user in session found!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count of mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
+            LOGGER.error("Cannot retrieve count of mails, no user in session found!");
+            return GenericResponseResult.unauthorized("Failed to retrieve count of mails, no authentication.");
         }
 
         long total  = mails.getCountTotalMails(sessionuser);
         long unread = mails.getCountUnreadMails(sessionuser);
-        JsonObjectBuilder resp = Json.createObjectBuilder();
-        resp.add("totalMails", total);
-        resp.add("unreadMails", unread);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of mails was successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
+        MailCount mailCount = new MailCount(total, unread);
+        return GenericResponseResult.ok("Count of mails was successfully retrieved.", mailCount);
+    }
+
+    static class MailCount {
+        public final long totalMails;
+        public final long unreadMails;
+
+        public MailCount(final long totalMails, final long unreadMails) {
+            this.totalMails = totalMails;
+            this.unreadMails = unreadMails;
+        }
     }
 
     /**
      * Get the count of unread mails.
-     * 
+     *
+     * TODO: Needed?
+     *
      * @param request    HTTP request
      * @return           JSON response
      */
@@ -118,17 +135,25 @@ public class MailEntityFacadeREST {
     @Path("countUnread")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String getCountUnread(@Context HttpServletRequest request) {
+    @ApiOperation(value = "Get the count of unread mails")
+    public GenericResponseResult<UnreadMailCount> getCountUnread(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            LOGGER.error("*** Internal error, cannot retrieve count of unread mails, no user in session found!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to retrieve count of unread mails, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
+            LOGGER.error("Cannot retrieve count of unread mails, no user in session found!");
+            return GenericResponseResult.unauthorized("Failed to retrieve count of unread mails, no authentication.");
         }
 
         long unread = mails.getCountUnreadMails(sessionuser);
-        JsonObjectBuilder resp = Json.createObjectBuilder();
-        resp.add("unreadMails", unread);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of unread mails was successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
+        UnreadMailCount unreadMailCount = new UnreadMailCount(unread);
+        return GenericResponseResult.ok("Count of unread mails was successfully retrieved.", unreadMailCount);
+    }
+
+    static class UnreadMailCount {
+        public final long unreadMails;
+
+        public UnreadMailCount(final long unreadMails) {
+            this.unreadMails = unreadMails;
+        }
     }
 
     /**
@@ -143,11 +168,13 @@ public class MailEntityFacadeREST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String send(String mailJson, @Context HttpServletRequest request) {
+    @ApiOperation(value = "Send a mail to another user")
+    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = NewMail.class, paramType = "body"))
+    public GenericResponseResult<Void> send(@ApiParam(hidden = true) String mailJson, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            LOGGER.error("*** Internal error, cannot create mail, no user in session found!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create a mail, no authentication.", ResponseResults.CODE_UNAUTHORIZED, null);
+            LOGGER.error("Cannot create mail, no user in session found!");
+            return GenericResponseResult.unauthorized("Failed to create a mail, no authentication.");
         }
 
         MailEntity mail;
@@ -155,8 +182,8 @@ public class MailEntityFacadeREST {
             mail = validator.validateNewEntityInput(mailJson);
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not send mail, validation failed, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, null);
+            LOGGER.warn("Could not send mail, validation failed, reason: {}", ex.getLocalizedMessage());
+            return GenericResponseResult.badRequest(ex.getLocalizedMessage());
         }
 
         //! NOTE we may implement a mechanism to limit the maximal count of user mails
@@ -167,11 +194,47 @@ public class MailEntityFacadeREST {
             mails.createMail(mail);
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not send mail, problem occurred while creating mail entity, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Problem occurred while sending mail", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
+            LOGGER.warn("Could not send mail, problem occurred while creating mail entity, reason: {}", ex.getLocalizedMessage());
+            return GenericResponseResult.internalError("Problem occurred while sending mail");
         }
 
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Mail was successfully sent.", ResponseResults.CODE_OK, null);
+        return GenericResponseResult.ok("Mail was successfully sent.", null);
+    }
+
+    static class NewMail {
+        String subject;
+        String content;
+        String receiverid;
+
+        public NewMail(final String subject, final String content, final String receiverid) {
+            this.subject = subject;
+            this.content = content;
+            this.receiverid = receiverid;
+        }
+
+        public String getSubject() {
+            return subject;
+        }
+
+        public void setSubject(final String subject) {
+            this.subject = subject;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public void setContent(final String content) {
+            this.content = content;
+        }
+
+        public String getReceiverid() {
+            return receiverid;
+        }
+
+        public void setReceiverid(final String receiverid) {
+            this.receiverid = receiverid;
+        }
     }
 
     /**

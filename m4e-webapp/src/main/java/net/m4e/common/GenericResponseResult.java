@@ -94,8 +94,32 @@ public class GenericResponseResult<T> {
     }
 
 
+    /**
+     * 200.
+     */
     public static <T> GenericResponseResult<T> ok(final String description, final T data) {
         return new GenericResponseResult<>(STATUS_OK, description, CODE_OK, data);
+    }
+
+    /**
+     * 401
+     */
+    public static <T> GenericResponseResult<T> unauthorized(String desc) {
+        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_UNAUTHORIZED, null);
+    }
+
+    /**
+     * 400.
+     */
+    public static <T> GenericResponseResult<T> badRequest(String desc) {
+        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_BAD_REQUEST, null);
+    }
+
+    /**
+     * 500.
+     */
+    public static <T> GenericResponseResult<T> internalError(String desc) {
+        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
     }
 
     public String getStatus() {
@@ -129,4 +153,5 @@ public class GenericResponseResult<T> {
     public void setData(final T data) {
         this.data = data;
     }
+
 }

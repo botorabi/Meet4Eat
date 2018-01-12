@@ -8,16 +8,18 @@
 
 package net.m4e.app.resources;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.*;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.json.bind.annotation.JsonbTransient;
+import javax.persistence.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class entity for an document. A document can be e.g. an image or a PDF file.
@@ -74,6 +76,8 @@ public class DocumentEntity implements Serializable {
      * Entity status
      */
     @OneToOne(optional = false, cascade = CascadeType.ALL)
+    //@ApiModelProperty(hidden = true)
+    @JsonbTransient
     private StatusEntity status;
 
     /**
