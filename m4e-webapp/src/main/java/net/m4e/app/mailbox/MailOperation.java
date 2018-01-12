@@ -7,10 +7,15 @@
  */
 package net.m4e.app.mailbox;
 
+import javax.json.bind.adapter.JsonbAdapter;
+import javax.json.bind.annotation.JsonbTypeAdapter;
+
 /**
  * @author ybroeker
  */
+@JsonbTypeAdapter(MailOperation.MailOperationAdapter.class)
 public enum MailOperation {
+
     TRASH, UNTRASH, READ, UNREAD;
 
     static MailOperation fromString(String string) {
@@ -19,11 +24,23 @@ public enum MailOperation {
                 return mailOperation;
             }
         }
+
         return null;
     }
 
-    @Override
-    public String toString() {
-        return name().toLowerCase();
+    public static class MailOperationAdapter implements JsonbAdapter<MailOperation, String> {
+
+        public MailOperationAdapter() {
+        }
+
+        @Override
+        public String adaptToJson(final MailOperation obj) {
+            return obj.name().toLowerCase();
+        }
+
+        @Override
+        public MailOperation adaptFromJson(final String obj) {
+            return MailOperation.fromString(obj);
+        }
     }
 }

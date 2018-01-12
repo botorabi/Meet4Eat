@@ -7,6 +7,8 @@
  */
 package net.m4e.app.mailbox.cmds;
 
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
@@ -23,16 +25,15 @@ public final class NewMailCmd {
     private String content;
 
     @Min(0)
-    private String receiverId;
+    private Long receiverId;
 
-
-    public NewMailCmd(final String subject, final String content, final String receiverId) {
+    @JsonbCreator
+    public NewMailCmd(@JsonbProperty("subject") final String subject,
+                      @JsonbProperty("content") final String content,
+                      @JsonbProperty("receiverId") final Long receiverId) {
         this.subject = subject;
         this.content = content;
         this.receiverId = receiverId;
-    }
-
-    protected NewMailCmd() {
     }
 
     public String getSubject() {
@@ -51,11 +52,11 @@ public final class NewMailCmd {
         this.content = content;
     }
 
-    public String getReceiverId() {
+    public Long getReceiverId() {
         return receiverId;
     }
 
-    public void setReceiverId(final String receiverid) {
+    public void setReceiverId(final Long receiverId) {
         this.receiverId = receiverId;
     }
 }

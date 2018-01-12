@@ -7,6 +7,9 @@
  */
 package net.m4e.app.mailbox.cmds;
 
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
+
 import net.m4e.app.mailbox.MailOperation;
 
 /**
@@ -15,11 +18,9 @@ import net.m4e.app.mailbox.MailOperation;
 public final class MailOperationCmd {
     private MailOperation operation;
 
-    public MailOperationCmd(final MailOperation operation) {
+    @JsonbCreator
+    public MailOperationCmd(@JsonbProperty("operation") final MailOperation operation) {
         this.operation = operation;
-    }
-
-    protected MailOperationCmd() {
     }
 
     public MailOperation getOperation() {
