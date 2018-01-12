@@ -9,6 +9,7 @@ package net.m4e.app.auth;
 
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.ResponseResults;
+import net.m4e.system.core.AppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,17 +140,24 @@ public class AuthFilter implements Filter {
 
             boolean allowaccess = false;
 
+            // check for accessing html files in base path
             if (path.equals("/" + basePath + "/") || path.matches("/" + basePath + "/.*\\.html")) {
                 allowaccess = true;
             }
+            // check for accessing public resources
             else if (path.startsWith("/" + basePath + "/" + publicBasePath)) {
                 LOGGER.trace("  Fetching public resource: " + path);
+                allowaccess = true;
+            }
+            // check for websocket endpoint access
+            else if (path.equals("/" + basePath + AppConfiguration.WEBSOCKET_URL)) {
                 allowaccess = true;
             }
             // check for swagger access
             else if (path.matches("/" + basePath + "/" + protectedBasePath + "/swagger\\..*")) {
                 allowaccess = true;
             }
+            // check for accessing protected resources such as rest-services
             else if (path.startsWith("/" + basePath + "/" + protectedBasePath)) {
                 // get the user roles out of the http session
                 UserEntity sessionuser = getSessionUser(httprequest);

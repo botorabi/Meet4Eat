@@ -44,6 +44,11 @@ public class AppConfiguration {
     public final static String REST_BASE_URL = "webresources";
 
     /**
+     * URL for accessing the WebSocket endpoint
+     */
+    public final static String WEBSOCKET_URL = "/ws";
+
+    /**
      * Configuration token name for app version.
      */
     public final static String TOKEN_APP_VERSION = "AppVersion";
