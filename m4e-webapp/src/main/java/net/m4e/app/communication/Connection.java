@@ -10,6 +10,7 @@ package net.m4e.app.communication;
 
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.user.UserEntity;
+import net.m4e.system.core.AppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ import java.util.Date;
  * @author boto
  * Date of creation Oct 03, 2017
  */    
-@ServerEndpoint(value="/ws", configurator = ConnectionConfigurator.class)
+@ServerEndpoint(value=AppConfiguration.WEBSOCKET_URL, configurator = ConnectionConfigurator.class)
 public class Connection {
 
     /**
