@@ -19,7 +19,7 @@ import javax.json.JsonObjectBuilder;
  * @author boto
  * Date of creation Aug 18, 2017
  */
-public class ResponseResults {
+public class ResponseResults extends GenericResponseResult<String> {
 
     /**
      * Status string for OK
@@ -71,25 +71,6 @@ public class ResponseResults {
      */
     public final static int CODE_SERVICE_UNAVAILABLE = 503;
 
-    /**
-     * Status: 'ok' or 'nok'
-     */
-    private String status = STATUS_NOT_OK;
-
-    /**
-     * Response description
-     */
-    private String description = "";
-
-    /**
-     * Response code
-     */
-    private int code = CODE_OK;
-
-    /**
-     * Response data, expected to be in JSON format if it exists.
-     */
-    private String data;
 
     /**
      * Create a response instance.
@@ -132,10 +113,10 @@ public class ResponseResults {
      * @param data          Optional data, if it exists the it must be in JSON format.
      */
     public ResponseResults(String status, String description, int code, String data) {
-        this.status = status;
-        this.description = description;
-        this.code = code;
-        this.data = data;
+        this.setStatus(status);
+        this.setDescription(description);
+        this.setCode(code);
+        this.setData(data);
     }
 
     /**
@@ -145,82 +126,11 @@ public class ResponseResults {
      */
     public String toJSON() {
         JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("status", ((status != null) ? status : ""))
-            .add("description", ((description != null) ? description : ""))
-            .add("code", code)
-            .add("data", ((data != null) ? data : ""));
+        json.add("status", ((getStatus() != null) ? getStatus() : ""))
+                .add("description", ((getDescription() != null) ? getDescription() : ""))
+                .add("code", getCode())
+                .add("data", ((getData() != null) ? getData() : ""));
         return json.build().toString();
     }
 
-    /**
-     * Get the status.
-     * 
-     * @return  Status string
-     */
-    public String getStatus() {
-        return status;
-    }
-
-    /**
-     * Set the status.
-     * 
-     * @param status Status string
-     */
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    /**
-     * Get the description.
-     * 
-     * @return  Description string
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Set the description.
-     * 
-     * @param description Description string
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /**
-     * Get the response code.
-     * 
-     * @return  Response code (integer)
-     */
-    public int getCode() {
-        return code;
-    }
-
-    /**
-     * Set the response code.
-     * 
-     * @param code Response code as integer.
-     */
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    /**
-     * Get the response data.
-     * 
-     * @return  Response data
-     */
-    public String getData() {
-        return data;
-    }
-
-    /**
-     * Set the response data.
-     * 
-     * @param data Response data.
-     */
-    public void setData(String data) {
-        this.data = data;
-    }
 }

@@ -7,17 +7,14 @@
  */
 package net.m4e.system.core;
 
-import net.m4e.app.auth.AuthRole;
-import net.m4e.common.ResponseResults;
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
+import net.m4e.app.auth.AuthRole;
+import net.m4e.common.GenericResponseResult;
+import net.m4e.common.ResponseResults;
 
 /**
  * REST API for getting application information.
@@ -56,13 +53,30 @@ public class AppInfoEntityFacadeREST {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @AuthRole(grantRoles = {AuthRole.VIRT_ROLE_GUEST})
-    public String getInfo() {
+    public GenericResponseResult<AppInfo> getInfo() {
         AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
+            return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("version", info.getVersion());
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        AppInfo appInfo = new AppInfo(info.getVersion());
+
+        return new GenericResponseResult<>(ResponseResults.STATUS_OK, "", ResponseResults.CODE_OK, appInfo);
+    }
+
+    public static class AppInfo {
+        //TODO: Replace with annotated AppInfoEntity
+        public String version;
+
+        public AppInfo(final String version) {
+            this.version = version;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(final String version) {
+            this.version = version;
+        }
     }
 }
