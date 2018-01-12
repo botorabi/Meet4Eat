@@ -25,9 +25,9 @@ import net.m4e.common.Strings;
 public class MailEntityInputValidator {
 
     /* Min/max string length for user input fields */
-    static final int USER_INPUT_MIN_LEN_SUBJECT = 1;
-    static final int USER_INPUT_MAX_LEN_SUBJECT = 32;
-    static final int USER_INPUT_MAX_ATTACHMENTS = 5;
+    public static final int USER_INPUT_MIN_LEN_SUBJECT = 1;
+    public static final int USER_INPUT_MAX_LEN_SUBJECT = 32;
+    public static final int USER_INPUT_MAX_ATTACHMENTS = 5;
 
     private final Users users;
 

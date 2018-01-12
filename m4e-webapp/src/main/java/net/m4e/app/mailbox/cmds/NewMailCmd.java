@@ -5,15 +5,17 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.cmds;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
+import net.m4e.app.mailbox.MailEntityInputValidator;
+
 /**
  * ! TODO get the attachments
  */
-class NewMail {
+public final class NewMailCmd {
 
     @Size(min = 1, max = MailEntityInputValidator.USER_INPUT_MAX_LEN_SUBJECT)
     private String subject;
@@ -24,10 +26,13 @@ class NewMail {
     private String receiverId;
 
 
-    public NewMail(final String subject, final String content, final String receiverId) {
+    public NewMailCmd(final String subject, final String content, final String receiverId) {
         this.subject = subject;
         this.content = content;
         this.receiverId = receiverId;
+    }
+
+    protected NewMailCmd() {
     }
 
     public String getSubject() {

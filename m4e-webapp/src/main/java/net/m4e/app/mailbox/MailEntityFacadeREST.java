@@ -24,6 +24,8 @@ import javax.ws.rs.core.MediaType;
 import io.swagger.annotations.*;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.mailbox.cmds.MailOperationCmd;
+import net.m4e.app.mailbox.cmds.NewMailCmd;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.GenericResponseResult;
 import org.slf4j.Logger;
@@ -168,9 +170,9 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
-    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = NewMail.class, paramType = "body"))
+    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = NewMailCmd.class, paramType = "body"))
     public GenericResponseResult<Void> send(@ApiParam(hidden = true) String mailJson, @Context HttpServletRequest request) {
-        //TODO: NewMail aus Parameter instead of String
+        //TODO: NewMailCmd aus Parameter instead of String
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot create mail, no user in session found!");
@@ -253,70 +255,6 @@ public class MailEntityFacadeREST {
         }
 
         return GenericResponseResult.ok("User mails were successfully retrieved.", mailOperationResponse);
-    }
-
-    enum MailOperation {
-        TRASH, UNTRASH, READ, UNREAD;
-
-        static MailOperation fromString(String string) {
-            for (final MailOperation mailOperation : values()) {
-                if (mailOperation.toString().equalsIgnoreCase(string)) {
-                    return mailOperation;
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return name().toLowerCase();
-        }
-    }
-
-    class MailOperationCmd {
-        MailOperation operation;
-
-        public MailOperationCmd(final MailOperation operation) {
-            this.operation = operation;
-        }
-
-        public MailOperation getOperation() {
-            return operation;
-        }
-
-        public void setOperation(final MailOperation operation) {
-            this.operation = operation;
-        }
-    }
-
-    class MailOperationResponse {
-        MailOperation operation;
-        String id;
-
-        public MailOperation getOperation() {
-            return operation;
-        }
-
-        public void setOperation(final MailOperation operation) {
-            this.operation = operation;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(final String id) {
-            this.id = id;
-        }
-
-        public MailOperationResponse(final String id) {
-            this.id = id;
-        }
-
-        public MailOperationResponse(final MailOperation operation, final String id) {
-            this.operation = operation;
-            this.id = id;
-        }
     }
 
 }
