@@ -21,6 +21,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -174,7 +175,7 @@ public class Mails {
         List<Mail> mails = new ArrayList();
         for (int i = 0; i < results.size(); i++) {
             Object[] res = results.get(i);
-            mails.add(new Mail((MailEntity)res[0], (boolean)res[1], (Long)res[2]));
+            mails.add(new Mail((MailEntity)res[0], (boolean)res[1], Instant.ofEpochMilli((long)res[2])));
         }
         return mails;
     }
@@ -283,7 +284,7 @@ public class Mails {
             .add("receiverName", (mailentity.getReceiverName() != null) ? mailentity.getReceiverName() : "")
             .add("sendDate", (mailentity.getSendDate()!= null) ? mailentity.getSendDate() : 0)
             .add("unread", mail.isUnread())
-            .add("trashDate", (mail.getTrashDate() != null) ? mail.getTrashDate() : 0);
+            .add("trashDate", (mail.getTrashDate() != null) ? mail.getTrashDate().getEpochSecond() : 0);
 
         //! TODO put the attachments into jason document
 

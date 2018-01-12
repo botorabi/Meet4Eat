@@ -8,6 +8,10 @@
 
 package net.m4e.app.mailbox;
 
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.time.Instant;
+
 /**
  * This class represents mail. It composed by several chunks of information
  * provided by MailEntity and MailUserEntity.
@@ -28,12 +32,12 @@ public class Mail {
     private boolean unread;
 
     /**
-     * The timestamp of trashing the mail. Trashed mails will get purged after some period of time.
-     * //TODO: Better Documentation.
-     * //TODO: Maybe user long (no NPE) or explicit TimeStamp (Instant?)
-     * //TODO: https://github.com/botorabi/Meet4Eat/issues/10
+     * The timestamp of 'trashing' the mail, i.e. marking it as 'free to delete'. Trashed mails can
+     * get purged by system after some period of time. A trashed mail can get untrashed by setting this
+     * timestamp to 0 since epoch.
      */
-    private Long trashDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Instant trashDate;
 
     /**
      * Create a mail instance.
@@ -45,7 +49,7 @@ public class Mail {
     public Mail(
         MailEntity mailEntity,
         boolean unread,
-        Long trashDate
+        Instant trashDate
     ) {
         this.mailEntity = mailEntity;
         this.unread = unread;
@@ -76,7 +80,7 @@ public class Mail {
      * @return Return true if the mail is marked as trash
      */
     public boolean isTrashed() {
-        return trashDate > 0L;
+        return (trashDate == null) ? false : (trashDate.getEpochSecond() != 0);
     }
 
     /**
@@ -84,7 +88,7 @@ public class Mail {
      * 
      * @return Return the timestamp of trashing the mail
      */
-    public Long getTrashDate() {
+    public Instant getTrashDate() {
         return trashDate;
     }
 
@@ -94,7 +98,7 @@ public class Mail {
      * 
      * @param trashDate Date of trashing the mail
      */
-    public void setTrashDate(Long trashDate) {
+    public void setTrashDate(Instant trashDate) {
         this.trashDate = trashDate;
     }
 
