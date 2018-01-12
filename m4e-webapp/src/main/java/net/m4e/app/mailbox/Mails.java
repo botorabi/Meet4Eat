@@ -8,24 +8,21 @@
 
 package net.m4e.app.mailbox;
 
-import net.m4e.app.user.UserEntity;
-import net.m4e.common.Entities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.time.Instant;
+import java.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.*;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import java.io.StringReader;
-import java.lang.invoke.MethodHandles;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
+import net.m4e.app.user.UserEntity;
+import net.m4e.common.Entities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A collection of mailbox related utilities
@@ -244,6 +241,7 @@ public class Mails {
      * @param operation     Mail operation: trash, untrash, read, unread
      * @throws Exception    Throws an exception if something goes wrong.
      */
+    @Deprecated
     public void performMailOperation(Long userId, Long mailId, String operation) throws Exception {
         if (operation == null) {
             throw new Exception("Unsupported operation");
@@ -267,24 +265,60 @@ public class Mails {
     }
 
     /**
+     * Perform a mail operation.
+     *
+     * @param userId    the ID of user referring to the mail
+     * @param mailId    the actual Mail ID
+     * @param operation the Mail operation
+     * @throws Exception                     if something goes wrong.
+     * @throws IllegalArgumentException      if {@code operation} is {@code null}
+     * @throws UnsupportedOperationException if the {@code operation} is not supported
+     */
+    public void performMailOperation(Long userId, Long mailId, @NotNull MailOperation operation)
+            throws Exception, IllegalArgumentException, UnsupportedOperationException {
+        if (operation == null) {
+            throw new IllegalArgumentException("null for operation not allowed");
+        }
+
+        switch (operation) {
+            case TRASH:
+                trashUserMail(userId, mailId, true);
+                break;
+            case UNTRASH:
+                trashUserMail(userId, mailId, false);
+                break;
+            case READ:
+                markAsUnreadUserMail(userId, mailId, false);
+                break;
+            case UNREAD:
+                markAsUnreadUserMail(userId, mailId, true);
+                break;
+            default:
+                throw new UnsupportedOperationException(String.format("operation %s not supported", operation));
+        }
+
+    }
+
+    /**
      * Give a mail entity export the necessary fields into a JSON object.
-     * 
+     *
      * @param mail    The mail to export
      * @return        A JSON object containing builder the proper entity fields
      */
+    @Deprecated
     public JsonObjectBuilder exportMailJSON(Mail mail) {
         MailEntity mailentity = mail.getMailEntity();
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", (mailentity.getId() != null) ? mailentity.getId().toString() : "")
-            .add("subject", mailentity.getSubject())
-            .add("content", mailentity.getContent())
-            .add("senderId", (mailentity.getSenderId() != null) ? "" + mailentity.getSenderId() : "0")
-            .add("senderName", (mailentity.getSenderName() != null) ? mailentity.getSenderName() : "")
-            .add("receiverId", (mailentity.getReceiverId() != null) ? "" + mailentity.getReceiverId() : "0")
-            .add("receiverName", (mailentity.getReceiverName() != null) ? mailentity.getReceiverName() : "")
-            .add("sendDate", (mailentity.getSendDate()!= null) ? mailentity.getSendDate() : 0)
-            .add("unread", mail.isUnread())
-            .add("trashDate", (mail.getTrashDate() != null) ? mail.getTrashDate().getEpochSecond() : 0);
+                .add("subject", mailentity.getSubject())
+                .add("content", mailentity.getContent())
+                .add("senderId", (mailentity.getSenderId() != null) ? "" + mailentity.getSenderId() : "0")
+                .add("senderName", (mailentity.getSenderName() != null) ? mailentity.getSenderName() : "")
+                .add("receiverId", (mailentity.getReceiverId() != null) ? "" + mailentity.getReceiverId() : "0")
+                .add("receiverName", (mailentity.getReceiverName() != null) ? mailentity.getReceiverName() : "")
+                .add("sendDate", (mailentity.getSendDate() != null) ? mailentity.getSendDate() : 0)
+                .add("unread", mail.isUnread())
+                .add("trashDate", (mail.getTrashDate() != null) ? mail.getTrashDate().getEpochSecond() : 0);
 
         //! TODO put the attachments into jason document
 
@@ -299,6 +333,7 @@ public class Mails {
      * @param to    Range end
      * @return      User mails in a JSON array
      */
+    @Deprecated
     public JsonArrayBuilder exportUserMails(UserEntity user, int from, int to) {
         JsonArrayBuilder mails = Json.createArrayBuilder();
         getMails(user, from, to).forEach((mail) -> {
@@ -314,6 +349,7 @@ public class Mails {
      * @return           Mail entity or null if the JSON string was not appropriate
      * @throws Exception Throws exception if the input was not valid
      */
+    @Deprecated
     public MailEntity importMailJSON(String jsonString) throws Exception {
         if (jsonString == null) {
             return null;
