@@ -116,7 +116,6 @@ public class Mails {
         MailUserEntity mailuser = new MailUserEntity();
         mailuser.setMailId(mailId);
         mailuser.setUserId(userId);
-        mailuser.setTrashDate(0L);
         mailuser.setUnread(true);
         entities.create(mailuser);        
     }
@@ -175,7 +174,8 @@ public class Mails {
         List<Mail> mails = new ArrayList();
         for (int i = 0; i < results.size(); i++) {
             Object[] res = results.get(i);
-            mails.add(new Mail((MailEntity)res[0], (boolean)res[1], Instant.ofEpochMilli((long)res[2])));
+            Long ts = (Long)res[2];
+            mails.add(new Mail((MailEntity)res[0], (boolean)res[1], Instant.ofEpochMilli(ts == null ? 0L: ts)));
         }
         return mails;
     }
@@ -215,7 +215,7 @@ public class Mails {
         if (!trash && !mailuser.isTrashed()) {
             throw new Exception("Mail was not trashed.");
         }
-        mailuser.setTrashDate(trash ? (new Date()).getTime() : 0L);
+        mailuser.setTrashDate(trash ? Instant.now() : null);
         entities.update(mailuser);
     }
 

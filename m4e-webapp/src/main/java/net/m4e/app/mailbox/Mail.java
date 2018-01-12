@@ -13,7 +13,7 @@ import javax.persistence.TemporalType;
 import java.time.Instant;
 
 /**
- * This class represents mail. It composed by several chunks of information
+ * This class represents a mail. It is composed by several chunks of information
  * provided by MailEntity and MailUserEntity.
  * 
  * @author boto
@@ -32,11 +32,8 @@ public class Mail {
     private boolean unread;
 
     /**
-     * The timestamp of 'trashing' the mail, i.e. marking it as 'free to delete'. Trashed mails can
-     * get purged by system after some period of time. A trashed mail can get untrashed by setting this
-     * timestamp to 0 since epoch.
+     * The timestamp of 'trashing' the mail, i.e. the mail is marked as 'free to delete'.
      */
-    @Temporal(TemporalType.TIMESTAMP)
     private Instant trashDate;
 
     /**

@@ -10,6 +10,7 @@ package net.m4e.app.mailbox;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 
 /**
  * This class joins a user and a mail. It is used to share the same mail
@@ -72,9 +73,11 @@ public class MailUserEntity implements Serializable {
     private boolean unread = true;
 
     /**
-     * The timestamp of trashing the mail. Trashed mails will get purged after some period of time.
+     * The timestamp of 'trashing' the mail, i.e. marking it as 'free to delete'. Trashed mails can
+     * get purged by system after some period of time. A trashed mail can get untrashed by setting this
+     * timestamp to 0 since epoch.
      */
-    private Long trashDate = 0L;
+    private Instant trashDate;
 
     /**
      * Get ID.
@@ -134,7 +137,7 @@ public class MailUserEntity implements Serializable {
      * @return Return true if the mail is marked as trash
      */
     public boolean isTrashed() {
-        return trashDate > 0L;
+        return (trashDate == null) ? false : (trashDate.getEpochSecond() != 0);
     }
 
     /**
@@ -142,7 +145,7 @@ public class MailUserEntity implements Serializable {
      * 
      * @return Return the timestamp of trashing the mail
      */
-    public Long getTrashDate() {
+    public Instant getTrashDate() {
         return trashDate;
     }
 
@@ -152,7 +155,7 @@ public class MailUserEntity implements Serializable {
      * 
      * @param trashDate Date of trashing the mail
      */
-    public void setTrashDate(Long trashDate) {
+    public void setTrashDate(Instant trashDate) {
         this.trashDate = trashDate;
     }
 
@@ -192,6 +195,6 @@ public class MailUserEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.app.mailbox.MailReferenceEntity[ id=" + id + " ]";
+        return "net.m4e.app.mailbox.MailUserEntity[ id=" + id + " ]";
     }
 }
