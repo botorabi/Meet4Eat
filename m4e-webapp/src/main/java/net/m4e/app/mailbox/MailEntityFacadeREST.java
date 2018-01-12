@@ -158,7 +158,7 @@ public class MailEntityFacadeREST {
 
     /**
      * Send a mail to another user.
-     * 
+     *
      * @param mailJson   Mail data in JSON format
      * @param request    HTTP request
      * @return           JSON response
@@ -171,6 +171,7 @@ public class MailEntityFacadeREST {
     @ApiOperation(value = "Send a mail to another user")
     @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = NewMail.class, paramType = "body"))
     public GenericResponseResult<Void> send(@ApiParam(hidden = true) String mailJson, @Context HttpServletRequest request) {
+        //TODO: NewMail aus Parameter instead of String
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot create mail, no user in session found!");
@@ -199,42 +200,6 @@ public class MailEntityFacadeREST {
         }
 
         return GenericResponseResult.ok("Mail was successfully sent.", null);
-    }
-
-    static class NewMail {
-        String subject;
-        String content;
-        String receiverid;
-
-        public NewMail(final String subject, final String content, final String receiverid) {
-            this.subject = subject;
-            this.content = content;
-            this.receiverid = receiverid;
-        }
-
-        public String getSubject() {
-            return subject;
-        }
-
-        public void setSubject(final String subject) {
-            this.subject = subject;
-        }
-
-        public String getContent() {
-            return content;
-        }
-
-        public void setContent(final String content) {
-            this.content = content;
-        }
-
-        public String getReceiverid() {
-            return receiverid;
-        }
-
-        public void setReceiverid(final String receiverid) {
-            this.receiverid = receiverid;
-        }
     }
 
     /**
