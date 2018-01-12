@@ -116,11 +116,20 @@ public class GenericResponseResult<T> {
     }
 
     /**
+     * 400.
+     */
+    public static <T> GenericResponseResult<T> badRequest(final String desc, final T data) {
+        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_BAD_REQUEST, data);
+    }
+
+    /**
      * 500.
      */
     public static <T> GenericResponseResult<T> internalError(String desc) {
         return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
     }
+
+
 
     public String getStatus() {
         return status;

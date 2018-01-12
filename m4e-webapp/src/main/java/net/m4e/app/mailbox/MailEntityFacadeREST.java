@@ -26,7 +26,6 @@ import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.GenericResponseResult;
-import net.m4e.common.ResponseResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,28 +222,101 @@ public class MailEntityFacadeREST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String operate(@PathParam("id") Long id, String operationJson, @Context HttpServletRequest request) {
-        JsonObjectBuilder resp = Json.createObjectBuilder();
-        resp.add("id", id.toString());
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+    @ApiOperation(value = "Send a mail to another user")
+    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = MailOperationCmd.class, paramType = "body"))
+    public GenericResponseResult<MailOperationResponse> operate(@ApiParam("The mail-ID.") @PathParam("id") Long id,
+                                                                @ApiParam(hidden = true) String operationJson,
+                                                                @Context HttpServletRequest request) {
+
+        final MailOperationResponse mailOperationResponse = new MailOperationResponse(id.toString());
+
+        final UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
-            LOGGER.error("*** Internal error, cannot delete user mail, no user in session found!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete the mail, no authentication.", ResponseResults.CODE_UNAUTHORIZED, resp.build().toString());
+            LOGGER.error("Cannot delete user mail, no user in session found!");
+            return GenericResponseResult.unauthorized("Failed to delete the mail, no authentication.");
         }
 
-        String op;
+        final String op;
         try {
             JsonReader jreader = Json.createReader(new StringReader(operationJson));
             JsonObject jobject = jreader.readObject();
             op = jobject.getString("operation", null);
+
+            mailOperationResponse.setOperation(MailOperation.fromString(op));
+
             mails.performMailOperation(sessionuser.getId(), id, op);
-        }
-        catch(Exception ex) {
-            LOGGER.warn("*** Could not perform mail operation, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to perform mail operation, reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, resp.build().toString());
+        } catch (Exception ex) {
+            LOGGER.warn("Could not perform mail operation, reason: " + ex.getLocalizedMessage());
+            return GenericResponseResult.badRequest(
+                    "Failed to perform mail operation, reason: " + ex.getLocalizedMessage(),
+                    mailOperationResponse);
         }
 
-        resp = resp.add("operation", op);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "User mails were successfully retrieved.", ResponseResults.CODE_OK, resp.build().toString());
+        return GenericResponseResult.ok("User mails were successfully retrieved.", mailOperationResponse);
     }
+
+    enum MailOperation {
+        TRASH, UNTRASH, READ, UNREAD;
+
+        static MailOperation fromString(String string) {
+            for (final MailOperation mailOperation : values()) {
+                if (mailOperation.toString().equalsIgnoreCase(string)) {
+                    return mailOperation;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
+    }
+
+    class MailOperationCmd {
+        MailOperation operation;
+
+        public MailOperationCmd(final MailOperation operation) {
+            this.operation = operation;
+        }
+
+        public MailOperation getOperation() {
+            return operation;
+        }
+
+        public void setOperation(final MailOperation operation) {
+            this.operation = operation;
+        }
+    }
+
+    class MailOperationResponse {
+        MailOperation operation;
+        String id;
+
+        public MailOperation getOperation() {
+            return operation;
+        }
+
+        public void setOperation(final MailOperation operation) {
+            this.operation = operation;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(final String id) {
+            this.id = id;
+        }
+
+        public MailOperationResponse(final String id) {
+            this.id = id;
+        }
+
+        public MailOperationResponse(final MailOperation operation, final String id) {
+            this.operation = operation;
+            this.id = id;
+        }
+    }
+
 }
