@@ -22,57 +22,6 @@ import javax.json.JsonObjectBuilder;
 public class ResponseResults extends GenericResponseResult<String> {
 
     /**
-     * Status string for OK
-     */
-    public final static String STATUS_OK = "ok";
-
-    /**
-     * Status string for Not-OK
-     */
-    public final static String STATUS_NOT_OK = "nok";
-
-    /**
-     * Code for OK (HTTP code is used)
-     */
-    public final static int CODE_OK = 200;
-
-    /**
-     * Code for bad request
-     */
-    public final static int CODE_BAD_REQUEST = 400;
-
-    /**
-     * Code for not authorized
-     */
-    public final static int CODE_UNAUTHORIZED = 401;
-
-    /**
-     * Code for forbidden
-     */
-    public final static int CODE_FORBIDDEN = 403;
-
-    /**
-     * Code for not found
-     */
-    public final static int CODE_NOT_FOUND = 404;
-
-    /**
-     * Code for not acceptable
-     */
-    public final static int CODE_NOT_ACCEPTABLE = 406;
-
-    /**
-     * Code for not internal server error
-     */
-    public final static int CODE_INTERNAL_SRV_ERROR = 500;
-
-    /**
-     * Code for service unavailable
-     */
-    public final static int CODE_SERVICE_UNAVAILABLE = 503;
-
-
-    /**
      * Create a response instance.
      */
     public ResponseResults() {
@@ -132,5 +81,4 @@ public class ResponseResults extends GenericResponseResult<String> {
                 .add("data", ((getData() != null) ? getData() : ""));
         return json.build().toString();
     }
-
 }

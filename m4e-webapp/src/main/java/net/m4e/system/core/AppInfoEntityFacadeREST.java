@@ -7,16 +7,18 @@
  */
 package net.m4e.system.core;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.GenericResponseResult;
 import net.m4e.common.ResponseResults;
+
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * REST API for getting application information.
@@ -26,7 +28,7 @@ import net.m4e.common.ResponseResults;
  */
 @Stateless
 @Path("/rest/appinfo")
-@Api("infos")
+@Api(value = "Application information")
 public class AppInfoEntityFacadeREST {
 
     private final AppInfos appInfos;
@@ -57,29 +59,23 @@ public class AppInfoEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @AuthRole(grantRoles = {AuthRole.VIRT_ROLE_GUEST})
     @ApiOperation("Get app version information")
-    public GenericResponseResult<AppInfo> getInfo() {
+    public GenericResponseResult<ResponseDataAppInfo> getInfo() {
         AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {
             return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
         }
-        AppInfo appInfo = new AppInfo(info.getVersion());
-
+        ResponseDataAppInfo appInfo = new ResponseDataAppInfo(info.getVersion());
         return new GenericResponseResult<>(ResponseResults.STATUS_OK, "", ResponseResults.CODE_OK, appInfo);
     }
 
-    public static class AppInfo {
-        //TODO: Replace with annotated AppInfoEntity
+
+    /**
+     * Class describing the response data for GET (getInfo)
+     */
+    public static class ResponseDataAppInfo {
         public String version;
 
-        public AppInfo(final String version) {
-            this.version = version;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public void setVersion(final String version) {
+        public ResponseDataAppInfo(final String version) {
             this.version = version;
         }
     }

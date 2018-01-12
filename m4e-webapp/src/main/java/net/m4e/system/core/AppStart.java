@@ -53,5 +53,4 @@ public class AppStart extends Application {
         resources.add(net.m4e.system.maintenance.MaintenanceFacadeREST.class);
         resources.add(net.m4e.update.UpdateCheckEntityFacadeREST.class);
     }
-
 }
