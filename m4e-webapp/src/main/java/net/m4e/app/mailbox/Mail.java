@@ -8,9 +8,8 @@
 
 package net.m4e.app.mailbox;
 
-import java.time.Instant;
-
 import javax.json.bind.annotation.JsonbTransient;
+import java.time.Instant;
 
 /**
  * This class represents a mail. It is composed by several chunks of information
