@@ -68,6 +68,21 @@ class MailEntityFacadeRESTTest {
         }
 
         @Test
+        void oneMail() {
+            Mockito.when(mails.getMails(Mockito.eq(userEntity), Mockito.anyInt(), Mockito.anyInt())).thenReturn(Collections.singletonList(new Mail(new MailEntity(),true, null)));
+
+            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
+
+
+            GenericResponseResult<List<MailEntity>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
+
+            Assertions.assertThat(retrievedMails.getData()).hasSize(1);
+            Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
+            Assertions.assertThat(retrievedMails.getStatus()).isEqualTo(GenericResponseResult.STATUS_OK);
+            Assertions.assertThat(retrievedMails.getDescription()).isNotEmpty();
+        }
+
+        @Test
         void noUser() {
             MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
 
