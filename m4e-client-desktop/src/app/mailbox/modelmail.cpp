@@ -46,16 +46,18 @@ bool ModelMail::fromJSON( const QString& input )
 bool ModelMail::fromJSON( const QJsonDocument& input )
 {
     QJsonObject data       = input.object();
-    QString     id         = QString::number( ( qint64 )data.value( "id" ).toDouble( 0.0 ) );
-    QString     senderid   = data.value( "senderId" ).toString( "" );
-    QString     sendername = data.value( "senderName" ).toString( "" );
-    QString     recvid     = data.value( "receiverId" ).toString( "" );
-    QString     recvname   = data.value( "receiverName" ).toString( "" );
-    QString     subject    = data.value( "subject" ).toString( "" );
-    QString     content    = data.value( "content" ).toString( "" );
-    qint64      date       = ( qint64 )data.value( "sendDate" ).toDouble( 0.0 );
     bool        unread     = data.value( "unread" ).toBool( true );
     qint64      trashdate  = ( qint64 )data.value( "trashDate" ).toDouble( 0.0 );
+
+    QJsonObject mail       = data.value( "mailContent" ).toObject();
+    QString     id         = QString::number( ( qint64 )mail.value( "id" ).toDouble( 0.0 ) );
+    QString     senderid   = mail.value( "senderId" ).toString( "" );
+    QString     sendername = mail.value( "senderName" ).toString( "" );
+    QString     recvid     = mail.value( "receiverId" ).toString( "" );
+    QString     recvname   = mail.value( "receiverName" ).toString( "" );
+    QString     subject    = mail.value( "subject" ).toString( "" );
+    QString     content    = mail.value( "content" ).toString( "" );
+    qint64      date       = ( qint64 )mail.value( "sendDate" ).toDouble( 0.0 );
 
     QDateTime d;
     d.setTime_t( static_cast< uint >( date / 1000 ) );

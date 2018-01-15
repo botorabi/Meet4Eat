@@ -307,7 +307,7 @@ public class Mails {
      */
     @Deprecated
     public JsonObjectBuilder exportMailJSON(Mail mail) {
-        MailEntity mailentity = mail.getMailEntity();
+        MailEntity mailentity = mail.getMailContent();
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", (mailentity.getId() != null) ? mailentity.getId().toString() : "")
                 .add("subject", mailentity.getSubject())

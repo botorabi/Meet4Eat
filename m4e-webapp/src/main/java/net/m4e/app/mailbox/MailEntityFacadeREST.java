@@ -78,14 +78,14 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get user mails in given range", notes = "Pass 0/0 in order to get all mails")
-    public GenericResponseResult<List<MailEntity>> getMails(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
+    public GenericResponseResult<List<Mail>> getMails(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot retrieve user mails, no user in session found!");
             return GenericResponseResult.unauthorized("Failed to retrieve user mails, no authentication.");
         }
 
-        List<MailEntity> userMails = mails.getMails(sessionuser, from, to).stream().map(Mail::getMailEntity).collect(Collectors.toList());
+        List<Mail> userMails = mails.getMails(sessionuser, from, to).stream().collect(Collectors.toList());
 
         return GenericResponseResult.ok("User mails were successfully retrieved.", userMails);
     }
@@ -101,7 +101,7 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get the count of total and unread mails")
-    public GenericResponseResult<MailCount> getCount(@Context HttpServletRequest request) {
+    public GenericResponseResult<ResponseMailCount> getCount(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot retrieve count of mails, no user in session found!");
@@ -110,15 +110,15 @@ public class MailEntityFacadeREST {
 
         long total  = mails.getCountTotalMails(sessionuser);
         long unread = mails.getCountUnreadMails(sessionuser);
-        MailCount mailCount = new MailCount(total, unread);
+        ResponseMailCount mailCount = new ResponseMailCount(total, unread);
         return GenericResponseResult.ok("Count of mails was successfully retrieved.", mailCount);
     }
 
-    static public class MailCount {
-        public long totalMails;
-        public long unreadMails;
+    static protected class ResponseMailCount {
+        public final long totalMails;
+        public final long unreadMails;
 
-        public MailCount(final long totalMails, final long unreadMails) {
+        public ResponseMailCount(final long totalMails, final long unreadMails) {
             this.totalMails = totalMails;
             this.unreadMails = unreadMails;
         }
@@ -126,8 +126,6 @@ public class MailEntityFacadeREST {
 
     /**
      * Get the count of unread mails.
-     *
-     * TODO: Needed?
      *
      * @param request    HTTP request
      * @return           JSON response
@@ -137,7 +135,7 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get the count of unread mails")
-    public GenericResponseResult<UnreadMailCount> getCountUnread(@Context HttpServletRequest request) {
+    public GenericResponseResult<ResponseUnreadMailCount> getCountUnread(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot retrieve count of unread mails, no user in session found!");
@@ -145,14 +143,14 @@ public class MailEntityFacadeREST {
         }
 
         long unread = mails.getCountUnreadMails(sessionuser);
-        UnreadMailCount unreadMailCount = new UnreadMailCount(unread);
+        ResponseUnreadMailCount unreadMailCount = new ResponseUnreadMailCount(unread);
         return GenericResponseResult.ok("Count of unread mails was successfully retrieved.", unreadMailCount);
     }
 
-    static public class UnreadMailCount {
-        public long unreadMails;
+    static protected class ResponseUnreadMailCount {
+        public final long unreadMails;
 
-        public UnreadMailCount(final long unreadMails) {
+        public ResponseUnreadMailCount(final long unreadMails) {
             this.unreadMails = unreadMails;
         }
     }

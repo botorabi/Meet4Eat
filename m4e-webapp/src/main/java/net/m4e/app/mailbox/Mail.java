@@ -8,8 +8,8 @@
 
 package net.m4e.app.mailbox;
 
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.json.bind.annotation.JsonbTransient;
+import java.beans.Transient;
 import java.time.Instant;
 
 /**
@@ -24,7 +24,7 @@ public class Mail {
     /**
      * The mail entity
      */
-    private MailEntity mailEntity;
+    private MailEntity mailContent;
 
     /**
      * The 'unread' state of the mail. Once the mail is read by user this flag will be set to false.
@@ -39,16 +39,16 @@ public class Mail {
     /**
      * Create a mail instance.
      * 
-     * @param mailEntity    The mail entity
+     * @param mailContent   The mail entity
      * @param unread        Unread flag
      * @param trashDate     If trashed then the trash date, otherwise 0
      */
     public Mail(
-        MailEntity mailEntity,
+        MailEntity mailContent,
         boolean unread,
         Instant trashDate
     ) {
-        this.mailEntity = mailEntity;
+        this.mailContent = mailContent;
         this.unread = unread;
         this.trashDate = trashDate;
     }
@@ -58,17 +58,17 @@ public class Mail {
      * 
      * @return The mail entity
      */
-    public MailEntity getMailEntity() {
-        return mailEntity;
+    public MailEntity getMailContent() {
+        return mailContent;
     }
 
     /**
      * Set the mail entity.
      * 
-     * @param mailEntity The mail entity
+     * @param mailContent The mail entity
      */
-    public void setMailEntity(MailEntity mailEntity) {
-        this.mailEntity = mailEntity;
+    public void setMailContent(MailEntity mailContent) {
+        this.mailContent = mailContent;
     }
 
     /**

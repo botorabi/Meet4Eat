@@ -59,7 +59,7 @@ class MailEntityFacadeRESTTest {
             MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
 
 
-            GenericResponseResult<List<MailEntity>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
+            GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
 
             Assertions.assertThat(retrievedMails.getData()).isEmpty();
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
@@ -74,7 +74,7 @@ class MailEntityFacadeRESTTest {
             MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
 
 
-            GenericResponseResult<List<MailEntity>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
+            GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
 
             Assertions.assertThat(retrievedMails.getData()).hasSize(1);
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
@@ -87,7 +87,7 @@ class MailEntityFacadeRESTTest {
             MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
 
 
-            GenericResponseResult<List<MailEntity>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, requestWithSessionUser(null));
+            GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, requestWithSessionUser(null));
 
             Assertions.assertThat(retrievedMails.getData()).isNull();
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(401);
@@ -118,9 +118,9 @@ class MailEntityFacadeRESTTest {
             MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
 
 
-            GenericResponseResult<MailEntityFacadeREST.MailCount> retrievedMails = mailEntityFacadeREST.getCount(request);
+            GenericResponseResult<MailEntityFacadeREST.ResponseMailCount> retrievedMails = mailEntityFacadeREST.getCount(request);
 
-            Assertions.assertThat(retrievedMails.getData()).isInstanceOf(MailEntityFacadeREST.MailCount.class);
+            Assertions.assertThat(retrievedMails.getData()).isInstanceOf(MailEntityFacadeREST.ResponseMailCount.class);
             Assertions.assertThat(retrievedMails.getData().totalMails).isEqualTo(5);
             Assertions.assertThat(retrievedMails.getData().unreadMails).isEqualTo(2);
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
@@ -134,7 +134,7 @@ class MailEntityFacadeRESTTest {
             MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
 
 
-            GenericResponseResult<MailEntityFacadeREST.MailCount> retrievedMails = mailEntityFacadeREST.getCount(requestWithSessionUser(null));
+            GenericResponseResult<MailEntityFacadeREST.ResponseMailCount> retrievedMails = mailEntityFacadeREST.getCount(requestWithSessionUser(null));
 
             Assertions.assertThat(retrievedMails.getData()).isNull();
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(GenericResponseResult.CODE_UNAUTHORIZED);
