@@ -9,6 +9,7 @@
 #include <configuration.h>
 #include "m4e-response.h"
 #include <QJsonObject>
+#include <QJsonArray>
 
 namespace m4e
 {
@@ -28,9 +29,22 @@ bool Meet4EatRESTResponse::checkStatus( const QJsonDocument& results, QJsonDocum
         return false;
     }
 
-    // extract the data (it is also in json format)
-    QByteArray datastr = jobject.value( "data" ).toString( "" ).toUtf8();
-    data = QJsonDocument::fromJson( datastr );
+    //! TODO in next future we will have a flat json structure, no need for parsing the data field as json!
+    QJsonValue d = jobject.value( "data" );
+    if ( d.isString() )
+    {
+        QByteArray datastr = jobject.value( "data" ).toString( "" ).toUtf8();
+        data = QJsonDocument::fromJson( datastr );
+    }
+    else if ( d.isObject() )
+    {
+        data = QJsonDocument( d.toObject() );
+    }
+    else if ( d.isArray() )
+    {
+        data = QJsonDocument( d.toArray() );
+    }
+
     return true;
 }
 

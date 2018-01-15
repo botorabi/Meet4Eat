@@ -10,9 +10,18 @@ package net.m4e.app.mailbox;
 /**
  * @author ybroeker
  */
-class MailOperationResponse {
-    MailOperation operation;
-    String id;
+public class MailOperationResponse {
+    private MailOperation operation;
+    private String id;
+
+    public MailOperationResponse(final String id) {
+        this.id = id;
+    }
+
+    public MailOperationResponse(final MailOperation operation, final String id) {
+        this.operation = operation;
+        this.id = id;
+    }
 
     public MailOperation getOperation() {
         return operation;
@@ -27,15 +36,6 @@ class MailOperationResponse {
     }
 
     public void setId(final String id) {
-        this.id = id;
-    }
-
-    public MailOperationResponse(final String id) {
-        this.id = id;
-    }
-
-    public MailOperationResponse(final MailOperation operation, final String id) {
-        this.operation = operation;
         this.id = id;
     }
 }

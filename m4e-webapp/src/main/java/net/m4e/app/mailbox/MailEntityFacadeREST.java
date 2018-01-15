@@ -114,9 +114,9 @@ public class MailEntityFacadeREST {
         return GenericResponseResult.ok("Count of mails was successfully retrieved.", mailCount);
     }
 
-    static class MailCount {
-        public final long totalMails;
-        public final long unreadMails;
+    static public class MailCount {
+        public long totalMails;
+        public long unreadMails;
 
         public MailCount(final long totalMails, final long unreadMails) {
             this.totalMails = totalMails;
@@ -149,8 +149,8 @@ public class MailEntityFacadeREST {
         return GenericResponseResult.ok("Count of unread mails was successfully retrieved.", unreadMailCount);
     }
 
-    static class UnreadMailCount {
-        public final long unreadMails;
+    static public class UnreadMailCount {
+        public long unreadMails;
 
         public UnreadMailCount(final long unreadMails) {
             this.unreadMails = unreadMails;

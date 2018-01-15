@@ -46,7 +46,7 @@ bool ModelMail::fromJSON( const QString& input )
 bool ModelMail::fromJSON( const QJsonDocument& input )
 {
     QJsonObject data       = input.object();
-    QString     id         = data.value( "id" ).toString( "" );
+    QString     id         = QString::number( ( qint64 )data.value( "id" ).toDouble( 0.0 ) );
     QString     senderid   = data.value( "senderId" ).toString( "" );
     QString     sendername = data.value( "senderName" ).toString( "" );
     QString     recvid     = data.value( "receiverId" ).toString( "" );
