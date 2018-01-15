@@ -9,6 +9,7 @@ package net.m4e.app.mailbox;
 
 import java.util.stream.Stream;
 
+import net.m4e.app.mailbox.MailOperation.MailOperationAdapter;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -28,7 +29,7 @@ class MailOperationTest {
 
     @Nested
     class MailOperationAdapterTest {
-        MailOperation.MailOperationAdapter adapter = new MailOperation.MailOperationAdapter();
+        MailOperationAdapter adapter = new MailOperationAdapter();
 
         @ParameterizedTest
         @ArgumentsSource(OperationProvider.class)

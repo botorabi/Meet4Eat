@@ -5,14 +5,14 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox.cmds;
+package net.m4e.app.mailbox.rest.cmds;
 
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
-import net.m4e.app.mailbox.MailEntityInputValidator;
+import net.m4e.app.mailbox.rest.MailEntityInputValidator;
 
 /**
  * ! TODO get the attachments

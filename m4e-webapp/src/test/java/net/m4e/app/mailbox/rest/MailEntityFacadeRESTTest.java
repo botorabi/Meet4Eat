@@ -1,4 +1,11 @@
-package net.m4e.app.mailbox;
+/*
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
+ * https://github.com/botorabi/Meet4Eat
+ *
+ * License: MIT License (MIT), read the LICENSE text in
+ *          main directory for more details.
+ */
+package net.m4e.app.mailbox.rest;
 
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.mailbox.*;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.GenericResponseResult;
 import org.assertj.core.api.Assertions;
@@ -118,9 +126,9 @@ class MailEntityFacadeRESTTest {
             MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
 
 
-            GenericResponseResult<MailEntityFacadeREST.ResponseMailCount> retrievedMails = mailEntityFacadeREST.getCount(request);
+            GenericResponseResult<MailCount> retrievedMails = mailEntityFacadeREST.getCount(request);
 
-            Assertions.assertThat(retrievedMails.getData()).isInstanceOf(MailEntityFacadeREST.ResponseMailCount.class);
+            Assertions.assertThat(retrievedMails.getData()).isInstanceOf(MailCount.class);
             Assertions.assertThat(retrievedMails.getData().totalMails).isEqualTo(5);
             Assertions.assertThat(retrievedMails.getData().unreadMails).isEqualTo(2);
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
@@ -134,7 +142,7 @@ class MailEntityFacadeRESTTest {
             MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
 
 
-            GenericResponseResult<MailEntityFacadeREST.ResponseMailCount> retrievedMails = mailEntityFacadeREST.getCount(requestWithSessionUser(null));
+            GenericResponseResult<MailCount> retrievedMails = mailEntityFacadeREST.getCount(requestWithSessionUser(null));
 
             Assertions.assertThat(retrievedMails.getData()).isNull();
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(GenericResponseResult.CODE_UNAUTHORIZED);

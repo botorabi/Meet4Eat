@@ -6,11 +6,13 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.rest;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import net.m4e.app.mailbox.MailEntity;
+import net.m4e.app.mailbox.Mails;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
 import net.m4e.common.Strings;

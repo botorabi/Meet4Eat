@@ -5,20 +5,22 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.rest;
+
+import net.m4e.app.mailbox.MailOperation;
 
 /**
  * @author ybroeker
  */
-public class MailOperationResponse {
+public class MailOperationWrapper {
     private MailOperation operation;
     private String id;
 
-    public MailOperationResponse(final String id) {
+    public MailOperationWrapper(final String id) {
         this.id = id;
     }
 
-    public MailOperationResponse(final MailOperation operation, final String id) {
+    public MailOperationWrapper(final MailOperation operation, final String id) {
         this.operation = operation;
         this.id = id;
     }

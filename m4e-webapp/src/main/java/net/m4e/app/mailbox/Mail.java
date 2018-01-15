@@ -8,9 +8,9 @@
 
 package net.m4e.app.mailbox;
 
-import javax.json.bind.annotation.JsonbTransient;
-import java.beans.Transient;
 import java.time.Instant;
+
+import javax.json.bind.annotation.JsonbTransient;
 
 /**
  * This class represents a mail. It is composed by several chunks of information
@@ -76,6 +76,7 @@ public class Mail {
      * 
      * @return Return true if the mail is marked as trash
      */
+    @JsonbTransient
     public boolean isTrashed() {
         return (trashDate == null) ? false : (trashDate.getEpochSecond() != 0);
     }

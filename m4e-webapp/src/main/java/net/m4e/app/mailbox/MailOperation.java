@@ -18,7 +18,7 @@ public enum MailOperation {
 
     TRASH, UNTRASH, READ, UNREAD;
 
-    static MailOperation fromString(String string) {
+    public static MailOperation fromString(String string) {
         for (final MailOperation mailOperation : values()) {
             if (mailOperation.toString().equalsIgnoreCase(string)) {
                 return mailOperation;
