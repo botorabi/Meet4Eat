@@ -34,13 +34,23 @@ class MailTest {
         }
 
         @Test
-        void toJson() {
+        void toJson_not_trashed() {
+            MailEntity mailEntity = new MailEntity();
+            Mail mail = new Mail(mailEntity, true, null);
+
+            String json = jsonb.toJson(mail);
+
+            Assertions.assertThat(json).doesNotContain("\"trashDate\"");
+        }
+
+        @Test
+        void toJson_trashed() {
             MailEntity mailEntity = new MailEntity();
             Mail mail = new Mail(mailEntity, true, Instant.now().minus(5, ChronoUnit.SECONDS));
 
             String json = jsonb.toJson(mail);
 
-            Assertions.assertThat(json).contains("\"trashed\"");
+            Assertions.assertThat(json).contains("\"trashDate\"");
         }
     }
 
