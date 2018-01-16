@@ -57,10 +57,11 @@ public class NewMailValidator {
      * exception if the validation failed.
      * 
      * @param mail           The mail
+     * @param sender         The user who tries to send the mail
      * @return               A MailEntity created out of given input
      * @throws Exception     Throws an exception if the validation fails.
      */
-    public MailEntity validateNewEntityInput(NewMailIn mail) throws Exception {
+    public MailEntity validateNewEntityInput(NewMailIn mail, UserEntity sender) throws Exception {
         if (mail == null) {
             throw new Exception("Failed to send mail, invalid input.");
         }
@@ -86,6 +87,9 @@ public class NewMailValidator {
         mailentity.setSubject(mail.getSubject());
         mailentity.setContent(mail.getContent());
         mailentity.setSendDate((new Date()).getTime());
+        mailentity.setSenderId(sender.getId());
+        mailentity.setSenderName(sender.getName());
+
         return mailentity;
     }
 }

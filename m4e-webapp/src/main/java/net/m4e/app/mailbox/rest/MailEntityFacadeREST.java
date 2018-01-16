@@ -149,9 +149,8 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
-    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = NewMailIn.class, paramType = "body"))
+    @ApiImplicitParams(@ApiImplicitParam(name = "body", required = true, dataTypeClass = NewMailIn.class, paramType = "body"))
     public GenericResponseResult<Void> send(@ApiParam(hidden = true) NewMailIn newMail, @Context HttpServletRequest request) {
-        //TODO: NewMailCmd aus Parameter instead of String
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot create mail, no user in session found!");
@@ -160,7 +159,7 @@ public class MailEntityFacadeREST {
 
         MailEntity mail;
         try {
-            mail = validator.validateNewEntityInput(newMail);
+            mail = validator.validateNewEntityInput(newMail, sessionuser);
         }
         catch (Exception ex) {
             LOGGER.warn("Could not send mail, validation failed, reason: {}", ex.getLocalizedMessage());
@@ -168,9 +167,6 @@ public class MailEntityFacadeREST {
         }
 
         //! NOTE we may implement a mechanism to limit the maximal count of user mails
-
-        mail.setSenderId(sessionuser.getId());
-        mail.setSenderName(sessionuser.getName());
         try {
             mails.createMail(mail);
         }
@@ -204,9 +200,9 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
-    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = MailOperationIn.class, paramType = "body"))
+    @ApiImplicitParams(@ApiImplicitParam(name = "body", required = true, dataTypeClass = MailOperationIn.class, paramType = "body"))
     public GenericResponseResult<MailOperationOut> operate(@ApiParam("The mail-ID.") @PathParam("id") Long id,
-                                                           @ApiParam("Operation") MailOperationIn operation,
+                                                           @ApiParam(hidden = true) MailOperationIn operation,
                                                            @Context HttpServletRequest request) {
 
         final MailOperationOut mailOperationOut = new MailOperationOut(id.toString());
@@ -217,14 +213,8 @@ public class MailEntityFacadeREST {
             return GenericResponseResult.unauthorized("Failed to delete the mail, no authentication.");
         }
 
-        final String op;
         try {
-/*            JsonReader jreader = Json.createReader(new StringReader(operationJson));
-            JsonObject jobject = jreader.readObject();
-            op = jobject.getString("operation", null);
-*/
             mailOperationOut.setOperation(operation.getOperation());
-
             mails.performMailOperation(sessionuser.getId(), id, operation.getOperation());
         } catch (Exception ex) {
             LOGGER.warn("Could not perform mail operation, reason: " + ex.getLocalizedMessage());
@@ -235,5 +225,4 @@ public class MailEntityFacadeREST {
 
         return GenericResponseResult.ok("User mails were successfully retrieved.", mailOperationOut);
     }
-
 }
