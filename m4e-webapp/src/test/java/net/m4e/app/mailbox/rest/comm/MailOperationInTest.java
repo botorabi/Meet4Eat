@@ -5,7 +5,7 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox.rest.cmds;
+package net.m4e.app.mailbox.rest.comm;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
@@ -22,7 +22,7 @@ import static com.revinate.assertj.json.JsonPathAssert.assertThat;
 /**
  * @author ybroeker
  */
-class MailOperationCmdTest {
+class MailOperationInTest {
 
 
     @Test
@@ -31,17 +31,17 @@ class MailOperationCmdTest {
 
         Jsonb jsonb = JsonbBuilder.create();
 
-        MailOperationCmd mailOperationCmd = jsonb.fromJson(json, MailOperationCmd.class);
-        Assertions.assertThat(mailOperationCmd.getOperation()).isEqualTo(MailOperation.TRASH);
+        MailOperationIn mailOperationIn = jsonb.fromJson(json, MailOperationIn.class);
+        Assertions.assertThat(mailOperationIn.getOperation()).isEqualTo(MailOperation.TRASH);
     }
 
     @Test
     void serialize() {
-        MailOperationCmd mailOperationCmd = new MailOperationCmd(MailOperation.TRASH);
+        MailOperationIn mailOperationIn = new MailOperationIn(MailOperation.TRASH);
 
 
         Jsonb jsonb = JsonbBuilder.create();
-        String json = jsonb.toJson(mailOperationCmd);
+        String json = jsonb.toJson(mailOperationIn);
 
         DocumentContext ctx = JsonPath.parse(json);
         assertThat(ctx).jsonPathAsString("$.operation").isEqualTo("trash");

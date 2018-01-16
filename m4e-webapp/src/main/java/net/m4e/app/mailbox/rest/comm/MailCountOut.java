@@ -5,16 +5,16 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.rest.comm;
 
 /**
  * @author ybroeker
  */
-public class MailCount {
+public class MailCountOut {
     public final long totalMails;
     public final long unreadMails;
 
-    public MailCount(final long totalMails, final long unreadMails) {
+    public MailCountOut(final long totalMails, final long unreadMails) {
         this.totalMails = totalMails;
         this.unreadMails = unreadMails;
     }

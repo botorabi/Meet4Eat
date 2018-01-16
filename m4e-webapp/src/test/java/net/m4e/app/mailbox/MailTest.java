@@ -40,7 +40,7 @@ class MailTest {
 
             String json = jsonb.toJson(mail);
 
-            Assertions.assertThat(json).doesNotContain("\"trashed\"");
+            Assertions.assertThat(json).contains("\"trashed\"");
         }
     }
 

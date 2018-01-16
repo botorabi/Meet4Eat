@@ -5,7 +5,7 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox.rest.cmds;
+package net.m4e.app.mailbox.rest.comm;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
@@ -34,13 +34,13 @@ class NewMailCmdTest {
         @Test
         void deserialize() {
 //            String json = "{\"subject\":\"Betreff\", \"content\":\"ValidContent\", \"receiverId\":52}";
-            NewMailCmd newMailCmd = new NewMailCmd("Betreff", "ValidContent", 52L);
+            NewMailIn newMailCmd = new NewMailIn("Betreff", "ValidContent", 52L);
 
             String json = jsonb.toJson(newMailCmd);
 
 
 
-            NewMailCmd newMail = jsonb.fromJson(json, NewMailCmd.class);
+            NewMailIn newMail = jsonb.fromJson(json, NewMailIn.class);
 
             Assertions.assertThat(newMail.getSubject()).isEqualTo("Betreff");
             Assertions.assertThat(newMail.getContent()).isEqualTo("ValidContent");
@@ -49,7 +49,7 @@ class NewMailCmdTest {
 
         @Test
         void serialize() {
-            NewMailCmd newMailCmd = new NewMailCmd("Betreff", "ValidContent", 52L);
+            NewMailIn newMailCmd = new NewMailIn("Betreff", "ValidContent", 52L);
 
             String json = jsonb.toJson(newMailCmd);
 

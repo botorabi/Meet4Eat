@@ -5,24 +5,21 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox.rest;
+package net.m4e.app.mailbox.rest.comm;
 
 import net.m4e.app.mailbox.MailOperation;
 
 /**
  * @author ybroeker
  */
-public class MailOperationWrapper {
-    private MailOperation operation;
-    private String id;
+public class MailOperationIn {
+    protected MailOperation operation;
 
-    public MailOperationWrapper(final String id) {
-        this.id = id;
+    public MailOperationIn() {
     }
 
-    public MailOperationWrapper(final MailOperation operation, final String id) {
+    public MailOperationIn(final MailOperation operation) {
         this.operation = operation;
-        this.id = id;
     }
 
     public MailOperation getOperation() {
@@ -31,13 +28,5 @@ public class MailOperationWrapper {
 
     public void setOperation(final MailOperation operation) {
         this.operation = operation;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(final String id) {
-        this.id = id;
     }
 }

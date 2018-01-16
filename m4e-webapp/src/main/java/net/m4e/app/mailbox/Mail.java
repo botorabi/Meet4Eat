@@ -8,7 +8,8 @@
 
 package net.m4e.app.mailbox;
 
-import javax.json.bind.annotation.JsonbTransient;
+import net.m4e.app.mailbox.MailEntity;
+
 import java.time.Instant;
 
 /**
@@ -75,7 +76,8 @@ public class Mail {
      * 
      * @return Return true if the mail is marked as trash
      */
-    @JsonbTransient
+    //NOTE this annotation causes yasson 1.0.1 trouble, resulting in a crash while json creation
+    //@JsonbTransient
     public boolean isTrashed() {
         return (trashDate == null) ? false : (trashDate.getEpochSecond() != 0);
     }

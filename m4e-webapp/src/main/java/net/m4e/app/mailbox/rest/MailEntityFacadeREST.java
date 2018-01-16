@@ -8,29 +8,27 @@
 
 package net.m4e.app.mailbox.rest;
 
-import java.io.StringReader;
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.json.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
 import io.swagger.annotations.*;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.mailbox.*;
-import net.m4e.app.mailbox.rest.cmds.MailOperationCmd;
-import net.m4e.app.mailbox.rest.cmds.NewMailCmd;
+import net.m4e.app.mailbox.Mail;
+import net.m4e.app.mailbox.MailEntity;
+import net.m4e.app.mailbox.Mails;
+import net.m4e.app.mailbox.rest.comm.*;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.GenericResponseResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * REST services for mailbox functionality
@@ -48,7 +46,7 @@ public class MailEntityFacadeREST {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final MailEntityInputValidator validator;
+    private final NewMailValidator validator;
 
     private final Mails mails;
 
@@ -61,7 +59,7 @@ public class MailEntityFacadeREST {
     }
 
     @Inject
-    public MailEntityFacadeREST(MailEntityInputValidator validator, Mails mails) {
+    public MailEntityFacadeREST(NewMailValidator validator, Mails mails) {
         this.validator = validator;
         this.mails = mails;
     }
@@ -102,7 +100,7 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get the count of total and unread mails")
-    public GenericResponseResult<MailCount> getCount(@Context HttpServletRequest request) {
+    public GenericResponseResult<MailCountOut> getCount(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot retrieve count of mails, no user in session found!");
@@ -111,8 +109,8 @@ public class MailEntityFacadeREST {
 
         long total  = mails.getCountTotalMails(sessionuser);
         long unread = mails.getCountUnreadMails(sessionuser);
-        MailCount mailCount = new MailCount(total, unread);
-        return GenericResponseResult.ok("Count of mails was successfully retrieved.", mailCount);
+        MailCountOut mailCountOut = new MailCountOut(total, unread);
+        return GenericResponseResult.ok("Count of mails was successfully retrieved.", mailCountOut);
     }
 
     /**
@@ -126,7 +124,7 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get the count of unread mails")
-    public GenericResponseResult<UnreadMailCount> getCountUnread(@Context HttpServletRequest request) {
+    public GenericResponseResult<UnreadMailCountOut> getCountUnread(@Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot retrieve count of unread mails, no user in session found!");
@@ -134,14 +132,14 @@ public class MailEntityFacadeREST {
         }
 
         long unread = mails.getCountUnreadMails(sessionuser);
-        UnreadMailCount unreadMailCount = new UnreadMailCount(unread);
-        return GenericResponseResult.ok("Count of unread mails was successfully retrieved.", unreadMailCount);
+        UnreadMailCountOut unreadMailCountOut = new UnreadMailCountOut(unread);
+        return GenericResponseResult.ok("Count of unread mails was successfully retrieved.", unreadMailCountOut);
     }
 
     /**
      * Send a mail to another user.
      *
-     * @param mailJson   Mail data in JSON format
+     * @param newMail   Mail data in JSON format
      * @param request    HTTP request
      * @return           JSON response
      */
@@ -151,8 +149,8 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
-    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = NewMailCmd.class, paramType = "body"))
-    public GenericResponseResult<Void> send(@ApiParam(hidden = true) String mailJson, @Context HttpServletRequest request) {
+    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = NewMailIn.class, paramType = "body"))
+    public GenericResponseResult<Void> send(@ApiParam(hidden = true) NewMailIn newMail, @Context HttpServletRequest request) {
         //TODO: NewMailCmd aus Parameter instead of String
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
@@ -162,7 +160,7 @@ public class MailEntityFacadeREST {
 
         MailEntity mail;
         try {
-            mail = validator.validateNewEntityInput(mailJson);
+            mail = validator.validateNewEntityInput(newMail);
         }
         catch (Exception ex) {
             LOGGER.warn("Could not send mail, validation failed, reason: {}", ex.getLocalizedMessage());
@@ -196,7 +194,7 @@ public class MailEntityFacadeREST {
      *   'countUnread'   This operation does not need a valid mail ID
      * 
      * @param id            The mail ID
-     * @param operationJson JSON containing the requested operation
+     * @param operation     Mail operation
      * @param request       HTTP request
      * @return              JSON response
      */
@@ -206,12 +204,12 @@ public class MailEntityFacadeREST {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
-    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = MailOperationCmd.class, paramType = "body"))
-    public GenericResponseResult<MailOperationWrapper> operate(@ApiParam("The mail-ID.") @PathParam("id") Long id,
-                                                               @ApiParam(hidden = true) String operationJson,
-                                                               @Context HttpServletRequest request) {
+    @ApiImplicitParams(@ApiImplicitParam(name = "body", dataTypeClass = MailOperationIn.class, paramType = "body"))
+    public GenericResponseResult<MailOperationOut> operate(@ApiParam("The mail-ID.") @PathParam("id") Long id,
+                                                           @ApiParam("Operation") MailOperationIn operation,
+                                                           @Context HttpServletRequest request) {
 
-        final MailOperationWrapper mailOperationWrapper = new MailOperationWrapper(id.toString());
+        final MailOperationOut mailOperationOut = new MailOperationOut(id.toString());
 
         final UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
@@ -221,21 +219,21 @@ public class MailEntityFacadeREST {
 
         final String op;
         try {
-            JsonReader jreader = Json.createReader(new StringReader(operationJson));
+/*            JsonReader jreader = Json.createReader(new StringReader(operationJson));
             JsonObject jobject = jreader.readObject();
             op = jobject.getString("operation", null);
+*/
+            mailOperationOut.setOperation(operation.getOperation());
 
-            mailOperationWrapper.setOperation(MailOperation.fromString(op));
-
-            mails.performMailOperation(sessionuser.getId(), id, op);
+            mails.performMailOperation(sessionuser.getId(), id, operation.getOperation());
         } catch (Exception ex) {
             LOGGER.warn("Could not perform mail operation, reason: " + ex.getLocalizedMessage());
             return GenericResponseResult.badRequest(
                     "Failed to perform mail operation, reason: " + ex.getLocalizedMessage(),
-                    mailOperationWrapper);
+                    mailOperationOut);
         }
 
-        return GenericResponseResult.ok("User mails were successfully retrieved.", mailOperationWrapper);
+        return GenericResponseResult.ok("User mails were successfully retrieved.", mailOperationOut);
     }
 
 }

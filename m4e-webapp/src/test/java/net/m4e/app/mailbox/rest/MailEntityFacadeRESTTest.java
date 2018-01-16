@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSession;
 
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.mailbox.*;
+import net.m4e.app.mailbox.rest.comm.MailCountOut;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.GenericResponseResult;
 import org.assertj.core.api.Assertions;
@@ -51,7 +52,7 @@ class MailEntityFacadeRESTTest {
     @Nested
     class GetMailsTest {
         @Mock
-        MailEntityInputValidator mailEntityInputValidator;
+        NewMailValidator newMailValidator;
         @Mock
         Mails mails;
 
@@ -64,7 +65,7 @@ class MailEntityFacadeRESTTest {
         void noMails() {
             Mockito.when(mails.getMails(Mockito.eq(userEntity), Mockito.anyInt(), Mockito.anyInt())).thenReturn(Collections.emptyList());
 
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
+            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
 
 
             GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
@@ -79,7 +80,7 @@ class MailEntityFacadeRESTTest {
         void oneMail() {
             Mockito.when(mails.getMails(Mockito.eq(userEntity), Mockito.anyInt(), Mockito.anyInt())).thenReturn(Collections.singletonList(new Mail(new MailEntity(),true, null)));
 
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
+            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
 
 
             GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
@@ -92,7 +93,7 @@ class MailEntityFacadeRESTTest {
 
         @Test
         void noUser() {
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
+            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
 
 
             GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, requestWithSessionUser(null));
@@ -109,7 +110,7 @@ class MailEntityFacadeRESTTest {
     class GetCountTest {
 
         @Mock
-        MailEntityInputValidator mailEntityInputValidator;
+        NewMailValidator newMailValidator;
         @Mock
         Mails mails;
 
@@ -123,12 +124,12 @@ class MailEntityFacadeRESTTest {
             Mockito.when(mails.getCountTotalMails(Mockito.eq(userEntity))).thenReturn(5L);
             Mockito.when(mails.getCountUnreadMails(Mockito.eq(userEntity))).thenReturn(2L);
 
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
+            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
 
 
-            GenericResponseResult<MailCount> retrievedMails = mailEntityFacadeREST.getCount(request);
+            GenericResponseResult<MailCountOut> retrievedMails = mailEntityFacadeREST.getCount(request);
 
-            Assertions.assertThat(retrievedMails.getData()).isInstanceOf(MailCount.class);
+            Assertions.assertThat(retrievedMails.getData()).isInstanceOf(MailCountOut.class);
             Assertions.assertThat(retrievedMails.getData().totalMails).isEqualTo(5);
             Assertions.assertThat(retrievedMails.getData().unreadMails).isEqualTo(2);
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
@@ -139,10 +140,10 @@ class MailEntityFacadeRESTTest {
         @Test
         void noUser() {
 
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(mailEntityInputValidator, mails);
+            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
 
 
-            GenericResponseResult<MailCount> retrievedMails = mailEntityFacadeREST.getCount(requestWithSessionUser(null));
+            GenericResponseResult<MailCountOut> retrievedMails = mailEntityFacadeREST.getCount(requestWithSessionUser(null));
 
             Assertions.assertThat(retrievedMails.getData()).isNull();
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(GenericResponseResult.CODE_UNAUTHORIZED);
