@@ -34,13 +34,13 @@ class NewMailCmdTest {
         @Test
         void deserialize() {
 //            String json = "{\"subject\":\"Betreff\", \"content\":\"ValidContent\", \"receiverId\":52}";
-            NewMailIn newMailCmd = new NewMailIn("Betreff", "ValidContent", 52L);
+            NewMailCmd newMailCmd = new NewMailCmd("Betreff", "ValidContent", 52L);
 
             String json = jsonb.toJson(newMailCmd);
 
 
 
-            NewMailIn newMail = jsonb.fromJson(json, NewMailIn.class);
+            NewMailCmd newMail = jsonb.fromJson(json, NewMailCmd.class);
 
             Assertions.assertThat(newMail.getSubject()).isEqualTo("Betreff");
             Assertions.assertThat(newMail.getContent()).isEqualTo("ValidContent");
@@ -49,7 +49,7 @@ class NewMailCmdTest {
 
         @Test
         void serialize() {
-            NewMailIn newMailCmd = new NewMailIn("Betreff", "ValidContent", 52L);
+            NewMailCmd newMailCmd = new NewMailCmd("Betreff", "ValidContent", 52L);
 
             String json = jsonb.toJson(newMailCmd);
 

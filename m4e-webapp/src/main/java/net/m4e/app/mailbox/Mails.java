@@ -8,23 +8,19 @@
 
 package net.m4e.app.mailbox;
 
+import java.lang.invoke.MethodHandles;
+import java.time.Instant;
+import java.util.*;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.validation.constraints.NotNull;
-import java.lang.invoke.MethodHandles;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * A collection of mailbox related utilities
@@ -245,7 +241,7 @@ public class Mails {
      * @throws IllegalArgumentException      if {@code operation} is {@code null}
      * @throws UnsupportedOperationException if the {@code operation} is not supported
      */
-    public void performMailOperation(Long userId, Long mailId, @NotNull MailOperation operation) throws Exception {
+    public ExcecutedMailOperation performMailOperation(Long userId, Long mailId, @NotNull MailOperation operation) throws Exception {
         if (operation == null) {
             throw new IllegalArgumentException("null for operation not allowed");
         }
@@ -266,6 +262,8 @@ public class Mails {
             default:
                 throw new UnsupportedOperationException(String.format("operation %s not supported", operation));
         }
+
+        return new ExcecutedMailOperation(operation, mailId.toString());
 
     }
 }

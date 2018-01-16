@@ -8,15 +8,16 @@
 
 package net.m4e.app.mailbox.rest;
 
-import net.m4e.app.mailbox.MailEntity;
-import net.m4e.app.mailbox.rest.comm.NewMailIn;
-import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.Users;
-import net.m4e.common.Strings;
+import java.util.Date;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Date;
+
+import net.m4e.app.mailbox.MailEntity;
+import net.m4e.app.mailbox.rest.comm.NewMailCmd;
+import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.Users;
+import net.m4e.common.Strings;
 
 /**
  * This class validates mailbox related inputs from a client.
@@ -61,7 +62,7 @@ public class NewMailValidator {
      * @return               A MailEntity created out of given input
      * @throws Exception     Throws an exception if the validation fails.
      */
-    public MailEntity validateNewEntityInput(NewMailIn mail, UserEntity sender) throws Exception {
+    public MailEntity validateNewEntityInput(NewMailCmd mail, UserEntity sender) throws Exception {
         if (mail == null) {
             throw new Exception("Failed to send mail, invalid input.");
         }

@@ -7,17 +7,17 @@
  */
 package net.m4e.app.mailbox.rest.comm;
 
-import net.m4e.app.mailbox.rest.NewMailValidator;
-
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
+import net.m4e.app.mailbox.rest.NewMailValidator;
+
 /**
  * @author ybroeker
  */
-public final class NewMailIn {
+public final class NewMailCmd {
 
     @Size(min = 1, max = NewMailValidator.USER_INPUT_MAX_LEN_SUBJECT)
     private String subject;
@@ -28,7 +28,7 @@ public final class NewMailIn {
     private Long receiverId;
 
     @JsonbCreator
-    public NewMailIn(@JsonbProperty("subject") final String subject,
+    public NewMailCmd(@JsonbProperty("subject") final String subject,
                       @JsonbProperty("content") final String content,
                       @JsonbProperty("receiverId") final Long receiverId) {
         this.subject = subject;

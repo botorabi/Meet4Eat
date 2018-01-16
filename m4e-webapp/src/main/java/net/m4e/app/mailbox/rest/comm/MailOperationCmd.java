@@ -12,13 +12,13 @@ import net.m4e.app.mailbox.MailOperation;
 /**
  * @author ybroeker
  */
-public class MailOperationIn {
-    protected MailOperation operation;
+public class MailOperationCmd {
+    private MailOperation operation;
 
-    public MailOperationIn() {
+    public MailOperationCmd() {
     }
 
-    public MailOperationIn(final MailOperation operation) {
+    public MailOperationCmd(final MailOperation operation) {
         this.operation = operation;
     }
 

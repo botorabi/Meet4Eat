@@ -10,12 +10,20 @@ package net.m4e.app.mailbox.rest.comm;
 /**
  * @author ybroeker
  */
-public class MailCountOut {
-    public final long totalMails;
-    public final long unreadMails;
+public class MailCount {
+    private final long totalMails;
+    private final long unreadMails;
 
-    public MailCountOut(final long totalMails, final long unreadMails) {
+    public MailCount(final long totalMails, final long unreadMails) {
         this.totalMails = totalMails;
         this.unreadMails = unreadMails;
+    }
+
+    public long getTotalMails() {
+        return totalMails;
+    }
+
+    public long getUnreadMails() {
+        return unreadMails;
     }
 }

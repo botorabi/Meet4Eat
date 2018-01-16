@@ -22,7 +22,7 @@ import static com.revinate.assertj.json.JsonPathAssert.assertThat;
 /**
  * @author ybroeker
  */
-class MailOperationInTest {
+class MailOperationCmdTest {
 
 
     @Test
@@ -31,17 +31,17 @@ class MailOperationInTest {
 
         Jsonb jsonb = JsonbBuilder.create();
 
-        MailOperationIn mailOperationIn = jsonb.fromJson(json, MailOperationIn.class);
-        Assertions.assertThat(mailOperationIn.getOperation()).isEqualTo(MailOperation.TRASH);
+        MailOperationCmd mailOperationCmd = jsonb.fromJson(json, MailOperationCmd.class);
+        Assertions.assertThat(mailOperationCmd.getOperation()).isEqualTo(MailOperation.TRASH);
     }
 
     @Test
     void serialize() {
-        MailOperationIn mailOperationIn = new MailOperationIn(MailOperation.TRASH);
+        MailOperationCmd mailOperationCmd = new MailOperationCmd(MailOperation.TRASH);
 
 
         Jsonb jsonb = JsonbBuilder.create();
-        String json = jsonb.toJson(mailOperationIn);
+        String json = jsonb.toJson(mailOperationCmd);
 
         DocumentContext ctx = JsonPath.parse(json);
         assertThat(ctx).jsonPathAsString("$.operation").isEqualTo("trash");

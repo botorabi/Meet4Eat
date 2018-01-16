@@ -10,10 +10,14 @@ package net.m4e.app.mailbox.rest.comm;
 /**
  * @author ybroeker
  */
-public class UnreadMailCountOut {
-    public final long unreadMails;
+public class UnreadMailCount {
+    private final long unreadMails;
 
-    public UnreadMailCountOut(final long unreadMails) {
+    public UnreadMailCount(final long unreadMails) {
         this.unreadMails = unreadMails;
+    }
+
+    public long getUnreadMails() {
+        return unreadMails;
     }
 }
