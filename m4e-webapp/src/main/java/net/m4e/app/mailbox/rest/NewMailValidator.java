@@ -8,16 +8,15 @@
 
 package net.m4e.app.mailbox.rest;
 
-import java.util.Date;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import net.m4e.app.mailbox.MailEntity;
+import net.m4e.app.mailbox.business.MailEntity;
 import net.m4e.app.mailbox.rest.comm.NewMailCmd;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
 import net.m4e.common.Strings;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.Date;
 
 /**
  * This class validates mailbox related inputs from a client.

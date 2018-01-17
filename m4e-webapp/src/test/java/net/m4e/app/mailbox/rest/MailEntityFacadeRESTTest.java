@@ -14,7 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.mailbox.*;
+import net.m4e.app.mailbox.business.Mail;
+import net.m4e.app.mailbox.business.MailEntity;
+import net.m4e.app.mailbox.business.Mails;
 import net.m4e.app.mailbox.rest.comm.MailCount;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.GenericResponseResult;
@@ -130,8 +132,8 @@ class MailEntityFacadeRESTTest {
             GenericResponseResult<MailCount> retrievedMails = mailEntityFacadeREST.getCount(request);
 
             Assertions.assertThat(retrievedMails.getData()).isInstanceOf(MailCount.class);
-            Assertions.assertThat(retrievedMails.getData().totalMails).isEqualTo(5);
-            Assertions.assertThat(retrievedMails.getData().unreadMails).isEqualTo(2);
+            Assertions.assertThat(retrievedMails.getData().getTotalMails()).isEqualTo(5);
+            Assertions.assertThat(retrievedMails.getData().getUnreadMails()).isEqualTo(2);
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
             Assertions.assertThat(retrievedMails.getStatus()).isEqualTo(GenericResponseResult.STATUS_OK);
             Assertions.assertThat(retrievedMails.getDescription()).isNotEmpty();

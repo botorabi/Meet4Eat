@@ -8,9 +8,17 @@
 
 package net.m4e.app.mailbox.rest;
 
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.stream.Collectors;
+import io.swagger.annotations.*;
+import net.m4e.app.auth.AuthRole;
+import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.mailbox.business.Mail;
+import net.m4e.app.mailbox.business.MailEntity;
+import net.m4e.app.mailbox.business.Mails;
+import net.m4e.app.mailbox.rest.comm.*;
+import net.m4e.app.user.UserEntity;
+import net.m4e.common.GenericResponseResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -18,16 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-
-import io.swagger.annotations.*;
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.mailbox.*;
-import net.m4e.app.mailbox.rest.comm.*;
-import net.m4e.app.user.UserEntity;
-import net.m4e.common.GenericResponseResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * REST services for mailbox functionality

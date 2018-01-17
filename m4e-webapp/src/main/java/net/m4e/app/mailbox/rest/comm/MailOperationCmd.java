@@ -7,8 +7,6 @@
  */
 package net.m4e.app.mailbox.rest.comm;
 
-import net.m4e.app.mailbox.MailOperation;
-
 /**
  * @author ybroeker
  */

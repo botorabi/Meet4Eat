@@ -81,7 +81,7 @@ public class AuthChecker {
      * 
      * @param beanClasses   List of java beans
      */
-    public void initialize(List<Class> beanClasses) {
+    public void initialize(List<Class<?>> beanClasses) {
         LOGGER.info("Initializing authorization checker");
         if (beanClasses != null) {
             setupRules(beanClasses);
@@ -113,7 +113,7 @@ public class AuthChecker {
      * 
      * @param beanClasses   List of java beans
      */
-    private void setupRules(List<Class> beanClasses) {
+    private void setupRules(List<Class<?>> beanClasses) {
         // gather information from all bean classes about authorization relevant annotations
         Annotations annotations = new Annotations();
         beanClasses.stream().map((cls) -> {
