@@ -7,11 +7,10 @@
  */
 package net.m4e.system.core;
 
-import java.util.Set;
+import io.swagger.jaxrs.config.BeanConfig;
 
 import javax.ws.rs.core.Application;
-
-import io.swagger.jaxrs.config.BeanConfig;
+import java.util.Set;
 
 /**
  * Central application configuration
@@ -23,8 +22,10 @@ import io.swagger.jaxrs.config.BeanConfig;
 public class AppStart extends Application {
 
     public AppStart() {
+        String appversion = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_APP_VERSION);
+
         BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion("1.0.0");
+        beanConfig.setVersion(appversion);
         beanConfig.setTitle("Meat4Eat");
         beanConfig.setSchemes(new String[] {"http", "https"});
         beanConfig.setHost("localhost:8080");
