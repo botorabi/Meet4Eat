@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.business;
 
 import net.m4e.app.resources.DocumentEntity;
 
@@ -266,6 +266,6 @@ public class MailEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.app.mailbox.MailEntity[ id=" + id + " ]";
+        return "net.m4e.app.mailbox.business.MailEntity[ id=" + id + " ]";
     }
 }

@@ -132,7 +132,7 @@ public class ChatSystem {
         packet.setSourceId(sender.getId().toString());
         packet.setSource(sender.getName());
         packet.setTime((new Date()).getTime());
-        connections.sendPacket(packet, new ArrayList(receiverids));
+        connections.sendPacket(packet, new ArrayList<>(receiverids));
     }
 
     /**
@@ -147,7 +147,7 @@ public class ChatSystem {
         if (recipient == null) {
             return;
         }
-        List<Long> receiverids = new ArrayList();
+        List<Long> receiverids = new ArrayList<>();
         receiverids.add(sender.getId());
         receiverids.add(recipient.getId());
         packet.setSourceId(sender.getId().toString());

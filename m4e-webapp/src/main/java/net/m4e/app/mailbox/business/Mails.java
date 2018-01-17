@@ -6,23 +6,25 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.mailbox;
-
-import java.io.StringReader;
-import java.lang.invoke.MethodHandles;
-import java.time.Instant;
-import java.util.*;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.*;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+package net.m4e.app.mailbox.business;
 
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.validation.constraints.NotNull;
+import java.lang.invoke.MethodHandles;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A collection of mailbox related utilities
@@ -235,37 +237,6 @@ public class Mails {
 
     /**
      * Perform a mail operation.
-     * 
-     * @param userId        ID of user referring to the mail
-     * @param mailId        The actual Mail ID
-     * @param operation     Mail operation: trash, untrash, read, unread
-     * @throws Exception    Throws an exception if something goes wrong.
-     */
-    @Deprecated
-    public void performMailOperation(Long userId, Long mailId, String operation) throws Exception {
-        if (operation == null) {
-            throw new Exception("Unsupported operation");
-        }
-        else switch (operation) {
-            case "trash":
-                trashUserMail(userId, mailId, true);
-                break;
-            case "untrash":
-                trashUserMail(userId, mailId, false);
-                break;
-            case "read":
-                markAsUnreadUserMail(userId, mailId, false);
-                break;
-            case "unread":
-                markAsUnreadUserMail(userId, mailId, true);
-                break;
-            default:
-                throw new Exception("Unsupported operation");
-        }
-    }
-
-    /**
-     * Perform a mail operation.
      *
      * @param userId    the ID of user referring to the mail
      * @param mailId    the actual Mail ID
@@ -274,8 +245,7 @@ public class Mails {
      * @throws IllegalArgumentException      if {@code operation} is {@code null}
      * @throws UnsupportedOperationException if the {@code operation} is not supported
      */
-    public void performMailOperation(Long userId, Long mailId, @NotNull MailOperation operation)
-            throws Exception, IllegalArgumentException, UnsupportedOperationException {
+    public ExcecutedMailOperation performMailOperation(Long userId, Long mailId, @NotNull MailOperation operation) throws Exception {
         if (operation == null) {
             throw new IllegalArgumentException("null for operation not allowed");
         }
@@ -297,99 +267,7 @@ public class Mails {
                 throw new UnsupportedOperationException(String.format("operation %s not supported", operation));
         }
 
-    }
+        return new ExcecutedMailOperation(operation, mailId.toString());
 
-    /**
-     * Give a mail entity export the necessary fields into a JSON object.
-     *
-     * @param mail    The mail to export
-     * @return        A JSON object containing builder the proper entity fields
-     */
-    @Deprecated
-    public JsonObjectBuilder exportMailJSON(Mail mail) {
-        MailEntity mailentity = mail.getMailContent();
-        JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (mailentity.getId() != null) ? mailentity.getId().toString() : "")
-                .add("subject", mailentity.getSubject())
-                .add("content", mailentity.getContent())
-                .add("senderId", (mailentity.getSenderId() != null) ? "" + mailentity.getSenderId() : "0")
-                .add("senderName", (mailentity.getSenderName() != null) ? mailentity.getSenderName() : "")
-                .add("receiverId", (mailentity.getReceiverId() != null) ? "" + mailentity.getReceiverId() : "0")
-                .add("receiverName", (mailentity.getReceiverName() != null) ? mailentity.getReceiverName() : "")
-                .add("sendDate", (mailentity.getSendDate() != null) ? mailentity.getSendDate() : 0)
-                .add("unread", mail.isUnread())
-                .add("trashDate", (mail.getTrashDate() != null) ? mail.getTrashDate().getEpochSecond() : 0);
-
-        //! TODO put the attachments into jason document
-
-        return json;
-    }
-
-    /**
-     * Export mails of given user. Use from/to for pagination.
-     * 
-     * @param user  User entity
-     * @param from  Range begin
-     * @param to    Range end
-     * @return      User mails in a JSON array
-     */
-    @Deprecated
-    public JsonArrayBuilder exportUserMails(UserEntity user, int from, int to) {
-        JsonArrayBuilder mails = Json.createArrayBuilder();
-        getMails(user, from, to).forEach((mail) -> {
-            mails.add(exportMailJSON(mail));
-        });
-        return mails;
-    }
-
-    /**
-     * Give a JSON string import the necessary fields and create a mail entity.
-     * 
-     * @param jsonString JSON string representing a mail entity
-     * @return           Mail entity or null if the JSON string was not appropriate
-     * @throws Exception Throws exception if the input was not valid
-     */
-    @Deprecated
-    public MailEntity importMailJSON(String jsonString) throws Exception {
-        if (jsonString == null) {
-            return null;
-        }
-
-        String subject, content, receiverid;
-        try {
-            JsonReader jreader = Json.createReader(new StringReader(jsonString));
-            JsonObject jobject = jreader.readObject();
-            subject    = jobject.getString("subject", null);
-            content    = jobject.getString("content", null);
-            receiverid = jobject.getString("receiverId", null);
-
-            //! TODO get the attachments
-        }
-        catch(Exception ex) {
-            LOGGER.warn("Could not setup a mail entity out of given JSON string, reason: " + ex.getLocalizedMessage());
-            throw new Exception("Invalid input");
-        }
-
-        if (receiverid ==  null) {
-            LOGGER.warn("Could not setup a mail entity out of given JSON string, missing recipient");
-            throw new Exception("Missing mail recipient");
-        }
-        long recvid = 0;
-        try {
-            recvid = Long.parseLong(receiverid);
-        }
-        catch(NumberFormatException ex) {}
-        if (recvid == 0L) {
-            LOGGER.warn("Could not setup a mail entity out of given JSON string, invalid recipient");
-            throw new Exception("Invalid mail recipient");            
-        }
-
-        MailEntity entity = new MailEntity();
-        entity.setSubject(subject);
-        entity.setContent(content);
-        entity.setSendDate((new Date()).getTime());
-        entity.setReceiverId(recvid);
-
-        return entity;
     }
 }

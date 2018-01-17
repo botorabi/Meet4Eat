@@ -10,8 +10,8 @@ package net.m4e.app.event;
 
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.mailbox.MailEntity;
-import net.m4e.app.mailbox.Mails;
+import net.m4e.app.mailbox.business.MailEntity;
+import net.m4e.app.mailbox.business.Mails;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;

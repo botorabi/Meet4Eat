@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.business;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -195,6 +195,6 @@ public class MailUserEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.app.mailbox.MailUserEntity[ id=" + id + " ]";
+        return "net.m4e.app.mailbox.business.MailUserEntity[ id=" + id + " ]";
     }
 }

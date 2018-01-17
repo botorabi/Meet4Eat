@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.business;
 
 import javax.json.bind.annotation.JsonbTransient;
 import java.time.Instant;

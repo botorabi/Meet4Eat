@@ -9,7 +9,8 @@ package net.m4e.app.mailbox;
 
 import java.util.stream.Stream;
 
-import net.m4e.app.mailbox.MailOperation.MailOperationAdapter;
+import net.m4e.app.mailbox.business.MailOperation;
+import net.m4e.app.mailbox.business.MailOperation.MailOperationAdapter;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.ExtensionContext;

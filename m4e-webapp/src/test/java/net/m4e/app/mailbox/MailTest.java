@@ -13,6 +13,8 @@ import java.time.temporal.ChronoUnit;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 
+import net.m4e.app.mailbox.business.Mail;
+import net.m4e.app.mailbox.business.MailEntity;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 
@@ -34,13 +36,23 @@ class MailTest {
         }
 
         @Test
-        void toJson() {
+        void toJson_not_trashed() {
+            MailEntity mailEntity = new MailEntity();
+            Mail mail = new Mail(mailEntity, true, null);
+
+            String json = jsonb.toJson(mail);
+
+            Assertions.assertThat(json).doesNotContain("\"trashDate\"");
+        }
+
+        @Test
+        void toJson_trashed() {
             MailEntity mailEntity = new MailEntity();
             Mail mail = new Mail(mailEntity, true, Instant.now().minus(5, ChronoUnit.SECONDS));
 
             String json = jsonb.toJson(mail);
 
-            Assertions.assertThat(json).doesNotContain("\"trashed\"");
+            Assertions.assertThat(json).contains("\"trashDate\"");
         }
     }
 
