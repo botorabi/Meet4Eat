@@ -27,7 +27,7 @@ import org.mockito.*;
 /**
  * @author ybroeker
  */
-class MailEntityFacadeRESTTest {
+class MailRestServiceTest {
 
     UserEntity userEntity;
 
@@ -67,10 +67,10 @@ class MailEntityFacadeRESTTest {
         void noMails() {
             Mockito.when(mails.getMails(Mockito.eq(userEntity), Mockito.anyInt(), Mockito.anyInt())).thenReturn(Collections.emptyList());
 
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
+            MailRestService mailRestService = new MailRestService(newMailValidator, mails);
 
 
-            GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
+            GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, request);
 
             Assertions.assertThat(retrievedMails.getData()).isEmpty();
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
@@ -82,10 +82,10 @@ class MailEntityFacadeRESTTest {
         void oneMail() {
             Mockito.when(mails.getMails(Mockito.eq(userEntity), Mockito.anyInt(), Mockito.anyInt())).thenReturn(Collections.singletonList(new Mail(new MailEntity(),true, null)));
 
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
+            MailRestService mailRestService = new MailRestService(newMailValidator, mails);
 
 
-            GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, request);
+            GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, request);
 
             Assertions.assertThat(retrievedMails.getData()).hasSize(1);
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(200);
@@ -95,10 +95,10 @@ class MailEntityFacadeRESTTest {
 
         @Test
         void noUser() {
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
+            MailRestService mailRestService = new MailRestService(newMailValidator, mails);
 
 
-            GenericResponseResult<List<Mail>> retrievedMails = mailEntityFacadeREST.getMails(0, 0, requestWithSessionUser(null));
+            GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, requestWithSessionUser(null));
 
             Assertions.assertThat(retrievedMails.getData()).isNull();
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(401);
@@ -126,10 +126,10 @@ class MailEntityFacadeRESTTest {
             Mockito.when(mails.getCountTotalMails(Mockito.eq(userEntity))).thenReturn(5L);
             Mockito.when(mails.getCountUnreadMails(Mockito.eq(userEntity))).thenReturn(2L);
 
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
+            MailRestService mailRestService = new MailRestService(newMailValidator, mails);
 
 
-            GenericResponseResult<MailCount> retrievedMails = mailEntityFacadeREST.getCount(request);
+            GenericResponseResult<MailCount> retrievedMails = mailRestService.getCount(request);
 
             Assertions.assertThat(retrievedMails.getData()).isInstanceOf(MailCount.class);
             Assertions.assertThat(retrievedMails.getData().getTotalMails()).isEqualTo(5);
@@ -142,10 +142,10 @@ class MailEntityFacadeRESTTest {
         @Test
         void noUser() {
 
-            MailEntityFacadeREST mailEntityFacadeREST = new MailEntityFacadeREST(newMailValidator, mails);
+            MailRestService mailRestService = new MailRestService(newMailValidator, mails);
 
 
-            GenericResponseResult<MailCount> retrievedMails = mailEntityFacadeREST.getCount(requestWithSessionUser(null));
+            GenericResponseResult<MailCount> retrievedMails = mailRestService.getCount(requestWithSessionUser(null));
 
             Assertions.assertThat(retrievedMails.getData()).isNull();
             Assertions.assertThat(retrievedMails.getCode()).isEqualTo(GenericResponseResult.CODE_UNAUTHORIZED);

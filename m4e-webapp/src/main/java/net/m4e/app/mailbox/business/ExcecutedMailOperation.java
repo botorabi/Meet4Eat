@@ -5,7 +5,7 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox.rest.comm;
+package net.m4e.app.mailbox.business;
 
 /**
  * @author ybroeker

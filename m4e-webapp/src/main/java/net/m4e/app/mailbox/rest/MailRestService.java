@@ -11,6 +11,7 @@ package net.m4e.app.mailbox.rest;
 import io.swagger.annotations.*;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.mailbox.business.ExcecutedMailOperation;
 import net.m4e.app.mailbox.business.Mail;
 import net.m4e.app.mailbox.business.MailEntity;
 import net.m4e.app.mailbox.business.Mails;
@@ -39,7 +40,7 @@ import java.util.stream.Collectors;
 @Stateless
 @Path("/rest/mails")
 @Api(value = "Mails services")
-public class MailEntityFacadeREST {
+public class MailRestService {
 
     /**
      * Logger.
@@ -53,13 +54,13 @@ public class MailEntityFacadeREST {
     /**
      * EJB's default constructor.
      */
-    protected MailEntityFacadeREST() {
+    protected MailRestService() {
         this.validator = null;
         this.mails = null;
     }
 
     @Inject
-    public MailEntityFacadeREST(NewMailValidator validator, Mails mails) {
+    public MailRestService(NewMailValidator validator, Mails mails) {
         this.validator = validator;
         this.mails = mails;
     }

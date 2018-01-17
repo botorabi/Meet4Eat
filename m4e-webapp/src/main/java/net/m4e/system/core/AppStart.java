@@ -12,7 +12,6 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import io.swagger.jaxrs.config.BeanConfig;
-import net.m4e.app.mailbox.rest.MailEntityFacadeREST;
 
 /**
  * Central application configuration
@@ -46,7 +45,7 @@ public class AppStart extends Application {
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(net.m4e.app.event.EventEntityFacadeREST.class);
         resources.add(net.m4e.app.event.EventLocationVoteEntityFacadeREST.class);
-        resources.add(MailEntityFacadeREST.class);
+        resources.add(net.m4e.app.mailbox.rest.MailRestService.class);
         resources.add(net.m4e.app.resources.DocumentEntityFacadeREST.class);
         resources.add(net.m4e.app.user.UserAuthenticationFacadeREST.class);
         resources.add(net.m4e.app.user.UserEntityFacadeREST.class);

@@ -8,8 +8,6 @@
 
 package net.m4e.app.mailbox.business;
 
-import net.m4e.app.mailbox.rest.comm.ExcecutedMailOperation;
-import net.m4e.app.mailbox.rest.comm.MailOperation;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.Entities;
 import org.slf4j.Logger;
