@@ -12,7 +12,6 @@ import javax.json.bind.JsonbBuilder;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import net.m4e.app.mailbox.MailOperation;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

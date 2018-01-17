@@ -6,21 +6,27 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.business;
 
-import java.lang.invoke.MethodHandles;
-import java.time.Instant;
-import java.util.*;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-
+import net.m4e.app.mailbox.rest.comm.ExcecutedMailOperation;
+import net.m4e.app.mailbox.rest.comm.MailOperation;
 import net.m4e.app.user.UserEntity;
 import net.m4e.common.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.validation.constraints.NotNull;
+import java.lang.invoke.MethodHandles;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A collection of mailbox related utilities

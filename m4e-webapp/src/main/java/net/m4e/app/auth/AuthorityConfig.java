@@ -15,7 +15,6 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import net.m4e.app.mailbox.rest.MailEntityFacadeREST;
 import net.m4e.app.user.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,7 @@ public class AuthorityConfig {
         net.m4e.app.event.EventEntityFacadeREST.class,
         net.m4e.app.event.EventLocationVoteEntityFacadeREST.class,
         net.m4e.app.resources.DocumentEntityFacadeREST.class,
-        MailEntityFacadeREST.class
+        net.m4e.app.mailbox.rest.MailEntityFacadeREST.class
     };
 
     /**
@@ -104,7 +103,7 @@ public class AuthorityConfig {
      * 
      * @return List of bean classes.
      */
-    public List<Class> getAccessBeanClasses() {
+    public List<Class<?>> getAccessBeanClasses() {
         return Arrays.asList(accessBeanClasses);
     }
 

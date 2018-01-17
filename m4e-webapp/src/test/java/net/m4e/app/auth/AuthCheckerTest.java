@@ -93,7 +93,7 @@ class AuthCheckerTest {
         MockitoAnnotations.initMocks(this);
 
         authChecker = new AuthChecker();
-        List<Class> beans = Arrays.asList(Bean1.class, Bean2.class);
+        List<Class<?>> beans = Arrays.asList(Bean1.class, Bean2.class);
         authChecker.initialize(beans);
     }
 

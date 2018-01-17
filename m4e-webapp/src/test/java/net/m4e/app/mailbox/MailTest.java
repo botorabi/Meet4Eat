@@ -13,6 +13,8 @@ import java.time.temporal.ChronoUnit;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 
+import net.m4e.app.mailbox.business.Mail;
+import net.m4e.app.mailbox.business.MailEntity;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 

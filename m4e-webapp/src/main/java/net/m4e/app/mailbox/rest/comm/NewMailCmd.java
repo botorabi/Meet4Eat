@@ -7,12 +7,12 @@
  */
 package net.m4e.app.mailbox.rest.comm;
 
+import net.m4e.app.mailbox.rest.NewMailValidator;
+
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
-
-import net.m4e.app.mailbox.rest.NewMailValidator;
 
 /**
  * @author ybroeker
