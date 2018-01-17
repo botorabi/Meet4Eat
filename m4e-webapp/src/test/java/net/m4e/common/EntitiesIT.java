@@ -7,6 +7,14 @@
  */
 package net.m4e.common;
 
+import java.util.*;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
+
 import net.m4e.system.core.AppInfoEntity;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -17,15 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.Assert.*;
 
 
@@ -35,7 +34,7 @@ import static org.junit.Assert.*;
  * @author boto
  */
 @RunWith(Arquillian.class)
-public class EntitiesTest {
+public class EntitiesIT {
 
     /**
      * Create the test package which will be deployed by Arquillian.
