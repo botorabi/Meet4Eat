@@ -17,7 +17,7 @@ import javax.validation.constraints.Size;
 /**
  * @author ybroeker
  */
-public final class NewMailCmd {
+public class NewMailCmd {
 
     @Size(min = 1, max = NewMailValidator.USER_INPUT_MAX_LEN_SUBJECT)
     private String subject;
