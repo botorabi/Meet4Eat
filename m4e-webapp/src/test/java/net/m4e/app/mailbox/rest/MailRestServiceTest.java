@@ -7,7 +7,6 @@
  */
 package net.m4e.app.mailbox.rest;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -30,6 +29,8 @@ import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static net.m4e.tests.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -67,6 +68,9 @@ class MailRestServiceTest {
     }
 
 
+    /**
+     * Check, that {@link MailRestService} is createable by container.
+     */
     @Test
     void checkNoArgsConstructor() {
         new MailRestService();
@@ -86,22 +90,23 @@ class MailRestServiceTest {
 
         @Test
         void noMails() {
-            when(mails.getMails(eq(userEntity), anyInt(), anyInt())).thenReturn(Collections.emptyList());
+            when(mails.getMails(eq(userEntity), anyInt(), anyInt())).thenReturn(emptyList());
 
             MailRestService mailRestService = new MailRestService(newMailValidator, mails);
 
 
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, request);
 
-            assertThat(retrievedMails.getData()).isEmpty();
-            assertThat(retrievedMails.getCode()).isEqualTo(200);
-            assertThat(retrievedMails.getStatus()).isEqualTo(GenericResponseResult.STATUS_OK);
-            assertThat(retrievedMails.getDescription()).isNotEmpty();
+
+            assertThat(retrievedMails).isOk()
+                    .hasDescription()
+                    .hasStatusOk()
+                    .hasData(emptyList());
         }
 
         @Test
         void oneMail() {
-            when(mails.getMails(eq(userEntity), anyInt(), anyInt())).thenReturn(Collections.singletonList(new Mail(new MailEntity(), true, null)));
+            when(mails.getMails(eq(userEntity), anyInt(), anyInt())).thenReturn(singletonList(new Mail(new MailEntity(), true, null)));
 
             MailRestService mailRestService = new MailRestService(newMailValidator, mails);
 
@@ -109,9 +114,9 @@ class MailRestServiceTest {
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, request);
 
             assertThat(retrievedMails.getData()).hasSize(1);
-            assertThat(retrievedMails.getCode()).isEqualTo(200);
-            assertThat(retrievedMails.getStatus()).isEqualTo(GenericResponseResult.STATUS_OK);
-            assertThat(retrievedMails.getDescription()).isNotEmpty();
+            assertThat(retrievedMails).isOk()
+                    .hasDescription()
+                    .hasStatusOk();
         }
 
         @Test
@@ -121,10 +126,10 @@ class MailRestServiceTest {
 
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, requestWithSessionUser(null));
 
-            assertThat(retrievedMails.getData()).isNull();
-            assertThat(retrievedMails.getCode()).isEqualTo(401);
-            assertThat(retrievedMails.getStatus()).isEqualTo(GenericResponseResult.STATUS_NOT_OK);
-            assertThat(retrievedMails.getDescription()).isNotEmpty();
+            assertThat(retrievedMails).isUnauthorized()
+                    .hasStatusNotOk()
+                    .hasDescription()
+                    .hasNoData();
         }
 
     }
@@ -152,12 +157,14 @@ class MailRestServiceTest {
 
             GenericResponseResult<MailCount> retrievedMails = mailRestService.getCount(request);
 
-            assertThat(retrievedMails.getData()).isInstanceOf(MailCount.class);
+
+            assertThat(retrievedMails).isOk()
+                    .hasDescription()
+                    .hasStatusOk()
+                    .hasDataOfType(MailCount.class)
+            ;
             assertThat(retrievedMails.getData().getTotalMails()).isEqualTo(5);
             assertThat(retrievedMails.getData().getUnreadMails()).isEqualTo(2);
-            assertThat(retrievedMails.getCode()).isEqualTo(200);
-            assertThat(retrievedMails.getStatus()).isEqualTo(GenericResponseResult.STATUS_OK);
-            assertThat(retrievedMails.getDescription()).isNotEmpty();
         }
 
         @Test
@@ -168,10 +175,10 @@ class MailRestServiceTest {
 
             GenericResponseResult<MailCount> retrievedMails = mailRestService.getCount(requestWithSessionUser(null));
 
-            assertThat(retrievedMails.getData()).isNull();
-            assertThat(retrievedMails.getCode()).isEqualTo(GenericResponseResult.CODE_UNAUTHORIZED);
-            assertThat(retrievedMails.getStatus()).isEqualTo(GenericResponseResult.STATUS_NOT_OK);
-            assertThat(retrievedMails.getDescription()).isNotEmpty();
+            assertThat(retrievedMails).isUnauthorized()
+                    .hasStatusNotOk()
+                    .hasDescription()
+                    .hasNoData();
         }
     }
 
@@ -196,11 +203,12 @@ class MailRestServiceTest {
 
             GenericResponseResult<UnreadMailCount> countUnread = mailRestService.getCountUnread(request);
 
-            assertThat(countUnread.getData()).isInstanceOf(UnreadMailCount.class);
+            assertThat(countUnread).isOk()
+                    .hasDescription()
+                    .hasStatusOk()
+                    .hasDataOfType(UnreadMailCount.class)
+            ;
             assertThat(countUnread.getData().getUnreadMails()).isEqualTo(2);
-            assertThat(countUnread.getCode()).isEqualTo(200);
-            assertThat(countUnread.getStatus()).isEqualTo(GenericResponseResult.STATUS_OK);
-            assertThat(countUnread.getDescription()).isNotEmpty();
         }
 
 
@@ -210,10 +218,10 @@ class MailRestServiceTest {
 
             GenericResponseResult<UnreadMailCount> countUnread = mailRestService.getCountUnread(requestWithSessionUser(null));
 
-            assertThat(countUnread.getData()).isNull();
-            assertThat(countUnread.getCode()).isEqualTo(GenericResponseResult.CODE_UNAUTHORIZED);
-            assertThat(countUnread.getStatus()).isEqualTo(GenericResponseResult.STATUS_NOT_OK);
-            assertThat(countUnread.getDescription()).isNotEmpty();
+            assertThat(countUnread).isUnauthorized()
+                    .hasStatusNotOk()
+                    .hasDescription()
+                    .hasNoData();
         }
     }
 
