@@ -104,14 +104,14 @@ public class GenericResponseResult<T> {
     /**
      * 401
      */
-    public static <T> GenericResponseResult<T> unauthorized(String desc) {
+    public static <T> GenericResponseResult<T> unauthorized(final String desc) {
         return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_UNAUTHORIZED, null);
     }
 
     /**
      * 400.
      */
-    public static <T> GenericResponseResult<T> badRequest(String desc) {
+    public static <T> GenericResponseResult<T> badRequest(final String desc) {
         return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_BAD_REQUEST, null);
     }
 
@@ -125,7 +125,7 @@ public class GenericResponseResult<T> {
     /**
      * 500.
      */
-    public static <T> GenericResponseResult<T> internalError(String desc) {
+    public static <T> GenericResponseResult<T> internalError(final String desc) {
         return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
     }
 

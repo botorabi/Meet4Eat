@@ -6,13 +6,14 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.business;
 
-import net.m4e.app.resources.DocumentEntity;
-
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
+
+import javax.persistence.*;
+
+import net.m4e.app.resources.DocumentEntity;
 
 /**
  * A class describing a mail
@@ -81,6 +82,22 @@ public class MailEntity implements Serializable {
      */
     @OneToMany(cascade = {CascadeType.ALL})
     private Collection<DocumentEntity> attachments;
+
+    public MailEntity(final Long senderId, final String senderName, final Long receiverId, final String receiverName, final Long sendDate, final String subject, final String content) {
+        this.senderId = senderId;
+        this.senderName = senderName;
+        this.receiverId = receiverId;
+        this.receiverName = receiverName;
+        this.sendDate = sendDate;
+        this.subject = subject;
+        this.content = content;
+    }
+
+    /**
+     * JPA-Constructor.
+     */
+    public MailEntity() {
+    }
 
     /**
      * Get ID.
@@ -266,6 +283,6 @@ public class MailEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.app.mailbox.MailEntity[ id=" + id + " ]";
+        return "net.m4e.app.mailbox.business.MailEntity[ id=" + id + " ]";
     }
 }

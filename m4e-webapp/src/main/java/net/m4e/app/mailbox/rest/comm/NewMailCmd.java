@@ -5,26 +5,32 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.rest.comm;
 
+import net.m4e.app.mailbox.rest.NewMailValidator;
+
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
 /**
- * ! TODO get the attachments
+ * @author ybroeker
  */
-class NewMail {
+public class NewMailCmd {
 
-    @Size(min = 1, max = MailEntityInputValidator.USER_INPUT_MAX_LEN_SUBJECT)
+    @Size(min = 1, max = NewMailValidator.USER_INPUT_MAX_LEN_SUBJECT)
     private String subject;
 
     private String content;
 
     @Min(0)
-    private String receiverId;
+    private Long receiverId;
 
-
-    public NewMail(final String subject, final String content, final String receiverId) {
+    @JsonbCreator
+    public NewMailCmd(@JsonbProperty("subject") final String subject,
+                      @JsonbProperty("content") final String content,
+                      @JsonbProperty("receiverId") final Long receiverId) {
         this.subject = subject;
         this.content = content;
         this.receiverId = receiverId;
@@ -46,11 +52,11 @@ class NewMail {
         this.content = content;
     }
 
-    public String getReceiverId() {
+    public Long getReceiverId() {
         return receiverId;
     }
 
-    public void setReceiverId(final String receiverid) {
+    public void setReceiverId(final Long receiverId) {
         this.receiverId = receiverId;
     }
 }
