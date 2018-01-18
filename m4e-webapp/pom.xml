@@ -21,6 +21,18 @@
         <junit.version>5.0.2</junit.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>1.2.0.Final</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- https://mvnrepository.com/artifact/javax/javaee-api -->
         <dependency>
@@ -171,7 +183,11 @@
             <scope>test</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <finalName>m4e</finalName>
@@ -209,6 +225,23 @@
                     </dependency>
                 </dependencies>
             </plugin>
+
+            <!--Failsafe-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.18</version>
+                <executions>
+                    <execution>
+                        <id>integration-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Jacoco -->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -287,23 +320,7 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jboss.arquillian</groupId>
-                        <artifactId>arquillian-bom</artifactId>
-                        <version>1.2.0.Final</version>
-                        <scope>import</scope>
-                        <type>pom</type>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
             <dependencies>
-                <dependency>
-                    <groupId>org.jboss.arquillian.junit</groupId>
-                    <artifactId>arquillian-junit-container</artifactId>
-                    <scope>test</scope>
-                </dependency>
                 <dependency>
                     <groupId>org.jboss.arquillian.container</groupId>
                     <artifactId>arquillian-glassfish-embedded-3.1</artifactId>
@@ -324,7 +341,7 @@
                 <pluginManagement>
                     <plugins>
                         <plugin>
-                            <artifactId>maven-surefire-plugin</artifactId>
+                            <artifactId>maven-failsafe-plugin</artifactId>
                             <configuration>
                                 <systemPropertyVariables>
                                     <arquillian.launch>glassfish-embedded</arquillian.launch>
