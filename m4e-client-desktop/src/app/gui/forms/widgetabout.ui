@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>316</width>
+    <width>343</width>
     <height>142</height>
    </rect>
   </property>
@@ -101,7 +101,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot;font-weight:600;&quot;&gt;@APP_NAME@&lt;/span&gt;&lt;span style=&quot;font-weight:600;&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;span&gt;Version @APP_VERSION@&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span&gt;Copyright @COPYRIGHT@&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;a href=&quot;WEBSITE&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ffffff;&quot;&gt;@URL@&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;LICENSE&quot;&gt;&lt;span style=&quot;text-decoration: underline; color:#ffffff;&quot;&gt;License&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textInteractionFlags">
-        <set>Qt::TextBrowserInteraction</set>
+        <set>Qt::LinksAccessibleByMouse</set>
        </property>
       </widget>
      </item>

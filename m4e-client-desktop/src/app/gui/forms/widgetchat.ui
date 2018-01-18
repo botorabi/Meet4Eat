@@ -68,7 +68,9 @@ QGroupBox {
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: rgba(131,147, 167, 255);</string>
+        <string notr="true">#widgetHead {
+  background-color: rgba(131,147, 167, 255);
+}</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <property name="spacing">
@@ -107,8 +109,23 @@ QGroupBox {
             <height>16</height>
            </size>
           </property>
-          <property name="text">
-           <string>-</string>
+          <property name="toolTip">
+           <string>Hide/show chat window</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton {
+  background: transparent;
+  border-image: url(:/icon-collapse2.png);
+}
+QPushButton:checked {
+  border-image: url(:/icon-collapse1.png);
+}</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
