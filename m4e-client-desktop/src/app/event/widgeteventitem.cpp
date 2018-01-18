@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  *
  * License: MIT License (MIT), read the LICENSE text in
@@ -75,6 +75,8 @@ void WidgetEventItem::setupUI( event::ModelEventPtr event )
                                      SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
 
     connect( _p_webApp->getChatSystem(), SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this, SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
+
+    _p_ui->labelPhotoIcon->hide();
 
     common::GuiUtils::createShadowEffect( this, QColor( 100, 100, 100, 180), QPoint( -2, 2 ), 4 );
     setSelectionMode( true );
@@ -176,12 +178,25 @@ void WidgetEventItem::onAnimationFinished()
     _animating = false;
 }
 
+void WidgetEventItem::onBtnCollapseToggled( bool toggled )
+{
+    // hide the description body and adapt the item height
+    _p_ui->widgetBody->setVisible( !toggled );
+    setMinimumHeight( toggled? height() -  _p_ui->widgetBody->height() : height() +  _p_ui->widgetBody->height() );
+    resize( size().width(), minimumHeight() );
+    updateGeometry();
+    _p_ui->labelPhotoIcon->setVisible( toggled );
+    // let the list containing this item know about the geometry change
+    emit onItemGeometryChanged( _event->getId() );
+}
+
 void WidgetEventItem::onDocumentReady( m4e::doc::ModelDocumentPtr document )
 {
     QString photoid = _event->getPhotoId();
     if ( !photoid.isEmpty() && document.valid() && ( document->getId() == photoid ) )
     {
         _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( document ) );
+        _p_ui->labelPhotoIcon->setPixmap( common::GuiUtils::createRoundIcon( document ) );
     }
 }
 
@@ -255,7 +270,6 @@ bool WidgetEventItem::eventFilter( QObject* p_obj, QEvent* p_event )
             emit onClicked( _event->getId() );
 
         _p_ui->pushButtonNotification->hide();
-        return true;
     }
 
     return QObject::eventFilter( p_obj, p_event );

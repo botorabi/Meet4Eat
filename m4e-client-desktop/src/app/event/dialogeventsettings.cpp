@@ -11,7 +11,6 @@
 #include <common/guiutils.h>
 #include <common/dialogmessage.h>
 #include <ui_widgeteventsettings.h>
-#include <assert.h>
 
 
 namespace m4e
@@ -323,7 +322,7 @@ void DialogEventSettings::onBtnPhotoClicked()
 void DialogEventSettings::onBtnMemberRemoveClicked()
 {
     QPushButton* p_btn = dynamic_cast< QPushButton* >( sender() );
-    assert ( p_btn && "unexpected event sender, a button was expected!" );
+    Q_ASSERT ( p_btn && "unexpected event sender, a button was expected!" );
 
     _removeMemberId = p_btn->property( "userId" ).toString();
     _p_webApp->getEvents()->requestRemoveMember( _event->getId(), _removeMemberId );

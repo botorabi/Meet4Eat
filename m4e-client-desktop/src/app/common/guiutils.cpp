@@ -140,7 +140,7 @@ void GuiUtils::adaptLookAndFeel( QWidget* p_widget )
         p_w->setAttribute( Qt::WA_MacShowFocusRect, false );
     }
 #else
-    Q_UNUSED(p_widget);
+    Q_UNUSED( p_widget );
 #endif
 }
 

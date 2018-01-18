@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>290</width>
-    <height>155</height>
+    <width>300</width>
+    <height>140</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>300</width>
+    <height>140</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>300</width>
+    <height>149</height>
+   </size>
   </property>
   <property name="cursor">
    <cursorShape>PointingHandCursor</cursorShape>
@@ -19,6 +31,7 @@
   <property name="styleSheet">
    <string notr="true">#WidgetEventItem {
   background: transparent;
+  border: 0;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -26,13 +39,13 @@
     <number>9</number>
    </property>
    <property name="leftMargin">
-    <number>9</number>
+    <number>4</number>
    </property>
    <property name="topMargin">
     <number>5</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>4</number>
    </property>
    <property name="bottomMargin">
     <number>5</number>
@@ -46,9 +59,12 @@
   background-color: rgb(80,112,125);
 }</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1">
+      <property name="spacing">
+       <number>2</number>
+      </property>
       <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
+       <enum>QLayout::SetMinAndMaxSize</enum>
       </property>
       <property name="leftMargin">
        <number>2</number>
@@ -63,65 +79,13 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="QWidget" name="widgetVotingTime" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">#widgetVotingTime {
-  color: white;
-  background-color: rgb(252, 233, 79);
-  background: rgb(252, 233, 79);
-  border: 2px solid rgb(181,197, 217);
-  border-radius: 10px;
-}</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <property name="leftMargin">
-          <number>4</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>4</number>
-         </property>
-         <property name="bottomMargin">
-          <number>2</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="font">
-            <font>
-             <family>Roboto</family>
-             <pointsize>9</pointsize>
-            </font>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">color: rgb(28,52,62);</string>
-           </property>
-           <property name="text">
-            <string>Voting Time</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
+        <property name="spacing">
+         <number>1</number>
+        </property>
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMinAndMaxSize</enum>
+        </property>
         <property name="leftMargin">
          <number>6</number>
         </property>
@@ -129,7 +93,102 @@
          <number>6</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0,0">
+         <widget class="QWidget" name="widgetVotingTime" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">#widgetVotingTime {
+  color: white;
+  background-color: rgb(252, 233, 79);
+  background: rgb(252, 233, 79);
+  border: 2px solid rgb(181,197, 217);
+  border-radius: 5px;
+}</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>4</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>4</number>
+           </property>
+           <property name="bottomMargin">
+            <number>2</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Roboto</family>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">color: rgb(28,52,62);</string>
+             </property>
+             <property name="text">
+              <string>Voting Time</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0,0,0,0">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labelPhotoIcon">
+            <property name="minimumSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QLabel" name="labelHead">
             <property name="minimumSize">
@@ -295,73 +354,149 @@ QPushButton:hover {
             </property>
            </widget>
           </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QLabel" name="labelLine">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>2</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>2</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel {
-  background-color: rgb(131,147, 167);
-}</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
           <item>
-           <widget class="QLabel" name="labelDescription">
-            <property name="font">
-             <font>
-              <family>Roboto</family>
-              <pointsize>9</pointsize>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">color: white;</string>
-            </property>
-            <property name="text">
-             <string>Description</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelPhoto">
+           <widget class="QPushButton" name="pushButtonCollapse">
             <property name="minimumSize">
              <size>
-              <width>64</width>
-              <height>64</height>
+              <width>20</width>
+              <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>64</width>
-              <height>64</height>
+              <width>20</width>
+              <height>20</height>
              </size>
             </property>
-            <property name="scaledContents">
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Hide/show details</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+  border-image: url(:/icon-collapse2.png);
+}
+QPushButton:checked {
+  border-image: url(:/icon-collapse1.png);
+}</string>
+            </property>
+            <property name="checkable">
              <bool>true</bool>
             </property>
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QWidget" name="widgetBody" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>80</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="labelLine">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>2</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>2</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QLabel {
+  background-color: rgb(131,147, 167);
+}</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <property name="topMargin">
+                <number>3</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="labelDescription">
+                 <property name="font">
+                  <font>
+                   <family>Roboto</family>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">color: white;</string>
+                 </property>
+                 <property name="text">
+                  <string>Description</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="labelPhoto">
+                 <property name="minimumSize">
+                  <size>
+                   <width>64</width>
+                   <height>64</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>64</width>
+                   <height>64</height>
+                  </size>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
         </item>
        </layout>
       </item>
@@ -379,8 +514,8 @@ QPushButton:hover {
    <slot>onBtnEditClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>233</x>
-     <y>32</y>
+     <x>279</x>
+     <y>54</y>
     </hint>
     <hint type="destinationlabel">
      <x>248</x>
@@ -395,11 +530,11 @@ QPushButton:hover {
    <slot>onBtnNewLocationClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>181</x>
-     <y>32</y>
+     <x>227</x>
+     <y>54</y>
     </hint>
     <hint type="destinationlabel">
-     <x>-1</x>
+     <x>0</x>
      <y>127</y>
     </hint>
    </hints>
@@ -411,8 +546,8 @@ QPushButton:hover {
    <slot>onBtnNotificationClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>155</x>
-     <y>28</y>
+     <x>201</x>
+     <y>54</y>
     </hint>
     <hint type="destinationlabel">
      <x>180</x>
@@ -427,12 +562,28 @@ QPushButton:hover {
    <slot>onBtnDeleteClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>197</x>
-     <y>21</y>
+     <x>253</x>
+     <y>54</y>
     </hint>
     <hint type="destinationlabel">
      <x>89</x>
-     <y>-13</y>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonCollapse</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>WidgetEventItem</receiver>
+   <slot>onBtnCollapseToggled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>277</x>
+     <y>66</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>294</x>
+     <y>82</y>
     </hint>
    </hints>
   </connection>
@@ -442,5 +593,6 @@ QPushButton:hover {
   <slot>onBtnNewLocationClicked()</slot>
   <slot>onBtnNotificationClicked()</slot>
   <slot>onBtnDeleteClicked()</slot>
+  <slot>onBtnCollapseToggled(bool)</slot>
  </slots>
 </ui>

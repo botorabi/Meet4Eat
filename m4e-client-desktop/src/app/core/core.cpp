@@ -17,7 +17,6 @@
 #include <gui/systemtray.h>
 #include <QDebug>
 #include <QApplication>
-#include <assert.h>
 
 
 namespace m4e
@@ -136,7 +135,7 @@ void Core::initialize( int &argc, char* argv[] )
 
 void Core::start()
 {
-    assert( _p_mainWindow && "core was not initialized before" );
+    Q_ASSERT( _p_mainWindow && "core was not initialized before" );
     // in debug build allow multiple instances of the app for debuggin purpose
 #ifndef QT_DEBUG
     // check if an app instance is already running

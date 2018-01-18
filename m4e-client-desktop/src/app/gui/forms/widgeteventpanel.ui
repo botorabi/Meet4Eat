@@ -412,7 +412,7 @@ QPushButton:disabled {
   color: white;
   background-color: rgb(252, 233, 79);
   border: 2px solid rgb(181,197, 217);
-  border-radius: 12px;
+  border-radius: 6px;
 }</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">

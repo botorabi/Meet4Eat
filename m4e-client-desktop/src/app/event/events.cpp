@@ -8,7 +8,6 @@
 
 #include "events.h"
 #include <core/log.h>
-#include <assert.h>
 
 
 namespace m4e
@@ -475,7 +474,7 @@ void Events::setLastError( const QString& error, const QString& errorCode )
 void Events::onAlarmVotingStart()
 {
     QTimer* p_timer = dynamic_cast< QTimer* >( sender() );
-    assert( p_timer && "invalid event sender type!" );
+    Q_ASSERT( p_timer && "invalid event sender type!" );
 
     QString eventid = p_timer->property( "id" ).toString();
     ModelEventPtr event = getUserEvent( eventid );
@@ -492,7 +491,7 @@ void Events::onAlarmVotingStart()
 void Events::onAlarmVotingEnd()
 {
     QTimer* p_timer = dynamic_cast< QTimer* >( sender() );
-    assert( p_timer && "invalid event sender type!" );
+    Q_ASSERT( p_timer && "invalid event sender type!" );
 
     QString eventid = p_timer->property( "id" ).toString();
     ModelEventPtr event = getUserEvent( eventid );
