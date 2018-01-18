@@ -8,18 +8,8 @@
 
 package net.m4e.app.mailbox.rest;
 
-import io.swagger.annotations.*;
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.mailbox.business.ExcecutedMailOperation;
-import net.m4e.app.mailbox.business.Mail;
-import net.m4e.app.mailbox.business.MailEntity;
-import net.m4e.app.mailbox.business.Mails;
-import net.m4e.app.mailbox.rest.comm.*;
-import net.m4e.app.user.UserEntity;
-import net.m4e.common.GenericResponseResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -27,9 +17,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import io.swagger.annotations.*;
+import net.m4e.app.auth.AuthRole;
+import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.mailbox.business.*;
+import net.m4e.app.mailbox.rest.comm.*;
+import net.m4e.app.user.UserEntity;
+import net.m4e.common.GenericResponseResult;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST services for mailbox functionality
@@ -47,20 +45,23 @@ public class MailRestService {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    @NotNull
     private final NewMailValidator validator;
 
+    @NotNull
     private final Mails mails;
 
     /**
      * EJB's default constructor.
      */
+    @SuppressWarnings("ConstantConditions")
     protected MailRestService() {
         this.validator = null;
         this.mails = null;
     }
 
     @Inject
-    public MailRestService(NewMailValidator validator, Mails mails) {
+    public MailRestService(@NotNull NewMailValidator validator, @NotNull Mails mails) {
         this.validator = validator;
         this.mails = mails;
     }
@@ -85,7 +86,7 @@ public class MailRestService {
             return GenericResponseResult.unauthorized("Failed to retrieve user mails, no authentication.");
         }
 
-        List<Mail> userMails = mails.getMails(sessionuser, from, to).stream().collect(Collectors.toList());
+        List<Mail> userMails = mails.getMails(sessionuser, from, to);
 
         return GenericResponseResult.ok("User mails were successfully retrieved.", userMails);
     }
@@ -150,8 +151,7 @@ public class MailRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
-    @ApiImplicitParams(@ApiImplicitParam(name = "body", required = true, dataTypeClass = NewMailCmd.class, paramType = "body"))
-    public GenericResponseResult<Void> send(@ApiParam(hidden = true) NewMailCmd newMail, @Context HttpServletRequest request) {
+    public GenericResponseResult<Void> send(NewMailCmd newMail, @Context HttpServletRequest request) {
         UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionuser == null) {
             LOGGER.error("Cannot create mail, no user in session found!");
@@ -163,8 +163,8 @@ public class MailRestService {
             mail = validator.validateNewEntityInput(newMail, sessionuser);
         }
         catch (Exception ex) {
-            LOGGER.warn("Could not send mail, validation failed, reason: {}", ex.getLocalizedMessage());
-            return GenericResponseResult.badRequest(ex.getLocalizedMessage());
+            LOGGER.warn("Could not send mail, validation failed, reason: {}", ex.getMessage());
+            return GenericResponseResult.badRequest(ex.getMessage());
         }
 
         //! NOTE we may implement a mechanism to limit the maximal count of user mails
@@ -172,7 +172,7 @@ public class MailRestService {
             mails.createMail(mail);
         }
         catch (Exception ex) {
-            LOGGER.warn("Could not send mail, problem occurred while creating mail entity, reason: {}", ex.getLocalizedMessage());
+            LOGGER.warn("Could not send mail, problem occurred while creating mail entity, reason: {}", ex.getMessage());
             return GenericResponseResult.internalError("Problem occurred while sending mail");
         }
 
@@ -201,9 +201,8 @@ public class MailRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
-    @ApiImplicitParams(@ApiImplicitParam(name = "body", required = true, dataTypeClass = MailOperationCmd.class, paramType = "body"))
     public GenericResponseResult<ExcecutedMailOperation> operate(@ApiParam("The mail-ID.") @PathParam("id") Long id,
-                                                                 @ApiParam(hidden = true) MailOperationCmd operation,
+                                                                 MailOperationCmd operation,
                                                                  @Context HttpServletRequest request) {
 
         final UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);

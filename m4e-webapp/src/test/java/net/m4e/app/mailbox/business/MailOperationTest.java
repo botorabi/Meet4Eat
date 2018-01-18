@@ -5,11 +5,10 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.mailbox;
+package net.m4e.app.mailbox.business;
 
 import java.util.stream.Stream;
 
-import net.m4e.app.mailbox.business.MailOperation;
 import net.m4e.app.mailbox.business.MailOperation.MailOperationAdapter;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
