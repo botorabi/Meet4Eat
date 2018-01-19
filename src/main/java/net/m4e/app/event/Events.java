@@ -8,13 +8,19 @@
 
 package net.m4e.app.event;
 
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.json.*;
+
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.mailbox.business.MailEntity;
 import net.m4e.app.mailbox.business.Mails;
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
-import net.m4e.app.resources.StatusEntity;
+import net.m4e.app.resources.*;
 import net.m4e.app.user.UserEntity;
 import net.m4e.app.user.Users;
 import net.m4e.common.Entities;
@@ -23,13 +29,6 @@ import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.*;
-import java.io.StringReader;
-import java.lang.invoke.MethodHandles;
-import java.util.*;
 
 
 /**
@@ -332,7 +331,7 @@ public class Events {
             throw new Exception("Problem occured while retrieving AppInfo entity!");
         }
         appinfo.incrementEventCountPurge(1L);
-        entities.update(appInfos);
+        entities.update(appinfo);
     }
 
     /**
