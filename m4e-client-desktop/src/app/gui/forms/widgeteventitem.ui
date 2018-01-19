@@ -160,7 +160,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0,0,0,0">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0,0,0,0,0">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -199,14 +199,14 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>16777215</width>
+              <width>150</width>
               <height>24</height>
              </size>
             </property>
             <property name="font">
              <font>
               <family>Roboto</family>
-              <pointsize>10</pointsize>
+              <pointsize>9</pointsize>
               <weight>75</weight>
               <bold>true</bold>
              </font>
@@ -221,6 +221,19 @@
              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item>
            <widget class="QPushButton" name="pushButtonNotification">

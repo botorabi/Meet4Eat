@@ -112,6 +112,7 @@ void WidgetEventItem::updateEvent( ModelEventPtr event )
     else
     {
         _p_ui->labelPhoto->setPixmap( common::GuiUtils::createRoundIcon( common::GuiUtils::getDefaultPixmap() ) );
+        _p_ui->labelPhotoIcon->setPixmap( common::GuiUtils::createRoundIcon( common::GuiUtils::getDefaultPixmap() ) );
     }
 }
 
