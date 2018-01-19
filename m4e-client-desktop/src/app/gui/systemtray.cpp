@@ -77,6 +77,7 @@ void SystemTray::onActivated( QSystemTrayIcon::ActivationReason reason )
     {
         case QSystemTrayIcon::Trigger:
         case QSystemTrayIcon::DoubleClick:
+            showIconNotify( false );
             common::GuiUtils::bringWidgetToFront( _p_mainWindow );
         break;
 
