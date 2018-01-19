@@ -8,9 +8,11 @@
 
 package net.m4e.app.mailbox.business;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
+
+import javax.persistence.*;
 
 /**
  * This class joins a user and a mail. It is used to share the same mail
@@ -137,7 +139,7 @@ public class MailUserEntity implements Serializable {
      * @return Return true if the mail is marked as trash
      */
     public boolean isTrashed() {
-        return (trashDate == null) ? false : (trashDate.getEpochSecond() != 0);
+        return (trashDate != null) && (trashDate.getEpochSecond() != 0);
     }
 
     /**
@@ -189,8 +191,9 @@ public class MailUserEntity implements Serializable {
         if (!(object instanceof MailUserEntity)) {
             return false;
         }
-        MailUserEntity other = (MailUserEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        MailUserEntity that = (MailUserEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
+        //(this.id != null || that.id == null) && (this.id == null || this.id.equals(that.id));
     }
 
     @Override
