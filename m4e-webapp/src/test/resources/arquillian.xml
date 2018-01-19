@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+    <container qualifier="glassfish" default="true">
+        <configuration>
+            <!--property name="glassFishHome"> better set GLASSFISH_HOME instead of a fix path here! </property-->
+            <property name="allowConnectingToRunningServer">true</property>
+        </configuration>
+    </container>
+    <container qualifier="glassfish-embedded">
+        <configuration>
+            <property name="resourcesXml">
+                ./src/test/resources/resources-glassfish-embedded/glassfish-resources.xml
+            </property>
+        </configuration>
+    </container>
+
+    <extension qualifier="jacoco"/>
+</arquillian>
+

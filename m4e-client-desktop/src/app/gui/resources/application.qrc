@@ -9,6 +9,8 @@
         <file>icon-warning.png</file>
         <file>icon-delete.png</file>
         <file>icon-delete-small.png</file>
+        <file>icon-collapse1.png</file>
+        <file>icon-collapse2.png</file>
         <file>icon-group.png</file>
         <file>icon-location.png</file>
         <file>icon-location-small.png</file>
@@ -40,6 +42,7 @@
         <file>buzz.wav</file>
         <file>icon.ico</file>
         <file>icon-tray.png</file>
+        <file>icon-tray-notify.png</file>
         <file>logo.png</file>
         <file>LICENSE</file>
     </qresource>

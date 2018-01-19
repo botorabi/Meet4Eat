@@ -13,7 +13,6 @@
 #include <common/guiutils.h>
 #include <ui_widgetchat.h>
 #include <QListWidgetItem>
-#include <assert.h>
 
 
 namespace m4e
@@ -42,7 +41,7 @@ void WidgetChat::setupUI(  webapp::WebApp* p_webApp )
 
 void WidgetChat::setMembers( const QList< user::ModelUserInfoPtr > users )
 {
-    assert( _p_webApp && "widget was not setup before!" );
+    Q_ASSERT( _p_webApp && "widget was not setup before!" );
 
     int row = 0;
     for ( user::ModelUserInfoPtr user: users )

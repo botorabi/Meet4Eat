@@ -35,7 +35,7 @@ const static QString MAIL_LIST_STYLESHEET = \
 "QScrollBar::vertical {" \
 " background-color: transparent;" \
 " color: rgb(151,167, 187);" \
-" width: 12px;" \
+" width: 10px;" \
 "}";
 
 static int MAIL_PAGE_SIZE = 10;
@@ -82,13 +82,14 @@ void WidgetMailList::setupListView()
     setStyleSheet( MAIL_LIST_STYLESHEET );
     setSizePolicy( QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding );
     setVerticalScrollMode( ScrollPerPixel );
-    setSizeAdjustPolicy( SizeAdjustPolicy::AdjustToContents );
+    setSizeAdjustPolicy( SizeAdjustPolicy::AdjustIgnored );
     setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     setVerticalScrollBarPolicy( Qt::ScrollBarAsNeeded );
     setAutoFillBackground( false );
     verticalScrollBar()->setSingleStep( 5 );
-    setWrapping( true );
-    setViewMode( QListView::IconMode );
+    setWrapping( false );
+    setFlow( TopToBottom );
+    setViewMode( QListView::ListMode );
     setDragEnabled( false );
     QVBoxLayout* p_layout = new QVBoxLayout( this );
     p_layout->setSpacing( 8 );

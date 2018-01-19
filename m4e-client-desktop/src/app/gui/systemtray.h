@@ -60,6 +60,14 @@ class SystemTray : QObject
         void                        showMessage( const QString& title, const QString& message, bool warning = false, int duration = 2000 );
 
         /**
+         * @brief Use this method in order to change the system try icon and notify the user about news while the main window is minimized.
+         *
+         * @param show      Pass true to change the icon to notification style, pass false to show the icon in normal style.
+         * @param toolTip   An optional tooltip text
+         */
+        void                        showIconNotify( bool show, const QString& toolTip = QString() );
+
+        /**
          * @brief Check if the system tray is available. Some platforms may not support it.
          *
          * @return Return true if the system tray is available.
@@ -81,6 +89,11 @@ class SystemTray : QObject
          * @param p_action  The triggered action
          */
         void                        onMenuTriggert( QAction* p_action );
+
+        /**
+         * @brief Called when the menu is about to be shown.
+         */
+        void                        onMenuAboutToShow();
 
         /**
          * @brief This method is called when the tray message was clicked.
@@ -127,16 +140,15 @@ class SystemTray : QObject
          * @param loactionId Event location ID
          * @param vote       true for vote and false for unvote the given location
          */
-        void                    onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
+        void                        onEventLocationVote( QString senderId, QString senderName, QString eventId, QString locationId, bool vote );
 
         /**
-         * @brief This signal is emitted when the results of mails count request arrive.
+         * @brief This signal is emitted when the results of unread mails count request arrive.
          *
          * @param success  true if the count of unread mails could successfully be retrieved, otherwise false
-         * @param countTotal    Total count of mails
-         * @param countUnread   Count of unread mails
+         * @param count     Count of unread mails
          */
-        void                        onResponseCountMails( bool success, int countTotal, int countUnread );
+        void                        onResponseCountUnreadMails( bool success, int count );
 
         /**
          * @brief Received when an event voting has started.
@@ -151,6 +163,20 @@ class SystemTray : QObject
          * @param event  The event
          */
         void                        onLocationVotingEnd( m4e::event::ModelEventPtr event );
+
+        /**
+         * @brief Notify about a new user chat message.
+         *
+         * @param msg Chat message
+         */
+        void                        onReceivedChatMessageUser( m4e::chat::ChatMessagePtr msg );
+
+        /**
+         * @brief Notify about a new event chat message.
+         *
+         * @param msg Chat message
+         */
+        void                        onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr msg );
 
     protected:
 

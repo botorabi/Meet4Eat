@@ -1,0 +1,36 @@
+/*
+Copyright (c) 2017-2018 by Botorabi. All rights reserved.
+https://github.com/botorabi/Meet4Eat
+
+License: MIT License (MIT), read the LICENSE text in
+         main directory for more details.
+*/
+/* 
+    Created on : 27.08.2017, 15:22:12
+    Author     : boto
+*/
+
+.info-box {
+    max-width: 350px;
+    margin-top: 50px;
+    text-align: center;
+}
+
+.weekday input {
+    display: none!important;
+}
+
+.weekday input[type=checkbox] + label {
+    background: #ddd;
+    width: 60px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.weekday input[type=checkbox]:checked + label {
+    background: #337ab7;
+    border-color: #2e6da4;
+    color: #ffffff;
+}

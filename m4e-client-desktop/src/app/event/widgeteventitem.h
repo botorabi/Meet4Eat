@@ -109,6 +109,13 @@ class WidgetEventItem : public QWidget
          */
         void                        onRequestDeleteEvent( QString id );
 
+        /**
+         * @brief This signal is emitted when the item description was collapsed/uncollapsed.
+         *
+         * @param id    The event ID
+         */
+        void                        onItemGeometryChanged( QString id );
+
     protected slots:
 
         void                        onBtnEditClicked();
@@ -120,6 +127,8 @@ class WidgetEventItem : public QWidget
         void                        onBtnNotificationClicked();
 
         void                        onAnimationFinished();
+
+        void                        onBtnCollapseToggled( bool toggled );
 
         /**
          * @brief This signal is received from webapp when a requested document was arrived.

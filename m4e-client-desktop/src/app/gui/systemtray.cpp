@@ -21,7 +21,8 @@ namespace m4e
 namespace gui
 {
 
-static const QString M4E_SYSTRAY_ICON = ":/icon-tray.png";
+static const QString M4E_SYSTRAY_ICON_NORMAL = ":/icon-tray.png";
+static const QString M4E_SYSTRAY_ICON_NOTIFY = ":/icon-tray-notify.png";
 
 enum MenuIDs
 {
@@ -50,14 +51,20 @@ SystemTray::SystemTray( webapp::WebApp* p_webApp, MainWindow* p_parent ) :
     connect( _p_webApp->getNotifications(), SIGNAL( onEventLocationVote( QString, QString, QString, QString, bool ) ), this,
                                             SLOT( onEventLocationVote( QString, QString, QString, QString, bool ) ) );
 
-    connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountMails( bool, int, int ) ), this,
-                                      SLOT( onResponseCountMails( bool, int, int ) ) );
+    connect( _p_webApp->getMailBox(), SIGNAL( onResponseCountUnreadMails( bool, int ) ), this,
+                                      SLOT( onResponseCountUnreadMails( bool, int ) ) );
 
     connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingStart( m4e::event::ModelEventPtr ) ), this,
                                      SLOT( onLocationVotingStart( m4e::event::ModelEventPtr ) ) );
 
     connect( _p_webApp->getEvents(), SIGNAL( onLocationVotingEnd( m4e::event::ModelEventPtr ) ), this,
                                      SLOT( onLocationVotingEnd( m4e::event::ModelEventPtr ) ) );
+
+    connect( _p_webApp->getChatSystem(), SIGNAL( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ), this,
+                                     SLOT( onReceivedChatMessageEvent( m4e::chat::ChatMessagePtr ) ) );
+
+    connect( _p_webApp->getChatSystem(), SIGNAL( onReceivedChatMessageUser( m4e::chat::ChatMessagePtr ) ), this,
+                                     SLOT( onReceivedChatMessageUser( m4e::chat::ChatMessagePtr ) ) );
 }
 
 SystemTray::~SystemTray()
@@ -70,6 +77,7 @@ void SystemTray::onActivated( QSystemTrayIcon::ActivationReason reason )
     {
         case QSystemTrayIcon::Trigger:
         case QSystemTrayIcon::DoubleClick:
+            showIconNotify( false );
             common::GuiUtils::bringWidgetToFront( _p_mainWindow );
         break;
 
@@ -108,6 +116,12 @@ void SystemTray::onMenuTriggert( QAction* p_action )
         default:
             log_warning << TAG << "unsupported tray menu option: " << id << std::endl;
     }
+    showIconNotify( false );
+}
+
+void SystemTray::onMenuAboutToShow()
+{
+    showIconNotify( false );
 }
 
 void SystemTray::onMessageClicked()
@@ -126,16 +140,16 @@ void SystemTray::setupSystemTray()
 
     bool enableautostart = ( autostart == "yes" );
 
-    _p_systemTray = new QSystemTrayIcon( QIcon( M4E_SYSTRAY_ICON ), this );
+    _p_systemTray = new QSystemTrayIcon( QIcon( M4E_SYSTRAY_ICON_NORMAL ), this );
     _p_systemTray->setToolTip( QApplication::translate( "SystemTray", M4E_APP_NAME ) );
     connect( _p_systemTray, SIGNAL( activated( QSystemTrayIcon::ActivationReason ) ), this, SLOT( onActivated( QSystemTrayIcon::ActivationReason ) ) );
     connect( _p_systemTray, SIGNAL( messageClicked() ), this, SLOT( onMessageClicked() ) );
 
     QMenu* p_menu = new QMenu();
     connect( p_menu, SIGNAL( triggered( QAction* ) ), this, SLOT( onMenuTriggert( QAction* ) ) );
+    connect( p_menu, SIGNAL( aboutToShow() ), this, SLOT( onMenuAboutToShow() ) );
 
     QAction* p_action;
-
     p_action = new QAction();
     p_action->setSeparator( true );
     p_menu->addAction( p_action );
@@ -192,6 +206,17 @@ void SystemTray::showMessage( const QString& title, const QString& message, bool
         return;
 
     _p_systemTray->showMessage( title, message, warning ? QSystemTrayIcon::Warning : QSystemTrayIcon::Information, duration );
+    showIconNotify( true );
+}
+
+void SystemTray::showIconNotify( bool show, const QString& toolTip )
+{
+    // ignore the request if the main window is not minimized
+    if ( !( _p_mainWindow->isMinimized() || _p_mainWindow->isHidden() ) )
+        return;
+
+    _p_systemTray->setIcon( QIcon( show ? M4E_SYSTRAY_ICON_NOTIFY : M4E_SYSTRAY_ICON_NORMAL ) );
+    _p_systemTray->setToolTip( toolTip );
 }
 
 bool SystemTray::isTrayAvailable()
@@ -214,6 +239,7 @@ void SystemTray::onUserSignedIn( bool success, QString /*userId*/ )
         text = QApplication::translate( "SystemTray", "User was successfully signed in." );
     }
     showMessage( title, text, warning );
+    showIconNotify( false );
 }
 
 void SystemTray::onUserSignedOff( bool /*success*/ )
@@ -247,13 +273,14 @@ void SystemTray::onEventMessage( QString senderId, QString /*senderName*/, QStri
     showMessage( title, text, false );
 }
 
-void SystemTray::onResponseCountMails( bool success, int /*countTotal*/, int countUnread )
+void SystemTray::onResponseCountUnreadMails( bool success, int count )
 {
-    if ( success && ( countUnread > 0 ) )
+    if ( success && ( count > 0 ) )
     {
         QString title = QApplication::translate( "SystemTray", "Meet4Eat - New Mails" );
         QString text = QApplication::translate( "SystemTray", "You have received new mails." );
         showMessage( title, text, false );
+        showIconNotify( true, text );
     }
 }
 
@@ -294,6 +321,16 @@ void SystemTray::onLocationVotingEnd( m4e::event::ModelEventPtr event )
     QString title = QApplication::translate( "SystemTray", "Meet4Eat - End of Voting Time" );
     QString text = QApplication::translate( "SystemTray", "Event" ) + " " + event->getName();
     showMessage( title, text, false );
+}
+
+void SystemTray::onReceivedChatMessageUser( chat::ChatMessagePtr /*msg*/ )
+{
+    showIconNotify( true, QApplication::translate( "SystemTray", "New message arrived" ) );
+}
+
+void SystemTray::onReceivedChatMessageEvent( chat::ChatMessagePtr /*msg*/ )
+{
+    showIconNotify( true, QApplication::translate( "SystemTray", "New message arrived" ) );
 }
 
 } // namespace gui

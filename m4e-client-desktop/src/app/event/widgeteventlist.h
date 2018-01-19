@@ -104,6 +104,13 @@ class WidgetEventList : public QListWidget
          */
         void                        onResponseDeleteEvent( bool success, QString eventId );
 
+        /**
+         * @brief This signal is emitted when a list item's geometry was changed.
+         *
+         * @param id    The event ID
+         */
+        void                        onItemGeometryChanged( QString id );
+
     protected:
 
         /**

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    <context-param>
+        <param-name>AppVersion</param-name>
+        <param-value>0.9.2</param-value>
+    </context-param>
+    <context-param>
+        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-value>Production</param-value>
+    </context-param>
+    <context-param>
+        <!-- This config file defines the seetings for javamailer -->
+        <param-name>MailerConfigFile</param-name>
+        <param-value>mailer.cfg</param-value>
+    </context-param>
+    <context-param>
+        <!-- This file defines registration related stuff such as account activation link -->
+        <param-name>AccountRegistrationConfigFile</param-name>
+        <param-value>accountregistration.cfg</param-value>
+    </context-param>
+    <!-- A listener for setting up the application on startup -->
+    <listener>
+        <description>ServletContextListener</description>
+        <listener-class>net.m4e.system.core.ContextListener</listener-class>
+    </listener>
+    <!-- Setup app's auth filter -->
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>net.m4e.app.auth.AuthFilter</filter-class>
+        <init-param>
+            <param-name>basePath</param-name>
+            <param-value>m4e</param-value>
+        </init-param>
+        <init-param>
+            <!-- this is relative to basePath -->
+            <param-name>publicBasePath</param-name>
+            <param-value>public</param-value>
+        </init-param>
+        <init-param>
+            <!-- this is relative to basePath -->
+            <param-name>protectedBasePath</param-name>
+            <param-value>webresources</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <!-- End of app't auth filter -->
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <welcome-file-list>
+        <welcome-file>/index.html</welcome-file>
+    </welcome-file-list>
+</web-app>
