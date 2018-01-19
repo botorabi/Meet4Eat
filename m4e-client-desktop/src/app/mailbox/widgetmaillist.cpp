@@ -89,7 +89,7 @@ void WidgetMailList::setupListView()
     verticalScrollBar()->setSingleStep( 5 );
     setWrapping( false );
     setFlow( TopToBottom );
-    setViewMode( QListView::IconMode );
+    setViewMode( QListView::ListMode );
     setDragEnabled( false );
     QVBoxLayout* p_layout = new QVBoxLayout( this );
     p_layout->setSpacing( 8 );

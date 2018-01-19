@@ -42,6 +42,7 @@
         <file>buzz.wav</file>
         <file>icon.ico</file>
         <file>icon-tray.png</file>
+        <file>icon-tray-notify.png</file>
         <file>logo.png</file>
         <file>LICENSE</file>
     </qresource>

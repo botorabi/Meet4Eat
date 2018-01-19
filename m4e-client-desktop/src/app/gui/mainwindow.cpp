@@ -655,8 +655,6 @@ void MainWindow::onEventLocationVote( QString senderId, QString senderName, QStr
             locationname = location->getName();
     }
     addLogText( QApplication::translate( "MainWindow", "Location vote arrived from '" ) + senderName + "': '" + eventname + "' / '" + locationname + "': " + ( vote ? "vote" : "unvote" ) );
-
-    //! TODO play a sound
 }
 
 void MainWindow::onEventMessage( QString senderId, QString senderName, QString eventId, notify::NotifyEventPtr notify )
