@@ -8,6 +8,9 @@
     First Created:     August 2017
     Author:            Botorabi (botorabi AT gmx DOT net)
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/ec89d87586154de2cbe9/maintainability)](https://codeclimate.com/github/botorabi/Meet4Eat/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/ec89d87586154de2cbe9/test_coverage)](https://codeclimate.com/github/botorabi/Meet4Eat/test_coverage)
+[![Build Status](https://travis-ci.org/botorabi/Meet4Eat.svg?branch=feature%2Fcdi)](https://travis-ci.org/botorabi/Meet4Eat)
 
 # Meet4Eat
 
