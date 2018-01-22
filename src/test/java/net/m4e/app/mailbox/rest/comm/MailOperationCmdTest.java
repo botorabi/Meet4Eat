@@ -24,7 +24,6 @@ import static com.revinate.assertj.json.JsonPathAssert.assertThat;
  */
 class MailOperationCmdTest {
 
-
     @Test
     void deserialize() {
         String json = "{\"operation\":\"trash\"}";
@@ -46,6 +45,4 @@ class MailOperationCmdTest {
         DocumentContext ctx = JsonPath.parse(json);
         assertThat(ctx).jsonPathAsString("$.operation").isEqualTo("trash");
     }
-
-
 }
