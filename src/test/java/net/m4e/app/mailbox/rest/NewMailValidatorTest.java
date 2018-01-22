@@ -143,15 +143,13 @@ class NewMailValidatorTest {
                 .hasMessage(("Failed to send mail, invalid input."));
     }
 
-
-    @Disabled("Not implemented yet, necessary?")
     @Test
-    void invalidSender() throws Exception {
+    void invalidSender() {
         NewMailCmd newMailCmd = new NewMailCmd("Subject", "Content...", 84L);
 
         NewMailValidator newMailValidator = new NewMailValidator(users);
         assertThatThrownBy(() -> newMailValidator.validateNewEntityInput(newMailCmd, null))
                 .isInstanceOf(Exception.class)
-                .hasMessageContaining(("Mail subject must be at least"));
+                .hasMessageContaining(("Failed to send mail, invalid sender."));
     }
 }

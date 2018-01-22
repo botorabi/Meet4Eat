@@ -65,6 +65,9 @@ public class NewMailValidator {
         if (mail == null) {
             throw new Exception("Failed to send mail, invalid input.");
         }
+        if (sender == null) {
+            throw new Exception("Failed to send mail, invalid sender.");
+        }
         if (mail.getReceiverId() == 0L) {
             throw new Exception("Failed to send mail, invalid recipient.");
         }
