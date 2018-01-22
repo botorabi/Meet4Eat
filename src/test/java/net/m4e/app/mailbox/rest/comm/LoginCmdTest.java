@@ -20,7 +20,7 @@ import static com.revinate.assertj.json.JsonPathAssert.assertThat;
 /**
  * @author ybroeker
  */
-class NewMailCmdTest {
+class LoginCmdTest {
 
     @Nested
     class JsonTest {

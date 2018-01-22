@@ -10,7 +10,7 @@ package net.m4e.app.event;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.NotifyUsersEvent;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
 import org.slf4j.Logger;

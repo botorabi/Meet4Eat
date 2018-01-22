@@ -23,7 +23,7 @@ function Meet4EatREST() {
 
 	/* Root path of web service */
 	self._webRoot = "/m4e";
-	
+
 	/* URL for accessing app information */
 	self._urlAppInfo  = self._webRoot + '/webresources/rest/appinfo';
 
@@ -58,7 +58,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Get server information
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
 	self.getServerInfo = function(resultsCallback) {
@@ -67,7 +67,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Get the time of last server access.
-	 * 
+	 *
 	 * @returns {integer}	Last access time in seconds
 	 */
 	self.getLastAccessTime = function() {
@@ -76,7 +76,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Get past time since last server access.
-	 * 
+	 *
 	 * @returns {integer}	Past time since last server access in seconds
 	 */
 	self.getPastAccessTime = function() {
@@ -88,8 +88,8 @@ function Meet4EatREST() {
 
 	/**
 	 * Build a REST api for user authentication.
-	 * 
-	 * @returns {Meet4EatBaseREST}			REST API for user authentication
+	 *
+	 * @returns {Meet4EatAuth}			REST API for user authentication
 	 */
 	self.buildUserAuthREST = function() {
 		var inst = new Meet4EatAuth();
@@ -99,7 +99,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Build a REST api for users operations.
-	 * 
+	 *
 	 * @returns {Meet4EatBaseREST}			REST API for user operations
 	 */
 	self.buildUserREST = function() {
@@ -110,7 +110,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Build a REST api for user registration operations.
-	 * 
+	 *
 	 * @returns {Meet4EatUserRegREST}		REST API for user registration operations
 	 */
 	self.buildUserRegistrationREST = function() {
@@ -121,7 +121,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Build a REST api for event operations.
-	 * 
+	 *
 	 * @returns {Meet4EatBaseREST}			REST API for event operations
 	 */
 	self.buildEventREST = function() {
@@ -135,7 +135,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Build a REST api for image operations.
-	 * 
+	 *
 	 * @returns {Meet4EatBaseREST}			REST API for image operations
 	 */
 	self.buildImageREST = function() {
@@ -146,7 +146,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Build a REST api for maintenance operations.
-	 * 
+	 *
 	 * @returns {Meet4EatMaintenanceREST}    REST API for maintenance operations
 	 */
 	self.buildMaintenanceREST = function() {
@@ -157,7 +157,7 @@ function Meet4EatREST() {
 
 	/**
 	 * Build a REST api for client update check operations.
-	 * 
+	 *
 	 * @returns {Meet4EatUpdateCheckREST}    REST API for update check operations
 	 */
 	self.buildUpdateCheckREST = function() {
@@ -170,64 +170,65 @@ function Meet4EatREST() {
 	};
 
 	/**
-     * Asynchronous request which expects JSON as response.
-     * 
-     * @param requestUrl        Request URL
-     * @param requestData       Request data in javascript object format
-     * @param method            Request method
-     * @param responseCallback  Callback for reponse notification.
-     *                           The response is parsed as JSON and a corresponding
-     *                           javascript object is used for the callback.
+	 * Asynchronous request which expects JSON as response.
+	 *
+	 * @param requestUrl        Request URL
+	 * @param requestData       Request data in javascript object format
+	 * @param method            Request method
+	 * @param responseCallback  Callback for reponse notification.
+	 *                           The response is parsed as JSON and a corresponding
+	 *                           javascript object is used for the callback.
 	 *                          The callback object is expected to be of following structure:
-	 *                          
+	 *
 	 *                           callback {
-	 *                             
+	 *
 	 *                             // object: parsed json response
 	 *                             // response: original response from server
 	 *                             success: function(object, response) {}
-	 *                             
+	 *
 	 *                             // text: error text
 	 *                             // response: original response from server
 	 *                             error: function(text, response) {}
 	 *                           }
-     */
-    self._requestJSON = function(requestUrl, requestData, method, responseCallback) {
+	 */
+	self._requestJSON = function(requestUrl, requestData, method, responseCallback) {
 		var json = requestData ? JSON.stringify(requestData) : null;
-        $.ajax({
-            type: method,
-            url: requestUrl,
-            data: json,
+		$.ajax({
+			type: method,
+			url: requestUrl,
+			data: json,
 			contentType: "application/json; charset=UTF-8",
 			dataType: "text",
 			cache: false,
-            success: function(response) {
+			success: function(response) {
 				self._lastAccessTime = (new Date()).getTime();
-                if (responseCallback !== null) {
-                    var results = null;
-                    try {
-                        results = $.parseJSON(response);
-						// the data is also expected to be in JSON format
-						if (results.data) {
+				if (responseCallback !== null) {
+					var results = null;
+					try {
+						results = $.parseJSON(response);
+						/** TODO once the application REST api is completely cleaned up, remove the following 3 lines
+						         as the response data won't be an extra string field anymore. */
+						if (results.data && (typeof results.data === "string")) {
 							results.data = $.parseJSON(results.data);
 						}
-                    }
-                    catch(e) {
+					}
+					catch(e) {
 						if (responseCallback.error) {
 							responseCallback.error("Exception occurred while parsing JSON response, reason: " + e, response);
 						}
-                    }
+					}
 					if (responseCallback.success) {
 						responseCallback.success(results, response);
 					}
-                }
-            },
+				}
+			},
 			error: function(jqXHR, errorString, errorThrown ) {
-                if (responseCallback && responseCallback.error) {
+				if (responseCallback && responseCallback.error) {
 					responseCallback.error("Problem while contacting '" + requestUrl + "' | Error string: " + errorString + " | Error thrown: " + errorThrown, jqXHR);
 				}
 			}
-        });
-    };
+		});
+	};
 }
 
 /**
@@ -249,7 +250,7 @@ function Meet4EatBaseREST() {
 
 	/**
 	 * Initialize the instance.
-	 * 
+	 *
 	 * @param {string} rootPath			Root URL
 	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
@@ -260,7 +261,7 @@ function Meet4EatBaseREST() {
 
 	/**
 	 * Request for getting the total entity count.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
 	self.getCount = function(resultsCallback) {
@@ -269,7 +270,7 @@ function Meet4EatBaseREST() {
 
 	/**
 	 * Request for getting all entities.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
 	self.getAll = function(resultsCallback) {
@@ -278,7 +279,7 @@ function Meet4EatBaseREST() {
 
 	/**
 	 * Request for getting an entity with given ID.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {integer}  id               Entity ID
 	 */
@@ -288,19 +289,19 @@ function Meet4EatBaseREST() {
 
 	/**
 	 * Search for a keyword in all entities and return a limited count of hits.
-	 * 
+	 *
 	 * NOTE: Some entity types may not support the search service interface!
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {string} keyword	The keyword to search for
 	 */
 	self.search = function(resultsCallback, keyword) {
-		self._fcnRequestJson(self._rootPath + "/search/" + keyword, null, 'GET', resultsCallback);		
+		self._fcnRequestJson(self._rootPath + "/search/" + keyword, null, 'GET', resultsCallback);
 	};
 
 	/**
 	 * Create a new entity or update an existing entity.
-	 * 
+	 *
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {string}   id                Pass an empty string or null to create a new entity.
 	 * @param {array}    fields            Entity fields
@@ -316,7 +317,7 @@ function Meet4EatBaseREST() {
 
 	/**
 	 * Delete the entity with given ID.
-	 * 
+	 *
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {integer}  id                Entity ID
 	 */
@@ -348,7 +349,7 @@ function Meet4EatEventREST(baseModule) {
 
 	/**
 	 * Request for adding a member to an event.
-	 * 
+	 *
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {integer}  eventId           Event ID
 	 * @param {integer}  memberId          Member ID
@@ -359,7 +360,7 @@ function Meet4EatEventREST(baseModule) {
 
 	/**
 	 * Request for removing a member from an event.
-	 * 
+	 *
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {integer}  eventId           Event ID
 	 * @param {integer}  memberId          Member ID
@@ -370,7 +371,7 @@ function Meet4EatEventREST(baseModule) {
 
 	/**
 	 * Request for getting a location from an event.
-	 * 
+	 *
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {integer}  eventId           Event ID
 	 * @param {integer}  locationId        Location ID
@@ -383,7 +384,7 @@ function Meet4EatEventREST(baseModule) {
 	 * Add a new location or update an exiting one for given event.
 	 * If the location contains an 'id' field then an update attempt is perfomed, otherwise
 	 * a new location is created and added to the event.
-	 * 
+	 *
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {integer}  eventId           Event ID
 	 * @param {array}    fields            Location fields
@@ -394,7 +395,7 @@ function Meet4EatEventREST(baseModule) {
 
 	/**
 	 * Request for removing a location from an event.
-	 * 
+	 *
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {integer}  eventId           Event ID
 	 * @param {integer}  locationId        Location ID
@@ -422,7 +423,7 @@ function Meet4EatImageREST() {
 
 	/**
 	 * Initialize the instance.
-	 * 
+	 *
 	 * @param {string} rootPath			Root URL
 	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
@@ -433,7 +434,7 @@ function Meet4EatImageREST() {
 
 	/**
 	 * Get an image given its ID.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {integer}  imageId          Image ID
 	 */
@@ -461,7 +462,7 @@ function Meet4EatMaintenanceREST() {
 
 	/**
 	 * Initialize the instance.
-	 * 
+	 *
 	 * @param {string} rootPath			Root URL
 	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
@@ -472,7 +473,7 @@ function Meet4EatMaintenanceREST() {
 
 	/**
 	 * Get maintenance stats
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
 	self.getMaintenanceStats = function(resultsCallback) {
@@ -481,7 +482,7 @@ function Meet4EatMaintenanceREST() {
 
 	/**
 	 * Purge all resources which are no longer needed.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
 	self.maintenancePurge = function(resultsCallback) {
@@ -512,7 +513,7 @@ function Meet4EatUpdateCheckREST(baseModule) {
 
 	/**
 	 * Perform a check by simulating a client update check request.
-	 * 
+	 *
 	 * @param {function} resultsCallback   Callback which is used when the results arrive.
 	 * @param {array}    fields            An array containing the request fields:
 	 *                                       name              Client name
@@ -544,7 +545,7 @@ function Meet4EatUserRegREST() {
 
 	/**
 	 * Initialize the instance.
-	 * 
+	 *
 	 * @param {string} rootPath			Root URL
 	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
@@ -555,7 +556,7 @@ function Meet4EatUserRegREST() {
 
 	/**
 	 * Request for registering a new user.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {array}    fields           User account data
 	 */
@@ -565,7 +566,7 @@ function Meet4EatUserRegREST() {
 
 	/**
 	 * Request for activating an user account.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {integer}  token            Activation token
 	 */
@@ -575,7 +576,7 @@ function Meet4EatUserRegREST() {
 
 	/**
 	 * Request for resetting a password.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {array}    fields           User email
 	 */
@@ -583,9 +584,9 @@ function Meet4EatUserRegREST() {
 		self._fcnRequestJson(self._rootPath + '/requestpasswordreset', fields, 'POST', resultsCallback);
 	};
 
-    /**
+	/**
 	 * Request for performing the password reset.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 * @param {integer}  token            Activation token
 	 * @param {array}    fields           User's new pasword
@@ -603,7 +604,7 @@ function Meet4EatAuth() {
 	/* self ref */
 	var self = this;
 
-	self._version = "1.0.0";
+	self._version = "1.1.0";
 
 	/* Root URL for REST requests */
 	self._rootPath = "";
@@ -611,12 +612,12 @@ function Meet4EatAuth() {
 	/* Function for contacting the server via JSON */
 	self._fcnRequestJson = null;
 
-	/* Number of iterarions for creating a hash. */
+	/* Number of iterations for creating a hash. */
 	self._numHashIteration = 10;
 
 	/**
 	 * Initialize the instance.
-	 * 
+	 *
 	 * @param {string} rootPath			Root URL
 	 * @param {string} fcnRequestJson	Function for contacting the server via JSON
 	 */
@@ -627,9 +628,9 @@ function Meet4EatAuth() {
 
 	/**
 	 * Get authentication state.
-	 * 
+	 *
 	 * Format: { auth: yes/no, sid : session id }
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
 	self.getAuthState = function(resultsCallback) {
@@ -638,7 +639,7 @@ function Meet4EatAuth() {
 
 	/**
 	 * Try to login the user.
-	 * 
+	 *
 	 * @param {string} userName           User name
 	 * @param {string} userPassword       Plain user password, it will be hashed before transmission.
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
@@ -649,7 +650,7 @@ function Meet4EatAuth() {
 				var sid = "";
 				// already authenticated?
 				try {
-					if (results.data.auth === "yes") {
+					if (results.data.auth) {
 						if (resultsCallback){
 							resultsCallback.success(results, response);
 							return;
@@ -677,7 +678,7 @@ function Meet4EatAuth() {
 
 	/**
 	 * Logout the user.
-	 * 
+	 *
 	 * @param {function} resultsCallback  Callback which is used when the results arrive.
 	 */
 	self.logout = function(resultsCallback) {
@@ -687,7 +688,7 @@ function Meet4EatAuth() {
 	/**
 	 * Create a hash representing a given string. Use this function for hashing
 	 * a user password.
-	 * 
+	 *
 	 *  @param {string} str   String which will be used for creating hash
 	 *  @return {string}      SHA512 hash of given string
 	 */
@@ -706,10 +707,10 @@ function Meet4EatAuth() {
 	/*
 	*  Secure Hash Algorithm (SHA512)
 	*  http://www.happycode.info/
-	*  
+	*
 	*  NOTE (boto): Big thanks go to http://coursesweb.net/javascript/sha512-encrypt-hash_cs
 	*               No Copyright notice was found.
-	*  
+	*
 	*  @param {string} str   String which will be used for creating a SHA512 hash
 	*  @return {string}      SHA512 hash of given string
 	*/

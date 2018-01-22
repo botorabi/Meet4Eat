@@ -7,6 +7,8 @@
  */
 package net.m4e.common;
 
+import net.m4e.app.user.rest.comm.LoggedIn;
+
 /**
  * @author ybroeker
  */
@@ -102,33 +104,46 @@ public class GenericResponseResult<T> {
     }
 
     /**
-     * 401
-     */
-    public static <T> GenericResponseResult<T> unauthorized(final String desc) {
-        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_UNAUTHORIZED, null);
-    }
-
-    /**
      * 400.
      */
     public static <T> GenericResponseResult<T> badRequest(final String desc) {
-        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_BAD_REQUEST, null);
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_BAD_REQUEST, null);
     }
 
     /**
      * 400.
      */
     public static <T> GenericResponseResult<T> badRequest(final String desc, final T data) {
-        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_BAD_REQUEST, data);
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_BAD_REQUEST, data);
+    }
+
+    /**
+     * 401
+     */
+    public static <T> GenericResponseResult<T> unauthorized(final String desc) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_UNAUTHORIZED, null);
+    }
+
+    /**
+     * 404
+     */
+    public static <T> GenericResponseResult<T> notFound(final String desc, final T data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_FOUND, data);
+    }
+
+    /**
+     * 406
+     */
+    public static <T> GenericResponseResult<T> notAcceptable(final String desc, final T data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_ACCEPTABLE, data);
     }
 
     /**
      * 500.
      */
     public static <T> GenericResponseResult<T> internalError(final String desc) {
-        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_INTERNAL_SRV_ERROR, null);
     }
-
 
 
     public String getStatus() {
@@ -162,5 +177,4 @@ public class GenericResponseResult<T> {
     public void setData(final T data) {
         this.data = data;
     }
-
 }

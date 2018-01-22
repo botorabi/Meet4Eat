@@ -16,7 +16,7 @@ import javax.servlet.http.HttpSession;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.mailbox.business.*;
 import net.m4e.app.mailbox.rest.comm.*;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.GenericResponseResult;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

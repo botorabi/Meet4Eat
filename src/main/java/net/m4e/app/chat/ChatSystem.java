@@ -19,7 +19,7 @@ import javax.inject.Inject;
 import net.m4e.app.communication.*;
 import net.m4e.app.event.EventEntity;
 import net.m4e.app.event.Events;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

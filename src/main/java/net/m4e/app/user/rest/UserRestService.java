@@ -5,12 +5,15 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.user;
+package net.m4e.app.user.rest;
 
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.notification.SendEmailEvent;
+import net.m4e.app.user.business.UserEntity;
+import net.m4e.app.user.business.UserRegistrations;
+import net.m4e.app.user.business.Users;
 import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppConfiguration;
@@ -42,7 +45,7 @@ import java.util.Properties;
  */
 @Stateless
 @Path("/rest/users")
-public class UserEntityFacadeREST {
+public class UserRestService {
 
     /**
      * Logger.
@@ -62,7 +65,7 @@ public class UserEntityFacadeREST {
     /**
      * User input validator
      */
-    private final UserEntityInputValidator validator;
+    private final UserValidator validator;
 
     /**
      * User registration are handled by this instance.
@@ -91,7 +94,7 @@ public class UserEntityFacadeREST {
     /**
      * EJB's default constructor.
      */
-    protected UserEntityFacadeREST() {
+    protected UserRestService() {
         users = null;
         entities = null;
         validator = null;
@@ -109,11 +112,11 @@ public class UserEntityFacadeREST {
      * @param appInfos      Application information
      */
     @Inject
-    public UserEntityFacadeREST(Users users,
-                                Entities entities,
-                                UserEntityInputValidator validator,
-                                UserRegistrations registration,
-                                AppInfos appInfos) {
+    public UserRestService(Users users,
+                           Entities entities,
+                           UserValidator validator,
+                           UserRegistrations registration,
+                           AppInfos appInfos) {
 
         this.users = users;
         this.entities = entities;

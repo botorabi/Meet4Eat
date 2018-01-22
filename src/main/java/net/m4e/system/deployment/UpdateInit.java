@@ -13,7 +13,7 @@ import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.auth.PermissionEntity;
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.Entities;
 import net.m4e.system.core.AppUdateBaseHandler;
 import org.slf4j.Logger;

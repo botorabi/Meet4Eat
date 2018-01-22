@@ -13,7 +13,7 @@ import java.util.*;
 import javax.enterprise.event.Event;
 
 import net.m4e.app.notification.*;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 
 
 /**

@@ -12,7 +12,8 @@ import java.util.Date;
 /**
  * This class is used for WebSocket communication.
  *
- * @author boto Date of creation Oct 4, 2017
+ * @author boto
+ * Date of creation Oct 4, 2017
  */
 public class Packet<T> {
 

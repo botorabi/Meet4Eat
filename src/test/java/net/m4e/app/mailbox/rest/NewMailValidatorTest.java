@@ -10,8 +10,8 @@ package net.m4e.app.mailbox.rest;
 import net.m4e.app.mailbox.business.MailEntity;
 import net.m4e.app.mailbox.rest.comm.NewMailCmd;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.Users;
+import net.m4e.app.user.business.UserEntity;
+import net.m4e.app.user.business.Users;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 

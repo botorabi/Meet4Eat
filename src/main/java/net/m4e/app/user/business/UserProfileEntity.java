@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.user;
+package net.m4e.app.user.business;
 
 import net.m4e.app.resources.DocumentEntity;
 

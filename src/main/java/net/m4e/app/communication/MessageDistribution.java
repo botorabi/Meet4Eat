@@ -16,7 +16,7 @@ import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.websocket.Session;
 
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

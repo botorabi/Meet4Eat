@@ -23,7 +23,7 @@ import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.mailbox.business.*;
 import net.m4e.app.mailbox.rest.comm.*;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.GenericResponseResult;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

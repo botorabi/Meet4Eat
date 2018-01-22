@@ -8,7 +8,7 @@
 
 package net.m4e.app.mailbox.business;
 
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

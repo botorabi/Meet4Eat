@@ -70,10 +70,10 @@ public class EntitiesIT {
                 .addClass(net.m4e.app.mailbox.business.MailUserEntity.class)
                 .addClass(net.m4e.app.resources.DocumentEntity.class)
                 .addClass(net.m4e.app.resources.StatusEntity.class)
-                .addClass(net.m4e.app.user.UserEntity.class)
-                .addClass(net.m4e.app.user.UserPasswordResetEntity.class)
-                .addClass(net.m4e.app.user.UserProfileEntity.class)
-                .addClass(net.m4e.app.user.UserRegistrationEntity.class)
+                .addClass(net.m4e.app.user.business.UserEntity.class)
+                .addClass(net.m4e.app.user.business.UserPasswordResetEntity.class)
+                .addClass(net.m4e.app.user.business.UserProfileEntity.class)
+                .addClass(net.m4e.app.user.business.UserRegistrationEntity.class)
                 .addClass(net.m4e.update.UpdateCheckEntity.class)
                 .addClass(net.m4e.common.EntityWithPhoto.class); // this is needed by some entities
                 */

@@ -7,7 +7,7 @@
  */
 package net.m4e.app.auth;
 
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppConfiguration;
 import org.slf4j.Logger;

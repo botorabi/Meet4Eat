@@ -17,7 +17,7 @@ import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 
 import net.m4e.app.communication.*;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

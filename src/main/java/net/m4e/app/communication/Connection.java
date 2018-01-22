@@ -19,7 +19,7 @@ import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 
 import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.system.core.AppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +86,7 @@ public class Connection {
             LOGGER.warn("could not store user's connection");
         }
 
-        Packet<WebSocketStatus> response = createResponse("ok", "User " + user.getName() + " established a connection");
+        Packet<WSConnectionStatus> response = createResponse("ok", "User " + user.getName() + " established a connection");
         session.getBasicRemote().sendObject(response);
     }
 
@@ -97,10 +97,10 @@ public class Connection {
      * @param description Response description
      * @return String in JSON format ready to send.
      */
-    private Packet<WebSocketStatus> createResponse(String status, String description) {
-        Packet<WebSocketStatus> packet = new Packet<>();
+    private Packet<WSConnectionStatus> createResponse(String status, String description) {
+        Packet<WSConnectionStatus> packet = new Packet<>();
         packet.setChannel(Packet.CHANNEL_SYSTEM);
-        packet.setData(new WebSocketStatus(PROTOCOL_VERSION, status, description));
+        packet.setData(new WSConnectionStatus(PROTOCOL_VERSION, status, description));
         return packet;
 
     }
@@ -127,15 +127,17 @@ public class Connection {
         msgHandler.dispatchMessage(packet, session);
     }
 
-    //TODO: Naming
-    static class WebSocketStatus {
+    /**
+     * Used for transferring the web socket connection status to client.
+     */
+    static class WSConnectionStatus {
         private final String protocolVersion;
 
         private final String status;
 
         private final String description;
 
-        WebSocketStatus(final String protocolVersion, final String status, final String description) {
+        WSConnectionStatus(final String protocolVersion, final String status, final String description) {
             this.protocolVersion = protocolVersion;
             this.status = status;
             this.description = description;

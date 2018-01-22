@@ -20,7 +20,7 @@ import javax.websocket.Session;
 
 import net.m4e.app.event.EventNotifications;
 import net.m4e.app.notification.NotifyUserRelativesEvent;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

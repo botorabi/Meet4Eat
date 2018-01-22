@@ -17,8 +17,8 @@ import javax.inject.Inject;
 
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.communication.Packet;
-import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.Users;
+import net.m4e.app.user.business.UserEntity;
+import net.m4e.app.user.business.Users;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

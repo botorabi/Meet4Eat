@@ -16,7 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import net.m4e.app.mailbox.rest.MailRestService;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
+import net.m4e.app.user.rest.UserAuthenticationRestService;
+import net.m4e.app.user.rest.UserRestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +50,8 @@ public class AuthorityConfig {
         net.m4e.update.UpdateCheckEntityFacadeREST.class,
         net.m4e.system.core.AppInfoEntityFacadeREST.class,
         net.m4e.system.maintenance.MaintenanceFacadeREST.class,
-        net.m4e.app.user.UserEntityFacadeREST.class,
-        net.m4e.app.user.UserAuthenticationFacadeREST.class,
+        UserRestService.class,
+        UserAuthenticationRestService.class,
         net.m4e.app.event.EventEntityFacadeREST.class,
         net.m4e.app.event.EventLocationVoteEntityFacadeREST.class,
         net.m4e.app.resources.DocumentEntityFacadeREST.class,

@@ -9,7 +9,7 @@ package net.m4e.app.event;
 
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.EntityWithPhoto;
 
 import javax.persistence.*;

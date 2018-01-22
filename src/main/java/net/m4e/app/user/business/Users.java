@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.user;
+package net.m4e.app.user.business;
 
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.RoleEntity;
@@ -225,7 +225,7 @@ public class Users {
      * @param image         Image to set to given event
      * @throws Exception    Throws exception if any problem occurred.
      */
-    void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
+    public void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
         // make sure that the resource URL is set
         image.setResourceURL("/User/Image");
         docPool.updatePhoto(user, image);

@@ -6,9 +6,11 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.user;
+package net.m4e.app.user.rest;
 
 import net.m4e.app.auth.AuthorityConfig;
+import net.m4e.app.user.business.UserEntity;
+import net.m4e.app.user.business.Users;
 import net.m4e.common.Strings;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -23,17 +25,17 @@ import java.util.List;
  * Date of creation Sep 8, 2017
  */
 @ApplicationScoped
-public class UserEntityInputValidator {
+public class UserValidator {
 
     /* Min/max string length for user input fields */
-    private final int USER_INPUT_MIN_LEN_LOGIN  = 6;
-    private final int USER_INPUT_MAX_LEN_LOGIN  = 32;
-    private final int USER_INPUT_MIN_LEN_NAME   = 6;
-    private final int USER_INPUT_MAX_LEN_NAME   = 32;
-    private final int USER_INPUT_MIN_LEN_PASSWD = 8;
-    private final int USER_INPUT_MAX_LEN_PASSWD = 255; // NOTE: This is the length of pw hash.
-    private final int USER_INPUT_MIN_LEN_EMAIL  = 3;
-    private final int USER_INPUT_MAX_LEN_EMAIL  = 128;
+    public static final int USER_INPUT_MIN_LEN_LOGIN  = 6;
+    public static final int USER_INPUT_MAX_LEN_LOGIN  = 32;
+    public static final int USER_INPUT_MIN_LEN_NAME   = 6;
+    public static final int USER_INPUT_MAX_LEN_NAME   = 32;
+    public static final int USER_INPUT_MIN_LEN_PASSWD = 8;
+    public static final int USER_INPUT_MAX_LEN_PASSWD = 255; // NOTE: This is the length of pw hash.
+    public static final int USER_INPUT_MIN_LEN_EMAIL  = 3;
+    public static final int USER_INPUT_MAX_LEN_EMAIL  = 128;
 
     private final Users users;
 
@@ -41,7 +43,7 @@ public class UserEntityInputValidator {
     /**
      * Default constructor needed by the container.
      */
-    protected UserEntityInputValidator() {
+    protected UserValidator() {
         users = null;
     }
 
@@ -51,7 +53,7 @@ public class UserEntityInputValidator {
      * @param users The users instance
      */
     @Inject
-    public UserEntityInputValidator(Users users) {
+    public UserValidator(Users users) {
         this.users = users;
     }
 

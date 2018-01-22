@@ -5,7 +5,7 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.user;
+package net.m4e.app.user.business;
 
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.DocumentEntity;
@@ -308,6 +308,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     @Override
     public String toString() {
-        return "net.m4e.app.user.UserEntity[ id=" + id + " ]";
+        return "net.m4e.app.user.business.UserEntity[ id=" + id + " ]";
     }
 }

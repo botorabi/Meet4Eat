@@ -6,7 +6,7 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.user;
+package net.m4e.app.user.business;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -149,6 +149,6 @@ public class UserPasswordResetEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "net.m4e.app.user.UserPasswordResetEntity[ id=" + id + " ]";
+        return "net.m4e.app.user.business.UserPasswordResetEntity[ id=" + id + " ]";
     }
 }

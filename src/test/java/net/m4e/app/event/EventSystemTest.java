@@ -10,7 +10,7 @@ package net.m4e.app.event;
 import java.util.*;
 
 import net.m4e.app.communication.*;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

@@ -48,8 +48,8 @@ public class AppStart extends Application {
         resources.add(net.m4e.app.event.EventLocationVoteEntityFacadeREST.class);
         resources.add(net.m4e.app.mailbox.rest.MailRestService.class);
         resources.add(net.m4e.app.resources.DocumentEntityFacadeREST.class);
-        resources.add(net.m4e.app.user.UserAuthenticationFacadeREST.class);
-        resources.add(net.m4e.app.user.UserEntityFacadeREST.class);
+        resources.add(net.m4e.app.user.rest.UserAuthenticationRestService.class);
+        resources.add(net.m4e.app.user.rest.UserRestService.class);
         resources.add(net.m4e.system.core.AppInfoEntityFacadeREST.class);
         resources.add(net.m4e.system.maintenance.MaintenanceFacadeREST.class);
         resources.add(net.m4e.update.UpdateCheckEntityFacadeREST.class);
