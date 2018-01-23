@@ -317,13 +317,13 @@ public class UserRegistrations {
     /**
      * Try to reset a user password. Check if the reset token was expired.
      * 
-     * @param resetRoken    Password reset token
+     * @param resetToken    Password reset token
      * @param newPassword   The new password for the user
      * @return              Return the user whos password was reset.
      * @throws Exception    Throws an exception if the password reset was not successful.
      */
-    public UserEntity processPasswordReset(String resetRoken, String newPassword) throws Exception {
-        List<UserPasswordResetEntity> resets = entities.findByField(UserPasswordResetEntity.class, "resetToken", resetRoken);
+    public UserEntity processPasswordReset(String resetToken, String newPassword) throws Exception {
+        List<UserPasswordResetEntity> resets = entities.findByField(UserPasswordResetEntity.class, "resetToken", resetToken);
         if (resets.size() > 1) {
             LOGGER.error("there are more than one password reset entry with same token, count: " + resets.size());
             throw new Exception("Internal Password Reset Failure!");
@@ -333,7 +333,7 @@ public class UserRegistrations {
         }
         UserPasswordResetEntity reset = resets.get(0);
         UserEntity user = reset.getUser();
-        // delete the registration entry
+        // delete the reset entry
         entities.delete(reset);
         if ((user == null) || (user.getStatus().getIsDeleted())) {
             throw new Exception("Internal error, user no longer exists.");            

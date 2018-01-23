@@ -22,7 +22,7 @@ public class LoginCmd {
     @Size(min = UserValidator.USER_INPUT_MIN_LEN_LOGIN, max = UserValidator.USER_INPUT_MAX_LEN_LOGIN)
     private String login;
 
-    @Size(min = UserValidator.USER_INPUT_MIN_LEN_NAME, max = UserValidator.USER_INPUT_MAX_LEN_NAME)
+    @Size(min = UserValidator.USER_INPUT_MIN_LEN_PASSWD, max = UserValidator.USER_INPUT_MAX_LEN_PASSWD)
     private String password;
 
     @JsonbCreator

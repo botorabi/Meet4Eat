@@ -7,6 +7,7 @@
  */
 package net.m4e.app.user.rest;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
@@ -42,6 +43,7 @@ import java.lang.invoke.MethodHandles;
  */
 @Stateless
 @Path("/rest/authentication")
+@Api(value = "User authentication service")
 public class UserAuthenticationRestService {
 
     /**
@@ -104,14 +106,14 @@ public class UserAuthenticationRestService {
         Object      user    = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (user != null) {
             LOGGER.debug("  User login attempt failed, user is already logged in, user ({})", loginCmd.getLogin());
-            return GenericResponseResult.notAcceptable("Failed to login user. A user is already logged in.", null);
+            return GenericResponseResult.notAcceptable("Failed to login user. A user is already logged in.");
         }
 
         // try to find the user in database
         UserEntity existinguser = users.findUser(loginCmd.getLogin());
         if ((existinguser == null) || !existinguser.getStatus().getIsActive()) {
             LOGGER.debug("  User login attempt failed, no user with this login found, user ({})", loginCmd.getLogin());
-            return GenericResponseResult.notFound("Failed to login user.", null);
+            return GenericResponseResult.notFound("Failed to login user.");
         }
         // check user password
         String saltedpasswd = AuthorityConfig.getInstance().createPassword(existinguser.getPassword() + session.getId());
@@ -140,9 +142,9 @@ public class UserAuthenticationRestService {
         Object user = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         if (user == null) {
             LOGGER.debug("*** Invalid logout attempt");
-            return GenericResponseResult.notAcceptable("Failed to logout user. User was not logged in before.", null);
+            return GenericResponseResult.notAcceptable("Failed to logout user. User was not logged in before.");
         }
         session.invalidate();
-        return GenericResponseResult.ok("User was successfully logged out.", null);
+        return GenericResponseResult.ok("User was successfully logged out.");
     }
 }

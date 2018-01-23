@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 @Stateless
 @Path("/rest/mails")
-@Api(value = "Mails services")
+@Api(value = "Mails service")
 public class MailRestService {
 
     /**

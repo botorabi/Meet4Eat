@@ -15,16 +15,17 @@ import net.m4e.app.event.EventEntity;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.resources.StatusEntity;
+import net.m4e.app.user.rest.comm.UserCmd;
 import net.m4e.common.Entities;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.*;
-import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 
@@ -405,28 +406,29 @@ public class Users {
     }
 
     /**
-     * Give a user entity export the necessary fields into a JSON object.
-     * 
+     * Give a user entity export the necessary fields.
+     *
      * @param entity        User entity to export
      * @param connections   Real-time user connections
-     * @return              A JSON object containing builder with the proper entity fields
+     * @return              Found user
      */
-    public JsonObjectBuilder exportUserJSON(UserEntity entity, ConnectedClients connections) {
+    @Deprecated
+    public JsonObjectBuilder exportUserJSON(@NotNull UserEntity entity, ConnectedClients connections) {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
-            .add("name", (entity.getName() != null) ? entity.getName() : "")
-            .add("login", (entity.getLogin() != null) ? entity.getLogin() : "")
-            .add("email", (entity.getEmail() != null) ? entity.getEmail() : "")
-            .add("dateLastLogin", "" + ((entity.getDateLastLogin() != null) ? entity.getDateLastLogin() : 0))
-            .add("dateCreation", "" + ((entity.getStatus() != null) ? entity.getStatus().getDateCreation() : 0));
+                .add("name", (entity.getName() != null) ? entity.getName() : "")
+                .add("login", (entity.getLogin() != null) ? entity.getLogin() : "")
+                .add("email", (entity.getEmail() != null) ? entity.getEmail() : "")
+                .add("dateLastLogin", "" + ((entity.getDateLastLogin() != null) ? entity.getDateLastLogin() : 0))
+                .add("dateCreation", "" + ((entity.getStatus() != null) ? entity.getStatus().getDateCreation() : 0));
         JsonArrayBuilder roles = Json.createArrayBuilder();
         entity.getRoles().forEach((r) -> {
             roles.add(r.getName());
         });
         json.add("roles", roles)
-            .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
-            // the ETag can be used on a client for caching purpose
-            .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
+                .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
+                // the ETag can be used on a client for caching purpose
+                .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
         // set the online status
         boolean online = (connections.getConnectedUser(entity.getId()) != null);
         json.add("status", online ? "online" : "offline");
@@ -434,58 +436,49 @@ public class Users {
     }
 
     /**
-     * Give a JSON string import the necessary fields and create a user entity.
-     * 
-     * @param jsonString JSON string representing an user entity
-     * @return           User entity or null if the JSON string was not appropriate
+     * Give a user entity export the necessary fields.
+     *
+     * @param entity        User entity to export
+     * @param connections   Real-time user connections
+     * @return              User info
      */
-    public UserEntity importUserJSON(String jsonString) {
-        if (jsonString == null) {
+    public UserInfo exportUser(@NotNull UserEntity entity, ConnectedClients connections) {
+        boolean online = (connections.getConnectedUser(entity.getId()) != null);
+        return UserInfo.fromUserEntity(entity, online ? UserInfo.OnlineStatus.ONLINE : UserInfo.OnlineStatus.OFFLINE);
+    }
+
+    /**
+     * Give an user input data import the necessary fields and create a user entity.
+     * 
+     * @param userCmd Data representing an user entity
+     * @return           User entity or null if the data was not appropriate
+     */
+    public UserEntity importUser(UserCmd userCmd) {
+        if (userCmd == null) {
             return null;
         }
 
-        // try to get login and password
-        String login, passwd, email, name, photo;
-        List<String> userroles = new ArrayList<>();
-        try {
-            JsonReader jreader = Json.createReader(new StringReader(jsonString));
-            JsonObject jobject = jreader.readObject();
-            login  = jobject.getString("login", null);
-            passwd = jobject.getString("password", null);
-            name   = jobject.getString("name", null);
-            email  = jobject.getString("email", null);
-            photo  = jobject.getString("photo", null);
-            
-            JsonArray r = jobject.getJsonArray("roles");
-            if (r != null) {
-                List<JsonString> roles = r.getValuesAs(JsonString.class);
-                for (int i = 0; i < roles.size(); i++) {
-                    userroles.add(roles.get(i).getString());
-                }
-            }
-        }
-        catch(Exception ex) {
-            LOGGER.warn("Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
-            return null;
+        UserEntity userEntity = new UserEntity();
+        userEntity.setLogin(userCmd.getLogin());
+        userEntity.setName(userCmd.getName());
+        userEntity.setPassword(userCmd.getPassword());
+        userEntity.setEmail(userCmd.getEmail());
+
+        List<String> userRoles = new ArrayList<>();
+        for (int i = 0; i < userCmd.getRoles().size(); i++) {
+            userRoles.add(userCmd.getRoles().get(i));
         }
 
-        UserEntity entity = new UserEntity();
-        addUserRoles(entity, userroles);
-        entity.setLogin(login);
-        entity.setName(name);
-        entity.setPassword(passwd);
-        entity.setEmail(email);
-
-        if (photo != null) {
+        if (userCmd.getPhoto() != null) {
             DocumentEntity image = new DocumentEntity();
             // currently we expect only base64 encoded images here
             image.setEncoding(DocumentEntity.ENCODING_BASE64);
-            image.updateContent(photo.getBytes());
+            image.updateContent(userCmd.getPhoto().getBytes());
             image.setType(DocumentEntity.TYPE_IMAGE);
-            entity.setPhoto(image);
+            userEntity.setPhoto(image);
         }
 
-        return entity;
+        return userEntity;
     }
 
     /**

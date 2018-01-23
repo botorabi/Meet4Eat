@@ -7,8 +7,6 @@
  */
 package net.m4e.common;
 
-import net.m4e.app.user.rest.comm.LoggedIn;
-
 /**
  * @author ybroeker
  */
@@ -95,54 +93,60 @@ public class GenericResponseResult<T> {
     public GenericResponseResult() {
     }
 
+    /**
+     * This method is used for allowing the call of result methods with or without a 'data' as second parameter.
+     */
+    private static final <T> T getResponseData(final T... data) {
+        return data == null ? null : (data.length > 0 ? data[0] : null);
+    }
 
     /**
      * 200.
      */
-    public static <T> GenericResponseResult<T> ok(final String description, final T data) {
-        return new GenericResponseResult<>(STATUS_OK, description, CODE_OK, data);
+    public static <T> GenericResponseResult<T> ok(final String description, final T... data) {
+        return new GenericResponseResult<>(STATUS_OK, description, CODE_OK, getResponseData(data));
     }
 
     /**
      * 400.
      */
-    public static <T> GenericResponseResult<T> badRequest(final String desc) {
-        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_BAD_REQUEST, null);
-    }
-
-    /**
-     * 400.
-     */
-    public static <T> GenericResponseResult<T> badRequest(final String desc, final T data) {
-        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_BAD_REQUEST, data);
+    public static <T> GenericResponseResult<T> badRequest(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_BAD_REQUEST, getResponseData(data));
     }
 
     /**
      * 401
      */
-    public static <T> GenericResponseResult<T> unauthorized(final String desc) {
-        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_UNAUTHORIZED, null);
+    public static <T> GenericResponseResult<T> unauthorized(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_UNAUTHORIZED, getResponseData(data));
+    }
+
+    /**
+     * 403
+     */
+    public static <T> GenericResponseResult<T> forbidden(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_FORBIDDEN, getResponseData(data));
     }
 
     /**
      * 404
      */
-    public static <T> GenericResponseResult<T> notFound(final String desc, final T data) {
-        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_FOUND, data);
+    public static <T> GenericResponseResult<T> notFound(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_FOUND, getResponseData(data));
     }
 
     /**
      * 406
      */
-    public static <T> GenericResponseResult<T> notAcceptable(final String desc, final T data) {
-        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_ACCEPTABLE, data);
+    public static <T> GenericResponseResult<T> notAcceptable(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_ACCEPTABLE, getResponseData(data));
     }
 
     /**
      * 500.
      */
-    public static <T> GenericResponseResult<T> internalError(final String desc) {
-        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_INTERNAL_SRV_ERROR, null);
+    public static <T> GenericResponseResult<T> internalError(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_INTERNAL_SRV_ERROR, getResponseData(data));
     }
 
 
