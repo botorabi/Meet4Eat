@@ -7,12 +7,16 @@
  */
 package net.m4e.app.user.rest.comm;
 
+import javax.json.bind.annotation.JsonbProperty;
+
 /**
  * @author boto
  * Date of creation January 23, 2018
  */
 public class PerformPasswordResetCmd {
-    private final String password;
+    private String password;
+
+    public PerformPasswordResetCmd() {}
 
     public PerformPasswordResetCmd(final String password) {
         this.password = password;
@@ -20,5 +24,10 @@ public class PerformPasswordResetCmd {
 
     public String getPassword() {
         return password;
+    }
+
+    @JsonbProperty("password")
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

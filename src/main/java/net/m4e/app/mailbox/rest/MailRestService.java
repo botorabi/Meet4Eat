@@ -80,13 +80,13 @@ public class MailRestService {
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get user mails in given range", notes = "Pass 0/0 in order to get all mails")
     public GenericResponseResult<List<Mail>> getMails(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (sessionuser == null) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionUser == null) {
             LOGGER.error("Cannot retrieve user mails, no user in session found!");
             return GenericResponseResult.unauthorized("Failed to retrieve user mails, no authentication.");
         }
 
-        List<Mail> userMails = mails.getMails(sessionuser, from, to);
+        List<Mail> userMails = mails.getMails(sessionUser, from, to);
 
         return GenericResponseResult.ok("User mails were successfully retrieved.", userMails);
     }
@@ -103,14 +103,14 @@ public class MailRestService {
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get the count of total and unread mails")
     public GenericResponseResult<MailCount> getCount(@Context HttpServletRequest request) {
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (sessionuser == null) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionUser == null) {
             LOGGER.error("Cannot retrieve count of mails, no user in session found!");
             return GenericResponseResult.unauthorized("Failed to retrieve count of mails, no authentication.");
         }
 
-        long total  = mails.getCountTotalMails(sessionuser);
-        long unread = mails.getCountUnreadMails(sessionuser);
+        long total  = mails.getCountTotalMails(sessionUser);
+        long unread = mails.getCountUnreadMails(sessionUser);
         MailCount mailCount = new MailCount(total, unread);
         return GenericResponseResult.ok("Count of mails was successfully retrieved.", mailCount);
     }
@@ -127,13 +127,13 @@ public class MailRestService {
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get the count of unread mails")
     public GenericResponseResult<UnreadMailCount> getCountUnread(@Context HttpServletRequest request) {
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (sessionuser == null) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionUser == null) {
             LOGGER.error("Cannot retrieve count of unread mails, no user in session found!");
             return GenericResponseResult.unauthorized("Failed to retrieve count of unread mails, no authentication.");
         }
 
-        long unread = mails.getCountUnreadMails(sessionuser);
+        long unread = mails.getCountUnreadMails(sessionUser);
         UnreadMailCount unreadMailCount = new UnreadMailCount(unread);
         return GenericResponseResult.ok("Count of unread mails was successfully retrieved.", unreadMailCount);
     }
@@ -152,15 +152,15 @@ public class MailRestService {
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
     public GenericResponseResult<Void> send(NewMailCmd newMail, @Context HttpServletRequest request) {
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (sessionuser == null) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionUser == null) {
             LOGGER.error("Cannot create mail, no user in session found!");
             return GenericResponseResult.unauthorized("Failed to create a mail, no authentication.");
         }
 
         MailEntity mail;
         try {
-            mail = validator.validateNewEntityInput(newMail, sessionuser);
+            mail = validator.validateNewEntityInput(newMail, sessionUser);
         }
         catch (Exception ex) {
             LOGGER.warn("Could not send mail, validation failed, reason: {}", ex.getMessage());
@@ -201,25 +201,22 @@ public class MailRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Send a mail to another user")
-    public GenericResponseResult<ExcecutedMailOperation> operate(@ApiParam("The mail-ID.") @PathParam("id") Long id,
+    public GenericResponseResult<ExcecutedMailOperation> operate(@ApiParam("The mail-ID") @PathParam("id") Long id,
                                                                  MailOperationCmd operation,
                                                                  @Context HttpServletRequest request) {
 
-        final UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (sessionuser == null) {
+        final UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        if (sessionUser == null) {
             LOGGER.error("Cannot delete user mail, no user in session found!");
             return GenericResponseResult.unauthorized("Failed to delete the mail, no authentication.");
         }
 
         try {
-            final ExcecutedMailOperation excecutedMailOperation = mails.performMailOperation(sessionuser.getId(), id, operation.getOperation());
-
+            final ExcecutedMailOperation excecutedMailOperation = mails.performMailOperation(sessionUser.getId(), id, operation.getOperation());
             return GenericResponseResult.ok("User mails were successfully retrieved.", excecutedMailOperation);
         } catch (Exception ex) {
             LOGGER.warn("Could not perform mail operation {} on {}, reason: {}", operation.getOperation(), id, ex.getMessage());
-            return GenericResponseResult.badRequest(
-                    "Failed to perform mail operation, reason: " + ex.getMessage());
-            //TODO response-body
+            return GenericResponseResult.badRequest("Failed to perform mail operation, reason: " + ex.getMessage());
         }
     }
 }

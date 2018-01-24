@@ -29,6 +29,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -78,12 +79,12 @@ public class UserAuthenticationRestService {
     @ApiOperation(value = "Get the authentication state")
     public GenericResponseResult<AuthState> state(@Context HttpServletRequest request) {
         HttpSession session = request.getSession();
-        UserEntity userentity = (UserEntity)session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
+        UserEntity userEntity = (UserEntity)session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
         boolean auth = false;
         String  uid = "";
-        if (userentity != null) {
+        if (userEntity != null) {
             auth = true;
-            uid = userentity.getId().toString();
+            uid = userEntity.getId().toString();
         }
 
         return GenericResponseResult.ok("Authentication state", new AuthState(auth, uid, session.getId()));
@@ -110,25 +111,25 @@ public class UserAuthenticationRestService {
         }
 
         // try to find the user in database
-        UserEntity existinguser = users.findUser(loginCmd.getLogin());
-        if ((existinguser == null) || !existinguser.getStatus().getIsActive()) {
+        UserEntity existingUser = users.findUser(loginCmd.getLogin());
+        if ((existingUser == null) || !existingUser.getStatus().getIsActive()) {
             LOGGER.debug("  User login attempt failed, no user with this login found, user ({})", loginCmd.getLogin());
             return GenericResponseResult.notFound("Failed to login user.");
         }
         // check user password
-        String saltedpasswd = AuthorityConfig.getInstance().createPassword(existinguser.getPassword() + session.getId());
-        if (!saltedpasswd.contentEquals(loginCmd.getPassword())) {
+        String saltedPassword = AuthorityConfig.getInstance().createPassword(existingUser.getPassword() + session.getId());
+        if (!saltedPassword.contentEquals(loginCmd.getPassword())) {
             LOGGER.debug("  User login attempt failed, wrong password, user ({})", loginCmd.getLogin());
             return GenericResponseResult.unauthorized("Failed to login user.");
         }
 
         LOGGER.trace(" User successfully logged in: {}", loginCmd.getLogin());
         // store the user in client session
-        session.setAttribute(AuthorityConfig.SESSION_ATTR_USER, existinguser);
+        session.setAttribute(AuthorityConfig.SESSION_ATTR_USER, existingUser);
         // update user
-        users.updateUserLastLogin(existinguser);
+        users.updateUserLastLogin(existingUser);
 
-        return GenericResponseResult.ok("User was successfully logged in.", new LoggedIn(existinguser.getId().toString(), session.getId()));
+        return GenericResponseResult.ok("User was successfully logged in.", new LoggedIn(existingUser.getId().toString(), session.getId()));
     }
 
     @POST

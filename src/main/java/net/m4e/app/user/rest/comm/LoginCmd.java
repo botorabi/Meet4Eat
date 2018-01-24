@@ -9,7 +9,6 @@ package net.m4e.app.user.rest.comm;
 
 import net.m4e.app.user.rest.UserValidator;
 
-import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 import javax.validation.constraints.Size;
 
@@ -25,9 +24,10 @@ public class LoginCmd {
     @Size(min = UserValidator.USER_INPUT_MIN_LEN_PASSWD, max = UserValidator.USER_INPUT_MAX_LEN_PASSWD)
     private String password;
 
-    @JsonbCreator
-    public LoginCmd(@JsonbProperty("login") final String login,
-                    @JsonbProperty("password") final String password) {
+    public LoginCmd() {}
+
+    public LoginCmd(final String login,
+                    final String password) {
         this.login = login;
         this.password = password;
     }
@@ -36,6 +36,7 @@ public class LoginCmd {
         return login;
     }
 
+    @JsonbProperty("login")
     public void setLogin(String login) {
         this.login = login;
     }
@@ -44,6 +45,7 @@ public class LoginCmd {
         return password;
     }
 
+    @JsonbProperty("password")
     public void setPassword(String password) {
         this.password = password;
     }

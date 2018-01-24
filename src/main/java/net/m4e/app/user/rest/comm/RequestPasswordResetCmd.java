@@ -7,12 +7,16 @@
  */
 package net.m4e.app.user.rest.comm;
 
+import javax.json.bind.annotation.JsonbProperty;
+
 /**
  * @author boto
  * Date of creation January 23, 2018
  */
 public class RequestPasswordResetCmd {
-    private final String email;
+    private String email;
+
+    public RequestPasswordResetCmd() {}
 
     public RequestPasswordResetCmd(final String email) {
         this.email = email;
@@ -20,5 +24,10 @@ public class RequestPasswordResetCmd {
 
     public String getEmail() {
         return email;
+    }
+
+    @JsonbProperty("email")
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

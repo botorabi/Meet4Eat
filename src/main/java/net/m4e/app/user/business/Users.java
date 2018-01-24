@@ -410,41 +410,37 @@ public class Users {
      *
      * @param entity        User entity to export
      * @param connections   Real-time user connections
-     * @return              Found user
-     */
-    @Deprecated
-    public JsonObjectBuilder exportUserJSON(@NotNull UserEntity entity, ConnectedClients connections) {
-        JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
-                .add("name", (entity.getName() != null) ? entity.getName() : "")
-                .add("login", (entity.getLogin() != null) ? entity.getLogin() : "")
-                .add("email", (entity.getEmail() != null) ? entity.getEmail() : "")
-                .add("dateLastLogin", "" + ((entity.getDateLastLogin() != null) ? entity.getDateLastLogin() : 0))
-                .add("dateCreation", "" + ((entity.getStatus() != null) ? entity.getStatus().getDateCreation() : 0));
-        JsonArrayBuilder roles = Json.createArrayBuilder();
-        entity.getRoles().forEach((r) -> {
-            roles.add(r.getName());
-        });
-        json.add("roles", roles)
-                .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
-                // the ETag can be used on a client for caching purpose
-                .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "");
-        // set the online status
-        boolean online = (connections.getConnectedUser(entity.getId()) != null);
-        json.add("status", online ? "online" : "offline");
-        return json;
-    }
-
-    /**
-     * Give a user entity export the necessary fields.
-     *
-     * @param entity        User entity to export
-     * @param connections   Real-time user connections
      * @return              User info
      */
     public UserInfo exportUser(@NotNull UserEntity entity, ConnectedClients connections) {
         boolean online = (connections.getConnectedUser(entity.getId()) != null);
         return UserInfo.fromUserEntity(entity, online ? UserInfo.OnlineStatus.ONLINE : UserInfo.OnlineStatus.OFFLINE);
+    }
+
+    /**
+     * Export the given users considering the authenticated user.
+     * If the authenticated user has an admin role then all existing users are
+     * exported, otherwise only the user himself/herself is exported.
+     *
+     * @param users         List of users to export
+     * @param authUser      Authenticated user
+     * @param connections   Real-time user connections
+     * @return              List of all exported users
+     */
+    public List<UserInfo> exportUsers(List<UserEntity> users, UserEntity authUser, ConnectedClients connections) {
+        List<UserInfo> allUsers = new ArrayList<>();
+        // if the user has no admin role then return only himself
+        if (!checkUserRoles(authUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN))) {
+            allUsers.add(exportUser(authUser, connections));
+        }
+        else {
+            for (UserEntity user: users) {
+                if (user.getStatus().getIsActive()) {
+                    allUsers.add(exportUser(user, connections));
+                }
+            }
+        }
+        return allUsers;
     }
 
     /**
@@ -468,6 +464,7 @@ public class Users {
         for (int i = 0; i < userCmd.getRoles().size(); i++) {
             userRoles.add(userCmd.getRoles().get(i));
         }
+        addUserRoles(userEntity, userRoles);
 
         if (userCmd.getPhoto() != null) {
             DocumentEntity image = new DocumentEntity();
@@ -479,31 +476,5 @@ public class Users {
         }
 
         return userEntity;
-    }
-
-    /**
-     * Export the given users to JSON considering the authenticated user.
-     * If the authenticated user has an admin role then all existing users are
-     * exported, otherwise only the user himself/herself is exported.
-     * 
-     * @param users         List of users to export
-     * @param authUser      Authenticated user
-     * @param connections   Real-time user connections
-     * @return              JSON array containing all exported users
-     */
-    public JsonArrayBuilder exportUsersJSON(List<UserEntity> users, UserEntity authUser, ConnectedClients connections) {
-        JsonArrayBuilder allusers = Json.createArrayBuilder();
-        // if the user has no admin role then return only himself
-        if (!checkUserRoles(authUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN))) {
-            allusers.add(exportUserJSON(authUser, connections));
-        }
-        else {
-            for (UserEntity user: users) {
-                if (user.getStatus().getIsActive()) {
-                    allusers.add(exportUserJSON(user, connections));
-                }
-            }
-        }
-        return allusers;
     }
 }

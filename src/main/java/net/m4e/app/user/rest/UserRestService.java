@@ -509,41 +509,41 @@ public class UserRestService {
         return GenericResponseResult.ok("User was found.", users.exportUser(user, connections));
     }
 
-    //! TODO (boto) adapt the method, see issue #17
     /**
      * Get all users.
      * 
      * @param request       HTTP request
-     * @return              JSON response
+     * @return              Result
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String findAllUsers(@Context HttpServletRequest request) {
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        List<UserEntity> foundusers = entities.findAll(UserEntity.class);
-        JsonArrayBuilder allusers = users.exportUsersJSON(foundusers, sessionuser, connections);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
+    @ApiOperation(value = "Get all users. An admin gets all users but a non-admin gets only herself/himself.")
+    public GenericResponseResult<List<UserInfo>> findAllUsers(@Context HttpServletRequest request) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        List<UserEntity> foundUsers = entities.findAll(UserEntity.class);
+        List<UserInfo> exportUsers = users.exportUsers(foundUsers, sessionUser, connections);
+        return GenericResponseResult.ok("List of users", exportUsers);
     }
 
-    //! TODO (boto) adapt the method, see issue #17
     /**
      * Get users in given range.
      * 
      * @param from          Range begin
      * @param to            Range end
      * @param request       HTTP request
-     * @return              JSON response
+     * @return              Result
      */
     @GET
     @Path("{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        List<UserEntity> foundusers = entities.findRange(UserEntity.class, from, to);
-        JsonArrayBuilder allusers = users.exportUsersJSON(foundusers, sessionuser, connections);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of users", ResponseResults.CODE_OK, allusers.build().toString());
+    @ApiOperation(value = "Get users in given range. An admin gets all users but a non-admin gets only herself/himself.")
+    public GenericResponseResult<List<UserInfo>> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        List<UserEntity> foundUsers = entities.findRange(UserEntity.class, from, to);
+        List<UserInfo> exportUsers = users.exportUsers(foundUsers, sessionUser, connections);
+        return GenericResponseResult.ok("List of users", exportUsers);
     }
 
     /**
@@ -571,7 +571,7 @@ public class UserRestService {
      * @param configName    If a valid account registration config was found in app then this is the config settings name
      * @param request       Used to create an URL basing on current http request if no valid configuration exists in app
      * @param defaultPage   Last part of the URL if no valid configuration exists in app
-     * @return 
+     * @return              The requested URL
      */
     private String getAccRegCfgLinkURL(String configName, HttpServletRequest request, String defaultPage) {
         // first try to get the link from account registration config

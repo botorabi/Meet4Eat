@@ -19,7 +19,7 @@ import javax.validation.constraints.Size;
  */
 public class NewMailCmd {
 
-    @Size(min = 1, max = NewMailValidator.USER_INPUT_MAX_LEN_SUBJECT)
+    @Size(min = NewMailValidator.USER_INPUT_MIN_LEN_SUBJECT, max = NewMailValidator.USER_INPUT_MAX_LEN_SUBJECT)
     private String subject;
 
     private String content;
@@ -27,10 +27,11 @@ public class NewMailCmd {
     @Min(0)
     private Long receiverId;
 
-    @JsonbCreator
-    public NewMailCmd(@JsonbProperty("subject") final String subject,
-                      @JsonbProperty("content") final String content,
-                      @JsonbProperty("receiverId") final Long receiverId) {
+    public NewMailCmd() {}
+
+    public NewMailCmd(final String subject,
+                      final String content,
+                      final Long receiverId) {
         this.subject = subject;
         this.content = content;
         this.receiverId = receiverId;
@@ -40,6 +41,7 @@ public class NewMailCmd {
         return subject;
     }
 
+    @JsonbProperty("subject")
     public void setSubject(final String subject) {
         this.subject = subject;
     }
@@ -48,6 +50,7 @@ public class NewMailCmd {
         return content;
     }
 
+    @JsonbProperty("content")
     public void setContent(final String content) {
         this.content = content;
     }
@@ -56,6 +59,7 @@ public class NewMailCmd {
         return receiverId;
     }
 
+    @JsonbProperty("receiverId")
     public void setReceiverId(final Long receiverId) {
         this.receiverId = receiverId;
     }

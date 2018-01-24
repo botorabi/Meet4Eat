@@ -13,7 +13,9 @@ import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import javax.json.bind.annotation.JsonbProperty;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
@@ -130,14 +132,14 @@ public class Connection {
     /**
      * Used for transferring the web socket connection status to client.
      */
-    static class WSConnectionStatus {
+    public static class WSConnectionStatus {
         private final String protocolVersion;
-
         private final String status;
-
         private final String description;
 
-        WSConnectionStatus(final String protocolVersion, final String status, final String description) {
+        WSConnectionStatus(@JsonbProperty("protocolVersion") final String protocolVersion,
+                           @JsonbProperty("status") final String status,
+                           @JsonbProperty("description") final String description) {
             this.protocolVersion = protocolVersion;
             this.status = status;
             this.description = description;
