@@ -73,7 +73,7 @@ class NewMailValidatorTest {
     }
 
     @Test
-    void inactiveReceiver() throws Exception {
+    void inactiveReceiver() {
         user84.getStatus().setEnabled(false);
         NewMailCmd newMailCmd = new NewMailCmd("Subject", "Content...", 84L);
 
@@ -86,7 +86,7 @@ class NewMailValidatorTest {
     }
 
     @Test
-    void noReceiver() throws Exception {
+    void noReceiver() {
         NewMailCmd newMailCmd = new NewMailCmd("Subject", "Content...", 85L);
 
         NewMailValidator newMailValidator = new NewMailValidator(users);

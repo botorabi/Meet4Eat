@@ -77,7 +77,7 @@ public class Mail {
      */
     @JsonbTransient
     public boolean isTrashed() {
-        return (trashDate == null) ? false : (trashDate.getEpochSecond() != 0);
+        return (trashDate != null) && (trashDate.getEpochSecond() != 0);
     }
 
     /**

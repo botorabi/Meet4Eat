@@ -155,7 +155,7 @@ public class Users {
      * @return              New created entity
      * @throws Exception    Throws exception if something went wrong.
      */
-    public UserEntity createNewUser(UserEntity inputEntity, Long creatorID) throws Exception {
+    public UserEntity createNewUser(UserEntity inputEntity, Long creatorID) {
         // setup the new entity
         UserEntity newuser = new UserEntity();
         newuser.setLogin(inputEntity.getLogin());

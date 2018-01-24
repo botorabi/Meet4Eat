@@ -309,7 +309,7 @@ class MailRestServiceTest {
         Answer<MailEntity> createMailEntity() {
             return new Answer<MailEntity>() {
                 @Override
-                public MailEntity answer(final InvocationOnMock args) throws Throwable {
+                public MailEntity answer(final InvocationOnMock args) {
                     return new MailEntity(args.getArgumentAt(1, UserEntity.class).getId(),
                             "",
                             args.getArgumentAt(0, NewMailCmd.class).getReceiverId(),

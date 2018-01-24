@@ -164,7 +164,7 @@ public class Connection {
     public static class PacketMapDecoder implements Decoder.Text<Packet<Map<String, Object>>> {
         @SuppressWarnings("unchecked")
         @Override
-        public Packet<Map<String, Object>> decode(final String string) throws DecodeException {
+        public Packet<Map<String, Object>> decode(final String string) {
             try {
                 return JsonbBuilder.create().fromJson(string, Packet.class);
             } catch (Exception ex) {
@@ -193,7 +193,7 @@ public class Connection {
      */
     public static class JsonBEncoder implements Encoder.Text<Object> {
         @Override
-        public String encode(final Object object) throws EncodeException {
+        public String encode(final Object object) {
             return JsonbBuilder.create().toJson(object);
         }
 
