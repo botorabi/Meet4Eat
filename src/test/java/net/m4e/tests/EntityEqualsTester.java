@@ -3,7 +3,6 @@ package net.m4e.tests;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import org.assertj.core.internal.Failures;
 import org.assertj.core.util.Objects;
@@ -12,7 +11,6 @@ import org.assertj.core.util.Objects;
  * @author ybroeker
  */
 public class EntityEqualsTester<T> {
-    private static final Logger LOG = Logger.getLogger(EntityEqualsTester.class.getName());
 
     private final Class<T> actual;
 
@@ -57,7 +55,7 @@ public class EntityEqualsTester<T> {
         idField.set(entity2, null);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of Class <%s> with ID <null> shouldn't be equal!", actual.getSimpleName()));
+            throw failures.failure(String.format("Entitys of Class <%s> with ID <null> shouldn't be equal", actual.getSimpleName()));
         }
     }
 
@@ -76,7 +74,7 @@ public class EntityEqualsTester<T> {
         idField.set(entity2, id2);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of class <%s> with ID <%s> should be equal!", actual.getSimpleName(), id1));
+            throw failures.failure(String.format("Entitys of class <%s> with ID <%s> should be equal", actual.getSimpleName(), id1));
         }
     }
 
@@ -96,7 +94,7 @@ public class EntityEqualsTester<T> {
         idField.set(entity2, id2);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of class <%s> with IDs <%s> and <%s> shouldn't be equal!", actual.getSimpleName(), id1, id2));
+            throw failures.failure(String.format("Entitys of class <%s> with IDs <%s> and <%s> shouldn't be equal", actual.getSimpleName(), id1, id2));
         }
     }
 
@@ -111,7 +109,7 @@ public class EntityEqualsTester<T> {
         Object o = new Object();
 
         if (Objects.areEqual(entity1, o) || Objects.areEqual(o, entity1)) {
-            throw failures.failure(String.format("Entitys of Class <%s> shouldn't be equal to instances of class <%s>!", actual.getSimpleName(), o.getClass().getSimpleName()));
+            throw failures.failure(String.format("Entitys of Class <%s> shouldn't be equal to instances of class <%s>", actual.getSimpleName(), o.getClass().getSimpleName()));
         }
     }
 
