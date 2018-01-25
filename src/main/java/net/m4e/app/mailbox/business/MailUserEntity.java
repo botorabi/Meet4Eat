@@ -8,6 +8,8 @@
 
 package net.m4e.app.mailbox.business;
 
+import net.m4e.app.user.business.UserEntity;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
@@ -191,9 +193,8 @@ public class MailUserEntity implements Serializable {
         if (!(object instanceof MailUserEntity)) {
             return false;
         }
-        MailUserEntity that = (MailUserEntity) object;
-        return this.id != null && Objects.equals(this.id, that.id);
-        //(this.id != null || that.id == null) && (this.id == null || this.id.equals(that.id));
+        MailUserEntity other = (MailUserEntity) object;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

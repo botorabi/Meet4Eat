@@ -69,7 +69,7 @@ class MailRestServiceTest {
 
 
     /**
-     * Check, that {@link MailRestService} is createable by container.
+     * Check, that {@link MailRestService} is creatable by container.
      */
     @Test
     void checkNoArgsConstructor() {

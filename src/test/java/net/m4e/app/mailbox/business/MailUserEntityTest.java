@@ -35,7 +35,7 @@ class MailUserEntityTest {
     }
 
     @Test
-    void isTrashedWIthZeroTimestamp() {
+    void isTrashedWithZeroTimestamp() {
         MailUserEntity entity = new MailUserEntity();
         entity.setTrashDate(Instant.ofEpochMilli(0));
 
@@ -43,12 +43,12 @@ class MailUserEntityTest {
     }
 
     @Test
-    void notEqualsWithoutIds() {
+    void equalsWithoutIds() {
         MailUserEntity entity1 = new MailUserEntity();
         MailUserEntity entity2 = new MailUserEntity();
 
-        Assertions.assertThat(entity1).isNotEqualTo(entity2);
-        Assertions.assertThat(entity2).isNotEqualTo(entity1);
+        Assertions.assertThat(entity1).isEqualTo(entity2);
+        Assertions.assertThat(entity2).isEqualTo(entity1);
     }
 
     @Test
