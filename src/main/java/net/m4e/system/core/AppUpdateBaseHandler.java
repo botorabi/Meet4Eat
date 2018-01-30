@@ -21,7 +21,7 @@ import javax.persistence.EntityManager;
  * @author boto
  * Date of creation Aug 22, 2017
  */
-public abstract class AppUdateBaseHandler {
+public abstract class AppUpdateBaseHandler {
 
     /**
      * Incremental update number, this must be set properly in a concrete class.
@@ -37,7 +37,7 @@ public abstract class AppUdateBaseHandler {
     /**
      * Construct the update instance.
      */
-    public AppUdateBaseHandler() {}
+    public AppUpdateBaseHandler() {}
 
     /**
      * Get the incremental update number. Every concrete update class

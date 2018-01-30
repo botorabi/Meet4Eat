@@ -27,11 +27,9 @@ public class AppUpdateRegistry {
      * Register all available update class instances.
      * TODO: This ugly dependency on deployment package should be solved by evaluating
      *       the app config (in e.g. web.xml) and extracting the update handler class names.
-     * 
-     * @param um Update manager
      */
-    public void registerAllUpdaters(AppUpdateManager um) {
-        um.registerUpdater(new UpdateInit());
-        um.registerUpdater(new Update_0_1_0());
+    public void registerAllUpdaters(AppUpdater updater) {
+        updater.registerUpdater(new UpdateInit());
+        updater.registerUpdater(new Update_0_1_0());
     }
 }
