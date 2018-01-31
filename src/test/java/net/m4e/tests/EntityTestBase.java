@@ -7,17 +7,16 @@
  */
 package net.m4e.tests;
 
-import org.assertj.core.internal.Failures;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
+
+import org.assertj.core.internal.Failures;
 
 /**
  * @author boto
  * Date of creation January 30, 2018
  */
-public class EntityTestBase<T> {
+class EntityTestBase<T> {
 
     private final Constructor<T> constructor;
 
@@ -30,8 +29,12 @@ public class EntityTestBase<T> {
         this.actual = actual;
     }
 
-    protected T createInstance() throws Exception {
-        return constructor.newInstance();
+    protected T createInstance() {
+        try {
+            return constructor.newInstance();
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected Class<T> getActual() {
@@ -50,5 +53,11 @@ public class EntityTestBase<T> {
 
     protected Failures getFailures() {
         return failures;
+    }
+
+    protected void failWithMessage(String msg, Object... args) {
+        AssertionError assertionError = failures.failure(String.format(msg, args));
+        Throwables.removeFromStacktrace(assertionError, "net.m4e.tests");
+        throw assertionError;
     }
 }

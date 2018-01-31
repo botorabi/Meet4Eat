@@ -10,7 +10,6 @@ package net.m4e.tests;
 import java.lang.reflect.Field;
 import java.util.Random;
 
-import org.assertj.core.internal.Failures;
 import org.assertj.core.util.Objects;
 
 /**
@@ -34,33 +33,43 @@ public class EntityEqualsTester<T> extends EntityTestBase<T> {
         notEqualWithDifferentTypes();
     }
 
-    private void notEqualWithoutIds() throws Exception {
+    private void notEqualWithoutIds() {
         T entity1 = createInstance();
         T entity2 = createInstance();
 
-        idField.set(entity1, null);
-        idField.set(entity2, null);
+        setIdField(entity1, null);
+        setIdField(entity2, null);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw getFailures().failure(String.format("Entities of Class <%s> with ID <null> shouldn't be equal", getActual().getSimpleName()));
+            failWithMessage("\nEntities of Class:\n  <%s>\n with ID:\n  <null>\nshouldn't be equal", getActual().getSimpleName());
         }
     }
 
-    private void equalWithSameIds() throws Exception {
+    private void setIdField(T entity, Object value) {
+        try {
+            idField.set(entity, value);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void equalWithSameIds() {
         T entity1 = createInstance();
         T entity2 = createInstance();
 
         Object id1 = createSameID();
         Object id2 = createSameID();
 
-        idField.set(entity1, id1);
-        idField.set(entity2, id2);
+        setIdField(entity1, id1);
+        setIdField(entity2, id2);
 
-        if (!(Objects.areEqual(entity1, entity2) && Objects.areEqual(entity2, entity1))) {
-            throw getFailures().failure(String.format("Entities of class <%s> with ID <%s> should be equal", getActual().getSimpleName(), id1));
+        if (Objects.areEqual(entity1, entity2) && Objects.areEqual(entity2, entity1)) {
+            return;
         }
+        failWithMessage("\nEntities of class:\n  <%s>\n with ID:\n  <%s>\nshould be equal", getActual().getSimpleName(), id1);
     }
 
+    @SuppressWarnings("UnnecessaryBoxing")
     private Object createSameID() {
         //TODO other types;
         return Long.valueOf(1024L);
@@ -77,10 +86,11 @@ public class EntityEqualsTester<T> extends EntityTestBase<T> {
         idField.set(entity2, id2);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw getFailures().failure(String.format("Entities of class <%s> with IDs <%s> and <%s> shouldn't be equal", getActual().getSimpleName(), id1, id2));
+            failWithMessage("\nEntities of class:\n  <%s>\nwith IDs:\n  <%s>\nand:\n  <%s>\n shouldn't be equal", getActual().getSimpleName(), id1, id2);
         }
     }
 
+    @SuppressWarnings("UnnecessaryBoxing")
     private Object createDifferentID() {
         //TODO other types;
         return Long.valueOf(random.nextInt(Integer.MAX_VALUE));
@@ -92,7 +102,7 @@ public class EntityEqualsTester<T> extends EntityTestBase<T> {
         Object o = new Object();
 
         if (Objects.areEqual(entity1, o) || Objects.areEqual(o, entity1)) {
-            throw getFailures().failure(String.format("Entities of Class <%s> shouldn't be equal to instances of class <%s>", getActual().getSimpleName(), o.getClass().getSimpleName()));
+            failWithMessage("\nEntities of Class:\n  <%s>\nshouldn't be equal to instances of class:\n  <%s>", getActual().getSimpleName(), o.getClass().getSimpleName());
         }
     }
 }
