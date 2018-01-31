@@ -55,12 +55,18 @@ public class EntityEqualsTester<T> {
         idField.set(entity2, null);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of Class <%s> with ID <null> shouldn't be equal", actual.getSimpleName()));
+            failWithMessage("\nEntitys of Class:\n  <%s>\n with ID:\n  <null>\nshouldn't be equal", actual.getSimpleName());
         }
     }
 
     private T createInstance() throws ReflectiveOperationException {
         return constructor.newInstance();
+    }
+
+    private void failWithMessage(String msg, Object... args) {
+        AssertionError assertionError = failures.failure(String.format(msg, args));
+        Throwables.removeFromStacktrace(assertionError, "net.m4e.tests");
+        throw assertionError;
     }
 
     private void equalWithSameIds() throws ReflectiveOperationException {
@@ -73,9 +79,10 @@ public class EntityEqualsTester<T> {
         idField.set(entity1, id1);
         idField.set(entity2, id2);
 
-        if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of class <%s> with ID <%s> should be equal", actual.getSimpleName(), id1));
+        if (Objects.areEqual(entity1, entity2) && Objects.areEqual(entity2, entity1)) {
+            return;
         }
+        failWithMessage("\nEntitys of class:\n  <%s>\n with ID:\n  <%s>\nshould be equal", actual.getSimpleName(), id1);
     }
 
     private Object createSameID() {
@@ -94,7 +101,7 @@ public class EntityEqualsTester<T> {
         idField.set(entity2, id2);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of class <%s> with IDs <%s> and <%s> shouldn't be equal", actual.getSimpleName(), id1, id2));
+            failWithMessage("\nEntitys of class:\n  <%s>\nwith IDs:\n  <%s>\nand:\n  <%s>\n shouldn't be equal", actual.getSimpleName(), id1, id2);
         }
     }
 
@@ -109,7 +116,7 @@ public class EntityEqualsTester<T> {
         Object o = new Object();
 
         if (Objects.areEqual(entity1, o) || Objects.areEqual(o, entity1)) {
-            throw failures.failure(String.format("Entitys of Class <%s> shouldn't be equal to instances of class <%s>", actual.getSimpleName(), o.getClass().getSimpleName()));
+            failWithMessage("\nEntitys of Class:\n  <%s>\nshouldn't be equal to instances of class:\n  <%s>", actual.getSimpleName(), o.getClass().getSimpleName());
         }
     }
 
