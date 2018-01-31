@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -302,8 +303,8 @@ public class UserEntity implements Serializable, EntityWithPhoto {
         if (!(object instanceof UserEntity)) {
             return false;
         }
-        UserEntity other = (UserEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        UserEntity that = (UserEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
     }
 
     @Override

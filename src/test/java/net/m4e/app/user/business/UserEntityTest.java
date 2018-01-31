@@ -7,15 +7,16 @@
  */
 package net.m4e.app.user.business;
 
-import java.util.Arrays;
-import java.util.List;
-
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.tests.*;
+import net.m4e.tests.Assertions;
+import net.m4e.tests.EntityAssertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author boto
@@ -24,18 +25,14 @@ import org.junit.jupiter.api.Test;
 class UserEntityTest {
 
     @Test
-    void commonTests() {
-        CommonEntityTests<UserEntityCommonTests> commonTests = new CommonEntityTests<>(UserEntityCommonTests.class);
-        commonTests.performTests();
-    }
-
-    @Test
     void entityTest() {
         EntityAssertions.assertThat(UserEntity.class)
                 .isSerializable()
                 .hasEntityAnnotation()
                 .hasIdAnnotation()
-                .conformsToEqualsContract();
+                .conformsToEqualsContract()
+                .hasHashCode()
+                .hasProperToString();
     }
 
     @Test
@@ -99,11 +96,5 @@ class UserEntityTest {
         entity.setRoles(null);
 
         Assertions.assertThat(entity.getRolesAsString()).isEmpty();
-    }
-
-    /**
-     * Used for testing common functionality of the entity.
-     */
-    public static class UserEntityCommonTests extends UserEntity implements BaseTestEntity {
     }
 }

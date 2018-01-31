@@ -1,6 +1,12 @@
+/*
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
+ * https://github.com/botorabi/Meet4Eat
+ *
+ * License: MIT License (MIT), read the LICENSE text in
+ *          main directory for more details.
+ */
 package net.m4e.tests;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Random;
 
@@ -10,44 +16,25 @@ import org.assertj.core.util.Objects;
 /**
  * @author ybroeker
  */
-public class EntityEqualsTester<T> {
-
-    private final Class<T> actual;
-
-    private final Constructor<T> constructor;
+public class EntityEqualsTester<T> extends EntityTestBase<T> {
 
     private final Field idField;
 
     private final Random random = new Random();
 
-    //WritableAssertionInfo writableAssertionInfo = new WritableAssertionInfo();
-
-    private final Failures failures = Failures.instance();
-
     EntityEqualsTester(final Class<T> actual) throws NoSuchMethodException {
-        this.actual = actual;
-        this.constructor = actual.getDeclaredConstructor();
-        idField = findIdField(actual);
+        super(actual);
+        idField = findAnnotatedField(javax.persistence.Id.class);
     }
 
-    private Field findIdField(Class<T> clazz) {
-        for (final Field field : clazz.getDeclaredFields()) {
-            if (field.isAnnotationPresent(javax.persistence.Id.class)) {
-                field.setAccessible(true);
-                return field;
-            }
-        }
-        throw new IllegalArgumentException(String.format("No field with @ID found on <%s>", clazz.getSimpleName()));
-    }
-
-    void verifyAll() throws ReflectiveOperationException {
+    void verifyAll() throws Exception {
         notEqualWithoutIds();
         equalWithSameIds();
         notEqualWithDifferentIds();
-
+        notEqualWithDifferentTypes();
     }
 
-    private void notEqualWithoutIds() throws ReflectiveOperationException {
+    private void notEqualWithoutIds() throws Exception {
         T entity1 = createInstance();
         T entity2 = createInstance();
 
@@ -55,15 +42,11 @@ public class EntityEqualsTester<T> {
         idField.set(entity2, null);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of Class <%s> with ID <null> shouldn't be equal", actual.getSimpleName()));
+            throw getFailures().failure(String.format("Entities of Class <%s> with ID <null> shouldn't be equal", getActual().getSimpleName()));
         }
     }
 
-    private T createInstance() throws ReflectiveOperationException {
-        return constructor.newInstance();
-    }
-
-    private void equalWithSameIds() throws ReflectiveOperationException {
+    private void equalWithSameIds() throws Exception {
         T entity1 = createInstance();
         T entity2 = createInstance();
 
@@ -73,8 +56,8 @@ public class EntityEqualsTester<T> {
         idField.set(entity1, id1);
         idField.set(entity2, id2);
 
-        if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of class <%s> with ID <%s> should be equal", actual.getSimpleName(), id1));
+        if (!(Objects.areEqual(entity1, entity2) && Objects.areEqual(entity2, entity1))) {
+            throw getFailures().failure(String.format("Entities of class <%s> with ID <%s> should be equal", getActual().getSimpleName(), id1));
         }
     }
 
@@ -83,7 +66,7 @@ public class EntityEqualsTester<T> {
         return Long.valueOf(1024L);
     }
 
-    private void notEqualWithDifferentIds() throws ReflectiveOperationException {
+    private void notEqualWithDifferentIds() throws Exception {
         T entity1 = createInstance();
         T entity2 = createInstance();
 
@@ -94,7 +77,7 @@ public class EntityEqualsTester<T> {
         idField.set(entity2, id2);
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
-            throw failures.failure(String.format("Entitys of class <%s> with IDs <%s> and <%s> shouldn't be equal", actual.getSimpleName(), id1, id2));
+            throw getFailures().failure(String.format("Entities of class <%s> with IDs <%s> and <%s> shouldn't be equal", getActual().getSimpleName(), id1, id2));
         }
     }
 
@@ -103,14 +86,13 @@ public class EntityEqualsTester<T> {
         return Long.valueOf(random.nextInt(Integer.MAX_VALUE));
     }
 
-    private void notEqualWithDifferentTypes() throws ReflectiveOperationException {
+    private void notEqualWithDifferentTypes() throws Exception {
         T entity1 = createInstance();
         idField.set(entity1, createSameID());
         Object o = new Object();
 
         if (Objects.areEqual(entity1, o) || Objects.areEqual(o, entity1)) {
-            throw failures.failure(String.format("Entitys of Class <%s> shouldn't be equal to instances of class <%s>", actual.getSimpleName(), o.getClass().getSimpleName()));
+            throw getFailures().failure(String.format("Entities of Class <%s> shouldn't be equal to instances of class <%s>", getActual().getSimpleName(), o.getClass().getSimpleName()));
         }
     }
-
 }

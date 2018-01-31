@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
+ * https://github.com/botorabi/Meet4Eat
+ *
+ * License: MIT License (MIT), read the LICENSE text in
+ *          main directory for more details.
+ */
 package net.m4e.tests;
 
 import java.io.Serializable;
@@ -46,12 +53,26 @@ public class EntityAssert<T> extends AbstractObjectAssert<EntityAssert<T>, Class
         try {
             EntityEqualsTester<T> entityEqualsTester = new EntityEqualsTester<>(actual);
             entityEqualsTester.verifyAll();
-            entityEqualsTester = new EntityEqualsTester<>(actual);
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         return this;
     }
 
+    public EntityAssert<T> hasHashCode() {
+        try {
+            EntityHashCodeTester<T> entityHashCodeTester = new EntityHashCodeTester<>(actual);
+            entityHashCodeTester.verifyAll();
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+
+        return this;
+    }
+
+    public EntityAssert<T> hasProperToString() {
+        //! TODO
+        return this;
+    }
 }
