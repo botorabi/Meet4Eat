@@ -31,7 +31,6 @@ class UserEntityTest {
                 .conformsToEqualsContract()
                 .hasHashCode()
                 .hasProperToString()
-                .hasProperToString()
                 ;
     }
 

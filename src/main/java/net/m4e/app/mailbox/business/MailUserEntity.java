@@ -193,8 +193,8 @@ public class MailUserEntity implements Serializable {
         if (!(object instanceof MailUserEntity)) {
             return false;
         }
-        MailUserEntity other = (MailUserEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        MailUserEntity that = (MailUserEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
     }
 
     @Override

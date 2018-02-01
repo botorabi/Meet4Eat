@@ -73,13 +73,6 @@ public class UserRestService {
      */
     private final AppInfos appInfos;
 
-
-    /**
-     * Event for sending e-mail to user.
-     */
-    @Inject
-    private Event<SendEmailEvent> sendMailEvent;
-
     /**
      * User's online status is fetched from connected clients.
      */
@@ -200,7 +193,7 @@ public class UserRestService {
         String activationUrl = getAccRegCfgLinkURL("url.activation", request, "/activate.html");
         String adminEmail = getAccRegCfgNotificationMail();
 
-        registration.registerUserAccount(newEntity, activationUrl, adminEmail, sendMailEvent);
+        registration.registerUserAccount(newEntity, activationUrl, adminEmail);
 
         //! NOTE on successful entity creation the new ID is sent back by results.data field.
         return GenericResponseResult.ok("User was successfully created.", new CreateUser(newEntity.getId().toString()));
@@ -296,7 +289,7 @@ public class UserRestService {
             // create the activation URL
             String url = getAccRegCfgLinkURL("url.passwordReset", request, "/resetpassword.html");
             String adminEmail = getAccRegCfgNotificationMail();
-            registration.requestPasswordReset(requestPasswordResetCmd.getEmail(), url, adminEmail, sendMailEvent);
+            registration.requestPasswordReset(requestPasswordResetCmd.getEmail(), url, adminEmail);
         } catch (Exception ex) {
             LOGGER.error("cannot process password reset request, reason: {}", ex.getLocalizedMessage());
             return GenericResponseResult.notAcceptable(

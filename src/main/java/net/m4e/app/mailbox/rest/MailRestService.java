@@ -176,7 +176,7 @@ public class MailRestService {
             return GenericResponseResult.internalError("Problem occurred while sending mail");
         }
 
-        return GenericResponseResult.ok("Mail was successfully sent.", null);
+        return GenericResponseResult.ok("Mail was successfully sent.");
     }
 
     /**

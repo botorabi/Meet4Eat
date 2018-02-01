@@ -170,7 +170,7 @@ public class Mails {
         }
         //! NOTE unfortunately (at least with JPA 2.0) it is not possible to easily store the results using a proper class type,
         //        so we have to do it manually here
-        List<Mail> mails = new ArrayList();
+        List<Mail> mails = new ArrayList<>();
         for (int i = 0; i < results.size(); i++) {
             Object[] res = results.get(i);
             Long ts = (Long)res[2];

@@ -68,12 +68,12 @@ class UserAuthenticationRestServiceTest {
     }
 
     @Test
-    void default_constructor() {
-        UserAuthenticationRestService service = new UserAuthenticationRestService();
+    void defaultConstructor() {
+        new UserAuthenticationRestService();
     }
 
     @Test
-    void state_authenticated() {
+    void stateAuthenticated() {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(42L);
         Mockito.when(session.getAttribute(AuthorityConfig.SESSION_ATTR_USER)).thenReturn(userEntity);
@@ -83,7 +83,7 @@ class UserAuthenticationRestServiceTest {
     }
 
     @Test
-    void state_not_authenticated() {
+    void stateNotAuthenticated() {
         Mockito.when(session.getAttribute(AuthorityConfig.SESSION_ATTR_USER)).thenReturn(null);
 
         Assertions.assertThat(userAuthentication.state(request).getCode()).isEqualTo(GenericResponseResult.CODE_OK);
@@ -91,17 +91,17 @@ class UserAuthenticationRestServiceTest {
     }
 
     @Test
-    void login_rightCredentials() {
+    void loginRightCredentials() {
         Assertions.assertThat(userAuthentication.login(RIGHT_CREDENTIALS, request).getCode()).isEqualTo(GenericResponseResult.CODE_OK);
     }
 
     @Test
-    void login_wrongCredentials() {
+    void loginWrongCredentials() {
         Assertions.assertThat(userAuthentication.login(WRONG_CREDENTIALS, request).getCode()).isEqualTo(GenericResponseResult.CODE_UNAUTHORIZED);
     }
 
     @Test
-    void login_alreadyLoggedInUser() {
+    void loginAlreadyLoggedInUser() {
         LoginCmd input = RIGHT_CREDENTIALS;
         Mockito.when(session.getAttribute(AuthorityConfig.SESSION_ATTR_USER)).thenReturn(new Object());
 
@@ -112,12 +112,12 @@ class UserAuthenticationRestServiceTest {
     }
 
     @Test
-    void login_nonExistingUser() {
+    void loginNonExistingUser() {
         Assertions.assertThat(userAuthentication.login(NON_EXITING_USER_CREDENTIALS, request).getCode()).isEqualTo(GenericResponseResult.CODE_NOT_FOUND);
     }
 
     @Test
-    void login_nonActiveUser() {
+    void loginNonActiveUser() {
         StatusEntity status = new StatusEntity();
         status.setEnabled( false );
         UserEntity userEntity = new UserEntity();
@@ -132,18 +132,18 @@ class UserAuthenticationRestServiceTest {
     }
 
     @Test
-    void login_invalidInput() {
+    void loginInvalidInput() {
         Assertions.assertThat(userAuthentication.login(INVALID_CREDENTIALS1, request).getCode()).isEqualTo(GenericResponseResult.CODE_BAD_REQUEST);
         Assertions.assertThat(userAuthentication.login(INVALID_CREDENTIALS2, request).getCode()).isEqualTo(GenericResponseResult.CODE_BAD_REQUEST);
     }
 
     @Test
-    void login_emptyInput() {
+    void loginEmptyInput() {
         Assertions.assertThat(userAuthentication.login(EMPTY_CREDENTIALS, request).getCode()).isEqualTo(GenericResponseResult.CODE_BAD_REQUEST);
     }
 
     @Test
-    void logout_loggedIn() {
+    void logoutLoggedIn() {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(142L);
 
@@ -155,7 +155,7 @@ class UserAuthenticationRestServiceTest {
     }
 
     @Test
-    void logout_notLoggedIn() {
+    void logoutNotLoggedIn() {
         Mockito.when(session.getAttribute(AuthorityConfig.SESSION_ATTR_USER)).thenReturn(null);
 
 

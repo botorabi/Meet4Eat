@@ -96,13 +96,18 @@ public class GenericResponseResult<T> {
     /**
      * This method is used for allowing the call of result methods with or without a 'data' as second parameter.
      */
+    @SafeVarargs
     private static final <T> T getResponseData(final T... data) {
+        if (data != null && data.length > 1) {
+            throw new RuntimeException("GenericResponseResult: Only one data object can be passed!");
+        }
         return data == null ? null : (data.length > 0 ? data[0] : null);
     }
 
     /**
      * 200.
      */
+    @SafeVarargs
     public static <T> GenericResponseResult<T> ok(final String description, final T... data) {
         return new GenericResponseResult<>(STATUS_OK, description, CODE_OK, getResponseData(data));
     }
@@ -110,6 +115,7 @@ public class GenericResponseResult<T> {
     /**
      * 400.
      */
+    @SafeVarargs
     public static <T> GenericResponseResult<T> badRequest(final String desc, final T... data) {
         return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_BAD_REQUEST, getResponseData(data));
     }
@@ -117,6 +123,7 @@ public class GenericResponseResult<T> {
     /**
      * 401
      */
+    @SafeVarargs
     public static <T> GenericResponseResult<T> unauthorized(final String desc, final T... data) {
         return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_UNAUTHORIZED, getResponseData(data));
     }
@@ -124,6 +131,7 @@ public class GenericResponseResult<T> {
     /**
      * 403
      */
+    @SafeVarargs
     public static <T> GenericResponseResult<T> forbidden(final String desc, final T... data) {
         return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_FORBIDDEN, getResponseData(data));
     }
@@ -131,6 +139,7 @@ public class GenericResponseResult<T> {
     /**
      * 404
      */
+    @SafeVarargs
     public static <T> GenericResponseResult<T> notFound(final String desc, final T... data) {
         return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_FOUND, getResponseData(data));
     }
@@ -138,6 +147,7 @@ public class GenericResponseResult<T> {
     /**
      * 406
      */
+    @SafeVarargs
     public static <T> GenericResponseResult<T> notAcceptable(final String desc, final T... data) {
         return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_ACCEPTABLE, getResponseData(data));
     }
@@ -145,6 +155,7 @@ public class GenericResponseResult<T> {
     /**
      * 500.
      */
+    @SafeVarargs
     public static <T> GenericResponseResult<T> internalError(final String desc, final T... data) {
         return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_INTERNAL_SRV_ERROR, getResponseData(data));
     }
