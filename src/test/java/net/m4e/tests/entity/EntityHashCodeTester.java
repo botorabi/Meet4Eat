@@ -5,24 +5,27 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.tests;
+package net.m4e.tests.entity;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
 
+/**
+ * @author boto
+ * Date of creation January 30, 2018
+ */
 public class EntityHashCodeTester<T> extends EntityTestBase<T> {
 
     private final Constructor<T> constructor;
 
     private final Field idField;
 
-    EntityHashCodeTester(final Class<T> actual) throws NoSuchMethodException {
+    public EntityHashCodeTester(final Class<T> actual) throws NoSuchMethodException {
         super(actual);
         constructor = actual.getDeclaredConstructor();
         idField = findAnnotatedField(javax.persistence.Id.class);
     }
 
-    void verifyAll() throws Exception {
+    public void verifyAll() throws Exception {
         hashCodeWithId();
         hashCodeWithoutId();
     }
@@ -30,7 +33,9 @@ public class EntityHashCodeTester<T> extends EntityTestBase<T> {
     private void hashCodeWithoutId() throws Exception {
         T entity = createInstance();
 
-        Assertions.assertThat(entity.hashCode()).isEqualTo(0);
+        if (entity.hashCode() != 0) {
+            failWithMessage("\nEntities of Class:\n  <%s>\nhas an unexpected hash code with a null ID:\n  <%d != %d>", getActual().getSimpleName(), entity.hashCode(), 0);
+        }
     }
 
     private void hashCodeWithId() throws Exception {
@@ -38,7 +43,8 @@ public class EntityHashCodeTester<T> extends EntityTestBase<T> {
 
         Long id = 42L;
         idField.set(entity, id);
-
-        Assertions.assertThat(entity.hashCode()).isEqualTo(id.hashCode());
+        if (entity.hashCode() != id.hashCode()) {
+            failWithMessage("\nEntities of Class:\n  <%s>\nhas an unexpected hash code with a valid ID:\n  <%d != %d>", getActual().getSimpleName(), entity.hashCode(), id.hashCode());
+        }
     }
 }

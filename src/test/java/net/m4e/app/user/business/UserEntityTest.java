@@ -8,15 +8,12 @@
 package net.m4e.app.user.business;
 
 import net.m4e.app.auth.RoleEntity;
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.StatusEntity;
-import net.m4e.tests.Assertions;
+import net.m4e.app.resources.*;
 import net.m4e.tests.EntityAssertions;
-import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.*;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author boto
@@ -25,14 +22,17 @@ import java.util.List;
 class UserEntityTest {
 
     @Test
-    void entityTest() {
+    void commonEntityTests() {
         EntityAssertions.assertThat(UserEntity.class)
                 .isSerializable()
+                .hasSerialVersionUID()
                 .hasEntityAnnotation()
                 .hasIdAnnotation()
                 .conformsToEqualsContract()
                 .hasHashCode()
-                .hasProperToString();
+                .hasProperToString()
+                .hasProperToString()
+                ;
     }
 
     @Test

@@ -5,18 +5,19 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.tests;
+package net.m4e.tests.entity;
+
+import net.m4e.tests.AssertionStack;
+import org.assertj.core.internal.Failures;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-
-import org.assertj.core.internal.Failures;
 
 /**
  * @author boto
  * Date of creation January 30, 2018
  */
-class EntityTestBase<T> {
+abstract class EntityTestBase<T> {
 
     private final Constructor<T> constructor;
 
@@ -28,6 +29,8 @@ class EntityTestBase<T> {
         constructor = actual.getDeclaredConstructor();
         this.actual = actual;
     }
+
+    public abstract void verifyAll() throws Exception;
 
     protected T createInstance() {
         try {
@@ -56,8 +59,8 @@ class EntityTestBase<T> {
     }
 
     protected void failWithMessage(String msg, Object... args) {
-        AssertionError assertionError = failures.failure(String.format(msg, args));
-        Throwables.removeFromStacktrace(assertionError, "net.m4e.tests");
+        AssertionError assertionError = getFailures().failure(String.format(msg, args));
+        AssertionStack.removeTopEntriesFromStacktrace(assertionError, 1);
         throw assertionError;
     }
 }

@@ -7,10 +7,11 @@
  */
 package net.m4e.tests;
 
+import net.m4e.tests.entity.*;
+import org.assertj.core.api.AbstractObjectAssert;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
-
-import org.assertj.core.api.AbstractObjectAssert;
 
 /**
  * @author ybroeker
@@ -64,8 +65,8 @@ public class EntityAssert<T> extends AbstractObjectAssert<EntityAssert<T>, Class
 
     public EntityAssert<T> conformsToEqualsContract() {
         try {
-            EntityEqualsTester<T> entityEqualsTester = new EntityEqualsTester<>(actual);
-            entityEqualsTester.verifyAll();
+            EntityEqualsTester<T> tester = new EntityEqualsTester<>(actual);
+            tester.verifyAll();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -75,8 +76,8 @@ public class EntityAssert<T> extends AbstractObjectAssert<EntityAssert<T>, Class
 
     public EntityAssert<T> hasHashCode() {
         try {
-            EntityHashCodeTester<T> entityHashCodeTester = new EntityHashCodeTester<>(actual);
-            entityHashCodeTester.verifyAll();
+            EntityHashCodeTester<T> tester = new EntityHashCodeTester<>(actual);
+            tester.verifyAll();
         } catch (Exception e) {
             throw new RuntimeException();
         }
@@ -85,7 +86,13 @@ public class EntityAssert<T> extends AbstractObjectAssert<EntityAssert<T>, Class
     }
 
     public EntityAssert<T> hasProperToString() {
-        //! TODO
+        try {
+            EntityToStringTester<T> tester = new EntityToStringTester<>(actual);
+            tester.verifyAll();
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+
         return this;
     }
 }

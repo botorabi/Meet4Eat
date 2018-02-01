@@ -10,8 +10,7 @@ package net.m4e.common;
 
 import org.junit.jupiter.api.Test;
 
-import static net.m4e.common.Strings.checkMinMaxLength;
-import static net.m4e.common.Strings.limitStringLen;
+import static net.m4e.common.Strings.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 

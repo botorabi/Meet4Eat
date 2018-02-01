@@ -10,12 +10,11 @@ package net.m4e.app.mailbox.rest;
 import net.m4e.app.mailbox.business.MailEntity;
 import net.m4e.app.mailbox.rest.comm.NewMailCmd;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.app.user.business.UserEntity;
-import net.m4e.app.user.business.Users;
+import net.m4e.app.user.business.*;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 
-import static net.m4e.tests.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class NewMailValidatorTest {
@@ -63,12 +62,12 @@ class NewMailValidatorTest {
         MailEntity mailEntity = newMailValidator.validateNewEntityInput(newMailCmd, user42);
 
 
-        assertThat(mailEntity.getContent()).isEqualTo("Content...");
-        assertThat(mailEntity.getSubject()).isEqualTo("Subject");
-        assertThat(mailEntity.getReceiverId()).isEqualTo(84L);
-        assertThat(mailEntity.getReceiverName()).isEqualTo("Name");
-        assertThat(mailEntity.getSenderId()).isEqualTo(42L);
-        assertThat(mailEntity.getSenderName()).isEqualTo("Uncle Bob");
+        Assertions.assertThat(mailEntity.getContent()).isEqualTo("Content...");
+        Assertions.assertThat(mailEntity.getSubject()).isEqualTo("Subject");
+        Assertions.assertThat(mailEntity.getReceiverId()).isEqualTo(84L);
+        Assertions.assertThat(mailEntity.getReceiverName()).isEqualTo("Name");
+        Assertions.assertThat(mailEntity.getSenderId()).isEqualTo(42L);
+        Assertions.assertThat(mailEntity.getSenderName()).isEqualTo("Uncle Bob");
 
     }
 

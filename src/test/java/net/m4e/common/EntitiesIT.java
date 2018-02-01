@@ -7,23 +7,19 @@
  */
 package net.m4e.common;
 
-import java.util.*;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
-
 import net.m4e.system.core.AppInfoEntity;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
+
+import javax.inject.Inject;
+import javax.persistence.*;
+import javax.transaction.*;
+import java.util.*;
 
 import static org.junit.Assert.*;
 

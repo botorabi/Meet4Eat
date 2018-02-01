@@ -7,16 +7,12 @@
  */
 package net.m4e.app.mailbox.business;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-
-import net.m4e.app.mailbox.business.Mail;
-import net.m4e.app.mailbox.business.MailEntity;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
+
+import javax.json.bind.*;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /**
  * @author ybroeker

@@ -7,28 +7,16 @@
  */
 package net.m4e.app.user.rest;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.validation.constraints.AssertTrue;
-
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import com.revinate.assertj.json.JsonPathAssert;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.app.user.business.UserEntity;
-import net.m4e.app.user.business.Users;
-import net.m4e.app.user.rest.UserAuthenticationRestService;
-import net.m4e.app.user.rest.comm.LoggedIn;
-import net.m4e.app.user.rest.comm.LoginCmd;
+import net.m4e.app.user.business.*;
+import net.m4e.app.user.rest.comm.*;
 import net.m4e.common.GenericResponseResult;
-import net.m4e.common.ResponseResults;
 import org.assertj.core.api.Assertions;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.*;
+
+import javax.servlet.http.*;
 
 /**
  * @author ybroeker

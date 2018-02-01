@@ -5,12 +5,12 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.tests;
+package net.m4e.tests.entity;
+
+import org.assertj.core.util.Objects;
 
 import java.lang.reflect.Field;
 import java.util.Random;
-
-import org.assertj.core.util.Objects;
 
 /**
  * @author ybroeker
@@ -21,12 +21,12 @@ public class EntityEqualsTester<T> extends EntityTestBase<T> {
 
     private final Random random = new Random();
 
-    EntityEqualsTester(final Class<T> actual) throws NoSuchMethodException {
+    public EntityEqualsTester(final Class<T> actual) throws NoSuchMethodException {
         super(actual);
         idField = findAnnotatedField(javax.persistence.Id.class);
     }
 
-    void verifyAll() throws Exception {
+    public void verifyAll() throws Exception {
         notEqualWithoutIds();
         equalWithSameIds();
         notEqualWithDifferentIds();

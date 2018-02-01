@@ -7,14 +7,14 @@
  */
 package net.m4e.app.mailbox.business;
 
-import java.util.stream.Stream;
-
 import net.m4e.app.mailbox.business.MailOperation.MailOperationAdapter;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
+
+import java.util.stream.Stream;
 
 /**
  * @author ybroeker

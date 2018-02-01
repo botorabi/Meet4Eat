@@ -19,12 +19,10 @@ import javax.json.JsonObjectBuilder;
  * @author boto
  * Date of creation Aug 18, 2017
  */
+@Deprecated
 public class ResponseResults extends GenericResponseResult<String> {
 
-    /**
-     * Create a response instance.
-     */
-    public ResponseResults() {
+    ResponseResults() {
     }
 
     /**
@@ -41,7 +39,7 @@ public class ResponseResults extends GenericResponseResult<String> {
     }
 
     /**
-     * Build a response results string in JSON formate with given details.
+     * Build a response results string in JSON format with given details.
      * 
      * @param status        Response status, STATUS_OK or not STATUS_NOK
      * @param description   Description
@@ -69,7 +67,7 @@ public class ResponseResults extends GenericResponseResult<String> {
     }
 
     /**
-     * Get the JSON formated string out of the response.
+     * Get the JSON formatted string out of the response.
      * 
      * @return JSON string representing the response
      */

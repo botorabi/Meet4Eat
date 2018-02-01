@@ -7,11 +7,11 @@
  */
 package net.m4e.app.mailbox.business;
 
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-
-import net.m4e.tests.Assertions;
-import org.junit.jupiter.api.Test;
 
 /**
  * @author ybroeker

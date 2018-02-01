@@ -9,9 +9,7 @@ package net.m4e.common;
 
 import org.junit.jupiter.api.Test;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import javax.json.*;
 import java.io.StringReader;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -178,7 +176,7 @@ class ResponseResultsTest {
             assertThat(jobject.getInt("code", 0)).isEqualTo(code);
         }
         catch(Exception ex) {
-            fail("Invalid json format: " + ex.getLocalizedMessage());
+            fail("Invalid json format: " + ex.getMessage());
         }
     }
 }
