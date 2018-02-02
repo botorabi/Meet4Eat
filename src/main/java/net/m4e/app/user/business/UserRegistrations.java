@@ -10,17 +10,17 @@ package net.m4e.app.user.business;
 
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.SendEmailEvent;
-import net.m4e.common.Entities;
+import net.m4e.common.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import javax.ws.rs.Produces;
 import java.lang.invoke.MethodHandles;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -35,16 +35,6 @@ public class UserRegistrations {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
-     * Amount of hours for expiring a new registration.
-     */
-    private final int REGISTER_EXPIRATION_HOURS = 24;
-
-    /**
-     * Amount of minutes for expiring a password reset request.
-     */
-    private final int PASSWORD_RESET_EXPIRATION_MINUTES = 30;
-
-    /**
      * Entities instance injected during construction
      */
     private final Entities entities;
@@ -57,7 +47,12 @@ public class UserRegistrations {
     /**
      * Event for sending e-mail to user.
      */
-    private Event<SendEmailEvent> sendMailEvent;
+    private final Event<SendEmailEvent> sendMailEvent;
+
+    /**
+     * User to purge expired user registrations and password resets.
+     */
+    private final UserResourcePurger userResourcePurger;
 
 
     /**
@@ -67,6 +62,7 @@ public class UserRegistrations {
         entities = null;
         users = null;
         sendMailEvent = null;
+        userResourcePurger = null;
     }
 
     /**
@@ -76,10 +72,14 @@ public class UserRegistrations {
      * @param users       Users instance
      */
     @Inject
-    public UserRegistrations(Entities entities, Users users, Event<SendEmailEvent> sendMailEvent) {
+    public UserRegistrations(Entities entities,
+                             Users users,
+                             Event<SendEmailEvent> sendMailEvent,
+                             UserResourcePurger userResourcePurger) {
         this.entities = entities;
         this.users = users;
         this.sendMailEvent = sendMailEvent;
+        this.userResourcePurger = userResourcePurger;
     }
 
     /**
@@ -104,50 +104,20 @@ public class UserRegistrations {
 
     /**
      * Purge all expired account registrations and password reset requests.
-     * This method may be called priodically (e.g. every 24 hours) by the maintenance module.
+     * This method may be called periodically (e.g. every 24 hours) by the maintenance module.
      * 
      * @return Return total count of purged resources.
      */
     public int purgeExpiredRequests() {
-        int purgedregs = 0;
-        int purgedpwresets = 0;
 
-        Long now = (new Date()).getTime();
+        int purgedRegistrations = userResourcePurger.purgeAccountRegistrations();
 
-        // purge expired account registrations
-        List<UserRegistrationEntity> regs = entities.findAll(UserRegistrationEntity.class);
-        for (UserRegistrationEntity reg: regs) {
-            Long duration = now - reg.getRequestDate();
-            duration /= (1000 * 60 * 60);
-            if (duration > REGISTER_EXPIRATION_HOURS) {
-                purgedregs++;
-                UserEntity user = reg.getUser();
-                reg.setUser(null);
-                entities.delete(reg);
-                if (user != null) {
-                    try {
-                        users.markUserAsDeleted(user);
-                    }
-                    catch(Exception ex) {
-                        LOGGER.warn("could not mark the user as deleted, id: " + user.getId());
-                    }
-                }
-            }
-        }
-        // purge expired password reset requests
-        List<UserPasswordResetEntity> resets = entities.findAll(UserPasswordResetEntity.class);
-        for (UserPasswordResetEntity reset: resets) {
-            Long duration = now - reset.getRequestDate();
-            duration /= (1000 * 60);
-            if (duration > PASSWORD_RESET_EXPIRATION_MINUTES) {
-                purgedpwresets++;
-                entities.delete(reset);
-            }
-        }
-        LOGGER.info("Purged expired account registrations: " + purgedregs);
-        LOGGER.info("Purged expired password reset requests: " + purgedpwresets);
+        int purgedPasswordResets = userResourcePurger.purgePasswordResets();
 
-        return purgedpwresets + purgedregs;
+        LOGGER.info("Purged expired account registrations: " + purgedRegistrations);
+        LOGGER.info("Purged expired password reset requests: " + purgedPasswordResets);
+
+        return purgedRegistrations + purgedPasswordResets ;
     }
 
     /**
@@ -159,25 +129,35 @@ public class UserRegistrations {
      * @param bccEmail      Optional email address used for BCC, let it null in order to ignore it.
      */
     public void registerUserAccount(UserEntity user, String activationURL, String bccEmail) {
-        UserRegistrationEntity reg = new UserRegistrationEntity();
-        reg.setUser(user);
-        reg.setRequestDate((new Date()).getTime());
-        String registrationToken = reg.createActivationToken();
-        entities.create(reg);
+        UserRegistrationEntity registrationEntity = createUserRegistrationEntity(user);
 
-        RegistrationEmail registrationEmail = new RegistrationEmail(user, activationURL, registrationToken);
-        sendMailEvent.fireAsync(registrationEmail.createEvent());
+        String registrationToken = registrationEntity.createActivationToken();
 
-        //! NOTE we do not use BCC on the user mail as the mail header may unveil the bccEmail
-        if (bccEmail != null) {
-            SendEmailEvent sendCcMail = new SendEmailEvent();
-            sendCcMail.setRecipients(Arrays.asList(bccEmail));
-            sendCcMail.setSubject("Notification - Meet4Eat User Activation");
-            sendCcMail.setHtmlBody(false);
-            String body = "Copy of Email to " + user.getEmail() + "\n---\n\n" + registrationEmail.getBody();
-            sendCcMail.setBody(body);
-            sendMailEvent.fireAsync(sendCcMail);
-        }
+        String body = createUserRegistrationMailBody(user, activationURL, registrationToken);
+
+        sendNotificationMails(user.getEmail(), bccEmail, "Meet4Eat User Activation", body);
+    }
+
+    private UserRegistrationEntity createUserRegistrationEntity(UserEntity user) {
+        UserRegistrationEntity entity = new UserRegistrationEntity();
+        entity.setUser(user);
+        entity.setRequestDate((new Date()).getTime());
+        entities.create(entity);
+
+        return entity;
+    }
+
+    private String createUserRegistrationMailBody(UserEntity user, String activationURL, String registrationToken) {
+        EmailBodyTemplateRegistration mailBodyTemplate = new EmailBodyTemplateRegistration();
+
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplateRegistration.KEY_USER_NAME, user.getName());
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplateRegistration.KEY_LOGIN, user.getLogin());
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplateRegistration.KEY_ACTIVATION_URL, activationURL);
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplateRegistration.KEY_REGISTRATION_TOKEN, registrationToken);
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplateRegistration.KEY_REGISTRATION_EXPIRATION, "" + UserResourcePurger.REGISTER_EXPIRATION_HOURS);
+
+        String template = mailBodyTemplate.createTemplate();
+        return EmailBodyCreator.create(template, mailBodyTemplate.getPlaceHolders());
     }
 
     /**
@@ -190,6 +170,31 @@ public class UserRegistrations {
      * @throws Exception    Throws an exception if the activation was not successful.
      */
     public UserEntity activateUserAccount(String token) throws Exception {
+        UserRegistrationEntity registrationEntity = getUserRegistrationEntity(token);
+
+        entities.delete(registrationEntity);
+
+        checkRegistrationExpiration(registrationEntity);
+
+        UserEntity user = registrationEntity.getUser();
+        user.getStatus().setEnabled(true);
+        return user;
+    }
+
+    private void checkRegistrationExpiration(UserRegistrationEntity registrationEntity) throws Exception {
+        UserEntity user = registrationEntity.getUser();
+        if ((user == null) || (user.getStatus().getIsDeleted())) {
+            throw new Exception("Internal error, user no longer exists.");
+        }
+        Long elapsedTimeSinceRegistration = (new Date()).getTime() - registrationEntity.getRequestDate();
+        elapsedTimeSinceRegistration /= (1000 * 60 * 60);
+        if ( elapsedTimeSinceRegistration > UserResourcePurger.REGISTER_EXPIRATION_HOURS) {
+            entities.delete(user);
+            throw new Exception("Activation code was expired.");
+        }
+    }
+
+    private UserRegistrationEntity getUserRegistrationEntity(String token) throws Exception {
         List<UserRegistrationEntity> regs = entities.findByField(UserRegistrationEntity.class, "activationToken", token);
         if (regs.size() > 1) {
             LOGGER.error("there are more than one registration entry with same token, count: " + regs.size());
@@ -198,25 +203,7 @@ public class UserRegistrations {
         if (regs.size() < 1) {
             throw new Exception("Invalid registration code.");
         }
-        UserRegistrationEntity registration = regs.get(0);
-        UserEntity user = registration.getUser();
-        // delete the registration entry
-        entities.delete(registration);
-        
-        if ((user == null) || (user.getStatus().getIsDeleted())) {
-            throw new Exception("Internal error, user no longer exists.");            
-        }
-        // check the expiration
-        Long duration = (new Date()).getTime() - registration.getRequestDate();
-        duration /= (1000 * 60 * 60);
-        if ( duration > REGISTER_EXPIRATION_HOURS) {
-            // delete the entity if it is expired
-            entities.delete(user);
-            throw new Exception("Activation code was expired.");            
-        }
-        // activate the user
-        user.getStatus().setEnabled(true);
-        return user;
+        return regs.get(0);
     }
 
     /**
@@ -225,71 +212,63 @@ public class UserRegistrations {
      * then an email with a reset link is sent to the user.
      * 
      * @param email         Email of the user who requests a password reset
-     * @param resetURL      The base URL used for performing the password reset
+     * @param resetPasswordURL      The base URL used for performing the password reset
      * @param bccEmail      Optional email address used for BCC, let it null in order to ignore it.
      * @throws Exception    Throws exception if no user with given email address was found.
      */
-    public void requestPasswordReset(String email, String resetURL, String bccEmail) throws Exception {
+    public void requestPasswordReset(String email, String resetPasswordURL, String bccEmail) throws Exception {
         UserEntity user = users.findUserByEmail(email);
         if ((user == null) || (user.getStatus().getIsDeleted())) {
             throw new Exception("There is no registered user with given email address!");
         }
 
-        UserPasswordResetEntity reset = null;
-        // if there is already a reset password entry then re-use it
-        List<UserPasswordResetEntity> regs = entities.findAll(UserPasswordResetEntity.class);
-        for (UserPasswordResetEntity reg : regs) {
-            if (user.equals(reg.getUser())) {
-                reset = reg;
-                break;
+        UserPasswordResetEntity resetEntity = getOrCreatePasswordResetEntity(user);
+
+        String resetPasswordToken = resetEntity.createResetToken();
+
+        String body = createResetPasswordMailBody(user, resetPasswordURL, resetPasswordToken);
+
+        sendNotificationMails(user.getEmail(), bccEmail, "Password Reset", body);
+    }
+
+    private String createResetPasswordMailBody(UserEntity user, String resetPasswordURL, String resetToken) {
+        EmailBodyTemplatePasswordReset mailBodyTemplate = new EmailBodyTemplatePasswordReset();
+
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_USER_NAME, user.getName());
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_LOGIN, user.getLogin());
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_RESET_PASSWORD_URL, resetPasswordURL);
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_RESET_PASSWORD_TOKEN, resetToken);
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_RESET_EXPIRATION, "" + UserResourcePurger.PASSWORD_RESET_EXPIRATION_MINUTES);
+
+        String template = mailBodyTemplate.createTemplate();
+        return EmailBodyCreator.create(template, mailBodyTemplate.getPlaceHolders());
+    }
+
+    private UserPasswordResetEntity getOrCreatePasswordResetEntity(UserEntity user) {
+        List<UserPasswordResetEntity> allEntities = this.entities.findAll(UserPasswordResetEntity.class);
+        for (UserPasswordResetEntity entity : allEntities) {
+            if (user.equals(entity.getUser())) {
+                return entity;
             }
         }
-        // create a 'password reset' entry if no one exists
-        if (reset == null) {
-            reset = new UserPasswordResetEntity();
-            reset.setUser(user);
-            entities.create(reset);
-        }
-        reset.setRequestDate((new Date()).getTime());
-        String resettoken = reset.createResetToken();
 
-        // send an email to user
-        String body = "";
-        body += "Hello Dear " + user.getName();
-        body += "\n\n";
-        body += "You have requested for a password reset for your account at Meet4Eat with following login name: " + user.getLogin();
-        body += "\n";
-        body += "If you did not request for a password reset, please contact the Meet4Eat team.";
-        body += "\n\n";
-        body += "Please click the following link in order to reset your password.";
-        body += "\n\n";
-        body += " " + resetURL + "?token=" + resettoken;
-        body += "\n\n";
-        body += "Note that the password reset process will expire in " + PASSWORD_RESET_EXPIRATION_MINUTES + " minutes.";
-        body += "\n";
-        body += "Don't hesitate to contact us if you need any help";
-        body += "\n\n";
-        body += "Website: http://m4e.org\n";
-        body += "Support: support@m4e.org";
-        body += "\n\n";
-        body += "Best Regards\n";
-        body += "Meet4Eat Team\n";
-        SendEmailEvent sendmail = new SendEmailEvent();
-        sendmail.setRecipients(Arrays.asList(user.getEmail()));
-        sendmail.setSubject("Meet4Eat Password Reset");
-        sendmail.setHtmlBody(false);
-        sendmail.setBody(body);
-        sendMailEvent.fireAsync(sendmail);
+        UserPasswordResetEntity entity = new UserPasswordResetEntity();
+        entity.setUser(user);
+        entities.create(entity);
+        entity.setRequestDate((new Date()).getTime());
+        return entity;
+    }
 
-        //! NOTE we do not user BCC on the user mail as the mail header may unveil the bccEmail
-        if (bccEmail != null) {
-            SendEmailEvent sendccmail = new SendEmailEvent();
-            sendccmail.setRecipients(Arrays.asList(bccEmail));
-            sendccmail.setSubject("Notification - Password Reset");
-            sendccmail.setHtmlBody(false);
-            body = "Copy of Email to " + user.getEmail() + "\n---\n\n" + body;
-            sendccmail.setBody(body);
-            sendMailEvent.fireAsync(sendccmail);
+    private void sendNotificationMails(String recipient, String bccRecipient, String subject, String body) {
+        SendEmailEvent sendMailEvent = EmailEventCreator.plainTextMail(Arrays.asList(recipient), subject, body);
+        this.sendMailEvent.fireAsync(sendMailEvent);
+
+        //! NOTE we do not use BCC on the user mail as the mail header may unveil the bccRecipient
+        if (bccRecipient != null) {
+            SendEmailEvent sendBccMailEvent = EmailEventCreator.plainTextMail(Arrays.asList(bccRecipient), "Notification - " + subject, "");
+            body = "Copy of Email to " + recipient + "\n---\n\n" + body;
+            sendBccMailEvent.setBody(body);
+            this.sendMailEvent.fireAsync(sendBccMailEvent);
         }
     }
 
@@ -302,6 +281,35 @@ public class UserRegistrations {
      * @throws Exception    Throws an exception if the password reset was not successful.
      */
     public UserEntity processPasswordReset(String resetToken, String newPassword) throws Exception {
+        UserPasswordResetEntity passwordResetEntity = getUserPasswordResetEntity(resetToken);
+
+        entities.delete(passwordResetEntity);
+
+        checkPasswordResetExpiration(passwordResetEntity);
+
+        if (AuthorityConfig.getInstance().createPassword("").equals(newPassword)) {
+            throw new Exception("Cannot reset user password, the password must not be empty.");            
+        }
+
+        UserEntity user = passwordResetEntity.getUser();
+        user.setPassword(newPassword);
+        return user;
+    }
+
+    private void checkPasswordResetExpiration(UserPasswordResetEntity reset) throws Exception {
+        UserEntity user = reset.getUser();
+        if ((user == null) || (user.getStatus().getIsDeleted())) {
+            throw new Exception("Internal error, user no longer exists.");
+        }
+
+        Long elapsedTimeSinceResetRequest = (new Date()).getTime() - reset.getRequestDate();
+        elapsedTimeSinceResetRequest /= (1000 * 60);
+        if ( elapsedTimeSinceResetRequest > UserResourcePurger.PASSWORD_RESET_EXPIRATION_MINUTES) {
+            throw new Exception("Reset code was expired.");
+        }
+    }
+
+    private UserPasswordResetEntity getUserPasswordResetEntity(String resetToken) throws Exception {
         List<UserPasswordResetEntity> resets = entities.findByField(UserPasswordResetEntity.class, "resetToken", resetToken);
         if (resets.size() > 1) {
             LOGGER.error("there are more than one password reset entry with same token, count: " + resets.size());
@@ -310,77 +318,6 @@ public class UserRegistrations {
         if (resets.size() < 1) {
             throw new Exception("Invalid password reset code.");
         }
-        UserPasswordResetEntity reset = resets.get(0);
-        UserEntity user = reset.getUser();
-        // delete the reset entry
-        entities.delete(reset);
-        if ((user == null) || (user.getStatus().getIsDeleted())) {
-            throw new Exception("Internal error, user no longer exists.");            
-        }
-        // check the expiration
-        Long duration = (new Date()).getTime() - reset.getRequestDate();
-        duration /= (1000 * 60);
-        if ( duration > PASSWORD_RESET_EXPIRATION_MINUTES) {
-            throw new Exception("Reset code was expired.");            
-        }
-
-        if (AuthorityConfig.getInstance().createPassword("").equals(newPassword)) {
-            throw new Exception("Cannot reset user password, the password must not be empty.");            
-        }
-        // set the password
-        user.setPassword(newPassword);
-        return user;
-    }
-
-    private class RegistrationEmail {
-
-        private static final String SUBJECT = "Meet4Eat User Activation";
-
-        private UserEntity user;
-        private String activationURL;
-        private String registrationToken;
-        private String body;
-
-        public RegistrationEmail(final UserEntity user, final String activationURL, final String registrationToken) {
-            this.user = user;
-            this.activationURL = activationURL;
-            this.registrationToken = registrationToken;
-            body = createBody();
-        }
-
-        public SendEmailEvent createEvent() {
-            SendEmailEvent event = new SendEmailEvent();
-            event.setRecipients(Arrays.asList(user.getEmail()));
-            event.setSubject(SUBJECT);
-            event.setHtmlBody(false);
-            event.setBody(body);
-            return event;
-        }
-
-        public String getBody() {
-            return body;
-        }
-
-        private String createBody() {
-            String body = "";
-            body += "Hello Dear " + user.getName();
-            body += "\n\n";
-            body += "You have registered an account at Meet4Eat with following login name: " + user.getLogin();
-            body += "\n\n";
-            body += "Please click the following link in order to complete your registration for Meet4Eat by activating your account.";
-            body += "\n\n";
-            body += " " + activationURL + "?token=" + registrationToken;
-            body += "\n\n";
-            body += "Note that the account registration and activation process will expire in " + REGISTER_EXPIRATION_HOURS + " hours.";
-            body += "\n";
-            body += "Don't hesitate to contact us if you need any help with registration.";
-            body += "\n\n";
-            body += "Website: http://m4e.org\n";
-            body += "Support: support@m4e.org";
-            body += "\n\n";
-            body += "Best Regards\n";
-            body += "Meet4Eat Team\n";
-            return body;
-        }
+        return resets.get(0);
     }
 }

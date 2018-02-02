@@ -8,15 +8,12 @@
 package net.m4e.system.core;
 
 import net.m4e.common.Entities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class cares about application updates. Whenever a new app version

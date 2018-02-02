@@ -25,12 +25,12 @@ public class EntityManagerProvider {
     /**
      * The unit name for persistence as configured in persistence.xml
      */
-    public final static String PERSITENCE_UNIT_NAME = "Meet4EatPU";
+    public final static String PERSISTENCE_UNIT_NAME = "Meet4EatPU";
 
     /**
      * Injectable Entity-Manager.
      */
-    @PersistenceContext(unitName = PERSITENCE_UNIT_NAME)
+    @PersistenceContext(unitName = PERSISTENCE_UNIT_NAME)
     private EntityManager entityManager;
 
     /**
