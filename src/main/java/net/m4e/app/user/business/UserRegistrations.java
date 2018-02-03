@@ -11,14 +11,11 @@ package net.m4e.app.user.business;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.notification.SendEmailEvent;
 import net.m4e.common.*;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.ws.rs.Produces;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 
@@ -260,15 +257,15 @@ public class UserRegistrations {
     }
 
     private void sendNotificationMails(String recipient, String bccRecipient, String subject, String body) {
-        SendEmailEvent sendMailEvent = EmailEventCreator.plainTextMail(Arrays.asList(recipient), subject, body);
-        this.sendMailEvent.fireAsync(sendMailEvent);
+        SendEmailEvent mailEvent = EmailEventCreator.plainTextMail(Arrays.asList(recipient), subject, body);
+        sendMailEvent.fireAsync(mailEvent);
 
         //! NOTE we do not use BCC on the user mail as the mail header may unveil the bccRecipient
         if (bccRecipient != null) {
             SendEmailEvent sendBccMailEvent = EmailEventCreator.plainTextMail(Arrays.asList(bccRecipient), "Notification - " + subject, "");
             body = "Copy of Email to " + recipient + "\n---\n\n" + body;
             sendBccMailEvent.setBody(body);
-            this.sendMailEvent.fireAsync(sendBccMailEvent);
+            sendMailEvent.fireAsync(sendBccMailEvent);
         }
     }
 

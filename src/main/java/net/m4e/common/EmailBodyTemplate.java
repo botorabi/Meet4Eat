@@ -31,7 +31,10 @@ public abstract class EmailBodyTemplate {
      */
     public void setPlaceHolderValue(String key, String value) {
         if (!placeHolders.containsKey(key)) {
-            throw new RuntimeException("Invalid placeholder key");
+            throw new IllegalArgumentException("Invalid placeholder key");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("Placeholder value must not be NULL");
         }
         placeHolders.put(key, value);
     }

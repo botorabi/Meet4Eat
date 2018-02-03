@@ -17,8 +17,7 @@ import org.mockito.stubbing.Answer;
 import javax.enterprise.event.Event;
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.any;
 
 /**
@@ -110,8 +109,9 @@ class UserRegistrationsTest {
         assertThat(user.getId()).isEqualTo(NEW_USER_ID);
     }
 
-    @Test
-    void requestPasswordReset() {
+    @Nested
+    class PasswordReset {
+
         final Long USER_ID = 111L;
         final String USER_EMAIL = "user@mailbox.com";
         final String USER_NAME = "Bob Dillen";
@@ -119,43 +119,106 @@ class UserRegistrationsTest {
         final String RESET_LINK = "https://reset-me.org";
         final String BCC_EMAIL = "bcc@emailbox.com";
 
-        StatusEntity status = new StatusEntity();
-        status.setEnabled(true);
-        UserEntity user = new UserEntity();
-        user.setId(USER_ID);
-        user.setName(USER_NAME);
-        user.setLogin(LOGIN);
-        user.setEmail(USER_EMAIL);
-        user.setStatus(status);
+        @Test
+        void requestPasswordResetNoExistingUser() {
+            final String USER_EMAIL = "user@mailbox.com";
 
-        Mockito.when(users.findUserByEmail(any())).thenReturn(user);
+            Mockito.when(users.findUserByEmail(any())).thenReturn(null);
+            try {
+                userRegistrations.requestPasswordReset(USER_EMAIL, null, null);
+                fail("Non existing user was not properly handled");
+            } catch (Exception ex) {
+            }
+        }
 
-        UserPasswordResetEntity resetEntity = new UserPasswordResetEntity();
-        resetEntity.setUser(user);
 
-        Mockito.when(entities.findAll(any())).thenReturn(Arrays.asList(resetEntity));
+        @Test
+        void requestPasswordResetDeletedUser() {
+            final String USER_EMAIL = "user@mailbox.com";
+            StatusEntity status = new StatusEntity();
+            status.setDateDeletion((new Date()).getTime());
+            UserEntity deletedUser = new UserEntity();
+            deletedUser.setStatus(status);
 
-        Mockito.when(sendMailEvent.fireAsync(any())).then(invocationOnMock -> {
-            SendEmailEvent emailEvent = invocationOnMock.getArgumentAt(0, SendEmailEvent.class);
+            Mockito.when(users.findUserByEmail(any())).thenReturn(deletedUser);
+            try {
+                userRegistrations.requestPasswordReset(USER_EMAIL, null, null);
+                fail("Deleted user was not properly handled");
+            } catch (Exception ex) {
+            }
+        }
 
-            checkFireEvent(emailEvent, Arrays.asList(USER_EMAIL, BCC_EMAIL), Arrays.asList(USER_NAME, LOGIN, RESET_LINK));
+        @Test
+        void requestPasswordResetExistingRequest() {
 
-            return null;
-        });
+            UserPasswordResetEntity resetEntity = new UserPasswordResetEntity();
+            UserEntity user = createUserEntity();
+            resetEntity.setUser(user);
 
-        try {
-            userRegistrations.requestPasswordReset(USER_EMAIL, RESET_LINK, BCC_EMAIL);
-            userRegistrations.requestPasswordReset(USER_EMAIL, RESET_LINK, null);
-        } catch (Exception ex) {
-            fail("Could not reset password");
+            Mockito.when(users.findUserByEmail(any())).thenReturn(user);
+            Mockito.when(entities.findAll(any())).thenReturn(Arrays.asList(resetEntity));
+
+            requestPasswordReset(resetEntity);
+        }
+
+        @Test
+        void requestPasswordResetNoMatchingRequest() {
+
+            UserPasswordResetEntity resetEntity = new UserPasswordResetEntity();
+            resetEntity.setUser(new UserEntity());
+
+            Mockito.when(users.findUserByEmail(any())).thenReturn(createUserEntity());
+            Mockito.when(entities.findAll(any())).thenReturn(Arrays.asList(resetEntity));
+
+            requestPasswordReset(resetEntity);
+        }
+
+        @Test
+        void requestPasswordResetNonExistingRequest() {
+
+            UserEntity user = createUserEntity();
+
+            Mockito.when(users.findUserByEmail(any())).thenReturn(user);
+            Mockito.when(entities.findAll(any())).thenReturn(Arrays.asList());
+
+            requestPasswordReset(null);
+        }
+
+        private void requestPasswordReset(UserPasswordResetEntity resetEntity) {
+            Mockito.when(sendMailEvent.fireAsync(any())).then(invocationOnMock -> {
+                SendEmailEvent emailEvent = invocationOnMock.getArgumentAt(0, SendEmailEvent.class);
+
+                checkFireEvent(emailEvent, Arrays.asList(USER_EMAIL, BCC_EMAIL), Arrays.asList(USER_NAME, LOGIN, RESET_LINK));
+
+                return null;
+            });
+
+            try {
+                userRegistrations.requestPasswordReset(USER_EMAIL, RESET_LINK, BCC_EMAIL);
+                userRegistrations.requestPasswordReset(USER_EMAIL, RESET_LINK, null);
+            } catch (Exception ex) {
+                fail("User password reset failed");
+            }
+        }
+
+        private UserEntity createUserEntity() {
+            StatusEntity status = new StatusEntity();
+            status.setEnabled(true);
+            UserEntity user = new UserEntity();
+            user.setId(USER_ID);
+            user.setName(USER_NAME);
+            user.setLogin(LOGIN);
+            user.setEmail(USER_EMAIL);
+            user.setStatus(status);
+            return user;
         }
     }
 
-    private void checkFireEvent(SendEmailEvent emailEvent, List<String> mustOneOfRecipients, List<String> mustBodyContain) {
+    private void checkFireEvent(SendEmailEvent emailEvent, List<String> mustContainOneOfRecipients, List<String> mustContainAllInBody) {
 
-        checkMailBody(emailEvent.getBody(), mustBodyContain);
+        checkMailBody(emailEvent.getBody(), mustContainAllInBody);
 
-        checkMailMailRecipients(mustOneOfRecipients, emailEvent.getRecipients().get(0));
+        checkMailMailRecipients(mustContainOneOfRecipients, emailEvent.getRecipients().get(0));
     }
 
     private void checkMailBody(String body, List<String> mustContain) {
@@ -165,4 +228,57 @@ class UserRegistrationsTest {
     private void checkMailMailRecipients(List<String> possibleRecipients, String mustContain) {
         assertThat(possibleRecipients).contains(mustContain);
     }
+
+    @Test
+    void purgeExpiredRequests() {
+        userRegistrations.purgeExpiredRequests();
+    }
+
+    @Test
+    void registerUserAccountInputs() {
+        String noBccEmail = null;
+
+        String invalidActivationURL = null;
+        String validActivationURL = "https://activate.com";
+
+        UserEntity invalidUserEntity = createInvalidRegistrationUser();
+        UserEntity validUserEntity = createValidRegistrationUser();
+
+        assertThat(isUserRegistrationExceptionThrown(invalidUserEntity, validActivationURL, noBccEmail)).isTrue();
+        assertThat(isUserRegistrationExceptionThrown(invalidUserEntity, invalidActivationURL, noBccEmail)).isTrue();
+        assertThat(isUserRegistrationExceptionThrown(validUserEntity, invalidActivationURL, noBccEmail)).isTrue();
+
+        assertThat(isUserRegistrationExceptionThrown(validUserEntity, validActivationURL, noBccEmail)).isFalse();
+    }
+
+    @Test
+    void registerUserAccountWithBccEmail() {
+        String bccEmail = "bcc@mailbox.com";
+        String validActivationURL = "https://activate.com";
+        UserEntity validUserEntity = createValidRegistrationUser();
+
+        assertThat(isUserRegistrationExceptionThrown(validUserEntity, validActivationURL, bccEmail)).isFalse();
+    }
+
+    private UserEntity createValidRegistrationUser() {
+        UserEntity validUserEntity = new UserEntity();
+        validUserEntity.setName("My Name");
+        validUserEntity.setEmail("me@mailbox.com");
+        validUserEntity.setLogin("MyLogin");
+        return validUserEntity;
+    }
+
+    private UserEntity createInvalidRegistrationUser() {
+        return new UserEntity();
+    }
+
+    private boolean isUserRegistrationExceptionThrown(UserEntity user, String activationURL, String bccEmail) {
+        try {
+            userRegistrations.registerUserAccount(user, activationURL, bccEmail);
+            return false;
+        } catch (IllegalArgumentException ex) {
+        }
+        return true;
+    }
+
 }

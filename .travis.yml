@@ -22,4 +22,4 @@ after_script: #see https://github.com/codeclimate/test-reporter/issues/243
   - cd src/main/java/
   - ../../../cc-test-reporter format-coverage -t jacoco  --add-prefix src/main/java/ ../../../target/jacoco-ut/jacoco.xml
   - cd ../../..
-  - ./cc-test-reporter upload-coverage --input m4e-webapp/src/main/java/coverage/codeclimate.json
+  - ./cc-test-reporter upload-coverage --input src/main/java/coverage/codeclimate.json
