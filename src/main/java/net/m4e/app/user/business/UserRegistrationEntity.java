@@ -10,7 +10,7 @@ package net.m4e.app.user.business;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * This entity is used for user registration. It provides an activation token.
@@ -143,8 +143,8 @@ public class UserRegistrationEntity implements Serializable {
         if (!(object instanceof UserRegistrationEntity)) {
             return false;
         }
-        UserRegistrationEntity other = (UserRegistrationEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        UserRegistrationEntity that = (UserRegistrationEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
     }
 
     @Override

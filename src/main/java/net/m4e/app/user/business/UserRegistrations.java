@@ -178,27 +178,27 @@ public class UserRegistrations {
         return user;
     }
 
-    private void checkRegistrationExpiration(UserRegistrationEntity registrationEntity) throws Exception {
+    protected void checkRegistrationExpiration(UserRegistrationEntity registrationEntity) throws Exception {
         UserEntity user = registrationEntity.getUser();
         if ((user == null) || (user.getStatus().getIsDeleted())) {
             throw new Exception("Internal error, user no longer exists.");
         }
         Long elapsedTimeSinceRegistration = (new Date()).getTime() - registrationEntity.getRequestDate();
         elapsedTimeSinceRegistration /= (1000 * 60 * 60);
-        if ( elapsedTimeSinceRegistration > UserResourcePurger.REGISTER_EXPIRATION_HOURS) {
+        if (elapsedTimeSinceRegistration > UserResourcePurger.REGISTER_EXPIRATION_HOURS) {
             entities.delete(user);
-            throw new Exception("Activation code was expired.");
+            throw new Exception("Activation token was expired.");
         }
     }
 
-    private UserRegistrationEntity getUserRegistrationEntity(String token) throws Exception {
+    protected UserRegistrationEntity getUserRegistrationEntity(String token) throws Exception {
         List<UserRegistrationEntity> regs = entities.findByField(UserRegistrationEntity.class, "activationToken", token);
         if (regs.size() > 1) {
             LOGGER.error("there are more than one registration entry with same token, count: " + regs.size());
-            throw new Exception("Internal Registration Failure!");
+            throw new Exception("Internal registration failure");
         }
         if (regs.size() < 1) {
-            throw new Exception("Invalid registration code.");
+            throw new Exception("Invalid registration token");
         }
         return regs.get(0);
     }
@@ -293,7 +293,7 @@ public class UserRegistrations {
         return user;
     }
 
-    private void checkPasswordResetExpiration(UserPasswordResetEntity reset) throws Exception {
+    protected void checkPasswordResetExpiration(UserPasswordResetEntity reset) throws Exception {
         UserEntity user = reset.getUser();
         if ((user == null) || (user.getStatus().getIsDeleted())) {
             throw new Exception("Internal error, user no longer exists.");
@@ -302,18 +302,18 @@ public class UserRegistrations {
         Long elapsedTimeSinceResetRequest = (new Date()).getTime() - reset.getRequestDate();
         elapsedTimeSinceResetRequest /= (1000 * 60);
         if ( elapsedTimeSinceResetRequest > UserResourcePurger.PASSWORD_RESET_EXPIRATION_MINUTES) {
-            throw new Exception("Reset code was expired.");
+            throw new Exception("Reset token was expired.");
         }
     }
 
-    private UserPasswordResetEntity getUserPasswordResetEntity(String resetToken) throws Exception {
+    protected UserPasswordResetEntity getUserPasswordResetEntity(String resetToken) throws Exception {
         List<UserPasswordResetEntity> resets = entities.findByField(UserPasswordResetEntity.class, "resetToken", resetToken);
         if (resets.size() > 1) {
             LOGGER.error("there are more than one password reset entry with same token, count: " + resets.size());
-            throw new Exception("Internal Password Reset Failure!");
+            throw new Exception("Internal password reset failure");
         }
         if (resets.size() < 1) {
-            throw new Exception("Invalid password reset code.");
+            throw new Exception("Invalid password reset token");
         }
         return resets.get(0);
     }

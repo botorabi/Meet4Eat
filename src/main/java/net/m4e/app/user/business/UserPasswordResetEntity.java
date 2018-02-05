@@ -10,7 +10,7 @@ package net.m4e.app.user.business;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * This entity is used for resetting user password.
@@ -143,8 +143,8 @@ public class UserPasswordResetEntity implements Serializable {
         if (!(object instanceof UserPasswordResetEntity)) {
             return false;
         }
-        UserPasswordResetEntity other = (UserPasswordResetEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        UserPasswordResetEntity that = (UserPasswordResetEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
     }
 
     @Override

@@ -12,6 +12,7 @@ import net.m4e.app.resources.DocumentEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * UserProfileEntity holds user's profile information such as bio, birthday etc.
@@ -132,13 +133,13 @@ public class UserProfileEntity implements Serializable {
         if (!(object instanceof UserProfileEntity)) {
             return false;
         }
-        UserProfileEntity other = (UserProfileEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        UserProfileEntity that = (UserProfileEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
     }
 
     @Override
     public String toString() {
-        return "net.m4e.user.UserProfileEntity[ id=" + id + " ]";
+        return "net.m4e.app.user.business.UserProfileEntity[ id=" + id + " ]";
     }
 
 }

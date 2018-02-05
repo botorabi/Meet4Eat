@@ -12,12 +12,14 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 
+import net.m4e.app.user.business.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -318,8 +320,8 @@ public class DocumentEntity implements Serializable {
         if (!(object instanceof DocumentEntity)) {
             return false;
         }
-        DocumentEntity other = (DocumentEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        DocumentEntity that = (DocumentEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
     }
 
     @Override

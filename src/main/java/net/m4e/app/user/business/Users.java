@@ -52,7 +52,7 @@ public class Users {
 
 
     /**
-     * Defautl constructor, make the container happy.
+     * Default constructor, make the container happy.
      */
     protected Users() {
         entities = null;

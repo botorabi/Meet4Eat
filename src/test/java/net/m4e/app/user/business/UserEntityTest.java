@@ -39,7 +39,9 @@ class UserEntityTest {
         long id = 42L;
         StatusEntity status = new StatusEntity();
         DocumentEntity photo = new DocumentEntity();
+        photo.setId(100L);
         UserProfileEntity prof = new UserProfileEntity();
+        prof.setId(101L);
         List<RoleEntity> roles = Arrays.asList(new RoleEntity());
         String login = "login";
         String name = "name";
