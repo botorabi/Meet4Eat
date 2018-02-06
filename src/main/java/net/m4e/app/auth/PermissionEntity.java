@@ -7,11 +7,9 @@
  */
 package net.m4e.app.auth;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * This entity describes a single permission.
@@ -87,8 +85,8 @@ public class PermissionEntity implements Serializable {
         if (!(object instanceof PermissionEntity)) {
             return false;
         }
-        PermissionEntity other = (PermissionEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        PermissionEntity that = (PermissionEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
     }
 
     @Override

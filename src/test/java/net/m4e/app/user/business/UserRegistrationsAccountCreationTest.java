@@ -57,11 +57,11 @@ class UserRegistrationsAccountCreationTest extends UserRegistrationsTest {
 
             UserEntity user = createEnabledUserEntity();
 
-            Mockito.when(entities.create(any())).then((Answer<Boolean>) invocationOnMock -> {
+            Mockito.doAnswer(invocationOnMock -> {
                 UserRegistrationEntity userRegistrationEntity = invocationOnMock.getArgumentAt(0, UserRegistrationEntity.class);
                 userRegistrationEntity.setId(USER_ID);
-                return true;
-            });
+                return null;
+            }).when(entities).create(anyObject());
 
             Mockito.when(sendMailEvent.fireAsync(any())).then(invocationOnMock -> {
                 SendEmailEvent emailEvent = invocationOnMock.getArgumentAt(0, SendEmailEvent.class);

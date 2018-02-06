@@ -19,7 +19,7 @@ import java.util.*;
  * @author boto
  * Date of creation January 25, 2018
  */
-class UserEntityTest {
+class UserEntityTest implements DefaultUserData {
 
     @Test
     void commonEntityTests() {
@@ -30,23 +30,22 @@ class UserEntityTest {
                 .hasIdAnnotation()
                 .conformsToEqualsContract()
                 .hasHashCode()
-                .hasProperToString()
-                ;
+                .hasProperToString();
     }
 
     @Test
     void setterGetter() {
-        long id = 42L;
+        long id = USER_ID;
         StatusEntity status = new StatusEntity();
         DocumentEntity photo = new DocumentEntity();
         photo.setId(100L);
         UserProfileEntity prof = new UserProfileEntity();
         prof.setId(101L);
         List<RoleEntity> roles = Arrays.asList(new RoleEntity());
-        String login = "login";
-        String name = "name";
-        String email = "email";
-        Long dateLastLogin = 124L;
+        String login = USER_LOGIN;
+        String name = USER_NAME;
+        String email = USER_EMAIL;
+        Long dateLastLogin = USER_DATE_LAST_LOGIN;
 
         UserEntity entity = new UserEntity();
 

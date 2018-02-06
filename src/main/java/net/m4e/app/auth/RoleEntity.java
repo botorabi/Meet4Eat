@@ -9,7 +9,7 @@ package net.m4e.app.auth;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * This entity describes a user role which may be associated to permissions.
@@ -61,18 +61,18 @@ public class RoleEntity implements Serializable {
     }
 
     /**
-     * Get permission name.
+     * Get the role name.
      * 
-     * @return The permission name
+     * @return The role name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Set permission name.
+     * Set the role name.
      * 
-     * @param name Permission name
+     * @param name The role name
      */
     public void setName(String name) {
         this.name = name;
@@ -108,8 +108,8 @@ public class RoleEntity implements Serializable {
         if (!(object instanceof RoleEntity)) {
             return false;
         }
-        RoleEntity other = (RoleEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
+        RoleEntity that = (RoleEntity) object;
+        return this.id != null && Objects.equals(this.id, that.id);
     }
 
     @Override

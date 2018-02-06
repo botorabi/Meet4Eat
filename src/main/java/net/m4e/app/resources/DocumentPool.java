@@ -33,9 +33,6 @@ import java.util.Objects;
 @ApplicationScoped
 public class DocumentPool {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Entities entities;
@@ -65,11 +62,10 @@ public class DocumentPool {
      * 
      * @param etag        Document etag to find
      * @return            A document entity with given content etag
-     * @throws Exception  Throws an exception if something goes wrong.
      */
-    public DocumentEntity getOrCreatePoolDocument(String etag) throws Exception {
+    public DocumentEntity getOrCreatePoolDocument(String etag) {
         if (etag == null) {
-            throw new Exception("Invalid document etag");
+            throw new IllegalArgumentException("Invalid document etag");
         }
         DocumentEntity doc = findPoolDocument(etag);
         if (doc == null) {
@@ -183,9 +179,8 @@ public class DocumentPool {
      * @param <T>           The entity type
      * @param entity        The entity which must implement the EntityWithPhoto interface
      * @param newPhoto      New photo
-     * @throws Exception    Throws an exception if something goes wrong
      */
-    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto) throws Exception {
+    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto) {
         DocumentEntity img = getOrCreatePoolDocument(newPhoto.getETag());
         // is the old photo the same as the new one?
         if (!compareETag(entity.getPhoto(), img.getETag())) {

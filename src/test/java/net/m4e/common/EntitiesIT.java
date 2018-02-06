@@ -127,25 +127,23 @@ public class EntitiesIT {
      *
      * @param operation  The operation which is performed.
      * @return           Return true if the operation was successful, otherwise false
-     * @throws Exception
      */
-    private boolean performOp(EntityOperation operation) throws Exception {
-        boolean res;
+    private boolean performOp(EntityOperation operation) {
         try {
 
             userTransaction.begin();
-            res = operation.perform();
+            operation.perform();
             userTransaction.commit();
 
         } catch (Exception e) {
             try {
                 userTransaction.rollback();
-            } catch (SystemException e1) {
+            } catch (SystemException ex) {
                 fail("Could not rollback the transaction!");
             }
-            throw e;
+            return false;
         }
-        return res;
+        return true;
     }
 
     /**
@@ -169,7 +167,10 @@ public class EntitiesIT {
      */
     private <T> boolean persistEntity(T entity) {
         try {
-            return performOp(() -> entities.create(entity));
+            return performOp(() -> {
+                entities.create(entity);
+                return true;
+            });
         } catch (Exception e) {
             fail("Could not create entity: " + e.getLocalizedMessage());
         }
@@ -185,7 +186,10 @@ public class EntitiesIT {
      */
     private <T> boolean updateEntity(T entity) {
         try {
-            return performOp(() -> entities.update(entity));
+            return performOp(() -> {
+                entities.update(entity);
+                return true;
+            });
         } catch (Exception e) {
             fail("Could not update entity: " + e.getLocalizedMessage());
         }
@@ -201,7 +205,10 @@ public class EntitiesIT {
      */
     private <T> boolean deleteEntity(T entity) {
         try {
-            return performOp(() -> entities.delete(entity));
+            return performOp(() -> {
+                entities.delete(entity);
+                return true;
+            });
         } catch (Exception e) {
             fail("Could not delete entity: " + e.getLocalizedMessage());
         }

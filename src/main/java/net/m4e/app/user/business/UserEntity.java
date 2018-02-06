@@ -8,17 +8,12 @@
 package net.m4e.app.user.business;
 
 import net.m4e.app.auth.RoleEntity;
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.StatusEntity;
+import net.m4e.app.resources.*;
 import net.m4e.common.EntityWithPhoto;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 /**
@@ -182,16 +177,15 @@ public class UserEntity implements Serializable, EntityWithPhoto {
      * 
      * @return User roles as string list
      */
-    @XmlTransient
     public List<String> getRolesAsString() {
-        List<String> stringlist = new ArrayList<>();
+        List<String> stringList = new ArrayList<>();
         if (roles == null) {
-            return stringlist;
+            return stringList;
         }
         roles.stream().forEach((role) -> {
-            stringlist.add(role.getName());
+            stringList.add(role.getName());
         });
-        return stringlist;
+        return stringList;
     }
 
     /**

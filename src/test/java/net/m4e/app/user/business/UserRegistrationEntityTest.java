@@ -36,8 +36,7 @@ class UserRegistrationEntityTest {
                 .hasIdAnnotation()
                 .conformsToEqualsContract()
                 .hasHashCode()
-                .hasProperToString()
-                ;
+                .hasProperToString();
     }
 
     @Test

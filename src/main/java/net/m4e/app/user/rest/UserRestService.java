@@ -388,8 +388,8 @@ public class UserRestService {
             try {
                 users.updateUserImage(existingUser, updateEntity.getPhoto());
                 needsUpdate = true;
-            } catch (Exception ex) {
-                LOGGER.warn("*** User image could not be updated, reason: " + ex.getLocalizedMessage());
+            } catch (RuntimeException ex) {
+                LOGGER.warn("*** User image could not be updated, reason: " + ex.getMessage());
             }
         }
 

@@ -36,8 +36,7 @@ class UserProfileEntityTest {
                 .hasIdAnnotation()
                 .conformsToEqualsContract()
                 .hasHashCode()
-                .hasProperToString()
-                ;
+                .hasProperToString();
     }
 
     @Test

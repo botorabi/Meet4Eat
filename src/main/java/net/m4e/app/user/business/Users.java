@@ -39,9 +39,6 @@ import java.util.*;
 @ApplicationScoped
 public class Users {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Entities entities;
@@ -93,10 +90,11 @@ public class Users {
      * @param resourceStatus    Resource status object
      * @return                  Return true if the given user has ADMIN role or 
      *                           is the owner of a resource, otherwise return false.
+     * @throws IllegalArgumentException
      */
     public boolean userIsOwnerOrAdmin(UserEntity user, StatusEntity resourceStatus) {
         if ((user == null) || (resourceStatus == null)) {
-            return false;
+            throw new IllegalArgumentException("Invalid user or resource object");
         }
         return Objects.equals(user.getId(), resourceStatus.getIdOwner()) ||
                checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
@@ -118,33 +116,42 @@ public class Users {
 
     /**
      * Given a requesting user, check the requested roles and eliminate invalid
-     * roles from returned role set. Also douplicates are eliminated. On validating
-     * requested roles, the requesting user's roles are checked too.
+     * roles from returned role set. Also duplicates are eliminated. On validating
+     * requested roles, the requesting user's roles are checked too thus avoiding
+     * to be able to add roles with higher privileges as the requesting user has.
      * 
      * @param requestingUser    User requesting for roles
      * @param requestedRoles    Request roles
-     * @return A set of valid roles.
+     * @return A list of valid roles. An empty list is returned if the requestRoles is null.
      */
-    public Collection<RoleEntity> adaptRequestedRoles(UserEntity requestingUser, Collection<RoleEntity> requestedRoles) {
-        Collection<RoleEntity> res = new HashSet<>();
-        List<String> allowedroles = Users.getAvailableUserRoles();
-        List<String> reqroles = requestingUser.getRolesAsString();
-        boolean isadmin  = reqroles.contains(AuthRole.USER_ROLE_ADMIN);
-        // check if any invalid role definitions exist, e.g. a normal user is not permitted to request for an admin role.
-        if (requestedRoles != null) {
-            for (RoleEntity role: requestedRoles) {
-                if (!allowedroles.contains(role.getName())) {
-                    LOGGER.warn("*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
-                    continue;
-                }
-                if (!isadmin && role.getName().contentEquals(AuthRole.USER_ROLE_ADMIN)) {
-                    LOGGER.warn("*** Requesting user has no sufficient permission for requesting for  role '" + role.getName() + "', ignoring it.");
-                    continue;
-                }
-                res.add(role);
+    public Collection<RoleEntity> adaptRequestedRoles(@NotNull UserEntity requestingUser, Collection<RoleEntity> requestedRoles) {
+        boolean isAdmin = checkUserRoles(requestingUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+
+        return (requestedRoles == null) ? Collections.emptyList() : addUniqueRoles(requestedRoles, isAdmin);
+    }
+
+    private Collection<RoleEntity> addUniqueRoles(Collection<RoleEntity> requestedRoles, boolean isAdmin) {
+        Map<String, RoleEntity> roles = new HashMap<>();
+        List<String> allowedRoles = Users.getAvailableUserRoles();
+
+        for (RoleEntity role: requestedRoles) {
+            if (!allowedRoles.contains(role.getName())) {
+                LOGGER.warn("*** Invalid role '" + role.getName() + "' was requested, ignoring it.");
+                continue;
+            }
+            if (role.getId() == null) {
+                LOGGER.warn("*** Role '" + role.getName() + "' has no valid ID, ignoring it.");
+                continue;
+            }
+            if (!isAdmin && role.getName().contentEquals(AuthRole.USER_ROLE_ADMIN)) {
+                LOGGER.warn("*** Requesting user has no sufficient permission for requesting for  role '" + role.getName() + "', ignoring it.");
+                continue;
+            }
+            if (!roles.containsKey(role.getName())) {
+                roles.put(role.getName(), role);
             }
         }
-        return res;
+        return roles.values();
     }
 
     /**
@@ -153,17 +160,9 @@ public class Users {
      * @param inputEntity   Input data for new entity
      * @param creatorID     ID of creator, let null in order to take the new user itself as creator.
      * @return              New created entity
-     * @throws Exception    Throws exception if something went wrong.
      */
-    public UserEntity createNewUser(UserEntity inputEntity, Long creatorID) {
-        // setup the new entity
-        UserEntity newuser = new UserEntity();
-        newuser.setLogin(inputEntity.getLogin());
-        newuser.setPassword(inputEntity.getPassword());
-        newuser.setName(inputEntity.getName());
-        newuser.setEmail((inputEntity.getEmail() != null) ? inputEntity.getEmail() : "");
-        newuser.setRoles(new ArrayList<>());
-        addUserRoles(newuser, inputEntity.getRolesAsString());
+    public UserEntity createNewUser(@NotNull UserEntity inputEntity, Long creatorID) {
+        UserEntity newUser = createUserEntityCopy(inputEntity);
 
         // setup the status
         StatusEntity status = new StatusEntity();
@@ -171,27 +170,34 @@ public class Users {
         status.setDateCreation(now.getTime());
         status.setDateLastUpdate(now.getTime());
 
-        try {
-            createUserEntity(newuser);
-            status.setIdOwner(newuser.getId());
-            status.setIdCreator((creatorID != null) ? creatorID: newuser.getId());
-            newuser.setStatus(status);
-            // NOTE this call updates the entity in database, no need to call users.updateUser!
-            updateUserLastLogin(newuser);
-        }
-        catch (Exception ex) {
-            throw ex;
-        }
-        return newuser;
+        createUserEntity(newUser);
+
+        status.setIdOwner(newUser.getId());
+        status.setIdCreator((creatorID != null) ? creatorID: newUser.getId());
+        newUser.setStatus(status);
+
+        updateUserLastLogin(newUser);
+
+        return newUser;
+    }
+
+    @NotNull
+    private UserEntity createUserEntityCopy(UserEntity inputEntity) {
+        UserEntity newUser = new UserEntity();
+        newUser.setLogin(inputEntity.getLogin());
+        newUser.setPassword(inputEntity.getPassword());
+        newUser.setName(inputEntity.getName());
+        newUser.setEmail(inputEntity.getEmail());
+        addUserRoles(newUser, inputEntity.getRolesAsString());
+        return newUser;
     }
 
     /**
      * Given an user entity filled with all its fields, create it in database.
      * 
      * @param user          User entity
-     * @throws Exception    Throws exception if any problem occurred.
      */
-    public void createUserEntity(UserEntity user) {
+    public void createUserEntity(@NotNull UserEntity user) {
         // we have to remove the role collection and re-add it after entity creation,
         //   otherwise new roles are created instead of using existing ones!
         List<String> roles = user.getRolesAsString();
@@ -209,13 +215,8 @@ public class Users {
      * 
      * @param user User entity to update
      */
-    public void updateUser(UserEntity user) {
-        try {
-            entities.update(user);
-        }
-        catch (Exception ex) {
-            LOGGER.error("*** Could not update user '" + user.getLogin() + "'");
-        }
+    public void updateUser(@NotNull UserEntity user) {
+        entities.update(user);
     }
 
     /**
@@ -224,9 +225,8 @@ public class Users {
      * 
      * @param user          User entity
      * @param image         Image to set to given event
-     * @throws Exception    Throws exception if any problem occurred.
      */
-    public void updateUserImage(UserEntity user, DocumentEntity image) throws Exception {
+    public void updateUserImage(@NotNull UserEntity user, @NotNull DocumentEntity image) {
         // make sure that the resource URL is set
         image.setResourceURL("/User/Image");
         docPool.updatePhoto(user, image);
@@ -263,13 +263,13 @@ public class Users {
      */
     public List<UserEntity> getMarkedAsDeletedUsers() {
         List<UserEntity> users = entities.findAll(UserEntity.class);
-        List<UserEntity> deletedusers = new ArrayList<>();
+        List<UserEntity> deletedUsers = new ArrayList<>();
         for (UserEntity user: users) {
             if (user.getStatus().getIsDeleted()) {
-                deletedusers.add(user);
+                deletedUsers.add(user);
             }
         }
-        return deletedusers;
+        return deletedUsers;
     }
 
     /**
@@ -300,11 +300,11 @@ public class Users {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUser(String login) {
-        List<UserEntity> foundentities = entities.findByField(UserEntity.class, "login", login);
-        if (foundentities.size() == 1) {
-            return foundentities.get(0);
+        List<UserEntity> foundEntities = entities.findByField(UserEntity.class, "login", login);
+        if (foundEntities.size() == 1) {
+            return foundEntities.get(0);
         }
-        else if (foundentities.size() > 1) {
+        else if (foundEntities.size() > 1) {
             LOGGER.error("*** Fatal error, more than one user with same login '" + login + "' exist in database!");
         }
         return null;
@@ -317,11 +317,11 @@ public class Users {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUserByEmail(String email) {
-        List<UserEntity> foundentities = entities.findByField(UserEntity.class, "email", email);
-        if (foundentities.size() == 1) {
-            return foundentities.get(0);
+        List<UserEntity> foundEntities = entities.findByField(UserEntity.class, "email", email);
+        if (foundEntities.size() == 1) {
+            return foundEntities.get(0);
         }
-        else if (foundentities.size() > 1) {
+        else if (foundEntities.size() > 1) {
             LOGGER.error("*** Fatal error, more than one user with same email '" + email + "' exist in database!");
         }
         return null;
@@ -373,16 +373,11 @@ public class Users {
      */
     public void updateUserLastLogin(UserEntity user) {
         user.setDateLastLogin((new Date().getTime()));
-        try {
-            entities.update(user);
-        }
-        catch (Exception ex) {
-            LOGGER.error("*** Could not update user's last login timestamp '" + user.getLogin() + "'");
-        }
+        entities.update(user);
     }
 
     /**
-     * Add the given roles to entity. If the user has no roles container, then one is created.
+     * Add the given roles to entity.
      * 
      * @param user      User entity
      * @param roles     User roles
@@ -393,15 +388,15 @@ public class Users {
             if (role.isEmpty()) {
                 continue;
             }
-            List<RoleEntity> ent = entities.findByField(RoleEntity.class, "name", role);
-            if (ent.size() != 1) {
-                LOGGER.error("*** Unexpected count of role type found in database '" + role + "', count: " + ent.size());
+            List<RoleEntity> roleEntities = entities.findByField(RoleEntity.class, "name", role);
+            if (roleEntities.size() != 1) {
+                LOGGER.error("*** Unexpected count of role type found in database '" + role + "', count: " + roleEntities.size());
                 continue;
             }
             if (user.getRoles() == null) {
                 user.setRoles(new ArrayList<>());
             }
-            user.getRoles().add(ent.get(0));
+            user.getRoles().add(roleEntities.get(0));
         }
     }
 
