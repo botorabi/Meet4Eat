@@ -105,11 +105,6 @@ class UsersExportImportTest extends UsersTestBase {
     @Nested
     class ImportUser {
 
-        @Test
-        void invalidInput() {
-            assertThatIllegalArgumentException().isThrownBy(() -> users.importUser(null));
-        }
-
        @Test void importWithPhoto() {
             UserCmd cmd = createUserCmd();
 

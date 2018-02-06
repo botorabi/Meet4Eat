@@ -35,14 +35,15 @@ import java.util.Objects;
 @ApplicationScoped
 public class Mails {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final EntityManager entityManager;
 
     private final Entities entities;
+
+    private static final String QUERY_PARAM_USER_ID = "userId";
+
+    private static final String QUERY_PARAM_MAIL_ID = "mailId";
 
 
     /**
@@ -86,20 +87,20 @@ public class Mails {
      * @param recipients    Recipients
      */
     public void createMails(MailEntity mail, List<Long> recipients) {
-        for (Long recv: recipients) {
-            MailEntity newmail = new MailEntity();
-            newmail.setSenderId(mail.getSenderId());
-            newmail.setSenderName(mail.getSenderName());
-            newmail.setReceiverId(recv);
-            newmail.setReceiverName("");
-            newmail.setSubject(mail.getSubject());
-            newmail.setContent(mail.getContent());
-            newmail.setSendDate((new Date()).getTime());
+        for (Long recipient: recipients) {
+            MailEntity newMail = new MailEntity();
+            newMail.setSenderId(mail.getSenderId());
+            newMail.setSenderName(mail.getSenderName());
+            newMail.setReceiverId(recipient);
+            newMail.setReceiverName("");
+            newMail.setSubject(mail.getSubject());
+            newMail.setContent(mail.getContent());
+            newMail.setSendDate((new Date()).getTime());
             try {
-                createMail(newmail);
+                createMail(newMail);
             }
             catch (Exception ex) {
-                LOGGER.warn("*** could not create mail, reason: " + ex.getLocalizedMessage());
+                LOGGER.warn("*** could not create mail, reason: {}", ex.getMessage());
             }
         }
     }
@@ -112,11 +113,11 @@ public class Mails {
      * @param userId    User ID
      */
     private void createMailUser(Entities entities, Long mailId, Long userId) {
-        MailUserEntity mailuser = new MailUserEntity();
-        mailuser.setMailId(mailId);
-        mailuser.setUserId(userId);
-        mailuser.setUnread(true);
-        entities.create(mailuser);        
+        MailUserEntity mailUser = new MailUserEntity();
+        mailUser.setMailId(mailId);
+        mailUser.setUserId(userId);
+        mailUser.setUnread(true);
+        entities.create(mailUser);
     }
 
     /**
@@ -127,9 +128,8 @@ public class Mails {
      */
     public long getCountTotalMails(UserEntity user) {
         Query query = entityManager.createNamedQuery("MailUserEntity.countMails");
-        query.setParameter("userId", user.getId());
-        long count = (long)query.getSingleResult();
-        return count;
+        query.setParameter(QUERY_PARAM_USER_ID, user.getId());
+        return (long)query.getSingleResult();
     }
 
     /**
@@ -140,9 +140,8 @@ public class Mails {
      */
     public long getCountUnreadMails(UserEntity user) {
         Query query = entityManager.createNamedQuery("MailUserEntity.countUnreadMails");
-        query.setParameter("userId", user.getId());
-        long count = (long)query.getSingleResult();
-        return count;
+        query.setParameter(QUERY_PARAM_USER_ID, user.getId());
+        return (long)query.getSingleResult();
     }
 
     /**
@@ -154,9 +153,9 @@ public class Mails {
      * @return      User mails in given range
      */
     public List<Mail> getMails(UserEntity user, int from, int to) {
-        int MAX_RANGE = 100;
+        final int MAX_RANGE = 100;
         TypedQuery<Object[]> query = entityManager.createNamedQuery("MailUserEntity.findMails", Object[].class);
-        query.setParameter("userId", user.getId());
+        query.setParameter(QUERY_PARAM_USER_ID, user.getId());
         List<Object[]> results;
         // limit the max range
         if (to > 0 && from >= 0) {
@@ -188,10 +187,9 @@ public class Mails {
      */
     public MailUserEntity findMailUser(Long userId, Long mailId) {
         TypedQuery<MailUserEntity> query = entityManager.createNamedQuery("MailUserEntity.findMailUser", MailUserEntity.class);
-        query.setParameter("userId", userId);
-        query.setParameter("mailId", mailId);
-        MailUserEntity mailuser = query.getSingleResult();
-        return mailuser;
+        query.setParameter(QUERY_PARAM_USER_ID, userId);
+        query.setParameter(QUERY_PARAM_MAIL_ID, mailId);
+        return query.getSingleResult();
     }
 
     /**
@@ -204,18 +202,18 @@ public class Mails {
      * @throws Exception    Throws an exception if something goes wrong.
      */
     public void trashUserMail(Long userId, Long mailId, boolean trash) throws Exception {
-        MailUserEntity mailuser = findMailUser(userId, mailId);
-        if (mailuser == null) {
+        MailUserEntity mailUser = findMailUser(userId, mailId);
+        if (mailUser == null) {
             throw new Exception("Mail does not exist.");
         }
-        if (trash && mailuser.isTrashed()) {
+        if (trash && mailUser.isTrashed()) {
             throw new Exception("Mail is already trashed.");
         }
-        if (!trash && !mailuser.isTrashed()) {
+        if (!trash && !mailUser.isTrashed()) {
             throw new Exception("Mail was not trashed.");
         }
-        mailuser.setTrashDate(trash ? Instant.now() : null);
-        entities.update(mailuser);
+        mailUser.setTrashDate(trash ? Instant.now() : null);
+        entities.update(mailUser);
     }
 
     /**
@@ -227,12 +225,12 @@ public class Mails {
      * @throws Exception    Throws an exception if something goes wrong.
      */
     public void markAsUnreadUserMail(Long userId, Long mailId, boolean unread) throws Exception {
-        MailUserEntity mailuser = findMailUser(userId, mailId);
-        if (mailuser == null) {
+        MailUserEntity mailUser = findMailUser(userId, mailId);
+        if (mailUser == null) {
             throw new Exception("Mail does not exist.");
         }
-        mailuser.setUnread(unread);
-        entities.update(mailuser);
+        mailUser.setUnread(unread);
+        entities.update(mailUser);
     }
 
     /**
@@ -241,15 +239,9 @@ public class Mails {
      * @param userId    the ID of user referring to the mail
      * @param mailId    the actual Mail ID
      * @param operation the Mail operation
-     * @throws Exception                     if something goes wrong.
-     * @throws IllegalArgumentException      if {@code operation} is {@code null}
      * @throws UnsupportedOperationException if the {@code operation} is not supported
      */
     public ExcecutedMailOperation performMailOperation(Long userId, Long mailId, @NotNull MailOperation operation) throws Exception {
-        if (operation == null) {
-            throw new IllegalArgumentException("null for operation not allowed");
-        }
-
         switch (operation) {
             case TRASH:
                 trashUserMail(userId, mailId, true);
@@ -268,6 +260,5 @@ public class Mails {
         }
 
         return new ExcecutedMailOperation(operation, mailId.toString());
-
     }
 }
