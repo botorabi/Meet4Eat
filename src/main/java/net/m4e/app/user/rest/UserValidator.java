@@ -71,7 +71,7 @@ public class UserValidator {
             throw new Exception("Failed to create user, invalid input.");
         }
 
-        // perform user name, login and passwd checks
+        // perform user name, login and password checks
         if (!Strings.checkMinMaxLength(newEntity.getLogin(), USER_INPUT_MIN_LEN_LOGIN, USER_INPUT_MAX_LEN_LOGIN)) {
             throw new Exception(getLenRangeText("User's login name", USER_INPUT_MIN_LEN_LOGIN, USER_INPUT_MAX_LEN_LOGIN));
         }

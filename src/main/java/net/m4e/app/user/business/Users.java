@@ -422,7 +422,7 @@ public class Users {
      * @param connections   Real-time user connections
      * @return              List of all exported users
      */
-    public List<UserInfo> exportUsers(List<UserEntity> users, UserEntity authUser, ConnectedClients connections) {
+    public List<UserInfo> exportUsers(@NotNull List<UserEntity> users, @NotNull UserEntity authUser, @NotNull ConnectedClients connections) {
         List<UserInfo> allUsers = new ArrayList<>();
         // if the user has no admin role then return only himself
         if (!checkUserRoles(authUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN))) {
@@ -442,11 +442,11 @@ public class Users {
      * Give an user input data import the necessary fields and create a user entity.
      * 
      * @param userCmd Data representing an user entity
-     * @return           User entity or null if the data was not appropriate
+     * @return        User entity
      */
-    public UserEntity importUser(UserCmd userCmd) {
+    public UserEntity importUser(@NotNull UserCmd userCmd) {
         if (userCmd == null) {
-            return null;
+            throw new IllegalArgumentException("Invalid user command");
         }
 
         UserEntity userEntity = new UserEntity();
@@ -455,11 +455,9 @@ public class Users {
         userEntity.setPassword(userCmd.getPassword());
         userEntity.setEmail(userCmd.getEmail());
 
-        List<String> userRoles = new ArrayList<>();
-        for (int i = 0; i < userCmd.getRoles().size(); i++) {
-            userRoles.add(userCmd.getRoles().get(i));
+        if (userCmd.getRoles() != null) {
+            addUserRoles(userEntity, userCmd.getRoles());
         }
-        addUserRoles(userEntity, userRoles);
 
         if (userCmd.getPhoto() != null) {
             DocumentEntity image = new DocumentEntity();

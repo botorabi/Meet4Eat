@@ -65,16 +65,6 @@ class UsersCreationDeletionTest extends UsersTestBase {
         void withRoles() {
             UserEntity inputEntity = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR));
 
-            Mockito.when(entities.findByField(eq(RoleEntity.class), eq("name"), anyString()))
-                    .thenAnswer((Answer<List<RoleEntity>>) invocationOnMock -> {
-
-                String roleName = invocationOnMock.getArgumentAt(2, String.class);
-                RoleEntity roleEntity = new RoleEntity();
-                roleEntity.setId(200L);
-                roleEntity.setName(roleName);
-                return Arrays.asList(roleEntity);
-            });
-
             UserEntity newUser = users.createNewUser(inputEntity, null);
 
             assertThat(newUser.getRolesAsString()).contains(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR);
@@ -92,6 +82,19 @@ class UsersCreationDeletionTest extends UsersTestBase {
             try {
                 users.markUserAsDeleted(user);
                 fail("User deletion marking did not detect an invalid user status");
+            } catch (Exception ex) {
+            }
+        }
+
+        @Test
+        void markWithInternalError() {
+            UserEntity user = createUser();
+
+            Mockito.when(appInfos.getAppInfoEntity()).thenReturn(null);
+
+            try {
+                users.markUserAsDeleted(user);
+                fail("User deletion marking did not detect an internal error");
             } catch (Exception ex) {
             }
         }

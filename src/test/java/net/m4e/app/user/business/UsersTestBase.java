@@ -7,11 +7,18 @@
  */
 package net.m4e.app.user.business;
 
+import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.common.Entities;
 import net.m4e.system.core.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
+import org.mockito.stubbing.Answer;
+
+import java.util.*;
+
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 
 /**
  * Base test class for Users
@@ -42,5 +49,20 @@ class UsersTestBase implements DefaultUserData {
         users = new Users(entities, appInfos, docPool);
 
         Mockito.when(appInfos.getAppInfoEntity()).thenReturn(appInfo);
+
+        Mockito.when(entities.findByField(eq(RoleEntity.class), eq("name"), anyString()))
+                .thenAnswer((Answer<List<RoleEntity>>) invocationOnMock -> {
+
+                    String roleName = invocationOnMock.getArgumentAt(2, String.class);
+
+                    if (Users.getAvailableUserRoles().contains(roleName) ) {
+                        RoleEntity roleEntity = new RoleEntity();
+                        roleEntity.setId(200L);
+                        roleEntity.setName(roleName);
+                        return Arrays.asList(roleEntity);
+                    }
+
+                    return Collections.emptyList();
+                });
     }
 }

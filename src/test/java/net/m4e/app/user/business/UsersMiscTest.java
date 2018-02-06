@@ -50,36 +50,4 @@ class UsersMiscTest extends UsersTestBase {
             assertThat(users.getUserRelatives(user)).isEmpty();
         }
     }
-
-    @Nested
-    class ExportUser {
-
-        @Mock
-        ConnectedClients connections;
-
-        @BeforeEach
-        void setUp() {
-            MockitoAnnotations.initMocks(this);
-        }
-
-        @Test
-        void exportUserOnline() {
-            UserEntity user = createUser();
-            Mockito.when(connections.getConnectedUser(anyObject())).thenReturn(new UserEntity());
-
-            UserInfo userInfo = users.exportUser(user, connections);
-
-            assertThat(userInfo.getStatus()).isEqualTo(UserInfo.OnlineStatus.ONLINE);
-        }
-
-        @Test
-        void exportUserOffline() {
-            UserEntity user = createUser();
-            Mockito.when(connections.getConnectedUser(anyObject())).thenReturn(null);
-
-            UserInfo userInfo = users.exportUser(user, connections);
-
-            assertThat(userInfo.getStatus()).isEqualTo(UserInfo.OnlineStatus.OFFLINE);
-        }
-    }
 }

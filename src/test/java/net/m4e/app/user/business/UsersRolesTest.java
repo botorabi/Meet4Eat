@@ -10,10 +10,13 @@ package net.m4e.app.user.business;
 import net.m4e.app.auth.*;
 import net.m4e.app.resources.StatusEntity;
 import org.junit.jupiter.api.*;
+import org.mockito.Mockito;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 
 /**
  * @author boto
@@ -38,6 +41,26 @@ class UsersRolesTest extends UsersTestBase {
             assertThatIllegalArgumentException().isThrownBy(() ->users.userIsOwnerOrAdmin(user, null));
             assertThatIllegalArgumentException().isThrownBy(() ->users.userIsOwnerOrAdmin(null, resourceStatus));
             assertThatIllegalArgumentException().isThrownBy(() ->users.userIsOwnerOrAdmin(null, null));
+        }
+
+        @Test
+        void addEmptyRoleName() {
+            UserEntity user = createUser();
+
+            users.addUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN, ""));
+
+            assertThat(user.getRoles().size()).isEqualTo(1);
+        }
+
+        @Test
+        void addRoleInternalError() {
+            UserEntity user = createUser();
+
+            Mockito.when(entities.findByField(eq(RoleEntity.class), eq("name"), anyString())).thenReturn(Arrays.asList());
+
+            users.addUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+
+            assertThat(user.getRoles()).isNull();
         }
 
         @Test
