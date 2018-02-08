@@ -8,12 +8,13 @@
 
 package net.m4e.app.mailbox.business;
 
+import net.m4e.app.resources.DocumentEntity;
+import net.m4e.common.EntityBase;
+
+import javax.json.bind.annotation.JsonbTransient;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
-
-import javax.persistence.*;
-
-import net.m4e.app.resources.DocumentEntity;
 
 /**
  * A class describing a mail
@@ -22,7 +23,7 @@ import net.m4e.app.resources.DocumentEntity;
  * Date of creation Oct 31, 2017
  */
 @Entity
-public class MailEntity implements Serializable {
+public class MailEntity extends EntityBase implements Serializable {
 
     /**
      * Maximal length of mail content
@@ -83,42 +84,33 @@ public class MailEntity implements Serializable {
     @OneToMany(cascade = {CascadeType.ALL})
     private Collection<DocumentEntity> attachments;
 
-    public MailEntity(final Long senderId, final String senderName, final Long receiverId, final String receiverName, final Long sendDate, final String subject, final String content) {
-        this.senderId = senderId;
-        this.senderName = senderName;
-        this.receiverId = receiverId;
-        this.receiverName = receiverName;
-        this.sendDate = sendDate;
-        this.subject = subject;
-        this.content = content;
-    }
-
     /**
-     * JPA-Constructor.
+     * Get the entity ID.
      */
-    public MailEntity() {
-    }
-
-    /**
-     * Get ID.
-     * @return ID
-     */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set ID.
-     * @param id
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
+     * Check if the object is an instance of this entity.
+     */
+    @Override
+    @JsonbTransient
+    public boolean isInstanceOfMe(Object object) {
+        return object instanceof MailEntity;
+    }
+
+    /**
      * Get the mail sender.
-     * 
-     * @return Mail sender
      */
     public Long getSenderId() {
         return senderId;
@@ -126,8 +118,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Set the mail sender.
-     * 
-     * @param senderId Mail sender ID
      */
     public void setSenderId(Long senderId) {
         this.senderId = senderId;
@@ -135,8 +125,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Get the mail sender name.
-     * 
-     * @return Mail sender name
      */
     public String getSenderName() {
         return senderName;
@@ -144,8 +132,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Set the mail sender name.
-     * 
-     * @param senderName Mail sender name
      */
     public void setSenderName(String senderName) {
         this.senderName = senderName;
@@ -153,8 +139,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Get the mail receiver ID.
-     * 
-     * @return Receiver ID
      */
     public Long getReceiverId() {
         return receiverId;
@@ -162,8 +146,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Set the mail receiver.
-     * 
-     * @param receiverId The receiver
      */
     public void setReceiverId(Long receiverId) {
         this.receiverId = receiverId;
@@ -171,8 +153,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Get the mail receiver name.
-     * 
-     * @return Receiver name
      */
     public String getReceiverName() {
         return receiverName;
@@ -180,8 +160,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Set the mail receiver name.
-     * 
-     * @param receiverName The receiver name
      */
     public void setReceiverName(String receiverName) {
         this.receiverName = receiverName;
@@ -189,8 +167,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Set the timestamp of the mail.
-     * 
-     * @return Time stamp of sending in milliseconds since epoch
      */
     public Long getSendDate() {
         return sendDate;
@@ -198,8 +174,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Get the timestamp of the mail.
-     * 
-     * @param sendDate Time stamp of sending in milliseconds since epoch
      */
     public void setSendDate(Long sendDate) {
         this.sendDate = sendDate;
@@ -207,8 +181,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Get the mail subject.
-     * 
-     * @return The mail subject
      */
     public String getSubject() {
         return subject;
@@ -216,8 +188,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Set the mail subject.
-     * 
-     * @param subject The mail subject
      */
     public void setSubject(String subject) {
         this.subject = subject;
@@ -225,8 +195,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Get the mail content.
-     * 
-     * @return The mail content
      */
     public String getContent() {
         return content;
@@ -234,8 +202,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Set the mail content. The length is limited, see definition of 'content'.
-     * 
-     * @param content The mail content
      */
     public void setContent(String content) {
         if (content.length() > MAX_CONTENT_LENGTH) {
@@ -249,8 +215,6 @@ public class MailEntity implements Serializable {
 
     /**
      * Get the mail attachments.
-     * 
-     * @return The mail attachments if any exist. otherwise null
      */
     public Collection<DocumentEntity> getAttachments() {
         return attachments;
@@ -258,31 +222,8 @@ public class MailEntity implements Serializable {
 
     /**
      * Set the mail attachments.
-     * 
-     * @param attachments Mail attachments
      */
     public void setAttachments(Collection<DocumentEntity> attachments) {
         this.attachments = attachments;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof MailEntity)) {
-            return false;
-        }
-        MailEntity other = (MailEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.app.mailbox.business.MailEntity[ id=" + id + " ]";
     }
 }

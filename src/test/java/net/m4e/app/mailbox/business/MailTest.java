@@ -27,8 +27,6 @@ class MailTest {
         @BeforeEach
         void setUp() {
             jsonb = JsonbBuilder.create();
-
-
         }
 
         @Test

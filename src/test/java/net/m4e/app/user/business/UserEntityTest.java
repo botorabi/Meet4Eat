@@ -7,8 +7,7 @@
  */
 package net.m4e.app.user.business;
 
-import net.m4e.app.auth.RoleEntity;
-import net.m4e.app.resources.*;
+import net.m4e.app.auth.*;
 import net.m4e.tests.EntityAssertions;
 import org.assertj.core.api.*;
 import org.junit.jupiter.api.Test;
@@ -35,40 +34,21 @@ class UserEntityTest implements DefaultUserData {
 
     @Test
     void setterGetter() {
-        long id = USER_ID;
-        StatusEntity status = new StatusEntity();
-        DocumentEntity photo = new DocumentEntity();
-        photo.setId(100L);
-        UserProfileEntity prof = new UserProfileEntity();
-        prof.setId(101L);
-        List<RoleEntity> roles = Arrays.asList(new RoleEntity());
-        String login = USER_LOGIN;
-        String name = USER_NAME;
-        String email = USER_EMAIL;
-        Long dateLastLogin = USER_DATE_LAST_LOGIN;
+        List<String> roles = Arrays.asList(AuthRole.USER_ROLE_ADMIN);
 
-        UserEntity entity = new UserEntity();
-
-        entity.setId(id);
-        entity.setPhoto(photo);
-        entity.setStatus(status);
-        entity.setProfile(prof);
-        entity.setRoles(roles);
-        entity.setName(name);
-        entity.setLogin(login);
-        entity.setEmail(email);
-        entity.setDateLastLogin(dateLastLogin);
+        UserEntity entity = createUserWithRoles(roles);
 
         SoftAssertions softly = new SoftAssertions();
-        softly.assertThat(entity.getId()).isEqualTo(id);
-        softly.assertThat(entity.getStatus()).isEqualTo(status);
-        softly.assertThat(entity.getPhoto()).isEqualTo(photo);
-        softly.assertThat(entity.getProfile()).isEqualTo(prof);
-        softly.assertThat(entity.getRoles()).isEqualTo(roles);
-        softly.assertThat(entity.getLogin()).isEqualTo(login);
-        softly.assertThat(entity.getName()).isEqualTo(name);
-        softly.assertThat(entity.getEmail()).isEqualTo(email);
-        softly.assertThat(entity.getDateLastLogin()).isEqualTo(dateLastLogin);
+        softly.assertThat(entity.getId()).isEqualTo(USER_ID);
+        softly.assertThat(entity.getStatus()).isNotNull();
+        softly.assertThat(entity.getPhoto()).isNotNull();
+        softly.assertThat(entity.getProfile()).isNotNull();
+        softly.assertThat(entity.getRoles()).isNotEmpty();
+        softly.assertThat(entity.getRolesAsString()).containsAll(roles);
+        softly.assertThat(entity.getLogin()).isEqualTo(USER_LOGIN);
+        softly.assertThat(entity.getName()).isEqualTo(USER_NAME);
+        softly.assertThat(entity.getEmail()).isEqualTo(USER_EMAIL);
+        softly.assertThat(entity.getDateLastLogin()).isEqualTo(USER_DATE_LAST_LOGIN);
         softly.assertAll();
     }
 

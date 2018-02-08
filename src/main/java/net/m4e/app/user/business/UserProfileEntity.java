@@ -9,7 +9,9 @@
 package net.m4e.app.user.business;
 
 import net.m4e.app.resources.DocumentEntity;
+import net.m4e.common.EntityBase;
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
@@ -21,7 +23,7 @@ import java.util.Objects;
  * Date of creation 30.08.2017
  */
 @Entity
-public class UserProfileEntity implements Serializable {
+public class UserProfileEntity extends EntityBase implements Serializable {
 
     /**
      * Serialization version
@@ -48,29 +50,36 @@ public class UserProfileEntity implements Serializable {
     /**
      * Photo, a photo may be a sharable icon
      */
-    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**
-     * Get ID.
-     * @return ID
+     * Get the entity ID.
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set ID.
-     * @param id
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
+     * Check if the object is an instance of this entity.
+     */
+    @Override
+    @JsonbTransient
+    public boolean isInstanceOfMe(Object object) {
+        return object instanceof UserProfileEntity;
+    }
+
+    /**
      * Get birthday.
-     * 
-     * @return Birthday in millisecond since epoch
      */
     public Long getBirthday() {
         return birthday;
@@ -78,8 +87,6 @@ public class UserProfileEntity implements Serializable {
 
     /**
      * Set birthday.
-     * 
-     * @param birthday Birthday
      */
     public void setBirthday(Long birthday) {
         this.birthday = birthday;
@@ -87,8 +94,6 @@ public class UserProfileEntity implements Serializable {
 
     /**
      * Get biography.
-     * 
-     * @return Biography
      */
     public String getBio() {
         return bio;
@@ -96,8 +101,6 @@ public class UserProfileEntity implements Serializable {
 
     /**
      * Set biography.
-     * 
-     * @param bio Biography
      */
     public void setBio(String bio) {
         this.bio = bio;
@@ -105,8 +108,6 @@ public class UserProfileEntity implements Serializable {
 
     /**
      * Get photo.
-     * 
-     * @return DocumentEntity containing the photo
      */
     public DocumentEntity getPhoto() {
         return photo;
@@ -114,32 +115,8 @@ public class UserProfileEntity implements Serializable {
 
     /**
      * Set the profile photo.
-     * 
-     * @param photo DocumentEntity containing the photo
      */
     public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof UserProfileEntity)) {
-            return false;
-        }
-        UserProfileEntity that = (UserProfileEntity) object;
-        return this.id != null && Objects.equals(this.id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.app.user.business.UserProfileEntity[ id=" + id + " ]";
-    }
-
 }

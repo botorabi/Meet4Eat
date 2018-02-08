@@ -21,9 +21,10 @@ public class EntityEqualsTester<T> extends EntityTestBase<T> {
 
     private final Random random = new Random();
 
-    public EntityEqualsTester(final Class<T> actual) throws NoSuchMethodException {
+    public EntityEqualsTester(final Class<T> actual) throws NoSuchFieldException {
         super(actual);
         idField = findAnnotatedField(javax.persistence.Id.class);
+        idField.setAccessible(true);
     }
 
     public void verifyAll() throws Exception {

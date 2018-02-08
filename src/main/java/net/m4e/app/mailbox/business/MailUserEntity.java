@@ -8,13 +8,13 @@
 
 package net.m4e.app.mailbox.business;
 
-import net.m4e.app.user.business.UserEntity;
+import net.m4e.common.EntityBase;
 
+import javax.json.bind.annotation.JsonbTransient;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
-
-import javax.persistence.*;
 
 /**
  * This class joins a user and a mail. It is used to share the same mail
@@ -47,7 +47,7 @@ import javax.persistence.*;
       query = "SELECT mailuser FROM MailUserEntity mailuser WHERE mailuser.mailId = :mailId AND mailuser.userId = :userId"
     )
 })
-public class MailUserEntity implements Serializable {
+public class MailUserEntity extends EntityBase implements Serializable {
 
     /**
      * Serialization version
@@ -84,25 +84,32 @@ public class MailUserEntity implements Serializable {
     private Instant trashDate;
 
     /**
-     * Get ID.
-     * @return ID
+     * Get the entity ID.
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set ID.
-     * @param id
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
+     * Check if the object is an instance of this entity.
+     */
+    @Override
+    @JsonbTransient
+    public boolean isInstanceOfMe(Object object) {
+        return object instanceof MailUserEntity;
+    }
+
+    /**
      * Get the ID of referenced mail.
-     * 
-     * @return ID of referenced mail
      */
     public Long getMailId() {
         return mailId;
@@ -110,8 +117,6 @@ public class MailUserEntity implements Serializable {
 
     /**
      * Set the ID of referenced mail.
-     * 
-     * @param mailId ID of referenced mail
      */
     public void setMailId(Long mailId) {
         this.mailId = mailId;
@@ -119,8 +124,6 @@ public class MailUserEntity implements Serializable {
 
     /**
      * Get the ID of referring user.
-     * 
-     * @return ID of referring user
      */
     public Long getUserId() {
         return userId;
@@ -128,8 +131,6 @@ public class MailUserEntity implements Serializable {
 
     /**
      * Set the ID of referring user.
-     * 
-     * @param userId ID of referring user
      */
     public void setUserId(Long userId) {
         this.userId = userId;
@@ -137,8 +138,6 @@ public class MailUserEntity implements Serializable {
 
     /**
      * Is the mail marked as trash?
-     * 
-     * @return Return true if the mail is marked as trash
      */
     public boolean isTrashed() {
         return (trashDate != null) && (trashDate.getEpochSecond() != 0);
@@ -146,8 +145,6 @@ public class MailUserEntity implements Serializable {
 
     /**
      * Get the trash date in milliseconds since epoch.
-     * 
-     * @return Return the timestamp of trashing the mail
      */
     public Instant getTrashDate() {
         return trashDate;
@@ -156,8 +153,6 @@ public class MailUserEntity implements Serializable {
     /**
      * Mark the mail as trash by setting a trash timestamp. Trashed mails will get
      * deleted automatically after a period of time.
-     * 
-     * @param trashDate Date of trashing the mail
      */
     public void setTrashDate(Instant trashDate) {
         this.trashDate = trashDate;
@@ -165,8 +160,6 @@ public class MailUserEntity implements Serializable {
 
     /**
      * Is the mail in state 'unread'?
-     * 
-     * @return 'unread' state
      */
     public boolean isUnread() {
         return unread;
@@ -174,31 +167,8 @@ public class MailUserEntity implements Serializable {
 
     /**
      * Set the 'unread' state.
-     * 
-     * @param unread Pass false once the mail was read
      */
     public void setUnread(boolean unread) {
         this.unread = unread;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof MailUserEntity)) {
-            return false;
-        }
-        MailUserEntity that = (MailUserEntity) object;
-        return this.id != null && Objects.equals(this.id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.app.mailbox.business.MailUserEntity[ id=" + id + " ]";
     }
 }

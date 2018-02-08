@@ -7,10 +7,10 @@
  */
 package net.m4e.system.core;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import net.m4e.common.EntityBase;
+
+import javax.json.bind.annotation.JsonbTransient;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -25,7 +25,7 @@ import java.util.Objects;
  * Date of creation Aug 16, 2017
  */
 @Entity
-public class AppInfoEntity implements Serializable {
+public class AppInfoEntity extends EntityBase implements Serializable {
 
     /**
      * Serialization version
@@ -69,28 +69,34 @@ public class AppInfoEntity implements Serializable {
      */
     private Long eventLocationCountPurge = 0L;
 
+
     /**
      * Get the entity ID.
-     *
-     * @return Entity ID
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
      * Set the entity ID.
-     *
-     * @param id Entity ID
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
+     * Check if the object is an instance of this entity.
+     */
+    @Override
+    @JsonbTransient
+    public boolean isInstanceOfMe(Object object) {
+        return object instanceof AppInfoEntity;
+    }
+
+    /**
      * Get the app version.
-     *
-     * @return App version
      */
     public String getVersion() {
         return version;
@@ -98,8 +104,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Set the app version.
-     *
-     * @param version App version
      */
     public void setVersion(String version) {
         this.version = version;
@@ -107,8 +111,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Get the date of last update (milliseconds since last epoch).
-     *
-     * @return Last update
      */
     public Long getDateLastUpdate() {
         return dateLastUpdate;
@@ -116,8 +118,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Set the date of last update (milliseconds since last epoch).
-     *
-     * @param lastUpdate Date of last update
      */
     public void setDateLastUpdate(Long lastUpdate) {
         this.dateLastUpdate = lastUpdate;
@@ -125,8 +125,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Get date of last maintenance run (database purge, etc.)
-     *
-     * @return Date of last maintenance run
      */
     public Long getDateLastMaintenance() {
         return dateLastMaintenance;
@@ -134,8 +132,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Set date of last maintenance run (database purge, etc.)
-     *
-     * @param dateLastMaintenance Date of last maintenance run
      */
     public void setDateLastMaintenance(Long dateLastMaintenance) {
         this.dateLastMaintenance = dateLastMaintenance;
@@ -143,8 +139,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Get the count of UserEntity entries which are marked as deleted.
-     *
-     * @return Count of user entities which can be purged
      */
     public Long getUserCountPurge() {
         return userCountPurge;
@@ -152,8 +146,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Set the count of UserEntity entries which are marked as deleted.
-     *
-     * @param userCountPurge of user entities which can be purged
      */
     public void setUserCountPurge(Long userCountPurge) {
         this.userCountPurge = userCountPurge;
@@ -161,8 +153,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Increment the user purge counter by given 'count'.
-     *
-     * @param count Count of incrementation.
      */
     public void incrementUserCountPurge(Long count) {
         userCountPurge += count;
@@ -170,8 +160,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Get the count of EventEntity entries which are marked as deleted.
-     *
-     * @return Count of event entities which can be purged
      */
     public Long getEventCountPurge() {
         return eventCountPurge;
@@ -179,8 +167,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Set the count of EventEntity entries which are marked as deleted.
-     *
-     * @param eventCountPurge Count of event entities which can be purged
      */
     public void setEventCountPurge(Long eventCountPurge) {
         this.eventCountPurge = eventCountPurge;
@@ -188,8 +174,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Increment the event purge counter by given 'count'.
-     *
-     * @param count the count of incrementation.
      */
     public void incrementEventCountPurge(Long count) {
         eventCountPurge += count;
@@ -197,8 +181,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Get the count of EventLocationEntity entries which are marked as deleted.
-     *
-     * @return Count of event entities which can be purged
      */
     public Long getEventLocationCountPurge() {
         return eventLocationCountPurge;
@@ -206,8 +188,6 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Set the count of EventLocationEntity entries which are marked as deleted.
-     *
-     * @param eventLocationCountPurge Count of event entities which can be purged
      */
     public void setEventLocationCountPurge(Long eventLocationCountPurge) {
         this.eventLocationCountPurge = eventLocationCountPurge;
@@ -215,30 +195,8 @@ public class AppInfoEntity implements Serializable {
 
     /**
      * Increment the event location purge counter by given 'count'.
-     *
-     * @param count the count of incrementation
      */
     public void incrementEventLocationCountPurge(Long count) {
         eventLocationCountPurge += count;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.id);
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof AppInfoEntity)) {
-            return false;
-        }
-        AppInfoEntity that = (AppInfoEntity) object;
-
-        return this.id != null && Objects.equals(this.id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.app.AppInfoEntity[ id=" + id + " ]";
     }
 }

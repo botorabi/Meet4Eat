@@ -7,9 +7,12 @@
  */
 package net.m4e.app.auth;
 
+import net.m4e.common.EntityBase;
+
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
 
 /**
  * This entity describes a user role which may be associated to permissions.
@@ -18,7 +21,7 @@ import java.util.*;
  * Date of creation Aug 21, 2017
  */
 @Entity
-public class RoleEntity implements Serializable {
+public class RoleEntity extends EntityBase implements Serializable {
 
     /**
      * Serialization version
@@ -45,25 +48,31 @@ public class RoleEntity implements Serializable {
 
     /**
      * Get the entity ID.
-     * 
-     * @return Entity ID
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
      * Set the entity ID.
-     * @param id Entity ID
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
+     * Check if the object is an instance of this entity.
+     */
+    @Override
+    @JsonbTransient
+    public boolean isInstanceOfMe(Object object) {
+        return object instanceof RoleEntity;
+    }
+
+    /**
      * Get the role name.
-     * 
-     * @return The role name
      */
     public String getName() {
         return name;
@@ -71,8 +80,6 @@ public class RoleEntity implements Serializable {
 
     /**
      * Set the role name.
-     * 
-     * @param name The role name
      */
     public void setName(String name) {
         this.name = name;
@@ -80,8 +87,6 @@ public class RoleEntity implements Serializable {
 
     /**
      * Get the role permissions.
-     * 
-     * @return Role permissions
      */
     public Collection<PermissionEntity> getPermissions() {
         return permissions;
@@ -89,31 +94,8 @@ public class RoleEntity implements Serializable {
 
     /**
      * Set the role permissions.
-     * 
-     * @param permissions Role permissions
      */
     public void setPermissions(Collection<PermissionEntity> permissions) {
         this.permissions = permissions;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof RoleEntity)) {
-            return false;
-        }
-        RoleEntity that = (RoleEntity) object;
-        return this.id != null && Objects.equals(this.id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.auth.PermissionEntity[ id=" + id + ", name=" + name + " ]";
     }
 }

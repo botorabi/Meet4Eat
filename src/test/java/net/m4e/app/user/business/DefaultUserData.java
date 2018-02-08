@@ -20,9 +20,10 @@ interface DefaultUserData {
     Long   USER_ID = 1000L;
     String USER_EMAIL = "user@mailbox.com";
     String USER_NAME = "Bob Dillon";
-    Long   USER_PHOTO_ID = 20000L;
+    Long   USER_STATUS_ID = 3000L;
+    Long   USER_PHOTO_ID = 4000L;
     String USER_PHOTO_ETAG = "PhotoETAG";
-    Long   USER_PROFILE_ID = 30000L;
+    Long   USER_PROFILE_ID = 5000L;
     String USER_LOGIN = "MyLogin";
     Long   USER_DATE_CREATION = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
     Long   USER_DATE_LAST_LOGIN = Instant.now().toEpochMilli();
@@ -39,6 +40,7 @@ interface DefaultUserData {
         user.setDateLastLogin(USER_DATE_LAST_LOGIN);
 
         StatusEntity status = new StatusEntity();
+        status.setId(USER_STATUS_ID);
         status.setDateCreation(USER_DATE_CREATION);
         status.setIdOwner(user.getId());
         user.setStatus(status);

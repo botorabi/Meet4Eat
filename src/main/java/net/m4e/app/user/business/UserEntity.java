@@ -9,8 +9,9 @@ package net.m4e.app.user.business;
 
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.*;
-import net.m4e.common.EntityWithPhoto;
+import net.m4e.common.*;
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.*;
@@ -23,7 +24,7 @@ import java.util.*;
  * Date of creation Aug 18, 2017
  */
 @Entity
-public class UserEntity implements Serializable, EntityWithPhoto {
+public class UserEntity extends EntityBase implements Serializable, EntityWithPhoto {
 
     /**
      * Serialization version
@@ -46,13 +47,13 @@ public class UserEntity implements Serializable, EntityWithPhoto {
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**
      * Entity profile
      */
-    @OneToOne(optional=true, cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     private UserProfileEntity profile;       
 
     /**
@@ -91,26 +92,33 @@ public class UserEntity implements Serializable, EntityWithPhoto {
     private Long dateLastLogin = 0L;
 
     /**
-     * Get ID.
-     * @return ID
+     * Get the entity ID.
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set ID.
-     * @param id
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
+     * Check if the object is an instance of this entity.
+     */
+    @Override
+    @JsonbTransient
+    public boolean isInstanceOfMe(Object object) {
+        return object instanceof UserEntity;
+    }
+
+    /**
      * Get entity status. It contains information about entity's life-cycle,
      * ownership, etc.
-     * 
-     * @return Entity status
      */
     public StatusEntity getStatus() {
         return status;
@@ -118,8 +126,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set entity status.
-     * 
-     * @param status Entity status
      */
     public void setStatus(StatusEntity status) {
         this.status = status;
@@ -127,8 +133,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get user photo.
-     * 
-     * @return DocumentEntity containing the photo
      */
     @Override
     public DocumentEntity getPhoto() {
@@ -137,8 +141,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set the user photo.
-     * 
-     * @param photo DocumentEntity containing the photo
      */
     @Override
     public void setPhoto(DocumentEntity photo) {
@@ -147,8 +149,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get user's profile entity.
-     * 
-     * @return Entity profile
      */
     public UserProfileEntity getProfile() {
         return profile;
@@ -156,8 +156,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set user's profile entity.
-     * 
-     * @param profile Entity profile
      */
     public void setProfile(UserProfileEntity profile) {
         this.profile = profile;
@@ -165,8 +163,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get user roles.
-     * 
-     * @return User roles
      */
     public Collection<RoleEntity> getRoles() {
         return roles;
@@ -174,8 +170,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get user roles as a string list filled with role names.
-     * 
-     * @return User roles as string list
      */
     public List<String> getRolesAsString() {
         List<String> stringList = new ArrayList<>();
@@ -190,42 +184,34 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set user roles.
-     * 
-     * @param roles User roles
      */
     public void setRoles(Collection<RoleEntity> roles) {
         this.roles = roles;
     }
 
     /**
-     *
-     * @return
+     * Get the user login.
      */
     public String getLogin() {
         return login;
     }
 
     /**
-     *
-     * @param login
+     * Set the user login.
      */
     public void setLogin(String login) {
         this.login = login;
     }
 
     /**
-     * Get user name.
-     * 
-     * @return  User name
+     * Get the user name.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Set user name.
-     * 
-     * @param name User name
+     * Set the user name.
      */
     public void setName(String name) {
         this.name = name;
@@ -233,8 +219,6 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get user's password.
-     * 
-     * @return User's password
      */
     public String getPassword() {
         return password;
@@ -242,67 +226,36 @@ public class UserEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set user's password.
-     * 
-     * @param password  User's password
      */
     public void setPassword(String password) {
         this.password = password;
     }
 
     /**
-     * Get E-Mail address.
-     * 
-     * @return E-Mail address
+     * Get the E-Mail address.
      */
     public String getEmail() {
         return email;
     }
 
     /**
-     * Set E-Mail address.
-     * 
-     * @param email E-Mail address
+     * Set the E-Mail address.
      */
     public void setEmail(String email) {
         this.email = email;
     }
 
     /**
-     * Get the timestamp of last login.
-     * 
-     * @return Last login timestamp
+     * Get the timestamp of last login (milliseconds since epoch).
      */
     public Long getDateLastLogin() {
         return dateLastLogin;
     }
 
     /**
-     * Set timestamp of current login
-     * 
-     * @param timeStamp Current timestamp
+     * Set timestamp of last login (milliseconds since epoch).
      */
     public void setDateLastLogin(Long timeStamp) {
         this.dateLastLogin = timeStamp;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof UserEntity)) {
-            return false;
-        }
-        UserEntity that = (UserEntity) object;
-        return this.id != null && Objects.equals(this.id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.app.user.business.UserEntity[ id=" + id + " ]";
     }
 }

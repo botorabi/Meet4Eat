@@ -8,6 +8,9 @@
 
 package net.m4e.update;
 
+import net.m4e.common.EntityBase;
+
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -46,7 +49,7 @@ import java.io.Serializable;
       query = "SELECT u FROM UpdateCheckEntity u WHERE u.flavor = :flavor AND u.name = :name AND u.os = :os ORDER BY u.releaseDate DESC"
     )
 })
-public class UpdateCheckEntity implements Serializable {
+public class UpdateCheckEntity extends EntityBase implements Serializable {
 
     /**
      * Serialization version
@@ -96,25 +99,32 @@ public class UpdateCheckEntity implements Serializable {
     private boolean active = true;
 
     /**
-     * Get ID.
-     * @return ID
+     * Get the entity ID.
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set ID.
-     * @param id
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
+     * Check if the object is an instance of this entity.
+     */
+    @Override
+    @JsonbTransient
+    public boolean isInstanceOfMe(Object object) {
+        return object instanceof UpdateCheckEntity;
+    }
+
+    /**
      * Get the application name.
-     * 
-     * @return The application name
      */
     public String getName() {
         return name;
@@ -122,8 +132,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Set the application name.
-     * 
-     * @param name The application name
      */
     public void setName(String name) {
         this.name = name;
@@ -131,8 +139,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Get the operating system such as MSWin, MacOS, Linux
-     * 
-     * @return The operating system
      */
     public String getOS() {
         return os;
@@ -140,8 +146,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Set the operating system.
-     * 
-     * @param os The operating system
      */
     public void setOS(String os) {
         this.os = os;
@@ -150,8 +154,6 @@ public class UpdateCheckEntity implements Serializable {
     /**
      * Get the application flavor. It can be used to distribute updates to a 
      * dedicated circle such as beta-testers.
-     * 
-     * @return The application flavor
      */
     public String getFlavor() {
         return flavor;
@@ -159,8 +161,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Set the application flavor.
-     * 
-     * @param flavor The application flavor
      */
     public void setFlavor(String flavor) {
         this.flavor = flavor;
@@ -168,8 +168,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Get the update  version.
-     * 
-     * @return Update version
      */
     public String getVersion() {
         return version;
@@ -177,8 +175,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Set the update version.
-     * 
-     * @param version The update version
      */
     public void setVersion(String version) {
         this.version = version;
@@ -186,8 +182,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Get the release date of update.
-     * 
-     * @return Update release date in seconds since epoch
      */
     public Long getReleaseDate() {
         return releaseDate;
@@ -195,8 +189,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Set the update release date.
-     * 
-     * @param releaseDate  Update release date in seconds since epoch
      */
     public void setReleaseDate(Long releaseDate) {
         this.releaseDate = releaseDate;
@@ -204,8 +196,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Get the URL to grab the update.
-     * 
-     * @return URL for getting the update
      */
     public String getUrl() {
         return url;
@@ -213,8 +203,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Set the URL to grab the update.
-     * 
-     * @param url URL for getting the update
      */
     public void setUrl(String url) {
         this.url = url;
@@ -222,8 +210,6 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Is the update active?
-     * 
-     * @return Return true if the update is active.
      */
     public boolean getIsActive() {
         return active;
@@ -231,31 +217,8 @@ public class UpdateCheckEntity implements Serializable {
 
     /**
      * Activate/deactivate the update.
-     * 
-     * @param active The active state
      */
     public void setIsActive(boolean active) {
         this.active = active;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof UpdateCheckEntity)) {
-            return false;
-        }
-        UpdateCheckEntity other = (UpdateCheckEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.update.UpdateCheckEntity[ id=" + id + " ]";
     }
 }
