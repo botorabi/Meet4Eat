@@ -75,15 +75,6 @@ public class EventLocationEntity extends EntityBase implements Serializable, Ent
     }
 
     /**
-     * Check if the object is an instance of this entity.
-     */
-    @Override
-    @JsonbTransient
-    public boolean isInstanceOfMe(Object object) {
-        return object instanceof EventLocationEntity;
-    }
-
-    /**
      * Get entity status. It contains information about entity's life-cycle,
      * ownership, etc.
      */

@@ -96,14 +96,4 @@ public class EntityAssert<T> extends AbstractObjectAssert<EntityAssert<T>, Class
 
         return this;
     }
-
-    public EntityAssert<T> hasMethodIsInstanceOfMe() {
-        try {
-            EntityIsInstanceOfMeTester<T> tester = new EntityIsInstanceOfMeTester<>(actual);
-            tester.verifyAll();
-        } catch (Exception e) {
-            throw new RuntimeException();
-        }
-        return this;
-    }
 }

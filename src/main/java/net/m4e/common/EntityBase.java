@@ -26,7 +26,7 @@ public abstract class EntityBase implements EntityContracts {
 
     @Override
     public boolean equals(Object object) {
-        if ((object == null) || !isInstanceOfMe(object)) {
+        if ((object == null) || (this.getClass() != object.getClass())) {
             return false;
         }
 

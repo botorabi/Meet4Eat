@@ -11,10 +11,8 @@ package net.m4e.app.user.business;
 import net.m4e.app.resources.DocumentEntity;
 import net.m4e.common.EntityBase;
 
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * UserProfileEntity holds user's profile information such as bio, birthday etc.
@@ -67,15 +65,6 @@ public class UserProfileEntity extends EntityBase implements Serializable {
     @Override
     public void setId(Long id) {
         this.id = id;
-    }
-
-    /**
-     * Check if the object is an instance of this entity.
-     */
-    @Override
-    @JsonbTransient
-    public boolean isInstanceOfMe(Object object) {
-        return object instanceof UserProfileEntity;
     }
 
     /**

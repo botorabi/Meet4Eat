@@ -24,7 +24,6 @@ class MailUserEntityTest {
         EntityAssertions.assertThat(MailUserEntity.class)
                 .isSerializable()
                 .hasSerialVersionUID()
-                .hasMethodIsInstanceOfMe()
                 .hasEntityAnnotation()
                 .hasIdAnnotation()
                 .conformsToEqualsContract()

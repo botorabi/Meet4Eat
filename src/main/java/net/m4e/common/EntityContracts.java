@@ -8,8 +8,6 @@
 
 package net.m4e.common;
 
-import javax.json.bind.annotation.JsonbTransient;
-
 /**
  * This interface defining least contracts of all entities.
  * 
@@ -27,12 +25,4 @@ public interface EntityContracts {
      * Set the entity ID.
      */
     void setId(Long id);
-
-    /**
-     * Implement this method in the actual entity class.
-     * Given the entity class is called MyEntity, it must perform the following check:
-     *
-     *   return object instanceof MyEntity;
-     */
-    boolean isInstanceOfMe(Object object);
 }
