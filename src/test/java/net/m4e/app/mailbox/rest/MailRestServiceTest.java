@@ -62,14 +62,6 @@ class MailRestServiceTest {
     }
 
 
-    /**
-     * Check, that {@link MailRestService} is creatable by container.
-     */
-    @Test
-    void checkNoArgsConstructor() {
-        new MailRestService();
-    }
-
     @Nested
     class GetMailsTest {
         @Mock

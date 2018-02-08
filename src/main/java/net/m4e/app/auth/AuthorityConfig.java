@@ -7,9 +7,7 @@
  */
 package net.m4e.app.auth;
 
-import net.m4e.app.mailbox.rest.MailRestService;
 import net.m4e.app.user.business.UserEntity;
-import net.m4e.app.user.rest.*;
 import net.m4e.common.HashCreator;
 import org.slf4j.*;
 
@@ -25,8 +23,6 @@ import java.util.*;
  */
 public class AuthorityConfig {
 
-    //TODO: see https://github.com/botorabi/Meet4Eat/issues/8
-
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
@@ -38,22 +34,22 @@ public class AuthorityConfig {
      * A list of java beans which should be unter control of authority checker.
      * Extend the list whenever new REST beans are created which need protected access.
      */
-    private final Class[] accessBeanClasses = {
-        net.m4e.update.UpdateCheckEntityFacadeREST.class,
-        net.m4e.system.core.AppInfoEntityFacadeREST.class,
-        net.m4e.system.maintenance.MaintenanceFacadeREST.class,
-        UserRestService.class,
-        UserAuthenticationRestService.class,
-        net.m4e.app.event.EventEntityFacadeREST.class,
-        net.m4e.app.event.EventLocationVoteEntityFacadeREST.class,
-        net.m4e.app.resources.DocumentEntityFacadeREST.class,
-        MailRestService.class
+    private static final Class[] accessBeanClasses = {
+            net.m4e.update.UpdateCheckEntityFacadeREST.class,
+            net.m4e.system.core.AppInfoEntityFacadeREST.class,
+            net.m4e.system.maintenance.MaintenanceFacadeREST.class,
+            net.m4e.app.user.rest.UserRestService.class,
+            net.m4e.app.user.rest.UserAuthenticationRestService.class,
+            net.m4e.app.event.EventEntityFacadeREST.class,
+            net.m4e.app.event.EventLocationVoteEntityFacadeREST.class,
+            net.m4e.app.resources.DocumentEntityFacadeREST.class,
+            net.m4e.app.mailbox.rest.MailRestService.class
     };
 
     /**
      * Count of iterations for creating a hash.
      */
-    private static final int PW_HASH_ITERATOIN = 10;
+    private static final int PW_HASH_ITERATION = 10;
 
     /**
      * Construct the instance.
@@ -128,10 +124,10 @@ public class AuthorityConfig {
      */
     public String createPassword(String string) {
         String pw = "" + string;
-        for (int i = 0; i < PW_HASH_ITERATOIN; i++) {
+        for (int i = 0; i < PW_HASH_ITERATION; i++) {
             pw = createHash(pw);
             if (pw == null) {
-                //TODO: better handling
+                //TODO: better handling, see Issue #8 on github
                 return null;
             }
         }
@@ -147,7 +143,7 @@ public class AuthorityConfig {
     public String createHash(String string) {
         try {
             //TODO: Better use explicit password-hash
-            return HashCreator.createSHA256(string.getBytes());
+            return HashCreator.createSHA512(string.getBytes());
         }
         catch (Exception ex) {
             LOGGER.error("Problem occurred while hashing a string, reason: {}", ex.getMessage());

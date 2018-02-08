@@ -29,6 +29,7 @@ import net.m4e.app.user.rest.comm.*;
 import net.m4e.common.Entities;
 import net.m4e.common.GenericResponseResult;
 import net.m4e.system.core.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,53 +44,20 @@ import org.slf4j.LoggerFactory;
 @Api(value = "User service")
 public class UserRestService {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    /**
-     * The entities
-     */
     private final Entities entities;
 
-    /**
-     * The users
-     */
     private final Users users;
 
-    /**
-     * User input validator
-     */
     private final UserValidator validator;
 
-    /**
-     * User registration are handled by this instance.
-     */
     private final UserRegistrations registration;
 
-    /**
-     * App information
-     */
     private final AppInfos appInfos;
 
-    /**
-     * User's online status is fetched from connected clients.
-     */
-    @Inject
-    private ConnectedClients connections;
+    private final ConnectedClients connections;
 
-
-    /**
-     * EJB's default constructor.
-     */
-    protected UserRestService() {
-        users = null;
-        entities = null;
-        validator = null;
-        registration = null;
-        appInfos = null;
-    }
 
     /**
      * Create the user entity REST facade.
@@ -101,17 +69,19 @@ public class UserRestService {
      * @param appInfos     Application information
      */
     @Inject
-    public UserRestService(Users users,
-                           Entities entities,
-                           UserValidator validator,
-                           UserRegistrations registration,
-                           AppInfos appInfos) {
+    public UserRestService(@NotNull Users users,
+                           @NotNull Entities entities,
+                           @NotNull UserValidator validator,
+                           @NotNull UserRegistrations registration,
+                           @NotNull AppInfos appInfos,
+                           @NotNull ConnectedClients connections) {
 
         this.users = users;
         this.entities = entities;
         this.validator = validator;
         this.registration = registration;
         this.appInfos = appInfos;
+        this.connections = connections;
     }
 
     /**

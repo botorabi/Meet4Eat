@@ -13,8 +13,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
+import javax.json.bind.*;
 import javax.json.bind.annotation.JsonbProperty;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
@@ -162,15 +161,14 @@ public class Connection {
      * Decoder for Text-Messages. Parses Json to Packet.
      */
     public static class PacketMapDecoder implements Decoder.Text<Packet<Map<String, Object>>> {
-        @SuppressWarnings("unchecked")
+
         @Override
         public Packet<Map<String, Object>> decode(final String string) {
-            try {
-                return JsonbBuilder.create().fromJson(string, Packet.class);
+            try (Jsonb jsonb = JsonbBuilder.create()) {
+                return jsonb.fromJson(string, Packet.class);
             } catch (Exception ex) {
-                LOGGER.debug("Could not read JSON string, reason: {}", ex.getLocalizedMessage(), ex);
+                LOGGER.debug("Could not read JSON string, reason: {}", ex.getMessage(), ex);
             }
-            //Todo: null or Exception?
             return null;
         }
 
@@ -194,7 +192,12 @@ public class Connection {
     public static class JsonBEncoder implements Encoder.Text<Object> {
         @Override
         public String encode(final Object object) {
-            return JsonbBuilder.create().toJson(object);
+            try (Jsonb jsonb = JsonbBuilder.create()) {
+                return jsonb.toJson(object);
+            } catch (Exception ex) {
+                LOGGER.debug("Could not create JSON string, reason: {}", ex.getMessage(), ex);
+            }
+            return null;
         }
 
         @Override

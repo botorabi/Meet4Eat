@@ -233,8 +233,8 @@ public class UserRegistrations {
 
         mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_USER_NAME, user.getName());
         mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_LOGIN, user.getLogin());
-        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_RESET_PASSWORD_URL, resetPasswordURL);
-        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_RESET_PASSWORD_TOKEN, resetToken);
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_RESET_PW_URL, resetPasswordURL);
+        mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_RESET_PW_TOKEN, resetToken);
         mailBodyTemplate.setPlaceHolderValue(EmailBodyTemplatePasswordReset.KEY_RESET_EXPIRATION, "" + UserResourcePurger.PASSWORD_RESET_EXPIRATION_MINUTES);
 
         String template = mailBodyTemplate.createTemplate();

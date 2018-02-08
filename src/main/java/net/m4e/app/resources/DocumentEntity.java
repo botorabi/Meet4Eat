@@ -26,27 +26,27 @@ public class DocumentEntity extends EntityBase implements Serializable {
     /**
      * Content encoding type Base64
      */
-    public final static String ENCODING_BASE64 = "base64";
+    public static final String ENCODING_BASE64 = "base64";
 
     /**
      * Content encoding type binary
      */
-    public final static String ENCODING_BINARY = "binary";
+    public static final String ENCODING_BINARY = "binary";
 
     /**
      * Content type unknown
      */
-    public final static String TYPE_UNKNOWN = "unknown";
+    public static final String TYPE_UNKNOWN = "unknown";
 
     /**
      * Content type image
      */
-    public final static String TYPE_IMAGE = "image";
+    public static final String TYPE_IMAGE = "image";
 
     /**
      * Content type PDF
      */
-    public final static String TYPE_PDF = "pdf";
+    public static final String TYPE_PDF = "pdf";
 
     /**
      * Serialization version
@@ -232,7 +232,7 @@ public class DocumentEntity extends EntityBase implements Serializable {
         }
         try {
             eTag = HashCreator.createSHA256(content);
-        } catch (Exception ex) {}
+        } catch (Exception e) {}
     }
 
     /**

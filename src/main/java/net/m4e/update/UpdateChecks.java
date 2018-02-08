@@ -59,9 +59,9 @@ public class UpdateChecks {
 
         String id, name, flavor, version, os, url;
         boolean active;
-        try {
-            JsonReader jreader = Json.createReader(new StringReader(updateCheckJson));
-            JsonObject jobject = jreader.readObject();
+        try (JsonReader jsonReader = Json.createReader(new StringReader(updateCheckJson))) {
+
+            JsonObject jobject = jsonReader.readObject();
             id          = jobject.getString("id", null);
             name        = jobject.getString("name", null);
             os          = jobject.getString("os", null);
@@ -149,9 +149,9 @@ public class UpdateChecks {
         }
 
         String name, flavor, clientver, os;
-        try {
-            JsonReader jreader = Json.createReader(new StringReader(jsonString));
-            JsonObject jobject = jreader.readObject();
+        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonString))) {
+
+            JsonObject jobject = jsonReader.readObject();
             name       = jobject.getString("name", null);
             os         = jobject.getString("os", null);
             clientver  = jobject.getString("clientVersion", null);

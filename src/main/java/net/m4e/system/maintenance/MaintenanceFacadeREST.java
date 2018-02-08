@@ -11,6 +11,7 @@ import net.m4e.app.auth.AuthRole;
 import net.m4e.common.ResponseResults;
 import net.m4e.system.core.AppInfoEntity;
 import net.m4e.system.core.AppInfos;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,22 +35,11 @@ import java.lang.invoke.MethodHandles;
 @Path("/rest/maintenance")
 public class MaintenanceFacadeREST {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Maintenance maintenance;
 
     private final AppInfos appInfos;
-
-    /**
-     * EJB's default constructor.
-     */
-    protected MaintenanceFacadeREST() {
-        this.maintenance = null;
-        this.appInfos = null;
-    }
 
     /**
      * Create the bean.
@@ -58,7 +48,7 @@ public class MaintenanceFacadeREST {
      * @param appInfos      AppInfos instance used for accessing application information such as version and stats
      */
     @Inject
-    public MaintenanceFacadeREST(Maintenance maintenance, AppInfos appInfos) {
+    public MaintenanceFacadeREST(@NotNull Maintenance maintenance, @NotNull AppInfos appInfos) {
         this.maintenance = maintenance;
         this.appInfos = appInfos;
     }

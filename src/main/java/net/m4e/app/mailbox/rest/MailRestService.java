@@ -40,9 +40,6 @@ import org.slf4j.LoggerFactory;
 @Api(value = "Mails service")
 public class MailRestService {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @NotNull
@@ -50,15 +47,6 @@ public class MailRestService {
 
     @NotNull
     private final Mails mails;
-
-    /**
-     * EJB's default constructor.
-     */
-    @SuppressWarnings("ConstantConditions")
-    protected MailRestService() {
-        this.validator = null;
-        this.mails = null;
-    }
 
     @Inject
     public MailRestService(@NotNull NewMailValidator validator, @NotNull Mails mails) {

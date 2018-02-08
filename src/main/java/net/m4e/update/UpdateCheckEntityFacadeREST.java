@@ -11,6 +11,7 @@ package net.m4e.update;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.Entities;
 import net.m4e.common.ResponseResults;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +37,6 @@ import java.util.List;
 @Path("/rest/update")
 public class UpdateCheckEntityFacadeREST {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Entities entities;
@@ -47,24 +45,14 @@ public class UpdateCheckEntityFacadeREST {
 
     private final UpdateCheckEntityInputValidator validator;
 
-    /**
-     * EJB's default constructor
-     */
-    protected UpdateCheckEntityFacadeREST() {
-        entities = null;
-        updateChecks = null;
-        validator = null;
-    }
 
     /**
      * Create the bean
-     * 
-     * @param entities
-     * @param updateChecks
-     * @param validator 
      */
     @Inject
-    public UpdateCheckEntityFacadeREST(Entities entities, UpdateChecks updateChecks, UpdateCheckEntityInputValidator validator) {
+    public UpdateCheckEntityFacadeREST(@NotNull Entities entities,
+                                       @NotNull UpdateChecks updateChecks,
+                                       @NotNull UpdateCheckEntityInputValidator validator) {
         this.entities = entities;
         this.updateChecks = updateChecks;
         this.validator = validator;
