@@ -45,15 +45,6 @@ public class Mails {
 
     private static final String QUERY_PARAM_MAIL_ID = "mailId";
 
-
-    /**
-     * Default constructor needed by the container.
-     */
-    protected Mails() {
-        entityManager = null;
-        entities = null;
-    }
-
     /**
      * Create an instance of mailbox utilities.
      * 
@@ -61,7 +52,7 @@ public class Mails {
      * @param entities      Entities instance
      */
     @Inject
-    public Mails(EntityManager entityManager, Entities entities) {
+    public Mails(@NotNull EntityManager entityManager,@NotNull Entities entities) {
         this.entityManager = entityManager;
         this.entities = entities;
     }

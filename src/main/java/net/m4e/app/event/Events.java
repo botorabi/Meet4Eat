@@ -69,11 +69,6 @@ public class Events {
 
     /**
      * Create the Events instance.
-     * 
-     * @param entities  Entities instance
-     * @param users     Users instance
-     * @param appInfos  AppInfos instance
-     * @param mails     Mails instance
      */
     @Inject
     public Events(Entities entities, Users users, AppInfos appInfos, Mails mails, DocumentPool docPool) {
