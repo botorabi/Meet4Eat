@@ -7,10 +7,13 @@
  */
 package net.m4e.app.event;
 
+import net.m4e.common.EntityBase;
+
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
+import static javax.persistence.FetchType.EAGER;
 
 /**
  * Entity for storing the results of event location votes.
@@ -45,7 +48,7 @@ import java.util.Set;
       query = "SELECT vote FROM EventLocationVoteEntity vote WHERE vote.creationTime >= :timeBegin AND vote.creationTime <= :timeEnd AND vote.locationId = :locationId"
     )
 })
-public class EventLocationVoteEntity implements Serializable {
+public class EventLocationVoteEntity extends EntityBase implements Serializable {
 
     /**
      * Serialization version
@@ -92,6 +95,7 @@ public class EventLocationVoteEntity implements Serializable {
     /**
      * IDs of users voted for this location
      */
+    @ElementCollection(fetch = EAGER)
     private Set<Long> userIds;
 
     /**
@@ -101,30 +105,27 @@ public class EventLocationVoteEntity implements Serializable {
      * entity fetch (UserEntity). In most use-cases knowing the voting user names
      * is completely sufficient.
      */
+    @ElementCollection(fetch = EAGER)
     private Set<String> userNames;
 
     /**
-     * Get event location ID.
-     * 
-     * @return Event location ID
+     * Get the entity ID.
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set event location ID.
-     * 
-     * @param id Event location ID
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
      * Get the begin of voting.
-     * 
-     * @return Time of voting begin in seconds since epoch
      */
     public Long getVoteTimeBegin() {
         return voteTimeBegin;
@@ -132,8 +133,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Set the begin of voting.
-     * 
-     * @param voteTimeBegin Time of voting begin in seconds since epoch
      */
     public void setVoteTimeBegin(Long voteTimeBegin) {
         this.voteTimeBegin = voteTimeBegin;
@@ -141,8 +140,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Get the end of voting.
-     * 
-     * @return Time of voting end in seconds since epoch
      */
     public Long getVoteTimeEnd() {
         return voteTimeEnd;
@@ -150,8 +147,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Set the time of voting end.
-     * 
-     * @param voteTimeEnd Time of voting end in seconds since epoch
      */
     public void setVoteTimeEnd(Long voteTimeEnd) {
         this.voteTimeEnd = voteTimeEnd;
@@ -159,8 +154,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Get the creation time of this vote entry.
-     * 
-     * @return Creation time in seconds
      */
     public Long getCreationTime() {
         return creationTime;
@@ -168,8 +161,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Set the creation time of this vote entry.
-     * 
-     * @param creationTime Creation timestamp in seconds
      */
     public void setCreationTime(Long creationTime) {
         this.creationTime = creationTime;
@@ -177,8 +168,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Get the ID of event the location belongs to.
-     * 
-     * @return The location ID
      */
     public Long getEventId() {
         return eventId;
@@ -186,8 +175,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Set the event ID.
-     * 
-     * @param eventId The event ID
      */
     public void setEventId(Long eventId) {
         this.eventId = eventId;
@@ -195,8 +182,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Get the location ID.
-     * 
-     * @return The location ID
      */
     public Long getLocationId() {
         return locationId;
@@ -204,8 +189,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Set the location ID.
-     * 
-     * @param locationId The location ID
      */
     public void setLocationId(Long locationId) {
         this.locationId = locationId;
@@ -213,8 +196,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Get the location name.
-     * 
-     * @return The location name
      */
     public String getLocationName() {
         return locationName;
@@ -222,8 +203,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Set the location name.
-     * 
-     * @param locationName The location name
      */
     public void setLocationName(String locationName) {
         this.locationName = locationName;
@@ -231,8 +210,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Get the IDs of users who voted for this location.
-     * 
-     * @return IDs of voting users
      */
     public Set<Long> getUserIds() {
         return userIds;
@@ -240,8 +217,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Set the IDs of users who voted for this location.
-     * 
-     * @param userIds Users who voted for this location
      */
     public void setUserIds(Set<Long> userIds) {
         this.userIds = userIds;
@@ -249,8 +224,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Add the given user ID to voted user IDs.
-     * 
-     * @param userId  User ID to add to voters
      */
     public void addUserId(Long userId) {
         if (userIds == null) {
@@ -261,22 +234,16 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Remove the given user ID from voted user IDs.
-     * 
-     * @param userId    User ID to remove from voters
-     * @return          Return false if the user was not in voters list before.
      */
     public boolean removeUserId(Long userId) {
         if (userIds == null) {
             return false;
         }
-        userIds.remove(userId);
-        return true;
+        return userIds.remove(userId);
     }
 
     /**
      * Get the names of users who voted for this location.
-     * 
-     * @return Names of voting users
      */
     public Set<String> getUserNames() {
         return userNames;
@@ -284,8 +251,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Set the names of users who voted for this location.
-     * 
-     * @param userNames Users who voted for this location
      */
     public void setUserNames(Set<String> userNames) {
         this.userNames = userNames;
@@ -293,8 +258,6 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Add the given user name to voted user names.
-     * 
-     * @param userName  User name to add to voters
      */
     public void addUserName(String userName) {
         if (userNames == null) {
@@ -305,36 +268,11 @@ public class EventLocationVoteEntity implements Serializable {
 
     /**
      * Remove the given user name from voted user names.
-     * 
-     * @param userName  User name to remove from voters
-     * @return          Return false if the user was not in voters list before.
      */
     public boolean removeUserName(String userName) {
         if (userNames == null) {
             return false;
         }
-        userNames.remove(userName);
-        return true;
+        return userNames.remove(userName);
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof EventLocationVoteEntity)) {
-            return false;
-        }
-        EventLocationVoteEntity other = (EventLocationVoteEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.app.event.EventLocationVoteEntity[ id=" + id + " ]";
-    }    
 }

@@ -8,9 +8,11 @@
 
 package net.m4e.app.user.business;
 
+import net.m4e.common.EntityBase;
+
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.*;
+import java.util.UUID;
 
 /**
  * This entity is used for user registration. It provides an activation token.
@@ -19,7 +21,7 @@ import java.util.*;
  * Date of creation Oct 1, 2017
  */
 @Entity
-public class UserRegistrationEntity implements Serializable {
+public class UserRegistrationEntity extends EntityBase implements Serializable {
 
     /**
      * Serialization version
@@ -36,7 +38,7 @@ public class UserRegistrationEntity implements Serializable {
     /**
      * User this activation is used for
      */
-    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private UserEntity user;
 
     /**
@@ -51,25 +53,23 @@ public class UserRegistrationEntity implements Serializable {
     private Long requestDate = 0L;
 
     /**
-     * Get ID.
-     * @return ID
+     * Get the entity ID.
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set ID.
-     * @param id
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
      * Get registering user.
-     * 
-     * @return User
      */
     public UserEntity getUser() {
         return user;
@@ -77,17 +77,13 @@ public class UserRegistrationEntity implements Serializable {
 
     /**
      * Set registering user.
-     * 
-     * @param user 
      */
     public void setUser(UserEntity user) {
         this.user = user;
     }
 
     /**
-     * User activation needs this token.
-     * 
-     * @return Activation token
+     * Get the user activation token.
      */
     public String getActivationToken() {
         return activationToken;
@@ -95,8 +91,6 @@ public class UserRegistrationEntity implements Serializable {
 
     /**
      * Set user activation token.
-     * 
-     * @param activationToken 
      */
     public void setActivationToken(String activationToken) {
         this.activationToken = activationToken;
@@ -104,8 +98,6 @@ public class UserRegistrationEntity implements Serializable {
 
     /**
      * Create a new activation token and assign it to 'activationToken'.
-     * 
-     * @return A new created activation token
      */
     public String createActivationToken() {
         String uuid = UUID.randomUUID().toString();
@@ -114,41 +106,16 @@ public class UserRegistrationEntity implements Serializable {
     }
 
     /**
-     * Get the request timestamp in milliseconds.
-     * 
-     * @return Timestamp of requesting the password reset
+     * Get the request timestamp in milliseconds since epoch.
      */
     public Long getRequestDate() {
         return requestDate;
     }
 
     /**
-     * Set the request timestamp in milliseconds.
-     * 
-     * @param requestDate Request timestamp
+     * Set the request timestamp in milliseconds since epoch.
      */
     public void setRequestDate(Long requestDate) {
         this.requestDate = requestDate;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof UserRegistrationEntity)) {
-            return false;
-        }
-        UserRegistrationEntity that = (UserRegistrationEntity) object;
-        return this.id != null && Objects.equals(this.id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.app.user.business.UserRegistrationEntity[ id=" + id + " ]";
     }
 }

@@ -7,7 +7,7 @@
  */
 package net.m4e.tests.entity;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
 
 /**
  * @author boto
@@ -15,14 +15,12 @@ import java.lang.reflect.*;
  */
 public class EntityHashCodeTester<T> extends EntityTestBase<T> {
 
-    private final Constructor<T> constructor;
-
     private final Field idField;
 
-    public EntityHashCodeTester(final Class<T> actual) throws NoSuchMethodException {
+    public EntityHashCodeTester(final Class<T> actual) throws NoSuchFieldException {
         super(actual);
-        constructor = actual.getDeclaredConstructor();
         idField = findAnnotatedField(javax.persistence.Id.class);
+        idField.setAccessible(true);
     }
 
     public void verifyAll() throws Exception {
@@ -30,7 +28,7 @@ public class EntityHashCodeTester<T> extends EntityTestBase<T> {
         hashCodeWithoutId();
     }
 
-    private void hashCodeWithoutId() throws Exception {
+    private void hashCodeWithoutId() {
         T entity = createInstance();
 
         if (entity.hashCode() != 0) {

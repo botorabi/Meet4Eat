@@ -105,19 +105,6 @@ public class EventEntityFacadeREST {
     @NotNull
     private final EventEntityInputValidator validator;
 
-    
-    /**
-     * EJB's default constructor
-     */
-    @SuppressWarnings("ConstantConditions")
-    protected EventEntityFacadeREST() {
-        entities = null;
-        events = null;
-        users = null;
-        validator = null;
-        eventLocations = null;
-        appInfos = null;
-    }
 
     /**
      * Create the event entity REST facade.

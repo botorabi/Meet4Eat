@@ -17,11 +17,8 @@ import java.lang.reflect.Constructor;
  */
 public class EntityToStringTester<T> extends EntityTestBase<T> {
 
-    private final Constructor<T> constructor;
-
-    public EntityToStringTester(final Class<T> actual) throws NoSuchMethodException {
+    public EntityToStringTester(final Class<T> actual) {
         super(actual);
-        constructor = actual.getDeclaredConstructor();
     }
 
     public void verifyAll() {

@@ -19,11 +19,11 @@ import java.util.*;
  */
 class EmailBodyTemplatePasswordReset extends EmailBodyTemplate {
 
-    public final static String KEY_USER_NAME = "@USER_NAME@";
-    public final static String KEY_LOGIN = "@LOGIN@";
-    public final static String KEY_RESET_PASSWORD_URL = "@RESET_PASSWORD_URL@";
-    public final static String KEY_RESET_PASSWORD_TOKEN = "@RESET_PASSWORD_TOKEN@";
-    public final static String KEY_RESET_EXPIRATION = "@RESET_EXPIRATION@";
+    public static final String KEY_USER_NAME = "@USER_NAME@";
+    public static final String KEY_LOGIN = "@LOGIN@";
+    public static final String KEY_RESET_PW_URL = "@RESET_PASSWORD_URL@";
+    public static final String KEY_RESET_PW_TOKEN = "@RESET_PASSWORD_TOKEN@";
+    public static final String KEY_RESET_EXPIRATION = "@RESET_EXPIRATION@";
 
     public EmailBodyTemplatePasswordReset() {
         super();
@@ -33,8 +33,8 @@ class EmailBodyTemplatePasswordReset extends EmailBodyTemplate {
         return Arrays.asList(
                 KEY_USER_NAME,
                 KEY_LOGIN,
-                KEY_RESET_PASSWORD_URL,
-                KEY_RESET_PASSWORD_TOKEN,
+                KEY_RESET_PW_URL,
+                KEY_RESET_PW_TOKEN,
                 KEY_RESET_EXPIRATION
         );
     }
@@ -49,7 +49,7 @@ class EmailBodyTemplatePasswordReset extends EmailBodyTemplate {
         body += "\n\n";
         body += "Please click the following link in order to reset your password.";
         body += "\n\n";
-        body += " " + KEY_RESET_PASSWORD_URL + "?token=" + KEY_RESET_PASSWORD_TOKEN;
+        body += " " + KEY_RESET_PW_URL + "?token=" + KEY_RESET_PW_TOKEN;
         body += "\n\n";
         body += "Note that the password reset process will expire in " + KEY_RESET_EXPIRATION + " minutes.";
         body += "\n";

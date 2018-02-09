@@ -79,7 +79,6 @@ public class UpdateCheckEntityInputValidator {
      * Generate a text describing the string length range.
      * 
      * @param field    String field name
-     * @param minLen   Minimal length
      * @param maxLen   Maximal length
      * @return         Range text
      */

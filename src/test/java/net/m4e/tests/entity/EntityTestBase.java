@@ -25,8 +25,12 @@ abstract class EntityTestBase<T> {
 
     private final Failures failures = Failures.instance();
 
-    EntityTestBase(final Class<T> actual) throws NoSuchMethodException {
-        constructor = actual.getDeclaredConstructor();
+    EntityTestBase(final Class<T> actual) {
+        try {
+            constructor = actual.getDeclaredConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e.getMessage());
+        }
         this.actual = actual;
     }
 
@@ -44,14 +48,34 @@ abstract class EntityTestBase<T> {
         return actual;
     }
 
-    protected Field findAnnotatedField(Class<? extends Annotation> fieldType) {
+    protected Field findAnnotatedField(Class<? extends Annotation> annotationClass) throws NoSuchFieldException {
         for (final Field field : actual.getDeclaredFields()) {
-            if (field.isAnnotationPresent(fieldType)) {
-                field.setAccessible(true);
+            if (field.isAnnotationPresent(annotationClass)) {
                 return field;
             }
         }
-        throw new IllegalArgumentException(String.format("No field with proper annotation found on <%s>", actual.getSimpleName()));
+        throw new NoSuchFieldException(String.format("No field with annotation <%s> found on class <%s>",
+                annotationClass.getSimpleName(), actual.getSimpleName()));
+    }
+
+    protected Method findAnnotatedMethod(Class<? extends Annotation> annotationClass) throws NoSuchMethodException {
+        for (final Method method : actual.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(annotationClass)) {
+                return method;
+            }
+        }
+        throw new NoSuchMethodException(String.format("No method with annotation <%s> found on class <%s>",
+                annotationClass, actual.getSimpleName()));
+    }
+
+    protected Method findMethodByName(final String name) throws NoSuchMethodException {
+        for (final Method method : actual.getDeclaredMethods()) {
+            if (method.getName().equals(name)) {
+                return method;
+            }
+        }
+        throw new NoSuchMethodException(String.format("No method with name <%s> found on class <%s>",
+                name, actual.getSimpleName()));
     }
 
     protected Failures getFailures() {

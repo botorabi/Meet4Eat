@@ -7,10 +7,9 @@
  */
 package net.m4e.app.event;
 
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.StatusEntity;
+import net.m4e.app.resources.*;
 import net.m4e.app.user.business.UserEntity;
-import net.m4e.common.EntityWithPhoto;
+import net.m4e.common.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,7 +22,7 @@ import java.util.Collection;
  * Date of creation Aug 18, 2017
  */
 @Entity
-public class EventEntity implements Serializable, EntityWithPhoto {
+public class EventEntity extends EntityBase implements Serializable, EntityWithPhoto {
 
     /**
      * Serialization version
@@ -61,7 +60,7 @@ public class EventEntity implements Serializable, EntityWithPhoto {
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**
@@ -98,25 +97,17 @@ public class EventEntity implements Serializable, EntityWithPhoto {
     private Long votingTimeBegin = 0L;
 
     /**
-     * Create an event entity.
+     * Get the entity ID.
      */
-    public EventEntity() {
-    }
-
-    /**
-     * Get event ID.
-     * 
-     * @return Event ID
-     */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set Event ID.
-     * 
-     * @param id Event ID
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -124,8 +115,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
     /**
      * Get entity status. It contains information about entity's life-cycle,
      * ownership, etc.
-     * 
-     * @return Entity status
      */
     public StatusEntity getStatus() {
         return status;
@@ -133,8 +122,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set entity status.
-     * 
-     * @param status Entity status
      */
     public void setStatus(StatusEntity status) {
         this.status = status;
@@ -142,8 +129,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get event name.
-     * 
-     * @return Event name
      */
     public String getName() {
         return name;
@@ -151,8 +136,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set event name.
-     * 
-     * @param name Event name
      */
     public void setName(String name) {
         this.name = name;
@@ -160,8 +143,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get event description.
-     * 
-     * @return Event description
      */
     public String getDescription() {
         return description;
@@ -169,8 +150,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set event description.
-     * 
-     * @param description Event description 
      */
     public void setDescription(String description) {
         this.description = description;
@@ -178,8 +157,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Is the event public? If not then only event owner and members have access.
-     * 
-     * @return Return true if the event is public.
      */
     public boolean getIsPublic() {
         return isPublic;
@@ -188,8 +165,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
     /**
      * Set the event public flag.
      * If the event is not public then only event owner and members have access.
-     * 
-     * @param isPublic Event public event
      */
     public void setIsPublic(boolean isPublic) {
         this.isPublic = isPublic;
@@ -197,8 +172,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get event photo.
-     * 
-     * @return DocumentEntity containing the photo
      */
     @Override
     public DocumentEntity getPhoto() {
@@ -217,8 +190,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get the event start time.
-     * 
-     * @return Event start in seconds since epoch
      */
     public Long getEventStart() {
         return eventStart;
@@ -226,8 +197,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set the event start time.
-     * 
-     * @param eventStart Event start in seconds since epoch
      */
     public void setEventStart(Long eventStart) {
         this.eventStart = eventStart;
@@ -235,8 +204,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get week days for a repeating event.
-     * 
-     * @return Week days
      */
     public Long getRepeatWeekDays() {
         return repeatWeekDays;
@@ -244,8 +211,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set week days for a repeating event.
-     * 
-     * @param repeatWeekDays Week days
      */
     public void setRepeatWeekDays(Long repeatWeekDays) {
         this.repeatWeekDays = repeatWeekDays;
@@ -254,8 +219,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
     /**
      * Get day time for a repeating event.
      * The returned time is in UTC in order to avoid time zone conflicts!
-     * 
-     * @return Day time in seconds
      */
     public Long getRepeatDayTime() {
         return repeatDayTime;
@@ -264,8 +227,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
     /**
      * Set day time for a repeating event.
      * This time must be in UTC in order to avoid time zone conflicts!
-     * 
-     * @param repeatDayTime Day time in seconds
      */
     public void setRepeatDayTime(Long repeatDayTime) {
         this.repeatDayTime = repeatDayTime;
@@ -275,8 +236,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
      * Get the begin of voting time. This is the time offset before the event takes place
      * and can be used to remind users about an upcoming event. Votes are accepted only
      * during the time window: [(event start) .. (event start - voting time begin)]
-     * 
-     * @return Begin of voting time in seconds
      */
     public Long getVotingTimeBegin() {
         return votingTimeBegin;
@@ -284,8 +243,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set the begin of voting time. This is an offset to event start.
-     * 
-     * @param votingTimeBegin Begin of voting time in seconds
      */
     public void setVotingTimeBegin(Long votingTimeBegin) {
         this.votingTimeBegin = votingTimeBegin;
@@ -293,8 +250,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get event members.
-     * 
-     * @return Event members
      */
     public Collection<UserEntity> getMembers() {
         return members;
@@ -302,8 +257,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set event members.
-     * 
-     * @param members Event members
      */
     public void setMembers(Collection<UserEntity> members) {
         this.members = members;
@@ -311,8 +264,6 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get event locations.
-     * 
-     * @return Event locations
      */
     public Collection<EventLocationEntity> getLocations() {
         return locations;
@@ -320,31 +271,8 @@ public class EventEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set event locations.
-     * 
-     * @param locations event locations
      */
     public void setLocations(Collection<EventLocationEntity> locations) {
         this.locations = locations;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof EventEntity)) {
-            return false;
-        }
-        EventEntity other = (EventEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.events.EventEntity[ id=" + id + " ]";
     }
 }

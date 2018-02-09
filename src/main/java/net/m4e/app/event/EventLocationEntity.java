@@ -8,10 +8,10 @@
 
 package net.m4e.app.event;
 
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.StatusEntity;
-import net.m4e.common.EntityWithPhoto;
+import net.m4e.app.resources.*;
+import net.m4e.common.*;
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -22,7 +22,7 @@ import java.io.Serializable;
  * Date of creation Aug 31, 2017
  */
 @Entity
-public class EventLocationEntity implements Serializable, EntityWithPhoto {
+public class EventLocationEntity extends EntityBase implements Serializable, EntityWithPhoto {
 
     /**
      * Serialization version
@@ -55,29 +55,21 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
     /**
      * Photo
      */
-    @OneToOne(optional=true, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
+    @OneToOne(cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH})
     private DocumentEntity photo;
 
     /**
-     * Create an event location instance.
+     * Get the entity ID.
      */
-    public EventLocationEntity() {
-    }
-
-    /**
-     * Get event location ID.
-     * 
-     * @return Event location ID
-     */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
-     * Set event location ID.
-     * 
-     * @param id Event location ID
+     * Set the entity ID.
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -85,8 +77,6 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
     /**
      * Get entity status. It contains information about entity's life-cycle,
      * ownership, etc.
-     * 
-     * @return Entity status
      */
     public StatusEntity getStatus() {
         return status;
@@ -94,8 +84,6 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set entity status.
-     * 
-     * @param status Entity status
      */
     public void setStatus(StatusEntity status) {
         this.status = status;
@@ -103,8 +91,6 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get event location name.
-     * 
-     * @return Event location name
      */
     public String getName() {
         return name;
@@ -112,8 +98,6 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set event location name.
-     * 
-     * @param name Event location name
      */
     public void setName(String name) {
         this.name = name;
@@ -121,8 +105,6 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get event location description.
-     * 
-     * @return Event location description
      */
     public String getDescription() {
         return description;
@@ -130,8 +112,6 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set event location description.
-     * 
-     * @param description Event location description 
      */
     public void setDescription(String description) {
         this.description = description;
@@ -139,8 +119,6 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Get event location photo.
-     * 
-     * @return DocumentEntity containing the photo
      */
     @Override
     public DocumentEntity getPhoto() {
@@ -149,32 +127,9 @@ public class EventLocationEntity implements Serializable, EntityWithPhoto {
 
     /**
      * Set event location photo.
-     * 
-     * @param photo DocumentEntity containing the photo
      */
     @Override
     public void setPhoto(DocumentEntity photo) {
         this.photo = photo;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof EventLocationEntity)) {
-            return false;
-        }
-        EventLocationEntity other = (EventLocationEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.events.EventLocationEntity[ id=" + id + " ]";
     }
 }

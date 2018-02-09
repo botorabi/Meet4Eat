@@ -9,6 +9,7 @@ package net.m4e.tests;
 
 import net.m4e.tests.entity.*;
 import org.assertj.core.api.AbstractObjectAssert;
+import org.assertj.core.description.Description;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;

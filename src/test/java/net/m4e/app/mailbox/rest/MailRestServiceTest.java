@@ -20,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 import org.mockito.*;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import javax.servlet.http.*;
@@ -62,14 +61,6 @@ class MailRestServiceTest {
         return request;
     }
 
-
-    /**
-     * Check, that {@link MailRestService} is creatable by container.
-     */
-    @Test
-    void checkNoArgsConstructor() {
-        new MailRestService();
-    }
 
     @Nested
     class GetMailsTest {
@@ -302,17 +293,19 @@ class MailRestServiceTest {
         }
 
         Answer<MailEntity> createMailEntity() {
-            return new Answer<MailEntity>() {
-                @Override
-                public MailEntity answer(final InvocationOnMock args) {
-                    return new MailEntity(args.getArgumentAt(1, UserEntity.class).getId(),
-                            "",
-                            args.getArgumentAt(0, NewMailCmd.class).getReceiverId(),
-                            "",
-                            0L,
-                            args.getArgumentAt(0, NewMailCmd.class).getSubject(),
-                            args.getArgumentAt(0, NewMailCmd.class).getContent());
-                }
+            return args -> {
+                NewMailCmd mailCmd = args.getArgumentAt(0, NewMailCmd.class);
+                UserEntity user = args.getArgumentAt(1, UserEntity.class);
+                MailEntity mailEntity = new MailEntity();
+
+                mailEntity.setReceiverName("");
+                mailEntity.setReceiverId(mailCmd.getReceiverId());
+                mailEntity.setSenderId(user.getId());
+                mailEntity.setSenderName("");
+                mailEntity.setSendDate(0L);
+                mailEntity.setSubject(mailCmd.getSubject());
+                mailEntity.setContent(mailCmd.getContent());
+                return mailEntity;
             };
         }
 

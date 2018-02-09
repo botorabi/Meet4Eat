@@ -445,10 +445,6 @@ public class Users {
      * @return        User entity
      */
     public UserEntity importUser(@NotNull UserCmd userCmd) {
-        if (userCmd == null) {
-            throw new IllegalArgumentException("Invalid user command");
-        }
-
         UserEntity userEntity = new UserEntity();
         userEntity.setLogin(userCmd.getLogin());
         userEntity.setName(userCmd.getName());

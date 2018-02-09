@@ -19,11 +19,11 @@ import java.util.*;
  */
 class EmailBodyTemplateRegistration extends EmailBodyTemplate {
 
-    public final static String KEY_USER_NAME = "@USER_NAME@";
-    public final static String KEY_LOGIN = "@LOGIN@";
-    public final static String KEY_ACTIVATION_URL = "@ACTIVATION_URL@";
-    public final static String KEY_REGISTRATION_TOKEN = "@REGISTRATION_TOKEN@";
-    public final static String KEY_REGISTRATION_EXPIRATION = "@REGISTRATION_EXPIRATION@";
+    public static final String KEY_USER_NAME = "@USER_NAME@";
+    public static final String KEY_LOGIN = "@LOGIN@";
+    public static final String KEY_ACTIVATION_URL = "@ACTIVATION_URL@";
+    public static final String KEY_REGISTRATION_TOKEN = "@REGISTRATION_TOKEN@";
+    public static final String KEY_REGISTRATION_EXPIRATION = "@REGISTRATION_EXPIRATION@";
 
     public EmailBodyTemplateRegistration() {
         super();

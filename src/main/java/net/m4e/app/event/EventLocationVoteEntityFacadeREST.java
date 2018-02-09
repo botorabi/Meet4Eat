@@ -39,16 +39,9 @@ import java.util.List;
 @Path("/rest/locationvoting")
 public class EventLocationVoteEntityFacadeREST {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    /**
-     * Event used for notifying other users
-     */
-    @Inject
-    private Event<NotifyUsersEvent> notifyUsersEvent;
+    private final Event<NotifyUsersEvent> notifyUsersEvent;
 
     private final Events events;
 
@@ -58,26 +51,17 @@ public class EventLocationVoteEntityFacadeREST {
 
 
     /**
-     * EJB's default constructor
-     */
-    protected EventLocationVoteEntityFacadeREST() {
-        events = null;
-        entities = null;
-        eventLocations = null;
-    }
-
-    /**
      * Create the REST facade.
-     * 
-     * @param events
-     * @param entities
-     * @param eventLocations
      */
     @Inject
-    public EventLocationVoteEntityFacadeREST(Events events, Entities entities, EventLocations eventLocations) {
+    public EventLocationVoteEntityFacadeREST(Events events,
+                                             Entities entities,
+                                             EventLocations eventLocations,
+                                             Event<NotifyUsersEvent> notifyUsersEvent) {
         this.events = events;
         this.entities = entities;
         this.eventLocations = eventLocations;
+        this.notifyUsersEvent = notifyUsersEvent;
     }
 
     /**

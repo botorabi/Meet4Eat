@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.GenericResponseResult;
 import net.m4e.common.ResponseResults;
+import org.jetbrains.annotations.NotNull;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -34,19 +35,10 @@ public class AppInfoEntityFacadeREST {
     private final AppInfos appInfos;
 
     /**
-     * EJB's default constructor.
-     */
-    public AppInfoEntityFacadeREST() {
-        this.appInfos = null;
-    }
-
-    /**
      * Create the REST bean.
-     * 
-     * @param appInfos 
      */
     @Inject
-    public AppInfoEntityFacadeREST(AppInfos appInfos) {
+    public AppInfoEntityFacadeREST(@NotNull AppInfos appInfos) {
         this.appInfos = appInfos;
     }
 
@@ -73,9 +65,17 @@ public class AppInfoEntityFacadeREST {
      * Class describing the response data for GET (getInfo)
      */
     public static class ResponseDataAppInfo {
-        public String version;
+        private String version;
 
         public ResponseDataAppInfo(final String version) {
+            this.version = version;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(String version) {
             this.version = version;
         }
     }

@@ -21,16 +21,30 @@ public class EntityEqualsTester<T> extends EntityTestBase<T> {
 
     private final Random random = new Random();
 
-    public EntityEqualsTester(final Class<T> actual) throws NoSuchMethodException {
+    public EntityEqualsTester(final Class<T> actual) throws NoSuchFieldException {
         super(actual);
         idField = findAnnotatedField(javax.persistence.Id.class);
+        idField.setAccessible(true);
     }
 
     public void verifyAll() throws Exception {
         notEqualWithoutIds();
+        notEqualWithOneIdNull();
         equalWithSameIds();
         notEqualWithDifferentIds();
         notEqualWithDifferentTypes();
+    }
+
+    private void notEqualWithOneIdNull() {
+        T entity1 = createInstance();
+        T entity2 = createInstance();
+
+        setIdField(entity1, createSameID());
+        setIdField(entity2, null);
+
+        if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
+            failWithMessage("\nEntities of Class:\n  <%s>\n with an ID:\n  <null>\nshouldn't be equal", getActual().getSimpleName());
+        }
     }
 
     private void notEqualWithoutIds() {

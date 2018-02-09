@@ -7,17 +7,12 @@
  */
 package net.m4e.app.auth;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.invoke.MethodHandles;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.*;
+import java.util.*;
 
 /**
  * Class performing authorization checks for accessing resources provided by Java Beans.
@@ -31,13 +26,13 @@ import java.util.Map;
  * authorization rule.
  * 
  *   This grants access to role MODERATOR.
- *   @AuthRole(grant={AuthRole.USER_ROLE_MODERATOR})
+ *   \@AuthRole(grant={AuthRole.USER_ROLE_MODERATOR})
  * 
  *   This grants access to authenticated users.
- *   @AuthRole(grant={AuthRole.VIRT_ROLE_USER})
+ *   \@AuthRole(grant={AuthRole.VIRT_ROLE_USER})
  *
  *   This grants access to any role, the business logic has to check for authorization.
- *   @AuthRole(grant={AuthRole.VIRT_ENDPOINT_CHECK})
+ *   \@AuthRole(grant={AuthRole.VIRT_ENDPOINT_CHECK})
  * 
  * For available user roles see annotation interface AuthRole.
  * 
@@ -46,9 +41,6 @@ import java.util.Map;
  */
 public class AuthChecker {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
@@ -116,33 +108,30 @@ public class AuthChecker {
     private void setupRules(List<Class<?>> beanClasses) {
         // gather information from all bean classes about authorization relevant annotations
         Annotations annotations = new Annotations();
-        beanClasses.stream().map((cls) -> {
-            LOGGER.debug("Adding rules for bean class {}", cls.getName());
-            return cls;
-        }).forEach((cls) -> {
+        beanClasses.stream()
+                .peek(cls -> LOGGER.debug("Adding rules for bean class {}", cls.getName()))
+                .forEach(clazz -> {
+
             // get the base path of the bean class (checking for class' Path annotation)
-            String classrulepath = annotations.getClassPath(cls);
+            String classRulePath = annotations.getClassPath(clazz);
 
             //! NOTE Currently we check access only against roles, but AuthRole provides also definition of
             //        permissions (see Annotations.getMethodsAuthPermissions), so in future it is possible
             //        to provide a more fine-grained access control if needed.
-            annotations.getMethodsAuthRoles(cls).entrySet().stream().forEach((pathentry) -> {
+            annotations.getMethodsAuthRoles(clazz).forEach((path, roles) -> {
 
-                String fullrespath = classrulepath + (pathentry.getKey().isEmpty() ? "" : "/" + pathentry.getKey());
-                AuthAccessRuleChecker rule = new AuthAccessRuleChecker(fullrespath);
+                String fullResourcePath = classRulePath + (path.isEmpty() ? "" : "/" + path);
+                AuthAccessRuleChecker rule = new AuthAccessRuleChecker(fullResourcePath);
 
-                pathentry.getValue().entrySet().stream().forEach((accessentry) -> {
-                    rule.addAccessRoles(accessentry.getKey(), accessentry.getValue());
-                });
-                // path entry is relative to class' path
-                // check if a complex path was defined
-                if (fullrespath.contains("{")) {
+                roles.forEach(rule::addAccessRoles);
+
+                // path entry is relative to class' path, check if a complex path was defined
+                if (fullResourcePath.contains("{")) {
                     accessRulesComplexPath.add(rule);
+                } else {
+                    accessRulesFixPath.put(fullResourcePath, rule);
                 }
-                else {
-                    accessRulesFixPath.put(fullrespath, rule);
-                }
-                LOGGER.debug("Adding rule: {}", rule.toString());
+                LOGGER.debug("Adding rule: {}", rule);
             });
         });
     }
@@ -158,12 +147,12 @@ public class AuthChecker {
     public boolean checkAccess(String basePath, HttpServletRequest request, List<String> userRoles) {
 
         // check for no-restriction access
-        if (grantAlwaysRoles.stream().anyMatch((r) -> userRoles.contains(r))) {
+        if (grantAlwaysRoles.stream().anyMatch(userRoles::contains)) {
             LOGGER.trace("Access granted to Grant-Always roles");
             return true;
         }
 
-        boolean grantaccess = false;
+        boolean grantAccess = false;
         try {
             URL url = new URL(request.getRequestURL().toString());
             String path = url.getPath();
@@ -174,29 +163,29 @@ public class AuthChecker {
                 return false;
             }
 
-            String respath = path.substring(basePath.length());
-            LOGGER.trace("Checking resource path [{}]: {}", request.getMethod(), respath);
+            String resourcePath = path.substring(basePath.length());
+            LOGGER.trace("Checking resource path [{}]: {}", request.getMethod(), resourcePath);
 
             // first check for fix path match
-            AuthAccessRuleChecker accrule = accessRulesFixPath.get(respath);
-            if (accrule != null) {
-                grantaccess = accrule.checkFixPath(respath, request.getMethod(), userRoles);
+            AuthAccessRuleChecker accessRule = accessRulesFixPath.get(resourcePath);
+            if (accessRule != null) {
+                grantAccess = accessRule.checkFixPath(resourcePath, request.getMethod(), userRoles);
             }
             else {
                 // if no hit then check for complex path match
                 for (AuthAccessRuleChecker acc: accessRulesComplexPath) {
-                    if (acc.checkComplexPath(respath, request.getMethod(), userRoles)) {
-                        grantaccess = true;
+                    if (acc.checkComplexPath(resourcePath, request.getMethod(), userRoles)) {
+                        grantAccess = true;
                         break;
                     }
                 }
             }
-            LOGGER.trace("Access granted: {}", (grantaccess ? "Yes" : "No"));
+            LOGGER.trace("Access granted: {}", (grantAccess ? "Yes" : "No"));
         }
         catch(MalformedURLException | SecurityException ex) {
             LOGGER.warn("An exception happened during auth check: {}", ex.getLocalizedMessage());
             return false;
         }
-        return grantaccess;
+        return grantAccess;
     }
 }
