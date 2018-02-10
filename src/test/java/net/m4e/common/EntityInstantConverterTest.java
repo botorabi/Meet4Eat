@@ -10,9 +10,8 @@ package net.m4e.common;
 import org.junit.jupiter.api.*;
 
 import java.time.Instant;
-import java.util.*;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author boto

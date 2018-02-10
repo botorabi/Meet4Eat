@@ -8,15 +8,8 @@
 package net.m4e.common;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import org.mockito.stubbing.Answer;
-
-import java.security.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.fail;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 
 /**
  * @author boto
