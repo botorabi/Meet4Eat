@@ -45,9 +45,9 @@ public class HashCreator {
         return createHash(content, ALGO_SHA512);
     }
 
-    private static String createHash(byte[] content, final String algoName) throws Exception {
+    private static String createHash(byte[] content, final String algorithmName) throws Exception {
         try {
-            MessageDigest digest = MessageDigest.getInstance(algoName);
+            MessageDigest digest = MessageDigest.getInstance(algorithmName);
             digest.update(content);
             byte data[] = digest.digest();
             StringBuilder hexString = new StringBuilder();

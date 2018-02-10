@@ -198,12 +198,14 @@ class CmdTests {
         @NotNull
         private UserCmd createEntityByConstruction() {
             List<String> roles = Arrays.asList(AuthRole.USER_ROLE_ADMIN);
-            return new UserCmd("login",
+            UserCmd cmd =  new UserCmd("login",
                     "password",
                     "name",
                     "email",
                     "photo",
                     roles);
+
+            return cmd;
         }
 
         @NotNull

@@ -25,6 +25,9 @@ public class EmailBodyCreator {
         this.placeHolders = placeHolders;
     }
 
+    /**
+     * Create the final body given a template and its placeholder values.
+     */
     public static String create(final String template, final Map<String, String> placeHolders) {
         if (template == null) {
             throw new RuntimeException("Invalid body template");

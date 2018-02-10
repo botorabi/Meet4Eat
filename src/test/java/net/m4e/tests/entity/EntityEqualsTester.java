@@ -30,6 +30,7 @@ public class EntityEqualsTester<T> extends EntityTestBase<T> {
     public void verifyAll() throws Exception {
         notEqualWithoutIds();
         notEqualWithOneIdNull();
+        notEqualWithNullObject();
         equalWithSameIds();
         notEqualWithDifferentIds();
         notEqualWithDifferentTypes();
@@ -53,6 +54,17 @@ public class EntityEqualsTester<T> extends EntityTestBase<T> {
 
         setIdField(entity1, null);
         setIdField(entity2, null);
+
+        if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
+            failWithMessage("\nEntities of Class:\n  <%s>\n with ID:\n  <null>\nshouldn't be equal", getActual().getSimpleName());
+        }
+    }
+
+    private void notEqualWithNullObject() {
+        T entity1 = createInstance();
+        T entity2 = null;
+
+        setIdField(entity1, createSameID());
 
         if (Objects.areEqual(entity1, entity2) || Objects.areEqual(entity2, entity1)) {
             failWithMessage("\nEntities of Class:\n  <%s>\n with ID:\n  <null>\nshouldn't be equal", getActual().getSimpleName());
