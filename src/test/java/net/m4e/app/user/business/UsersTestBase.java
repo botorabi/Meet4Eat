@@ -9,7 +9,7 @@ package net.m4e.app.user.business;
 
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.DocumentPool;
-import net.m4e.common.Entities;
+import net.m4e.common.*;
 import net.m4e.system.core.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
@@ -17,8 +17,7 @@ import org.mockito.stubbing.Answer;
 
 import java.util.*;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 
 /**
  * Base test class for Users
@@ -26,7 +25,7 @@ import static org.mockito.Matchers.eq;
  * @author boto
  * Date of creation February 6, 2018
  */
-class UsersTestBase implements DefaultUserData {
+class UsersTestBase extends UserEntityCreator {
 
     @Mock
     Entities entities;

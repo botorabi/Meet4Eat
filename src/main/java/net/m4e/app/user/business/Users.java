@@ -57,15 +57,13 @@ public class Users {
         docPool = null;
     }
 
-     /**
-      * Create an instance of user utilities.
-      *
-      * @param entities
-      * @param appInfos
-      * @param docPool
-      */
+    /**
+     * Create an instance of user utilities.
+     */
     @Inject
-    public Users(Entities entities, AppInfos appInfos, DocumentPool docPool) {
+    public Users(@NotNull Entities entities,
+                 @NotNull AppInfos appInfos,
+                 @NotNull DocumentPool docPool) {
         this.entities = entities;
         this.appInfos = appInfos;
         this.docPool = docPool;
@@ -289,8 +287,7 @@ public class Users {
      * @return Return user entity if found, otherwise return null.
      */
     public UserEntity findUser(Long id) {
-        UserEntity user = entities.find(UserEntity.class, id);
-        return user;
+        return entities.find(UserEntity.class, id);
     }
 
     /**

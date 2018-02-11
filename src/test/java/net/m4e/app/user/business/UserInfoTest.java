@@ -8,6 +8,7 @@
 package net.m4e.app.user.business;
 
 import net.m4e.app.resources.*;
+import net.m4e.common.UserEntityCreator;
 import org.assertj.core.api.SoftAssertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
@@ -21,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author boto
  * Date of creation February 1, 2018
  */
-class UserInfoTest implements DefaultUserData {
+class UserInfoTest extends UserEntityCreator {
 
     final static UserInfo.OnlineStatus STATUS_ONLINE = UserInfo.OnlineStatus.ONLINE;
     final static List<String> ROLES_AS_STRINGS = Arrays.asList("ROLE1", "ROLE2");

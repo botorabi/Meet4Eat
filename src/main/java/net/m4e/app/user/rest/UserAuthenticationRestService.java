@@ -18,6 +18,7 @@ import net.m4e.app.user.rest.comm.LoggedIn;
 import net.m4e.app.user.rest.comm.LoginCmd;
 import net.m4e.common.GenericResponseResult;
 import net.m4e.common.ResponseResults;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,19 +56,12 @@ public class UserAuthenticationRestService {
     private final Users users;
 
     /**
-     * EJB's default constructor.
-     */
-    protected UserAuthenticationRestService() {
-        this.users = null;
-    }
-
-    /**
      * Create the bean.
      * 
      * @param users Injected Users instance
      */
     @Inject
-    public UserAuthenticationRestService(Users users) {
+    public UserAuthenticationRestService(@NotNull Users users) {
         this.users = users;
     }
 

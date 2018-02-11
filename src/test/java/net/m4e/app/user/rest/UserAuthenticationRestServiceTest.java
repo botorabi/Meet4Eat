@@ -68,11 +68,6 @@ class UserAuthenticationRestServiceTest {
     }
 
     @Test
-    void defaultConstructor() {
-        new UserAuthenticationRestService();
-    }
-
-    @Test
     void stateAuthenticated() {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(42L);
@@ -119,7 +114,7 @@ class UserAuthenticationRestServiceTest {
     @Test
     void loginNonActiveUser() {
         StatusEntity status = new StatusEntity();
-        status.setEnabled( false );
+        status.setEnabled(false);
         UserEntity userEntity = new UserEntity();
         userEntity.setStatus(status);
         userEntity.setId(142L);

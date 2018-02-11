@@ -5,33 +5,34 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.user.business;
+package net.m4e.common;
 
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.*;
+import net.m4e.app.user.business.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-interface DefaultUserData {
+public class UserEntityCreator {
 
-    Long   USER_ID = 1000L;
-    String USER_EMAIL = "user@mailbox.com";
-    String USER_NAME = "Bob Dillon";
-    Long   USER_STATUS_ID = 3000L;
-    Long   USER_PHOTO_ID = 4000L;
-    String USER_PHOTO_ETAG = "PhotoETAG";
-    Long   USER_PROFILE_ID = 5000L;
-    String USER_LOGIN = "MyLogin";
-    Long   USER_DATE_CREATION = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
-    Long   USER_DATE_LAST_LOGIN = Instant.now().toEpochMilli();
+    public static Long USER_ID = 1000L;
+    public static String USER_EMAIL = "user@mailbox.com";
+    public static String USER_NAME = "Bob Dillon";
+    public static Long   USER_STATUS_ID = 3000L;
+    public static Long   USER_PHOTO_ID = 4000L;
+    public static String USER_PHOTO_ETAG = "PhotoETAG";
+    public static Long   USER_PROFILE_ID = 5000L;
+    public static String USER_LOGIN = "MyLogin";
+    public static Long   USER_DATE_CREATION = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
+    public static Long   USER_DATE_LAST_LOGIN = Instant.now().toEpochMilli();
 
     /**
      * Create a user entity with default data.
      */
-    default UserEntity createUser() {
+    public UserEntity createUser() {
         UserEntity user = new UserEntity();
         user.setId(USER_ID);
         user.setName(USER_NAME);
@@ -60,7 +61,7 @@ interface DefaultUserData {
     /**
      * Create a user entity with default data and given roles.
      */
-    default UserEntity createUserWithRoles(@NotNull final List<String> roles) {
+    public UserEntity createUserWithRoles(@NotNull final List<String> roles) {
         UserEntity user = createUser();
         user.setRoles(createRoleEntities(roles));
 
@@ -70,7 +71,7 @@ interface DefaultUserData {
     /**
      * Create role entities out of given roles strings.
      */
-    default List<RoleEntity> createRoleEntities(@NotNull final List<String> roles) {
+    public List<RoleEntity> createRoleEntities(@NotNull final List<String> roles) {
         final Long id = 20000L;
         List<RoleEntity> roleEntities = new ArrayList<>();
         roles.stream().forEach(roleName -> {

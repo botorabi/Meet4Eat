@@ -7,31 +7,23 @@
  */
 package net.m4e.app.user.rest;
 
-import java.lang.invoke.MethodHandles;
-import java.util.*;
+import io.swagger.annotations.*;
+import net.m4e.app.auth.*;
+import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.user.business.*;
+import net.m4e.app.user.rest.comm.*;
+import net.m4e.common.*;
+import net.m4e.system.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.*;
 
 import javax.ejb.Stateless;
-import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.notification.SendEmailEvent;
-import net.m4e.app.user.business.*;
-import net.m4e.app.user.rest.comm.*;
-import net.m4e.common.Entities;
-import net.m4e.common.GenericResponseResult;
-import net.m4e.system.core.*;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.ws.rs.core.*;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 
 /**
  * REST services for User entity operations
@@ -99,22 +91,18 @@ public class UserRestService {
     @ApiOperation(value = "Create a new user")
     public GenericResponseResult<CreateUser> createUser(UserCmd userCmd, @Context HttpServletRequest request) {
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
-        UserEntity newEntity;
+
+        UserEntity userEntity;
         try {
-            newEntity = validator.validateNewEntityInput(sessionUser, userCmd);
+            userEntity = validator.validateNewEntityInput(sessionUser, userCmd);
         } catch (Exception ex) {
-            LOGGER.warn("*** Could not create new user, validation failed, reason: {}", ex.getLocalizedMessage());
-            return GenericResponseResult.badRequest(ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not create new user, validation failed, reason: {}", ex.getMessage());
+            return GenericResponseResult.badRequest(ex.getMessage());
         }
 
-        try {
-            newEntity = users.createNewUser(newEntity, sessionUser.getId());
-        } catch (Exception ex) {
-            LOGGER.warn("*** Could not create new user, reason: {}", ex.getLocalizedMessage());
-            return GenericResponseResult.internalError("Failed to create new user.");
-        }
+        UserEntity createdUser = users.createNewUser(userEntity, sessionUser.getId());
 
-        return GenericResponseResult.ok("User was successfully created.", new CreateUser(newEntity.getId().toString()));
+        return GenericResponseResult.ok("User was successfully created.", new CreateUser(createdUser.getId().toString()));
     }
 
     /**
@@ -392,17 +380,13 @@ public class UserRestService {
     public GenericResponseResult<DeleteUser> remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
         DeleteUser delUser = new DeleteUser(id.toString());
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
-        if (sessionUser == null) {
-            LOGGER.error("*** Cannot delete user, no user in session found!");
-            return GenericResponseResult.unauthorized("Failed to delete user.", delUser);
-        }
 
         if (sessionUser.getId().equals(id)) {
             LOGGER.warn("*** User was attempting to delete itself! Call a doctor.");
             return GenericResponseResult.notAcceptable("Failed to delete yourself.", delUser);
         }
 
-        UserEntity user = entities.find(UserEntity.class, id);
+        UserEntity user = users.findUser(id);
         if ((user == null) || !user.getStatus().getIsActive()) {
             LOGGER.warn("*** User was attempting to delete non-existing user!");
             return GenericResponseResult.notFound("Failed to find user for deletion.", delUser);
@@ -411,7 +395,7 @@ public class UserRestService {
         try {
             users.markUserAsDeleted(user);
         } catch (Exception ex) {
-            LOGGER.warn("*** Could not mark user as deleted, reason: {}", ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not mark user as deleted, reason: {}", ex.getMessage());
             return GenericResponseResult.internalError("Failed to delete user.", delUser);
         }
 
@@ -471,7 +455,7 @@ public class UserRestService {
     public GenericResponseResult<UserInfo> find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id.toString());
-        UserEntity user = entities.find(UserEntity.class, id);
+        UserEntity user = users.findUser(id);
         if ((user == null) || !user.getStatus().getIsActive()) {
             return GenericResponseResult.notFound("User was not found.", userInfo);
         }

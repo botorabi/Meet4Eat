@@ -8,6 +8,7 @@
 package net.m4e.app.user.business;
 
 import net.m4e.app.auth.*;
+import net.m4e.common.UserEntityCreator;
 import net.m4e.tests.EntityAssertions;
 import org.assertj.core.api.*;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ import java.util.*;
  * @author boto
  * Date of creation January 25, 2018
  */
-class UserEntityTest implements DefaultUserData {
+class UserEntityTest extends UserEntityCreator {
 
     @Test
     void commonEntityTests() {
