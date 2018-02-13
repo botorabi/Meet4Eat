@@ -5,7 +5,7 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.event;
+package net.m4e.app.event.business;
 
 import net.m4e.app.resources.*;
 import net.m4e.app.user.business.UserEntity;

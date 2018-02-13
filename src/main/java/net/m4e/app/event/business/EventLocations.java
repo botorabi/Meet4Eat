@@ -6,24 +6,19 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.event;
+package net.m4e.app.event.business;
 
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
-import net.m4e.app.resources.StatusEntity;
+import net.m4e.app.resources.*;
 import net.m4e.app.user.business.UserEntity;
-import net.m4e.common.Entities;
-import net.m4e.common.Strings;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.m4e.common.*;
+import net.m4e.system.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.*;
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
@@ -38,9 +33,6 @@ import java.util.*;
 @ApplicationScoped
 public class EventLocations {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final EntityManager entityManager;
@@ -50,6 +42,9 @@ public class EventLocations {
     private final AppInfos appInfos;
 
     private final DocumentPool docPool;
+
+    private long voteEnd;
+    private long voteBegin;
 
 
     /**
@@ -71,7 +66,10 @@ public class EventLocations {
      * @param docPool       The document pool instance
      */
     @Inject
-    public EventLocations(EntityManager entityManager, Entities entities, AppInfos appInfos, DocumentPool docPool) {
+    public EventLocations(@NotNull EntityManager entityManager,
+                          @NotNull Entities entities,
+                          @NotNull AppInfos appInfos,
+                          @NotNull DocumentPool docPool) {
         this.entityManager = entityManager;
         this.entities = entities;
         this.appInfos = appInfos;
@@ -203,69 +201,80 @@ public class EventLocations {
      * @return          Return the vote entity, or null if it is currently outside the voting time window.
      */
     public EventLocationVoteEntity createOrUpdateVote(UserEntity voter, EventEntity event, EventLocationEntity location, boolean vote) {
-        long voteend;
-        long votebegin;
-        long now = Calendar.getInstance(TimeZone.getDefault()).getTimeInMillis() / 1000;
-
-        // for repeated events check the current day
-        Long wd = event.getRepeatWeekDays();
-        if (wd > 0L) {
-            int currentday = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-            //! NOTE Calendar.DAY_OF_WEEK begins with a 1 for Sunday, convert the day flag
-            currentday = (1 << ((currentday + 5) % 7));
-            if ((currentday & wd) == 0) {
-                return null;
-            }
-            //! NOTE the repeat day time is expected to be in UTC
-            voteend = event.getRepeatDayTime();
-            long daysdivider = 60 * 60 * 24;
-            voteend += (now / daysdivider) * daysdivider;
-            votebegin = voteend - event.getVotingTimeBegin();
-        }
-        else {
-            voteend   = event.getEventStart();
-            votebegin = voteend - event.getVotingTimeBegin();
-        }
-
-        // check if the vote is happening in the right time window
-        if ((now < votebegin) || (now > voteend)) {
+        if (!calculateVoteBeginAndEndTime(event)) {
             return null;
         }
 
-        TypedQuery<EventLocationVoteEntity> query = entityManager.createNamedQuery("EventLocationVoteEntity.findLocationVotes", EventLocationVoteEntity.class);
-        query.setParameter("timeBegin", votebegin);
-        query.setParameter("timeEnd", voteend);
-        query.setParameter("locationId", location.getId());
-
-        EventLocationVoteEntity voteentity;
-        //! NOTE we expect maximal 1 result here
-        List<EventLocationVoteEntity> voteentities = query.getResultList();
-        if (voteentities.isEmpty()) {
-            voteentity = new EventLocationVoteEntity();
-            voteentity.setEventId(event.getId());
-            voteentity.setLocationId(location.getId());
-            voteentity.setLocationName(location.getName());
-            voteentity.setVoteTimeBegin(votebegin);
-            voteentity.setVoteTimeEnd(voteend);
-            voteentity.setCreationTime((new Date()).getTime() / 1000);
-            entities.create(voteentity);
-        }
-        else {
-            voteentity = voteentities.get(0);
-        }
+        EventLocationVoteEntity voteEntity = getOrCreateVoteEntity(event, location);
 
         if (vote) {
-            voteentity.addUserId(voter.getId());
-            voteentity.addUserName(voter.getName());
+            voteEntity.addUserId(voter.getId());
+            voteEntity.addUserName(voter.getName());
         }
         else {
-            voteentity.removeUserId(voter.getId());            
-            voteentity.removeUserName(voter.getName());            
+            voteEntity.removeUserId(voter.getId());
+            voteEntity.removeUserName(voter.getName());
         }
 
-        entities.update(voteentity);
+        entities.update(voteEntity);
 
-        return voteentity;
+        return voteEntity;
+    }
+
+    protected boolean calculateVoteBeginAndEndTime(EventEntity event) {
+        long now = Calendar.getInstance(TimeZone.getDefault()).getTimeInMillis() / 1000;
+
+        // for repeated events check the current day
+        Long weekDays = event.getRepeatWeekDays();
+        if (weekDays > 0L) {
+            int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+            //! NOTE Calendar.DAY_OF_WEEK begins with a 1 for Sunday, convert the day flag
+            currentDay = (1 << ((currentDay + 5) % 7));
+            if ((currentDay & weekDays) == 0) {
+                return false;
+            }
+            //! NOTE the repeat day time is expected to be in UTC
+            voteEnd = event.getRepeatDayTime();
+            long daysDivider = 60 * 60 * 24;
+            voteEnd += (now / daysDivider) * daysDivider;
+            voteBegin = voteEnd - event.getVotingTimeBegin();
+        }
+        else {
+            voteEnd   = event.getEventStart();
+            voteBegin = voteEnd - event.getVotingTimeBegin();
+        }
+
+        // check if the vote is happening in the right time window
+        if ((now < voteBegin) || (now > voteEnd)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected EventLocationVoteEntity getOrCreateVoteEntity(EventEntity event, EventLocationEntity location) {
+        TypedQuery<EventLocationVoteEntity> query = entityManager.createNamedQuery("EventLocationVoteEntity.findLocationVotes", EventLocationVoteEntity.class);
+        query.setParameter("timeBegin", voteBegin);
+        query.setParameter("timeEnd", voteEnd);
+        query.setParameter("locationId", location.getId());
+
+        EventLocationVoteEntity voteEntity;
+        //! NOTE we expect maximal 1 result here
+        List<EventLocationVoteEntity> voteEntities = query.getResultList();
+        if (voteEntities.isEmpty()) {
+            voteEntity = new EventLocationVoteEntity();
+            voteEntity.setEventId(event.getId());
+            voteEntity.setLocationId(location.getId());
+            voteEntity.setLocationName(location.getName());
+            voteEntity.setVoteTimeBegin(voteBegin);
+            voteEntity.setVoteTimeEnd(voteEnd);
+            voteEntity.setCreationTime((new Date()).getTime() / 1000);
+            entities.create(voteEntity);
+        }
+        else {
+            voteEntity = voteEntities.get(0);
+        }
+        return voteEntity;
     }
 
     /**

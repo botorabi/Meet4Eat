@@ -5,18 +5,17 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.event;
-
-import java.util.*;
+package net.m4e.app.event.business;
 
 import net.m4e.app.communication.*;
 import net.m4e.app.user.business.UserEntity;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.*;
+
 import static java.util.Collections.singletonList;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 
 /**
  * @author ybroeker
@@ -31,8 +30,7 @@ class EventSystemTest {
         entity.setId(42L);
         ConnectedClients connections = Mockito.mock(ConnectedClients.class);
         Mockito.when(connections.getConnectedUser(any())).thenReturn(entity);
-        EventSystem eventSystem = new EventSystem(events);
-        eventSystem.connections = connections;
+        EventSystem eventSystem = new EventSystem(events, connections);
 
         ChannelEventEvent event = new ChannelEventEvent();
         event.setSenderId(1L);

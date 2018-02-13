@@ -415,9 +415,8 @@ public class UserRestService {
     @net.m4e.app.auth.AuthRole(grantRoles = {AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Search for given keyword in user names or emails")
     public GenericResponseResult<List<SearchHitUser>> search(@PathParam("keyword") String keyword) {
-        List<SearchHitUser> searchHits = new ArrayList<>();
         if (keyword == null || keyword.isEmpty() || keyword.length() < 6) {
-            return GenericResponseResult.ok("Search results", searchHits);
+            return GenericResponseResult.ok("Search results", new ArrayList<SearchHitUser>());
         }
 
         List<String> searchFields = new ArrayList();
@@ -425,6 +424,12 @@ public class UserRestService {
         if (keyword.contains("@")) {
             searchFields.add("email");
         }
+
+        return GenericResponseResult.ok("Search results", searchForUsers(keyword, searchFields));
+    }
+
+    private List<SearchHitUser> searchForUsers(final String keyword, final List<String> searchFields) {
+        List<SearchHitUser> searchHits = new ArrayList<>();
         List<UserEntity> hits = entities.searchForString(UserEntity.class, keyword, searchFields, 10);
         for (UserEntity hit : hits) {
             // exclude non-active users and admins from hit list
@@ -437,7 +442,7 @@ public class UserRestService {
                     (hit.getPhoto() != null) ? hit.getPhoto().getId().toString() : "",
                     (hit.getPhoto() != null) ? hit.getPhoto().getETag() : ""));
         }
-        return GenericResponseResult.ok("Search results", searchHits);
+        return searchHits;
     }
 
     /**
@@ -455,6 +460,7 @@ public class UserRestService {
     public GenericResponseResult<UserInfo> find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id.toString());
+
         UserEntity user = users.findUser(id);
         if ((user == null) || !user.getStatus().getIsActive()) {
             return GenericResponseResult.notFound("User was not found.", userInfo);
@@ -462,7 +468,7 @@ public class UserRestService {
 
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
         if (!users.userIsOwnerOrAdmin(sessionUser, user.getStatus())) {
-            return GenericResponseResult.forbidden("Insufficient privilege", userInfo);
+            return GenericResponseResult.unauthorized("Insufficient privilege", userInfo);
         }
 
         return GenericResponseResult.ok("User was found.", users.exportUser(user, connections));

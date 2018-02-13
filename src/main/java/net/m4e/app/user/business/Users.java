@@ -8,24 +8,18 @@
 
 package net.m4e.app.user.business;
 
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.auth.RoleEntity;
+import net.m4e.app.auth.*;
 import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.event.EventEntity;
-import net.m4e.app.resources.DocumentEntity;
-import net.m4e.app.resources.DocumentPool;
-import net.m4e.app.resources.StatusEntity;
+import net.m4e.app.event.business.EventEntity;
+import net.m4e.app.resources.*;
 import net.m4e.app.user.rest.comm.UserCmd;
 import net.m4e.common.Entities;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
+import net.m4e.system.core.*;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.*;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 

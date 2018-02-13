@@ -6,14 +6,13 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.event;
-
-import java.util.*;
-
-import javax.enterprise.event.Event;
+package net.m4e.app.event.business;
 
 import net.m4e.app.notification.*;
 import net.m4e.app.user.business.UserEntity;
+
+import javax.enterprise.event.Event;
+import java.util.*;
 
 
 /**

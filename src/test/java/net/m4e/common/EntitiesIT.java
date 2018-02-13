@@ -59,9 +59,9 @@ public class EntitiesIT {
                 /*
                 .addClass(net.m4e.app.auth.PermissionEntity.class)
                 .addClass(net.m4e.app.auth.RoleEntity.class)
-                .addClass(net.m4e.app.event.EventEntity.class)
-                .addClass(net.m4e.app.event.EventLocationEntity.class)
-                .addClass(net.m4e.app.event.EventLocationVoteEntity.class)
+                .addClass(net.m4e.app.event.business.EventEntity.class)
+                .addClass(net.m4e.app.event.business.EventLocationEntity.class)
+                .addClass(net.m4e.app.event.business.EventLocationVoteEntity.class)
                 .addClass(net.m4e.app.mailbox.business.MailEntity.class)
                 .addClass(net.m4e.app.mailbox.business.MailUserEntity.class)
                 .addClass(net.m4e.app.resources.DocumentEntity.class)

@@ -5,7 +5,7 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.event;
+package net.m4e.app.event.rest;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -24,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.event.business.*;
 import net.m4e.app.notification.*;
 import net.m4e.app.user.business.UserEntity;
 import net.m4e.app.user.business.Users;

@@ -5,22 +5,20 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.event;
+package net.m4e.app.event.business;
 
-import java.lang.invoke.MethodHandles;
-import java.util.*;
+import net.m4e.app.communication.*;
+import net.m4e.app.user.business.UserEntity;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.*;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
-
-import net.m4e.app.communication.*;
-import net.m4e.app.user.business.UserEntity;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 
 
 /**
@@ -34,27 +32,18 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class EventSystem {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @NotNull
     private final Events events;
 
-    /**
-     * Central place to hold all client connections
-     */
-    @Inject
-    ConnectedClients connections;
+    private final ConnectedClients connections;
 
     /**
      * Default constructor for making the container happy.
-     * TODO: Replace with Interface.
      */
     protected EventSystem() {
-        //noinspection ConstantConditions only used by proxying
-        this.events = null;
+        events = null;
+        connections = null;
     }
 
     /**
@@ -63,8 +52,9 @@ public class EventSystem {
      * @param events    The Events instance
      */
     @Inject
-    public EventSystem(@NotNull Events events) {
+    public EventSystem(@NotNull Events events, @NotNull ConnectedClients connections) {
         this.events = events;
+        this.connections = connections;
     }
 
     /**

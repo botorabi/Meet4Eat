@@ -6,8 +6,9 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.event;
+package net.m4e.app.event.rest;
 
+import net.m4e.app.event.business.*;
 import net.m4e.common.Strings;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -32,7 +33,7 @@ public class EventEntityInputValidator {
 
     private final Events events;
 
-    private final EventLocations  eventLocations;
+    private final EventLocations eventLocations;
 
 
     /**

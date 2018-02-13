@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import javax.websocket.EncodeException;
 import javax.websocket.Session;
 
-import net.m4e.app.event.EventNotifications;
+import net.m4e.app.event.business.EventNotifications;
 import net.m4e.app.notification.NotifyUserRelativesEvent;
 import net.m4e.app.user.business.UserEntity;
 import org.slf4j.Logger;

@@ -45,6 +45,12 @@ public class Mails {
 
     private static final String QUERY_PARAM_MAIL_ID = "mailId";
 
+
+    protected Mails() {
+        entityManager = null;
+        entities = null;
+    }
+
     /**
      * Create an instance of mailbox utilities.
      * 
@@ -52,7 +58,7 @@ public class Mails {
      * @param entities      Entities instance
      */
     @Inject
-    public Mails(@NotNull EntityManager entityManager,@NotNull Entities entities) {
+    public Mails(@NotNull EntityManager entityManager, @NotNull Entities entities) {
         this.entityManager = entityManager;
         this.entities = entities;
     }

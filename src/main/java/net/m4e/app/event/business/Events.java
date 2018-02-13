@@ -6,29 +6,24 @@
  *          main directory for more details.
  */
 
-package net.m4e.app.event;
+package net.m4e.app.event.business;
 
-import java.io.StringReader;
-import java.lang.invoke.MethodHandles;
-import java.util.*;
+import net.m4e.app.auth.AuthRole;
+import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.mailbox.business.*;
+import net.m4e.app.resources.*;
+import net.m4e.app.user.business.*;
+import net.m4e.common.*;
+import net.m4e.system.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.*;
-
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.mailbox.business.MailEntity;
-import net.m4e.app.mailbox.business.Mails;
-import net.m4e.app.resources.*;
-import net.m4e.app.user.business.UserEntity;
-import net.m4e.app.user.business.Users;
-import net.m4e.common.Entities;
-import net.m4e.common.Strings;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 
 
 /**
@@ -71,7 +66,11 @@ public class Events {
      * Create the Events instance.
      */
     @Inject
-    public Events(Entities entities, Users users, AppInfos appInfos, Mails mails, DocumentPool docPool) {
+    public Events(@NotNull Entities entities,
+                  @NotNull Users users,
+                  @NotNull AppInfos appInfos,
+                  @NotNull Mails mails,
+                  @NotNull DocumentPool docPool) {
         this.entities = entities;
         this.users = users;
         this.appInfos = appInfos;
@@ -371,7 +370,7 @@ public class Events {
      * @param event     The event
      * @param member    The new member
      */
-    void createEventJoiningMail(EventEntity event, UserEntity member) {
+    public void createEventJoiningMail(EventEntity event, UserEntity member) {
         MailEntity mail = new MailEntity();
         mail.setSenderId(0L);
         mail.setReceiverId(member.getId());
@@ -395,7 +394,7 @@ public class Events {
      * @param event     The event
      * @param member    Member who left the event
      */
-    void createEventLeavingMail(EventEntity event, UserEntity member) {
+    public void createEventLeavingMail(EventEntity event, UserEntity member) {
         MailEntity mailuser = new MailEntity();
         mailuser.setSenderId(0L);
         mailuser.setReceiverId(member.getId());

@@ -13,17 +13,16 @@ import net.m4e.app.resources.*;
 import net.m4e.app.user.business.*;
 import net.m4e.app.user.rest.comm.*;
 import net.m4e.common.*;
-import net.m4e.system.core.AppInfos;
+import net.m4e.system.core.*;
 import net.m4e.tests.ResponseAssertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 
 import javax.servlet.http.*;
-import java.util.Arrays;
+import java.util.*;
 
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.*;
 
 /**
  * @author boto
@@ -170,17 +169,154 @@ class UserRestServiceTest extends UserEntityCreator {
             mockUser(USER_ID_ADMIN, USER_NAME_ADMIN);
             mockUser(USER_ID_NON_ADMIN, USER_NAME_NON_ADMIN);
             mockUser(USER_ID_OTHER, USER_NAME_OTHER);
+
+            UserEntity user1 = createUser();
+            UserEntity user2 = createUser();
+            Mockito.when(entities.findAll(UserEntity.class)).thenReturn(Arrays.asList(user1, user2));
         }
 
         @Test
-        void findUserByAdmin() {
-            mockSessionUser(mockAdminUser());
+        void findUserFound() {
+            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
             Mockito.when(users.userIsOwnerOrAdmin(anyObject(), anyObject())).thenReturn(true);
 
             GenericResponseResult<UserInfo> response = restService.find(USER_ID_OTHER, request);
 
             ResponseAssertions.assertThat(response).hasStatusOk();
         }
+
+        @Test
+        void findUserNotFound() {
+            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+            Mockito.when(users.findUser(anyLong())).thenReturn(null);
+
+            GenericResponseResult<UserInfo> response = restService.find(USER_ID_OTHER, request);
+
+            ResponseAssertions.assertThat(response)
+                    .hasStatusNotOk()
+                    .codeIsNotFound();
+        }
+
+        @Test
+        void findUserNoPrivilege() {
+            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+            Mockito.when(users.userIsOwnerOrAdmin(anyObject(), anyObject())).thenReturn(false);
+
+            GenericResponseResult<UserInfo> response = restService.find(USER_ID_OTHER, request);
+
+            ResponseAssertions.assertThat(response)
+                    .hasStatusNotOk()
+                    .codeIsUnauthorized();
+        }
+
+        @Test
+        void findAllUsers() {
+            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+
+            GenericResponseResult<List<UserInfo>> response = restService.findAllUsers(request);
+
+            ResponseAssertions.assertThat(response)
+                    .hasStatusOk()
+                    .hasData();
+        }
+
+        @Test
+        void findAllUsersWithRange() {
+            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+
+            GenericResponseResult<List<UserInfo>> response = restService.findRange(1, 10, request);
+
+            ResponseAssertions.assertThat(response)
+                    .hasStatusOk()
+                    .hasData();
+        }
+    }
+
+    @Nested
+    class SearchForUser {
+        @BeforeEach
+        void setup() {
+            UserEntity user1 = createUser();
+            UserEntity user2 = createUser();
+            UserEntity inactiveUser = createUser();
+            inactiveUser.getStatus().setEnabled(false);
+
+            Mockito.when(entities.searchForString(anyObject(), anyString(), anyList(), anyInt()))
+                    .thenReturn(Arrays.asList(user1, user2, inactiveUser));
+        }
+
+        @Test
+        void keywordNull() {
+            GenericResponseResult<List<SearchHitUser>> response = restService.search(null);
+
+            checkNoHits(response);
+        }
+
+        @Test
+        void keywordEmpty() {
+            GenericResponseResult<List<SearchHitUser>> response = restService.search("");
+
+            checkNoHits(response);
+        }
+
+        @Test
+        void keywordTooShort() {
+            GenericResponseResult<List<SearchHitUser>> response = restService.search("123");
+
+            checkNoHits(response);
+        }
+
+        @Test
+        void keywordWithoutEmail() {
+            GenericResponseResult<List<SearchHitUser>> response = restService.search("theusername");
+
+            checkHasHits(response, 2);
+        }
+
+        @Test
+        void keywordWithEmail() {
+            GenericResponseResult<List<SearchHitUser>> response = restService.search("theuser@email.com");
+
+            checkHasHits(response, 2);
+        }
+
+        @Test
+        void noHitsOfAdmins() {
+            Mockito.when(users.checkUserRoles(anyObject(), anyList())).thenReturn(true);
+
+            GenericResponseResult<List<SearchHitUser>> response = restService.search("theusername");
+
+            checkNoHits(response);
+        }
+
+        private void checkNoHits(GenericResponseResult<List<SearchHitUser>> response) {
+            ResponseAssertions.assertThat(response)
+                    .hasStatusOk()
+                    .hasData();
+
+            ResponseAssertions.assertThat(response.getData()).hasSize(0);
+        }
+
+        private void checkHasHits(GenericResponseResult<List<SearchHitUser>> response, int countHits) {
+            ResponseAssertions.assertThat(response)
+                    .hasStatusOk()
+                    .hasData();
+
+            ResponseAssertions.assertThat(response.getData()).hasSize(countHits);
+        }
+    }
+
+    @Test
+    void countUsers() {
+        mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+
+        Mockito.when(appInfos.getAppInfoEntity()).thenReturn(new AppInfoEntity());
+
+        GenericResponseResult<UserCount> response = restService.countREST();
+
+        ResponseAssertions.assertThat(response)
+                .hasStatusOk()
+                .hasData();
     }
 
     private UserEntity mockAdminUser() {

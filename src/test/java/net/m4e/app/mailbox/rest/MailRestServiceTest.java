@@ -84,7 +84,7 @@ class MailRestServiceTest {
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, request);
 
 
-            ResponseAssertions.assertThat(retrievedMails).isOk()
+            ResponseAssertions.assertThat(retrievedMails).codeIsOk()
                     .hasDescription()
                     .hasStatusOk()
                     .hasData(emptyList());
@@ -100,7 +100,7 @@ class MailRestServiceTest {
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, request);
 
             ResponseAssertions.assertThat(retrievedMails.getData()).hasSize(1);
-            ResponseAssertions.assertThat(retrievedMails).isOk()
+            ResponseAssertions.assertThat(retrievedMails).codeIsOk()
                     .hasDescription()
                     .hasStatusOk();
         }
@@ -112,7 +112,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, requestWithSessionUser(null));
 
-            ResponseAssertions.assertThat(retrievedMails).isUnauthorized()
+            ResponseAssertions.assertThat(retrievedMails).codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription()
                     .hasNoData();
@@ -144,7 +144,7 @@ class MailRestServiceTest {
             GenericResponseResult<MailCount> retrievedMails = mailRestService.getCount(request);
 
 
-            ResponseAssertions.assertThat(retrievedMails).isOk()
+            ResponseAssertions.assertThat(retrievedMails).codeIsOk()
                     .hasDescription()
                     .hasStatusOk()
                     .hasDataOfType(MailCount.class)
@@ -161,7 +161,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<MailCount> retrievedMails = mailRestService.getCount(requestWithSessionUser(null));
 
-            ResponseAssertions.assertThat(retrievedMails).isUnauthorized()
+            ResponseAssertions.assertThat(retrievedMails).codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription()
                     .hasNoData();
@@ -189,7 +189,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<UnreadMailCount> countUnread = mailRestService.getCountUnread(request);
 
-            ResponseAssertions.assertThat(countUnread).isOk()
+            ResponseAssertions.assertThat(countUnread).codeIsOk()
                     .hasDescription()
                     .hasStatusOk()
                     .hasDataOfType(UnreadMailCount.class)
@@ -204,7 +204,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<UnreadMailCount> countUnread = mailRestService.getCountUnread(requestWithSessionUser(null));
 
-            ResponseAssertions.assertThat(countUnread).isUnauthorized()
+            ResponseAssertions.assertThat(countUnread).codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription()
                     .hasNoData();
@@ -231,7 +231,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<Void> response = mailRestService.send(newMailCmd, requestWithSessionUser(null));
 
-            ResponseAssertions.assertThat(response).isUnauthorized()
+            ResponseAssertions.assertThat(response).codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription()
                     .hasNoData();
@@ -250,7 +250,7 @@ class MailRestServiceTest {
 
             verify(mails).createMail(argThat(matchesMail("Subject", "Content", userEntity.getId(), 84L)));
 
-            ResponseAssertions.assertThat(response).isOk()
+            ResponseAssertions.assertThat(response).codeIsOk()
                     .hasStatusOk()
                     .hasDescription()
                     .hasNoData();
@@ -352,7 +352,7 @@ class MailRestServiceTest {
 
             verify(mails).performMailOperation(42L, 42L, op);
 
-            ResponseAssertions.assertThat(excecutedMailOperation).is200()
+            ResponseAssertions.assertThat(excecutedMailOperation).codeIsOk()
                     .hasStatusOk()
                     .hasDescription();
             ResponseAssertions.assertThat(excecutedMailOperation).hasDataOfType(ExcecutedMailOperation.class);
@@ -368,7 +368,7 @@ class MailRestServiceTest {
             GenericResponseResult<ExcecutedMailOperation> excecutedMailOperation = mailRestService.operate(42L, new MailOperationCmd(op), requestWithSessionUser(null));
 
             ResponseAssertions.assertThat(excecutedMailOperation).hasNoData()
-                    .isUnauthorized()
+                    .codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription();
         }

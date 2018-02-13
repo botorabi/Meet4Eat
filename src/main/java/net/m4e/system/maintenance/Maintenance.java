@@ -8,9 +8,9 @@
 
 package net.m4e.system.maintenance;
 
-import net.m4e.app.event.EventEntity;
-import net.m4e.app.event.EventLocationEntity;
-import net.m4e.app.event.Events;
+import net.m4e.app.event.business.EventEntity;
+import net.m4e.app.event.business.EventLocationEntity;
+import net.m4e.app.event.business.Events;
 import net.m4e.app.resources.DocumentPool;
 import net.m4e.app.user.business.UserEntity;
 import net.m4e.app.user.business.UserRegistrations;

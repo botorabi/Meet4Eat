@@ -44,8 +44,8 @@ public class AppStart extends Application {
     }
 
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(net.m4e.app.event.EventEntityFacadeREST.class);
-        resources.add(net.m4e.app.event.EventLocationVoteEntityFacadeREST.class);
+        resources.add(net.m4e.app.event.rest.EventEntityFacadeREST.class);
+        resources.add(net.m4e.app.event.rest.EventLocationVoteEntityFacadeREST.class);
         resources.add(net.m4e.app.mailbox.rest.MailRestService.class);
         resources.add(net.m4e.app.resources.DocumentEntityFacadeREST.class);
         resources.add(net.m4e.app.user.rest.UserAuthenticationRestService.class);

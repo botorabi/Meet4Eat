@@ -7,6 +7,7 @@
  */
 package net.m4e.app.auth;
 
+import net.m4e.app.event.rest.*;
 import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.HashCreator;
 import org.slf4j.*;
@@ -40,8 +41,8 @@ public class AuthorityConfig {
             net.m4e.system.maintenance.MaintenanceFacadeREST.class,
             net.m4e.app.user.rest.UserRestService.class,
             net.m4e.app.user.rest.UserAuthenticationRestService.class,
-            net.m4e.app.event.EventEntityFacadeREST.class,
-            net.m4e.app.event.EventLocationVoteEntityFacadeREST.class,
+            EventEntityFacadeREST.class,
+            EventLocationVoteEntityFacadeREST.class,
             net.m4e.app.resources.DocumentEntityFacadeREST.class,
             net.m4e.app.mailbox.rest.MailRestService.class
     };
