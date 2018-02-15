@@ -25,6 +25,7 @@ class UsersFindTest extends UsersTestBase {
     UserEntity userByLogin;
     UserEntity userByEmail;
 
+    Long ANY_ID = 1L;
     String LOGIN_GOOD = "goodlogin";
     String LOGIN_BAD = "badlogin";
     String EMAIL_GOOD = "goodemail";
@@ -52,7 +53,7 @@ class UsersFindTest extends UsersTestBase {
 
         @Test
         void findById() {
-            assertThat(users.findUser(1L)).isEqualTo(userByID);
+            assertThat(users.findUser(ANY_ID)).isEqualTo(userByID);
         }
 
         @Test

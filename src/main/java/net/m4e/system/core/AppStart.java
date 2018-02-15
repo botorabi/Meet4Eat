@@ -8,6 +8,7 @@
 package net.m4e.system.core;
 
 import io.swagger.jaxrs.config.BeanConfig;
+import net.m4e.app.event.rest.*;
 
 import javax.ws.rs.core.Application;
 import java.util.Set;
@@ -44,8 +45,8 @@ public class AppStart extends Application {
     }
 
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(net.m4e.app.event.rest.EventEntityFacadeREST.class);
-        resources.add(net.m4e.app.event.rest.EventLocationVoteEntityFacadeREST.class);
+        resources.add(EventRestService.class);
+        resources.add(EventLocationVoteRestService.class);
         resources.add(net.m4e.app.mailbox.rest.MailRestService.class);
         resources.add(net.m4e.app.resources.DocumentEntityFacadeREST.class);
         resources.add(net.m4e.app.user.rest.UserAuthenticationRestService.class);

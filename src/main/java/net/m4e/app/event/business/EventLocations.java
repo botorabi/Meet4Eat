@@ -44,6 +44,7 @@ public class EventLocations {
     private final DocumentPool docPool;
 
     private long voteEnd;
+
     private long voteBegin;
 
 
@@ -83,15 +84,14 @@ public class EventLocations {
      * @param inputEntity  Entity containing the new location data
      * @param creatorID    Creator ID
      * @return             A new created event location entity if successfully, otherwise null.
-     * @throws Exception   Throws an exception if something goes wrong.
      */
-    public EventLocationEntity createNewLocation(EventEntity event, EventLocationEntity inputEntity, Long creatorID) throws Exception {
+    public EventLocationEntity createNewLocation(EventEntity event, EventLocationEntity inputEntity, Long creatorID) {
         // setup the new entity
-        EventLocationEntity newlocation = new EventLocationEntity();
-        newlocation.setName(inputEntity.getName());
-        newlocation.setDescription(inputEntity.getDescription());
+        EventLocationEntity newLocation = new EventLocationEntity();
+        newLocation.setName(inputEntity.getName());
+        newLocation.setDescription(inputEntity.getDescription());
         if (inputEntity.getPhoto() != null) {
-            updateEventLocationImage(newlocation, inputEntity.getPhoto());
+            updateEventLocationImage(newLocation, inputEntity.getPhoto());
         }
 
         // setup the status
@@ -101,17 +101,17 @@ public class EventLocations {
         Date now = new Date();
         status.setDateCreation(now.getTime());
         status.setDateLastUpdate(now.getTime());
-        newlocation.setStatus(status);
+        newLocation.setStatus(status);
 
-        entities.create(newlocation);
+        entities.create(newLocation);
         Collection<EventLocationEntity> locs = event.getLocations();
         if (locs == null) {
             locs = new ArrayList<>();
             event.setLocations(locs);
         }
-        event.getLocations().add(newlocation);
+        event.getLocations().add(newLocation);
         entities.update(event);
-        return newlocation;
+        return newLocation;
     }
 
     /**
@@ -148,9 +148,8 @@ public class EventLocations {
      * 
      * @param location      Event location entity
      * @param image         Image to set to given event
-     * @throws Exception    Throws exception if any problem occurred.
      */
-    public void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) throws Exception {
+    public void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) {
         // make sure that the resource URL is set
         image.setResourceURL("/EventLoction/Image");
         docPool.updatePhoto(location, image);
@@ -163,8 +162,7 @@ public class EventLocations {
      * @return      Return an entity if found, otherwise return null.
      */
     public EventLocationEntity findLocation(Long id) {
-        EventLocationEntity location = entities.find(EventLocationEntity.class, id);
-        return location;
+        return entities.find(EventLocationEntity.class, id);
     }
 
     /**
@@ -182,14 +180,13 @@ public class EventLocations {
         query.setParameter("timeEnd", timeEnd);
         query.setParameter("eventId", event.getId());
 
-        List<EventLocationVoteEntity> voteentities = query.setMaxResults(MAX_CNT_RESULTS).getResultList();
-        return voteentities;
+        return query.setMaxResults(MAX_CNT_RESULTS).getResultList();
     }
 
     /**
      * Update a vote entry for a given event location. If the entry does not exist, then one is created. Voting is
      * accepted only during a particular time (voting window). If this method is called outside of voting window time
-     * then a false is returned and nothing happens.
+     * then a null is returned and nothing happens.
      * 
      * The voting window ends at event start time or repeated day time (for repeated events) and begins the amount of
      * 'voting time begin' before the end.
@@ -376,51 +373,21 @@ public class EventLocations {
     }
 
     /**
-     * Export the given event location votes to JSON format.
-     * 
-     * @param votes    Event location votes
-     * @return          A JSON array builder containing the exported votes.
+     * Export the given event location vote entity.
      */
-    public JsonObjectBuilder exportLocationVotesJSON(EventLocationVoteEntity votes) {
-        JsonObjectBuilder obj = Json.createObjectBuilder();
-        obj.add("id", (votes.getId() != null) ? votes.getId().toString() : "")
-           .add("eventId", (votes.getEventId() != null) ? votes.getEventId().toString() : "")
-           .add("locationId", (votes.getLocationId() != null) ? votes.getLocationId().toString() : "")
-           .add("locationName", (votes.getLocationName() != null) ? votes.getLocationName() : "")
-           .add("timeBegin", votes.getVoteTimeBegin())
-           .add("timeEnd", votes.getVoteTimeEnd())
-           .add("creationTime", votes.getCreationTime());
-
-        if (votes.getUserIds() != null) {
-            JsonArrayBuilder userids = Json.createArrayBuilder();
-            votes.getUserIds().forEach((u)-> {
-                userids.add(u);
-            });
-            obj.add("userIds", userids);
-        }
-        if (votes.getUserNames() != null) {
-            JsonArrayBuilder usernames = Json.createArrayBuilder();
-            votes.getUserNames().forEach((u)-> {
-                usernames.add(u);
-            });
-            obj.add("userNames", usernames);
-        }
-
-        return obj;
+    public LocationVoteInfo exportLocationVotes(final EventLocationVoteEntity voteEntity) {
+        return LocationVoteInfo.fromLocationVoteEntity(voteEntity);
     }
 
     /**
-     * Export a list of event location votes to JSON format.
-     * 
-     * @param votes     List of location votes
-     * @return          A JSON array builder containing the exported votes.
+     * Export a list of event location votes.
      */
-    public JsonArrayBuilder exportLocationVotesJSON(List<EventLocationVoteEntity> votes) {
-        JsonArrayBuilder json = Json.createArrayBuilder();
-        votes.forEach((v) -> {
-            JsonObjectBuilder obj = exportLocationVotesJSON(v);
-            json.add(obj);
+    public List<LocationVoteInfo> exportLocationVotes(final List<EventLocationVoteEntity> voteEntities) {
+        List<LocationVoteInfo> exportVotes = new ArrayList<>();
+        voteEntities.forEach((v) -> {
+            LocationVoteInfo obj = exportLocationVotes(v);
+            exportVotes.add(obj);
         });
-        return json;
+        return exportVotes;
     }
 }

@@ -23,7 +23,7 @@ import java.util.Objects;
  * Date of creation Sep 13, 2017
  */
 @ApplicationScoped
-public class EventEntityInputValidator {
+public class EventValidator {
 
     /* Min/max string length for user input fields */
     private final int EVENT_INPUT_MIN_LEN_NAME  = 4;
@@ -39,7 +39,7 @@ public class EventEntityInputValidator {
     /**
      * Default constructor needed by container.
      */
-    protected EventEntityInputValidator() {
+    protected EventValidator() {
         this.events = null;
         this.eventLocations = null;
     }
@@ -51,7 +51,7 @@ public class EventEntityInputValidator {
      * @param eventLocations    Event locations instance
      */
     @Inject
-    public EventEntityInputValidator(Events events, EventLocations eventLocations) {
+    public EventValidator(Events events, EventLocations eventLocations) {
         this.events = events;
         this.eventLocations = eventLocations;
     }

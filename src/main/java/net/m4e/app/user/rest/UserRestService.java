@@ -52,13 +52,7 @@ public class UserRestService {
 
 
     /**
-     * Create the user entity REST facade.
-     *
-     * @param users        Users instance
-     * @param entities     Entities instance
-     * @param validator    User input validator
-     * @param registration User registration related functionality
-     * @param appInfos     Application information
+     * Create the user service.
      */
     @Inject
     public UserRestService(@NotNull Users users,

@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 @Stateless
 @Path("/rest/events")
-public class EventEntityFacadeREST {
+public class EventRestService {
 
     /**
      * Logger.
@@ -104,19 +104,19 @@ public class EventEntityFacadeREST {
      * Event input validator
      */
     @NotNull
-    private final EventEntityInputValidator validator;
+    private final EventValidator validator;
 
 
     /**
      * Create the event entity REST facade.
      */
     @Inject
-    public EventEntityFacadeREST(@NotNull Entities entities,
-                                 @NotNull Events events,
-                                 @NotNull Users users,
-                                 @NotNull EventEntityInputValidator validator,
-                                 @NotNull EventLocations eventLocations,
-                                 @NotNull AppInfos appInfos) {
+    public EventRestService(@NotNull Entities entities,
+                            @NotNull Events events,
+                            @NotNull Users users,
+                            @NotNull EventValidator validator,
+                            @NotNull EventLocations eventLocations,
+                            @NotNull AppInfos appInfos) {
 
         this.entities = entities;
         this.events = events;

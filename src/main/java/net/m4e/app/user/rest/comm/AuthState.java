@@ -16,7 +16,9 @@ public class AuthState {
     private final String id;
     private final String sid;
 
-    public AuthState(final boolean auth, final String id, String sid) {
+    public AuthState(final boolean auth,
+                     final String id,
+                     final String sid) {
         this.auth = auth;
         this.id = id;
         this.sid = sid;
