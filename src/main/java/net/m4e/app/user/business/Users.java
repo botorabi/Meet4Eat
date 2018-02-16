@@ -13,7 +13,7 @@ import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.event.business.EventEntity;
 import net.m4e.app.resources.*;
 import net.m4e.app.user.rest.comm.UserCmd;
-import net.m4e.common.Entities;
+import net.m4e.common.*;
 import net.m4e.system.core.*;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.*;
@@ -447,12 +447,7 @@ public class Users {
         }
 
         if (userCmd.getPhoto() != null) {
-            DocumentEntity image = new DocumentEntity();
-            // currently we expect only base64 encoded images here
-            image.setEncoding(DocumentEntity.ENCODING_BASE64);
-            image.updateContent(userCmd.getPhoto().getBytes());
-            image.setType(DocumentEntity.TYPE_IMAGE);
-            userEntity.setPhoto(image);
+            userEntity.setPhoto(PhotoCreator.createPhoto(userCmd.getPhoto().getBytes()));
         }
 
         return userEntity;

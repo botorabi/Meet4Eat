@@ -7,6 +7,7 @@
  */
 package net.m4e.app.user.business;
 
+import net.m4e.common.UserEntityCreator;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
@@ -37,15 +38,15 @@ class UsersFindTest extends UsersTestBase {
         @BeforeEach
         void setUp() {
 
-            userByID = createUser();
+            userByID = UserEntityCreator.create();
             Mockito.when(entities.find(any(), anyLong())).thenReturn(userByID);
 
-            userByLogin = createUser();
+            userByLogin = UserEntityCreator.create();
             userByLogin.setLogin("USER_LOGIN");
             Mockito.when(entities.findByField(any(), eq("login"), eq(LOGIN_GOOD))).thenReturn(Arrays.asList(userByLogin));
             Mockito.when(entities.findByField(any(), eq("login"), eq(LOGIN_BAD))).thenReturn(Arrays.asList(userByLogin, userByLogin));
 
-            userByEmail = createUser();
+            userByEmail = UserEntityCreator.create();
             userByEmail.setEmail("USER_EMAIL");
             Mockito.when(entities.findByField(any(), eq("email"), eq(EMAIL_GOOD))).thenReturn(Arrays.asList(userByLogin));
             Mockito.when(entities.findByField(any(), eq("email"), eq(EMAIL_BAD))).thenReturn(Arrays.asList(userByLogin, userByLogin));

@@ -10,14 +10,14 @@ package net.m4e.app.user.business;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.user.rest.comm.UserCmd;
-import org.jetbrains.annotations.*;
+import net.m4e.common.UserEntityCreator;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Matchers.anyObject;
 
 /**
@@ -41,7 +41,7 @@ class UsersExportImportTest extends UsersTestBase {
 
         @Test
         void exportUserOnline() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
             Mockito.when(connections.getConnectedUser(anyObject())).thenReturn(new UserEntity());
 
             UserInfo userInfo = users.exportUser(user, connections);
@@ -51,7 +51,7 @@ class UsersExportImportTest extends UsersTestBase {
 
         @Test
         void exportUserOffline() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
             Mockito.when(connections.getConnectedUser(anyObject())).thenReturn(null);
 
             UserInfo userInfo = users.exportUser(user, connections);
@@ -63,7 +63,7 @@ class UsersExportImportTest extends UsersTestBase {
         void exportUsersAsAdmin() {
             List<UserEntity> allUsers = createUserEntities();
 
-            UserEntity adminUser = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+            UserEntity adminUser = createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
 
             Mockito.when(connections.getConnectedUser(anyObject())).thenReturn(null);
 
@@ -78,7 +78,7 @@ class UsersExportImportTest extends UsersTestBase {
 
             List<UserEntity> allUsers = createUserEntities();
 
-            UserEntity nonAdminUser = createUser();
+            UserEntity nonAdminUser = UserEntityCreator.create();
             nonAdminUser.setId(NON_ADMIN_USER_ID);
 
             Mockito.when(connections.getConnectedUser(anyObject())).thenReturn(null);
@@ -91,11 +91,11 @@ class UsersExportImportTest extends UsersTestBase {
 
         @NotNull
         private List<UserEntity> createUserEntities() {
-            UserEntity user1 = createUser();
-            UserEntity user2 = createUser();
-            UserEntity inactiveUser1 = createUser();
+            UserEntity user1 = UserEntityCreator.create();
+            UserEntity user2 = UserEntityCreator.create();
+            UserEntity inactiveUser1 = UserEntityCreator.create();
             inactiveUser1.getStatus().setEnabled(false);
-            UserEntity inactiveUser2 = createUser();
+            UserEntity inactiveUser2 = UserEntityCreator.create();
             inactiveUser2.getStatus().setEnabled(false);
             return Arrays.asList(user1, user2, inactiveUser1, inactiveUser2);
         }

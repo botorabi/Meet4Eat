@@ -32,7 +32,7 @@ public class EventLocationVoteEntityCreator {
     public static Set<Long> VOTE_USER_IDS = new HashSet<>(Arrays.asList(2000L, 3000L));
     public static Set<String> VOTE_USER_NAMES = new HashSet<>(Arrays.asList("Name 1", "Name 2"));
 
-    public EventLocationVoteEntity createVoteEntity() {
+    static public EventLocationVoteEntity create() {
         EventLocationVoteEntity voteEntity = new EventLocationVoteEntity();
         voteEntity.setId(VOTE_ID);
         voteEntity.setEventId(VOTE_EVENT_ID);

@@ -7,9 +7,16 @@
  */
 package net.m4e.app.event.rest;
 
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.Objects;
+import net.m4e.app.auth.*;
+import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.event.business.*;
+import net.m4e.app.event.rest.comm.EventLocationCmd;
+import net.m4e.app.notification.*;
+import net.m4e.app.user.business.*;
+import net.m4e.common.*;
+import net.m4e.system.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.*;
 
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
@@ -18,23 +25,9 @@ import javax.json.*;
 import javax.json.bind.JsonbBuilder;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.event.business.*;
-import net.m4e.app.notification.*;
-import net.m4e.app.user.business.UserEntity;
-import net.m4e.app.user.business.Users;
-import net.m4e.common.Entities;
-import net.m4e.common.ResponseResults;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.ws.rs.core.*;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 
 /**
  * REST services for Event entity operations.
@@ -565,7 +558,7 @@ public class EventRestService {
      * field exists, then a new location entity is created and added to given event.
      * 
      * @param eventId      Event ID
-     * @param locationJson Location to add in JSON format
+     * @param eventLocationCmd Location to add in JSON format
      * @param request      HTTP request
      * @return             JSON response
      */
@@ -574,9 +567,9 @@ public class EventRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String putLocation(@PathParam("eventId") Long eventId, String locationJson, @Context HttpServletRequest request) {
+    public String putLocation(@PathParam("eventId") Long eventId, EventLocationCmd eventLocationCmd, @Context HttpServletRequest request) {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        if ((eventId == null) || (locationJson == null)) {
+        if ((eventId == null) || (eventLocationCmd == null)) {
             LOGGER.error("*** Cannot add location to event, no valid inputs!");
             return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
         }
@@ -596,7 +589,7 @@ public class EventRestService {
 
         EventLocationEntity inputlocation;
         try {
-            inputlocation = validator.validateLocationInput(locationJson, event);
+            inputlocation = validator.validateLocationInput(eventLocationCmd, event);
         }
         catch (Exception ex) {
             LOGGER.warn("*** Could not add location, validation failed, reason: " + ex.getLocalizedMessage());

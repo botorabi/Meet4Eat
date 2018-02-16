@@ -8,17 +8,13 @@
 
 package net.m4e.app.resources;
 
-import net.m4e.common.Entities;
-import net.m4e.common.EntityWithPhoto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.m4e.common.*;
+import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.lang.invoke.MethodHandles;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class manages a pool of documents. Documents are handled as sharable entities which

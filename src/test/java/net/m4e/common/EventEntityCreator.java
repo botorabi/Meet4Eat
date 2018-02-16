@@ -13,6 +13,12 @@ import net.m4e.app.resources.*;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * Base class for event related tests
+ *
+ * @author boto
+ * Date of creation February 14, 2018
+ */
 public class EventEntityCreator {
 
     public static Long EVENT_ID = 1000L;
@@ -31,7 +37,7 @@ public class EventEntityCreator {
     /**
      * Create an event entity with default data.
      */
-    public EventEntity createEvent() {
+    static public EventEntity create() {
         EventEntity event = new EventEntity();
         event.setId(EVENT_ID);
         event.setName(EVENT_NAME);

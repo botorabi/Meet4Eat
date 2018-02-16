@@ -7,13 +7,11 @@
  */
 package net.m4e.app.user.business;
 
-import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.resources.DocumentEntity;
+import net.m4e.common.UserEntityCreator;
 import org.junit.jupiter.api.*;
-import org.mockito.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyObject;
 
 /**
  * Base test class for Users
@@ -33,20 +31,20 @@ class UsersMiscTest extends UsersTestBase {
 
         @Test
         void updateUser() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
             users.updateUser(user);
         }
 
         @Test
         void updateUserImage() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
             DocumentEntity photo = user.getPhoto();
             users.updateUserImage(user, photo);
         }
 
         @Test
         void getUserRelatives() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
             assertThat(users.getUserRelatives(user)).isEmpty();
         }
     }

@@ -37,7 +37,7 @@ class UserEntityTest extends UserEntityCreator {
     void setterGetter() {
         List<String> roles = Arrays.asList(AuthRole.USER_ROLE_ADMIN);
 
-        UserEntity entity = createUserWithRoles(roles);
+        UserEntity entity = createWithRoles(roles);
 
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(entity.getId()).isEqualTo(USER_ID);

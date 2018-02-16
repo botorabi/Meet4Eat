@@ -32,7 +32,7 @@ public class UserEntityCreator {
     /**
      * Create a user entity with default data.
      */
-    public UserEntity createUser() {
+    static public UserEntity create() {
         UserEntity user = new UserEntity();
         user.setId(USER_ID);
         user.setName(USER_NAME);
@@ -61,8 +61,8 @@ public class UserEntityCreator {
     /**
      * Create a user entity with default data and given roles.
      */
-    public UserEntity createUserWithRoles(@NotNull final List<String> roles) {
-        UserEntity user = createUser();
+    static public UserEntity createWithRoles(@NotNull final List<String> roles) {
+        UserEntity user = create();
         user.setRoles(createRoleEntities(roles));
 
         return user;
@@ -71,7 +71,7 @@ public class UserEntityCreator {
     /**
      * Create role entities out of given roles strings.
      */
-    public List<RoleEntity> createRoleEntities(@NotNull final List<String> roles) {
+    static public List<RoleEntity> createRoleEntities(@NotNull final List<String> roles) {
         final Long id = 20000L;
         List<RoleEntity> roleEntities = new ArrayList<>();
         roles.stream().forEach(roleName -> {

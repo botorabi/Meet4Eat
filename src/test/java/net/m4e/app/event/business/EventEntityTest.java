@@ -38,7 +38,7 @@ public class EventEntityTest extends EventEntityCreator {
         List<UserEntity> members = Arrays.asList(new UserEntity(), new UserEntity());
         List<EventLocationEntity> locations = Arrays.asList(new EventLocationEntity(), new EventLocationEntity());
 
-        EventEntity entity = createEvent();
+        EventEntity entity = create();
         entity.setMembers(members);
         entity.setLocations(locations);
 

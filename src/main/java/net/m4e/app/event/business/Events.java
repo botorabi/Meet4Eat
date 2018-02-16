@@ -561,12 +561,7 @@ public class Events {
         entity.setVotingTimeBegin(votingbegin);
 
         if (photo != null) {
-            DocumentEntity image = new DocumentEntity();
-            // currently we expect only base64 encoded images here
-            image.setEncoding(DocumentEntity.ENCODING_BASE64);
-            image.updateContent(photo.getBytes());
-            image.setType(DocumentEntity.TYPE_IMAGE);
-            entity.setPhoto(image);
+            entity.setPhoto(PhotoCreator.createPhoto(photo.getBytes()));
         }
 
         return entity;

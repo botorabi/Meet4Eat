@@ -53,6 +53,15 @@ public class EventLocationVoteRestService {
 
     private final EventLocations eventLocations;
 
+    /**
+     * Make the EJB container happy.
+     */
+    protected EventLocationVoteRestService() {
+        events = null;
+        entities = null;
+        eventLocations = null;
+        notifyUsersEvent = null;
+    }
 
     /**
      * Create the location service.

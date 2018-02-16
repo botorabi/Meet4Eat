@@ -8,6 +8,7 @@
 
 package net.m4e.app.event.business;
 
+import net.m4e.app.event.rest.comm.*;
 import net.m4e.app.resources.*;
 import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.*;
@@ -296,61 +297,33 @@ public class EventLocations {
         // update the app stats
         AppInfoEntity appinfo = appInfos.getAppInfoEntity();
         if (appinfo == null) {
-            throw new Exception("Problem occured while retrieving AppInfo entity!");
+            throw new Exception("Problem occurred while retrieving AppInfo entity!");
         }
         appinfo.incrementEventLocationCountPurge(1L);
         entities.update(appinfo);
     }
 
     /**
-     * Given a JSON string, import the necessary fields and create an event location entity.
+     * Given an event location input data, import the necessary fields and create an event location entity.
      * 
-     * @param jsonString  JSON string representing an event location entity
-     * @return            Event location entity or null if the JSON string was not appropriate
+     * @param locationCmd Event location data
+     * @return            Event location entity or null if the input was invalid.
      */
-    public EventLocationEntity importLocationJSON(String jsonString) {
-        if (jsonString == null) {
-            return null;
-        }
+    public EventLocationEntity importLocation(@NotNull EventLocationCmd locationCmd) {
+        EventLocationEntity entity = new EventLocationEntity();
 
-        String name, idstring, description, photo;
         try {
-            JsonReader jreader = Json.createReader(new StringReader(jsonString));
-            JsonObject jobject = jreader.readObject();
-            idstring    = jobject.getString("id", "");
-            name        = jobject.getString("name", null);
-            description = jobject.getString("description", null);
-            photo       = jobject.getString("photo", null);
-        }
-        catch(Exception ex) {
-            LOGGER.warn("Could not setup an event loaction given JSON string, reason: " + ex.getLocalizedMessage());
-            return null;
-        }
-
-        long id = 0;
-        try {
-            id = Long.parseLong(idstring);
+            long id = Long.parseLong(locationCmd.getId());
+            entity.setId(id);
         }
         catch(NumberFormatException ex) {}
 
-        EventLocationEntity entity = new EventLocationEntity();
-        if (id != 0) {
-            entity.setId(id);
-        }
-        if (name != null) {
-            entity.setName(Strings.limitStringLen(name, 32));
-        }
-        if (description != null) {
-            entity.setDescription(Strings.limitStringLen(description, 1000));
-        }
+        entity.setName(locationCmd.getName());
+        entity.setDescription(locationCmd.getDescription());
+        entity.setName(locationCmd.getName());
 
-        if (photo != null) {
-            DocumentEntity image = new DocumentEntity();
-            // currently we expect only base64 encoded images here
-            image.setEncoding(DocumentEntity.ENCODING_BASE64);
-            image.updateContent(photo.getBytes());
-            image.setType(DocumentEntity.TYPE_IMAGE);
-            entity.setPhoto(image);
+        if (locationCmd.getPhoto() != null) {
+            entity.setPhoto(PhotoCreator.createPhoto(locationCmd.getPhoto().getBytes()));
         }
 
         return entity;
@@ -362,6 +335,7 @@ public class EventLocations {
      * @param entity    Event location entity to export
      * @return          A JSON object containing builder the proper entity fields
      */
+    @Deprecated
     public JsonObjectBuilder exportEventLocationJSON(EventLocationEntity entity) {
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
@@ -370,6 +344,23 @@ public class EventLocations {
             .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
             .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag() : "");
         return json;
+    }
+
+    /**
+     * Given an event location entity, export the necessary fields into a JSON object.
+     *
+     * @param entity    Event location entity to export
+     * @return          The event location data
+     */
+    public EventLocation exportEventLocation(EventLocationEntity entity) {
+        EventLocation location = new EventLocation(
+                (entity.getId() != null) ? entity.getId().toString() : null,
+                entity.getName(),
+                entity.getDescription(),
+                (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : null,
+                (entity.getPhoto() != null) ? entity.getPhoto().getETag() : null);
+
+        return location;
     }
 
     /**

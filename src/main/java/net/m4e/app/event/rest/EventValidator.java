@@ -9,6 +9,7 @@
 package net.m4e.app.event.rest;
 
 import net.m4e.app.event.business.*;
+import net.m4e.app.event.rest.comm.EventLocationCmd;
 import net.m4e.common.Strings;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -109,13 +110,13 @@ public class EventValidator {
      * Given a JSON string as input containing event location data, validate 
      * all fields and return an EventLocationEntity, or throw an exception if the validation failed.
      * 
-     * @param locationJson   Event location data in JSON format
+     * @param locationCmd    Event location data
      * @param event          Event the location belongs to
      * @return               An EventLocationEntity created out of given input
      * @throws Exception     Throws an exception if the validation fails.
      */
-    public EventLocationEntity validateLocationInput(String locationJson, EventEntity event) throws Exception {
-        EventLocationEntity entity = eventLocations.importLocationJSON(locationJson);
+    public EventLocationEntity validateLocationInput(EventLocationCmd locationCmd, EventEntity event) throws Exception {
+        EventLocationEntity entity = eventLocations.importLocation(locationCmd);
         if (entity == null) {
             throw new Exception("Failed to validate location input.");
         }

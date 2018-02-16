@@ -13,6 +13,7 @@ import net.m4e.app.user.business.UserEntity;
 import net.m4e.app.user.business.Users;
 import net.m4e.app.user.rest.comm.UserCmd;
 import net.m4e.common.Strings;
+import org.jetbrains.annotations.NotNull;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -54,7 +55,7 @@ public class UserValidator {
      * @param users The users instance
      */
     @Inject
-    public UserValidator(Users users) {
+    public UserValidator(@NotNull Users users) {
         this.users = users;
     }
 

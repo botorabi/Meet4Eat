@@ -65,7 +65,7 @@ class UserInfoTest extends UserEntityCreator {
 
     @Test
     void fromUserEntity() {
-        UserEntity user = createUserWithRoles(ROLES_AS_STRINGS);
+        UserEntity user = createWithRoles(ROLES_AS_STRINGS);
 
         UserInfo userInfoFromEntity = UserInfo.fromUserEntity(user, UserInfo.OnlineStatus.ONLINE);
 
@@ -107,7 +107,7 @@ class UserInfoTest extends UserEntityCreator {
 
     @NotNull
     private UserEntity createUserEntityWithDocumentAndStatus(DocumentEntity photo, StatusEntity status) {
-        UserEntity user = createUserWithRoles(ROLES_AS_STRINGS);
+        UserEntity user = createWithRoles(ROLES_AS_STRINGS);
         user.setPhoto(photo);
         user.setStatus(status);
         return user;

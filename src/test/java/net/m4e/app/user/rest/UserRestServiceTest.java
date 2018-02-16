@@ -28,7 +28,7 @@ import static org.mockito.Matchers.*;
  * @author boto
  * Date of creation February 11, 2018
  */
-class UserRestServiceTest extends UserEntityCreator {
+class UserRestServiceTest {
 
 
     private static final String SESSION_ID = "session_id";
@@ -66,7 +66,7 @@ class UserRestServiceTest extends UserEntityCreator {
         MockitoAnnotations.initMocks(this);
 
         Mockito.when(users.importUser(anyObject())).thenCallRealMethod();
-        Mockito.when(users.createNewUser(anyObject(), anyLong())).thenReturn(createUser());
+        Mockito.when(users.createNewUser(anyObject(), anyLong())).thenReturn(UserEntityCreator.create());
         Mockito.when(session.getId()).thenReturn(SESSION_ID);
         Mockito.when(request.getSession()).thenReturn(session);
 
@@ -170,8 +170,8 @@ class UserRestServiceTest extends UserEntityCreator {
             mockUser(USER_ID_NON_ADMIN, USER_NAME_NON_ADMIN);
             mockUser(USER_ID_OTHER, USER_NAME_OTHER);
 
-            UserEntity user1 = createUser();
-            UserEntity user2 = createUser();
+            UserEntity user1 = UserEntityCreator.create();
+            UserEntity user2 = UserEntityCreator.create();
             Mockito.when(entities.findAll(UserEntity.class)).thenReturn(Arrays.asList(user1, user2));
         }
 
@@ -236,9 +236,9 @@ class UserRestServiceTest extends UserEntityCreator {
     class SearchForUser {
         @BeforeEach
         void setup() {
-            UserEntity user1 = createUser();
-            UserEntity user2 = createUser();
-            UserEntity inactiveUser = createUser();
+            UserEntity user1 = UserEntityCreator.create();
+            UserEntity user2 = UserEntityCreator.create();
+            UserEntity inactiveUser = UserEntityCreator.create();
             inactiveUser.getStatus().setEnabled(false);
 
             Mockito.when(entities.searchForString(anyObject(), anyString(), anyList(), anyInt()))
@@ -320,7 +320,7 @@ class UserRestServiceTest extends UserEntityCreator {
     }
 
     private UserEntity mockAdminUser() {
-        UserEntity user = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+        UserEntity user = UserEntityCreator.createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         user.setId(USER_ID_ADMIN);
         user.setName(USER_NAME_ADMIN);
 
@@ -330,7 +330,7 @@ class UserRestServiceTest extends UserEntityCreator {
     }
 
     private UserEntity mockUser(final Long id, final String name) {
-        UserEntity user = createUser();
+        UserEntity user = UserEntityCreator.create();
         user.setId(id);
         user.setName(name);
 

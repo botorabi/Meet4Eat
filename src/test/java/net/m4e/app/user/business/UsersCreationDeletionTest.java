@@ -7,15 +7,15 @@
  */
 package net.m4e.app.user.business;
 
-import net.m4e.app.auth.*;
+import net.m4e.app.auth.AuthRole;
+import net.m4e.common.UserEntityCreator;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyObject;
 
 /**
  * @author boto
@@ -29,7 +29,7 @@ class UsersCreationDeletionTest extends UsersTestBase {
         @Test
         void noCreatorID() {
             Long NEW_USER_ID = 10L;
-            UserEntity inputEntity = createUser();
+            UserEntity inputEntity = UserEntityCreator.create();
 
             Mockito.doAnswer(invocationOnMock -> {
                 UserEntity user = invocationOnMock.getArgumentAt(0, UserEntity.class);
@@ -47,7 +47,7 @@ class UsersCreationDeletionTest extends UsersTestBase {
         void withCreatorID() {
             Long NEW_USER_ID = 10L;
             Long CREATOR_ID = 300L;
-            UserEntity inputEntity = createUser();
+            UserEntity inputEntity = UserEntityCreator.create();
 
             Mockito.doAnswer(invocationOnMock -> {
                 UserEntity user = invocationOnMock.getArgumentAt(0, UserEntity.class);
@@ -63,7 +63,7 @@ class UsersCreationDeletionTest extends UsersTestBase {
 
         @Test
         void withRoles() {
-            UserEntity inputEntity = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR));
+            UserEntity inputEntity = createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR));
 
             UserEntity newUser = users.createNewUser(inputEntity, null);
 
@@ -76,7 +76,7 @@ class UsersCreationDeletionTest extends UsersTestBase {
 
         @Test
         void markWithInvalidStatus() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
             user.setStatus(null);
 
             try {
@@ -88,7 +88,7 @@ class UsersCreationDeletionTest extends UsersTestBase {
 
         @Test
         void markWithInternalError() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
 
             Mockito.when(appInfos.getAppInfoEntity()).thenReturn(null);
 
@@ -101,7 +101,7 @@ class UsersCreationDeletionTest extends UsersTestBase {
 
         @Test
         void markAsDeleted() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
 
             try {
                 users.markUserAsDeleted(user);
@@ -115,8 +115,8 @@ class UsersCreationDeletionTest extends UsersTestBase {
 
         @Test
         void getDeletedUsers() {
-            UserEntity userNotDeleted = createUser();
-            UserEntity userDeleted = createUser();
+            UserEntity userNotDeleted = UserEntityCreator.create();
+            UserEntity userDeleted = UserEntityCreator.create();
 
             try {
                 users.markUserAsDeleted(userDeleted);
@@ -133,7 +133,7 @@ class UsersCreationDeletionTest extends UsersTestBase {
 
         @Test
         void deleteUser() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
             users.deleteUser(user);
         }
     }

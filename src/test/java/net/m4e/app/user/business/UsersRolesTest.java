@@ -9,14 +9,14 @@ package net.m4e.app.user.business;
 
 import net.m4e.app.auth.*;
 import net.m4e.app.resources.StatusEntity;
+import net.m4e.common.UserEntityCreator;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 
 /**
  * @author boto
@@ -35,7 +35,7 @@ class UsersRolesTest extends UsersTestBase {
 
         @Test
         void invalidInputs() {
-            UserEntity user = createUserWithRoles(Arrays.asList());
+            UserEntity user = createWithRoles(Arrays.asList());
             StatusEntity resourceStatus = new StatusEntity();
 
             assertThatIllegalArgumentException().isThrownBy(() ->users.userIsOwnerOrAdmin(user, null));
@@ -45,7 +45,7 @@ class UsersRolesTest extends UsersTestBase {
 
         @Test
         void addEmptyRoleName() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
 
             users.addUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN, ""));
 
@@ -54,7 +54,7 @@ class UsersRolesTest extends UsersTestBase {
 
         @Test
         void addRoleInternalError() {
-            UserEntity user = createUser();
+            UserEntity user = UserEntityCreator.create();
 
             Mockito.when(entities.findByField(eq(RoleEntity.class), eq("name"), anyString())).thenReturn(Arrays.asList());
 
@@ -65,7 +65,7 @@ class UsersRolesTest extends UsersTestBase {
 
         @Test
         void asAdmin() {
-            UserEntity admin = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+            UserEntity admin = createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
             StatusEntity resourceStatus = new StatusEntity();
 
             assertThat(users.userIsOwnerOrAdmin(admin, resourceStatus)).isTrue();
@@ -73,7 +73,7 @@ class UsersRolesTest extends UsersTestBase {
 
         @Test
         void asModerator() {
-            UserEntity moderator = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_MODERATOR));
+            UserEntity moderator = createWithRoles(Arrays.asList(AuthRole.USER_ROLE_MODERATOR));
             StatusEntity resourceStatus = new StatusEntity();
 
             assertThat(users.userIsOwnerOrAdmin(moderator, resourceStatus)).isFalse();
@@ -83,7 +83,7 @@ class UsersRolesTest extends UsersTestBase {
         void asOwner() {
             final Long ID_OWNER = 100L;
 
-            UserEntity owner = createUserWithRoles(Collections.emptyList());
+            UserEntity owner = createWithRoles(Collections.emptyList());
             owner.setId(ID_OWNER);
 
             StatusEntity resourceStatus = new StatusEntity();
@@ -94,7 +94,7 @@ class UsersRolesTest extends UsersTestBase {
 
         @Test
         void asOther() {
-            UserEntity otherUser = createUserWithRoles(Collections.emptyList());
+            UserEntity otherUser = createWithRoles(Collections.emptyList());
             StatusEntity resourceStatus = new StatusEntity();
 
             assertThat(users.userIsOwnerOrAdmin(otherUser, resourceStatus)).isFalse();
@@ -105,18 +105,18 @@ class UsersRolesTest extends UsersTestBase {
     class CheckUserRoles {
         @Test
         void noRoles() {
-            UserEntity user = createUserWithRoles(Collections.emptyList());
+            UserEntity user = createWithRoles(Collections.emptyList());
 
             assertThat(users.checkUserRoles(user, Collections.emptyList())).isFalse();
             assertThat(users.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN))).isFalse();
 
-            user = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+            user = createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
             assertThat(users.checkUserRoles(user, Collections.emptyList())).isFalse();
         }
 
         @Test
         void withRoles() {
-            UserEntity user = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR));
+            UserEntity user = createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR));
 
             assertThat(users.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN))).isTrue();
         }
@@ -128,7 +128,7 @@ class UsersRolesTest extends UsersTestBase {
         @Test
         void noUserPrivilege() {
             List<RoleEntity> requestedRoles = createRoleEntities(Collections.emptyList());
-            UserEntity user = createUserWithRoles(Collections.emptyList());
+            UserEntity user = createWithRoles(Collections.emptyList());
 
             Collection<RoleEntity> adaptedRoles = users.adaptRequestedRoles(user, requestedRoles);
 
@@ -143,7 +143,7 @@ class UsersRolesTest extends UsersTestBase {
         @Test
         void noRequestedRoles() {
             List<RoleEntity> requestedRoles = null;
-            UserEntity user = createUserWithRoles(Collections.emptyList());
+            UserEntity user = createWithRoles(Collections.emptyList());
 
             Collection<RoleEntity> adaptedRoles = users.adaptRequestedRoles(user, requestedRoles);
 
@@ -153,7 +153,7 @@ class UsersRolesTest extends UsersTestBase {
         @Test
         void invalidRoleName() {
             List<RoleEntity> requestedRoles = createRoleEntities(Arrays.asList("INVALID_ROLE"));
-            UserEntity user = createUserWithRoles(Collections.emptyList());
+            UserEntity user = createWithRoles(Collections.emptyList());
 
             Collection<RoleEntity> adaptedRoles = users.adaptRequestedRoles(user, requestedRoles);
 
@@ -167,7 +167,7 @@ class UsersRolesTest extends UsersTestBase {
             invalidRole.setId(null);
 
             List<RoleEntity> requestedRoles = Arrays.asList(invalidRole);
-            UserEntity user = createUserWithRoles(Collections.emptyList());
+            UserEntity user = createWithRoles(Collections.emptyList());
 
             Collection<RoleEntity> adaptedRoles = users.adaptRequestedRoles(user, requestedRoles);
 
@@ -177,7 +177,7 @@ class UsersRolesTest extends UsersTestBase {
         @Test
         void removeDuplicates() {
             List<RoleEntity> requestedRoles = createRoleEntities(Arrays.asList(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR));
-            UserEntity user = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+            UserEntity user = createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
 
             Collection<RoleEntity> adaptedRoles = users.adaptRequestedRoles(user, requestedRoles);
 
@@ -187,7 +187,7 @@ class UsersRolesTest extends UsersTestBase {
         @Test
         void adaptUserRoles() {
             List<RoleEntity> requestedRoles = createRoleEntities(Arrays.asList(AuthRole.USER_ROLE_ADMIN, AuthRole.USER_ROLE_MODERATOR));
-            UserEntity user = createUserWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+            UserEntity user = createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
 
             Collection<RoleEntity> adaptedRoles = users.adaptRequestedRoles(user, requestedRoles);
 
