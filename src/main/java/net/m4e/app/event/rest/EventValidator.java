@@ -9,13 +9,12 @@
 package net.m4e.app.event.rest;
 
 import net.m4e.app.event.business.*;
-import net.m4e.app.event.rest.comm.EventLocationCmd;
+import net.m4e.app.event.rest.comm.*;
 import net.m4e.common.Strings;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class validates event entity related inputs from a client.
@@ -61,12 +60,12 @@ public class EventValidator {
      * Given a JSON string as input containing data for creating a new event, validate 
      * all fields and return an EventEntity, or throw an exception if the validation failed.
      * 
-     * @param eventJson      Data for creating a new event in JSON format
+     * @param eventCmd       Data for creating a new event
      * @return               A EventEntity created out of given input
      * @throws Exception     Throws an exception if the validation fails.
      */
-    public EventEntity validateNewEntityInput(String eventJson) throws Exception {
-        EventEntity entity = events.importEventJSON(eventJson);
+    public EventEntity validateNewEntityInput(EventCmd eventCmd) throws Exception {
+        EventEntity entity = events.importEvent(eventCmd);
         if (entity == null) {
             throw new Exception("Failed to create event, invalid input.");
         }
@@ -86,12 +85,12 @@ public class EventValidator {
      * Given a JSON string as input containing data for updating an existing event, validate 
      * all fields and return an UserEntity, or throw an exception if the validation failed.
      * 
-     * @param userJson       Data for creating a new user in JSON format
+     * @param eventCmd       Data for updating an existing user
      * @return               An EventEntity created out of given input
      * @throws Exception     Throws an exception if the validation fails.
      */
-    public EventEntity validateUpdateEntityInput(String userJson) throws Exception {
-        EventEntity entity = events.importEventJSON(userJson);
+    public EventEntity validateUpdateEntityInput(EventCmd eventCmd) throws Exception {
+        EventEntity entity = events.importEvent(eventCmd);
         if (entity == null) {
             throw new Exception("Failed to update event, invalid input.");
         }

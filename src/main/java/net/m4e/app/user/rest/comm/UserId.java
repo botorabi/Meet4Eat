@@ -11,14 +11,14 @@ package net.m4e.app.user.rest.comm;
  * @author boto
  * Date of creation January 23, 2018
  */
-public class UpdateUser {
-    private final String userId;
+public class UserId {
+    private final String id;
 
-    public UpdateUser(final String userId) {
-        this.userId = userId;
+    public UserId(final String id) {
+        this.id = id;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 }

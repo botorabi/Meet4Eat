@@ -7,9 +7,8 @@
  */
 package net.m4e.app.user.rest;
 
-import net.m4e.app.auth.*;
+import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.communication.ConnectedClients;
-import net.m4e.app.resources.*;
 import net.m4e.app.user.business.*;
 import net.m4e.app.user.rest.comm.*;
 import net.m4e.common.*;
@@ -30,14 +29,7 @@ import static org.mockito.Matchers.*;
  */
 class UserRestServiceTest {
 
-
     private static final String SESSION_ID = "session_id";
-    private static final Long USER_ID_ADMIN = 10000L;
-    private static final String USER_NAME_ADMIN = "admin";
-    private static final Long USER_ID_NON_ADMIN = 20000L;
-    private static final String USER_NAME_NON_ADMIN = "nonadmin";
-    private static final Long USER_ID_OTHER = 30000L;
-    private static final String USER_NAME_OTHER = "otheruser";
 
     @Mock
     Users users;
@@ -51,13 +43,13 @@ class UserRestServiceTest {
     AppInfos appInfos;
     @Mock
     ConnectedClients connections;
-    @Mock
-    DocumentPool docPool;
 
     @Mock
     HttpServletRequest request;
     @Mock
     HttpSession session;
+
+    UserMockUp userMockUp;
 
     UserRestService restService;
 
@@ -71,6 +63,7 @@ class UserRestServiceTest {
         Mockito.when(request.getSession()).thenReturn(session);
 
         restService = new UserRestService(users, entities, validator, registration, appInfos, connections);
+        userMockUp = new UserMockUp(users);
     }
 
     @Nested
@@ -78,75 +71,75 @@ class UserRestServiceTest {
 
         @Test
         void createUserSuccess() throws Exception {
-            mockSessionUser(mockAdminUser());
+            mockSessionUser(userMockUp.mockAdminUser());
             mockNewUserValidationSuccess();
 
             UserCmd userCmd = createUserCmd();
 
-            GenericResponseResult<CreateUser> response = restService.createUser(userCmd, request);
+            GenericResponseResult<UserId> response = restService.createUser(userCmd, request);
 
             ResponseAssertions.assertThat(response).hasStatusOk();
         }
 
         @Test
         void createUserValidationFailed() throws Exception {
-            mockAdminUser();
+            userMockUp.mockSomeUser();
             mockNewUserValidationFailed();
 
             UserCmd userCmd = createUserCmd();
 
-            GenericResponseResult<CreateUser> response = restService.createUser(userCmd, request);
+            GenericResponseResult<UserId> response = restService.createUser(userCmd, request);
 
             ResponseAssertions.assertThat(response).hasStatusNotOk();
         }
 
         @Test
         void deleteUserSelfDeletion() {
-            mockSessionUser(mockUser(USER_ID_ADMIN, USER_NAME_ADMIN));
+            mockSessionUser(userMockUp.mockUser(UserMockUp.USER_ID_ADMIN, UserMockUp.USER_NAME_ADMIN));
 
-            GenericResponseResult<DeleteUser> response = restService.remove(USER_ID_ADMIN, request);
+            GenericResponseResult<UserId> response = restService.remove(UserMockUp.USER_ID_ADMIN, request);
 
             ResponseAssertions.assertThat(response).hasStatusNotOk();
         }
 
         @Test
         void deleteNonExistingUser() {
-            mockUser(USER_ID_NON_ADMIN, USER_NAME_NON_ADMIN);
-            mockSessionUser(mockAdminUser());
+            userMockUp.mockUser(UserMockUp.USER_ID_NON_ADMIN, UserMockUp.USER_NAME_NON_ADMIN);
+            mockSessionUser(userMockUp.mockAdminUser());
 
-            GenericResponseResult<DeleteUser> response = restService.remove(USER_ID_OTHER, request);
+            GenericResponseResult<UserId> response = restService.remove(UserMockUp.USER_ID_OTHER, request);
 
             ResponseAssertions.assertThat(response).hasStatusNotOk();
         }
 
         @Test
         void deleteNonActiveUser() {
-            mockUser(USER_ID_OTHER, USER_NAME_OTHER).getStatus().setEnabled(false);
-            mockSessionUser(mockAdminUser());
+            userMockUp.mockSomeUser().getStatus().setEnabled(false);
+            mockSessionUser(userMockUp.mockAdminUser());
 
-            GenericResponseResult<DeleteUser> response = restService.remove(USER_ID_OTHER, request);
+            GenericResponseResult<UserId> response = restService.remove(UserMockUp.USER_ID_OTHER, request);
 
             ResponseAssertions.assertThat(response).hasStatusNotOk();
         }
 
         @Test
         void deletionMarkingFailure() throws Exception {
-            mockUser(USER_ID_OTHER, USER_NAME_OTHER).getStatus().setEnabled(true);
-            mockSessionUser(mockAdminUser());
+            userMockUp.mockSomeUser();
+            mockSessionUser(userMockUp.mockAdminUser());
 
             Mockito.doThrow(new Exception("Failure marking user as deleted")).when(users).markUserAsDeleted(anyObject());
 
-            GenericResponseResult<DeleteUser> response = restService.remove(USER_ID_OTHER, request);
+            GenericResponseResult<UserId> response = restService.remove(UserMockUp.USER_ID_OTHER, request);
 
             ResponseAssertions.assertThat(response).hasStatusNotOk();
         }
 
         @Test
         void deleteExistingActiveUser() {
-            mockUser(USER_ID_OTHER, USER_NAME_OTHER).getStatus().setEnabled(true);
-            mockSessionUser(mockAdminUser());
+            userMockUp.mockSomeUser();
+            mockSessionUser(userMockUp.mockAdminUser());
 
-            GenericResponseResult<DeleteUser> response = restService.remove(USER_ID_OTHER, request);
+            GenericResponseResult<UserId> response = restService.remove(UserMockUp.USER_ID_OTHER, request);
 
             ResponseAssertions.assertThat(response).hasStatusOk();
         }
@@ -166,9 +159,9 @@ class UserRestServiceTest {
 
         @BeforeEach
         void setup() {
-            mockUser(USER_ID_ADMIN, USER_NAME_ADMIN);
-            mockUser(USER_ID_NON_ADMIN, USER_NAME_NON_ADMIN);
-            mockUser(USER_ID_OTHER, USER_NAME_OTHER);
+            userMockUp.mockUser(UserMockUp.USER_ID_ADMIN, UserMockUp.USER_NAME_ADMIN);
+            userMockUp.mockUser(UserMockUp.USER_ID_NON_ADMIN, UserMockUp.USER_NAME_NON_ADMIN);
+            userMockUp.mockSomeUser();
 
             UserEntity user1 = UserEntityCreator.create();
             UserEntity user2 = UserEntityCreator.create();
@@ -177,20 +170,20 @@ class UserRestServiceTest {
 
         @Test
         void findUserFound() {
-            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+            mockSessionUser(userMockUp.mockSomeUser());
             Mockito.when(users.userIsOwnerOrAdmin(anyObject(), anyObject())).thenReturn(true);
 
-            GenericResponseResult<UserInfo> response = restService.find(USER_ID_OTHER, request);
+            GenericResponseResult<UserInfo> response = restService.find(UserMockUp.USER_ID_OTHER, request);
 
             ResponseAssertions.assertThat(response).hasStatusOk();
         }
 
         @Test
         void findUserNotFound() {
-            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+            mockSessionUser(userMockUp.mockSomeUser());
             Mockito.when(users.findUser(anyLong())).thenReturn(null);
 
-            GenericResponseResult<UserInfo> response = restService.find(USER_ID_OTHER, request);
+            GenericResponseResult<UserInfo> response = restService.find(UserMockUp.USER_ID_OTHER, request);
 
             ResponseAssertions.assertThat(response)
                     .hasStatusNotOk()
@@ -199,10 +192,10 @@ class UserRestServiceTest {
 
         @Test
         void findUserNoPrivilege() {
-            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+            mockSessionUser(userMockUp.mockSomeUser());
             Mockito.when(users.userIsOwnerOrAdmin(anyObject(), anyObject())).thenReturn(false);
 
-            GenericResponseResult<UserInfo> response = restService.find(USER_ID_OTHER, request);
+            GenericResponseResult<UserInfo> response = restService.find(UserMockUp.USER_ID_OTHER, request);
 
             ResponseAssertions.assertThat(response)
                     .hasStatusNotOk()
@@ -211,7 +204,7 @@ class UserRestServiceTest {
 
         @Test
         void findAllUsers() {
-            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+            mockSessionUser(userMockUp.mockSomeUser());
 
             GenericResponseResult<List<UserInfo>> response = restService.findAllUsers(request);
 
@@ -222,7 +215,7 @@ class UserRestServiceTest {
 
         @Test
         void findAllUsersWithRange() {
-            mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
+            mockSessionUser(userMockUp.mockSomeUser());
 
             GenericResponseResult<List<UserInfo>> response = restService.findRange(1, 10, request);
 
@@ -308,36 +301,13 @@ class UserRestServiceTest {
 
     @Test
     void countUsers() {
-        mockSessionUser(mockUser(USER_ID_OTHER, USER_NAME_OTHER));
-
         Mockito.when(appInfos.getAppInfoEntity()).thenReturn(new AppInfoEntity());
 
-        GenericResponseResult<UserCount> response = restService.countREST();
+        GenericResponseResult<UserCount> response = restService.count();
 
         ResponseAssertions.assertThat(response)
                 .hasStatusOk()
                 .hasData();
-    }
-
-    private UserEntity mockAdminUser() {
-        UserEntity user = UserEntityCreator.createWithRoles(Arrays.asList(AuthRole.USER_ROLE_ADMIN));
-        user.setId(USER_ID_ADMIN);
-        user.setName(USER_NAME_ADMIN);
-
-        Mockito.when(users.findUser(USER_NAME_ADMIN)).thenReturn(user);
-
-        return user;
-    }
-
-    private UserEntity mockUser(final Long id, final String name) {
-        UserEntity user = UserEntityCreator.create();
-        user.setId(id);
-        user.setName(name);
-
-        Mockito.when(users.findUser(id)).thenReturn(user);
-        Mockito.when(users.findUser(name)).thenReturn(user);
-
-        return user;
     }
 
     private void mockSessionUser(UserEntity user) {

@@ -45,13 +45,13 @@ public class EventLocationVoteRestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Event<NotifyUsersEvent> notifyUsersEvent;
-
     private final Events events;
 
     private final Entities entities;
 
     private final EventLocations eventLocations;
+
+    private final EventNotifications eventNotifications;
 
     /**
      * Make the EJB container happy.
@@ -60,7 +60,7 @@ public class EventLocationVoteRestService {
         events = null;
         entities = null;
         eventLocations = null;
-        notifyUsersEvent = null;
+        eventNotifications = null;
     }
 
     /**
@@ -70,11 +70,11 @@ public class EventLocationVoteRestService {
     public EventLocationVoteRestService(@NotNull Events events,
                                         @NotNull Entities entities,
                                         @NotNull EventLocations eventLocations,
-                                        @NotNull Event<NotifyUsersEvent> notifyUsersEvent) {
+                                        @NotNull EventNotifications eventNotifications) {
         this.events = events;
         this.entities = entities;
         this.eventLocations = eventLocations;
-        this.notifyUsersEvent = notifyUsersEvent;
+        this.eventNotifications = eventNotifications;
     }
 
     /**
@@ -109,8 +109,7 @@ public class EventLocationVoteRestService {
         }
 
         // notify all event members about the vote
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, null);
-        notifications.sendNotifyLocationVote(EventNotifications.ChangeType.Modify, sessionUser, event, locationId, vote);
+        eventNotifications.sendNotifyLocationVote(EventNotifications.ChangeType.Modify, sessionUser, event, locationId, vote);
 
         LocationVote locationVote = new LocationVote(vote, voteEntity.getId().toString(), eventId.toString(), locationId.toString());
         return GenericResponseResult.ok("Location vote was successfully updated.", locationVote);

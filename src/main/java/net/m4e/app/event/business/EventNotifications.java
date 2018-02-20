@@ -12,6 +12,7 @@ import net.m4e.app.notification.*;
 import net.m4e.app.user.business.UserEntity;
 
 import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import java.util.*;
 
 
@@ -90,6 +91,7 @@ public class EventNotifications {
      * @param notifyUsersEvent          Event used for user related notifications
      * @param notifyUserRelativesEvent  Event used for user relatives notifications
      */
+    @Inject
     public EventNotifications(Event<NotifyUsersEvent> notifyUsersEvent, Event<NotifyUserRelativesEvent> notifyUserRelativesEvent) {
         this.notifyUsersEvent = notifyUsersEvent;
         this.notifyUserRelativesEvent = notifyUserRelativesEvent;

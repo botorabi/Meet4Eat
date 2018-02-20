@@ -52,6 +52,18 @@ public class UserRestService {
 
 
     /**
+     * Make the EJB container happy.
+     */
+    protected UserRestService() {
+        users = null;
+        entities = null;
+        validator = null;
+        registration = null;
+        appInfos = null;
+        connections = null;
+    }
+
+    /**
      * Create the user service.
      */
     @Inject
@@ -72,10 +84,6 @@ public class UserRestService {
 
     /**
      * Create a new user.
-     *
-     * @param userCmd Data of the new user
-     * @param request HTTP request
-     * @return Result
      */
     @POST
     @Path("create")
@@ -83,7 +91,7 @@ public class UserRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles = {AuthRole.USER_ROLE_ADMIN})
     @ApiOperation(value = "Create a new user")
-    public GenericResponseResult<CreateUser> createUser(UserCmd userCmd, @Context HttpServletRequest request) {
+    public GenericResponseResult<UserId> createUser(UserCmd userCmd, @Context HttpServletRequest request) {
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
 
         UserEntity userEntity;
@@ -96,16 +104,12 @@ public class UserRestService {
 
         UserEntity createdUser = users.createNewUser(userEntity, sessionUser.getId());
 
-        return GenericResponseResult.ok("User was successfully created.", new CreateUser(createdUser.getId().toString()));
+        return GenericResponseResult.ok("User was successfully created.", new UserId(createdUser.getId().toString()));
     }
 
     /**
      * Register a new user. For activating the user, there is an activation process.
      * Only guests can use this service.
-     *
-     * @param userCmd User data
-     * @param request HTTP request
-     * @return Result
      */
     @POST
     @Path("register")
@@ -113,7 +117,7 @@ public class UserRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles = {AuthRole.VIRT_ROLE_GUEST})
     @ApiOperation(value = "Register a new user")
-    public GenericResponseResult<CreateUser> registerUser(UserCmd userCmd, @Context HttpServletRequest request) {
+    public GenericResponseResult<UserId> registerUser(UserCmd userCmd, @Context HttpServletRequest request) {
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
         if (sessionUser != null) {
             LOGGER.error("*** an already authenticated user tries a user registration!");
@@ -148,7 +152,7 @@ public class UserRestService {
         registration.registerUserAccount(newEntity, activationUrl, adminEmail);
 
         //! NOTE on successful entity creation the new ID is sent back by results.data field.
-        return GenericResponseResult.ok("User was successfully created.", new CreateUser(newEntity.getId().toString()));
+        return GenericResponseResult.ok("User was successfully created.", new UserId(newEntity.getId().toString()));
     }
 
     /**
@@ -184,10 +188,6 @@ public class UserRestService {
 
     /**
      * Activate a user by given its activation token. This is usually used during the registration process.
-     *
-     * @param token   Activation token
-     * @param request HTTP request
-     * @return Result
      */
     @GET
     @Path("activate/{token}")
@@ -215,10 +215,6 @@ public class UserRestService {
 
     /**
      * Request for resetting a user password. Only guests can use this service.
-     *
-     * @param requestPasswordResetCmd Request data (such as user email address)
-     * @param request                 HTTP request
-     * @return Result
      */
     @POST
     @Path("requestpasswordreset")
@@ -253,11 +249,6 @@ public class UserRestService {
     /**
      * Try to set a new password for an user account. The password reset token is validated,
      * on success the user password is reset to the given one in 'performPasswordResetCmd'.
-     *
-     * @param performPasswordResetCmd Password reset data
-     * @param token                   Password reset token
-     * @param request                 HTTP request
-     * @return Result
      */
     @POST
     @Path("passwordreset/{token}")
@@ -289,11 +280,6 @@ public class UserRestService {
 
     /**
      * Modify the user with given ID.
-     *
-     * @param id      User ID
-     * @param userCmd User update data
-     * @param request HTTP request
-     * @return Result
      */
     @PUT
     @Path("{id}")
@@ -301,15 +287,15 @@ public class UserRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles = {AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Update an existing user")
-    public GenericResponseResult<UpdateUser> edit(@PathParam("id") Long id, UserCmd userCmd, @Context HttpServletRequest request) {
+    public GenericResponseResult<UserId> edit(@PathParam("id") Long id, UserCmd userCmd, @Context HttpServletRequest request) {
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
-        UpdateUser updateUser = new UpdateUser(id.toString());
+        UserId updateUser = new UserId(id.toString());
         UserEntity updateEntity;
         try {
             updateEntity = validator.validateUpdateEntityInput(userCmd);
         } catch (Exception ex) {
             return GenericResponseResult.badRequest(
-                    "Failed to update user, invalid input. Reason: " + ex.getLocalizedMessage(), updateUser);
+                    "Failed to update user, invalid input. Reason: " + ex.getMessage(), updateUser);
         }
 
         UserEntity existingUser = entities.find(UserEntity.class, id);
@@ -361,39 +347,35 @@ public class UserRestService {
     /**
      * Delete an user with given ID. The user will be marked as deleted, so it can be
      * purged later.
-     *
-     * @param id      User ID
-     * @param request HTTP request
-     * @return Result
      */
     @DELETE
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles = {AuthRole.USER_ROLE_ADMIN})
     @ApiOperation(value = "Request for deleting an existing user")
-    public GenericResponseResult<DeleteUser> remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
-        DeleteUser delUser = new DeleteUser(id.toString());
+    public GenericResponseResult<UserId> remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
+        UserId response = new UserId(id.toString());
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
 
         if (sessionUser.getId().equals(id)) {
             LOGGER.warn("*** User was attempting to delete itself! Call a doctor.");
-            return GenericResponseResult.notAcceptable("Failed to delete yourself.", delUser);
+            return GenericResponseResult.notAcceptable("Failed to delete yourself.", response);
         }
 
         UserEntity user = users.findUser(id);
         if ((user == null) || !user.getStatus().getIsActive()) {
             LOGGER.warn("*** User was attempting to delete non-existing user!");
-            return GenericResponseResult.notFound("Failed to find user for deletion.", delUser);
+            return GenericResponseResult.notFound("Failed to find user for deletion.", response);
         }
 
         try {
             users.markUserAsDeleted(user);
         } catch (Exception ex) {
             LOGGER.warn("*** Could not mark user as deleted, reason: {}", ex.getMessage());
-            return GenericResponseResult.internalError("Failed to delete user.", delUser);
+            return GenericResponseResult.internalError("Failed to delete user.", response);
         }
 
-        return GenericResponseResult.ok("User successfully deleted", delUser);
+        return GenericResponseResult.ok("User successfully deleted", response);
     }
 
     /**
@@ -441,10 +423,6 @@ public class UserRestService {
 
     /**
      * Find an user with given ID.
-     *
-     * @param id      User ID
-     * @param request HTTP request
-     * @return Result
      */
     @GET
     @Path("{id}")
@@ -470,9 +448,6 @@ public class UserRestService {
 
     /**
      * Get all users.
-     *
-     * @param request HTTP request
-     * @return Result
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -487,11 +462,6 @@ public class UserRestService {
 
     /**
      * Get users in given range.
-     *
-     * @param from    Range begin
-     * @param to      Range end
-     * @param request HTTP request
-     * @return Result
      */
     @GET
     @Path("{from}/{to}")
@@ -507,19 +477,16 @@ public class UserRestService {
 
     /**
      * Get the total count of active users.
-     *
-     * @return Result
      */
     @GET
     @Path("count")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles = {AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Get the count of active users")
-    public GenericResponseResult<UserCount> countREST() {
+    public GenericResponseResult<UserCount> count() {
         // NOTE the final user count is the count of UserEntity entries in database minus the count of users to be purged
         AppInfoEntity appInfo = appInfos.getAppInfoEntity();
-        Long userPurges = appInfo.getUserCountPurge();
-        UserCount count = new UserCount(entities.getCount(UserEntity.class) - userPurges);
+        UserCount count = new UserCount(entities.getCount(UserEntity.class) - appInfo.getUserCountPurge());
         return GenericResponseResult.ok("Count of users", count);
     }
 }

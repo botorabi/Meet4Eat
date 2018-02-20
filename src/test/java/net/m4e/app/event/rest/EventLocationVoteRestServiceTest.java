@@ -45,7 +45,7 @@ public class EventLocationVoteRestServiceTest {
     private final static String SESSION_ID = "session_id";
 
     @Mock
-    Event<NotifyUsersEvent> notifyUsersEvent;
+    EventNotifications eventNotifications;
     @Mock
     Events events;
     @Mock
@@ -67,7 +67,7 @@ public class EventLocationVoteRestServiceTest {
 
         Mockito.when(session.getId()).thenReturn(SESSION_ID);
         Mockito.when(request.getSession()).thenReturn(session);
-        voteRestService = new EventLocationVoteRestService(events, entities, eventLocations, notifyUsersEvent);
+        voteRestService = new EventLocationVoteRestService(events, entities, eventLocations, eventNotifications);
 
         eventEntityCreator = new EventEntityCreator();
 

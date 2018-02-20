@@ -9,28 +9,19 @@ package net.m4e.app.event.rest.comm;
 
 /**
  * @author boto
- * Date of creation January 23, 2018
+ * Date of creation February 20, 2018
  */
-public class EventLocation {
+public class EventMember {
+    public enum OnlineStatus {ONLINE, OFFLINE}
 
     private String id;
     private String name;
-    private String description;
     private String photoId;
-    private String photoETag;
+    private String PhotoETag;
+    private OnlineStatus status;
 
-    public EventLocation() {}
 
-    public EventLocation(final String id,
-                         final String name,
-                         final String description,
-                         final String photoId,
-                         final String photoETag) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.photoId = photoId;
-        this.photoETag = photoETag;
+    public EventMember() {
     }
 
     public String getId() {
@@ -41,16 +32,16 @@ public class EventLocation {
         return name;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     public String getPhotoId() {
         return photoId;
     }
 
     public String getPhotoETag() {
-        return photoETag;
+        return PhotoETag;
+    }
+
+    public OnlineStatus getStatus() {
+        return status;
     }
 
     public void setId(String id) {
@@ -61,15 +52,15 @@ public class EventLocation {
         this.name = name;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public void setPhotoId(String photoId) {
         this.photoId = photoId;
     }
 
     public void setPhotoETag(String photoETag) {
-        this.photoETag = photoETag;
+        PhotoETag = photoETag;
+    }
+
+    public void setStatus(OnlineStatus status) {
+        this.status = status;
     }
 }

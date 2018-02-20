@@ -218,7 +218,7 @@ public class UpdateCheckEntityFacadeREST {
     @Path("count")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
-    public String countREST() {
+    public String count() {
         JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
         jsonresponse.add("count", String.valueOf(entities.getCount(UpdateCheckEntity.class)));
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of update entries.", ResponseResults.CODE_OK, jsonresponse.build().toString());

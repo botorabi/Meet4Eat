@@ -431,7 +431,7 @@ public class Users {
 
     /**
      * Give an user input data import the necessary fields and create a user entity.
-     * 
+     *
      * @param userCmd Data representing an user entity
      * @return        User entity
      */

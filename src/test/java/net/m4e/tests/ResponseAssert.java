@@ -168,4 +168,12 @@ public class ResponseAssert<T> extends AbstractObjectAssert<ResponseAssert<T>, G
     public ResponseAssert<T> codeIsBadRequest() {
         return isStatusCode(GenericResponseResult.CODE_BAD_REQUEST);
     }
+
+    public ResponseAssert<T> codeIsForbidden() {
+        return isStatusCode(GenericResponseResult.CODE_FORBIDDEN);
+    }
+
+    public ResponseAssert<T> codeIsInternalError() {
+        return isStatusCode(GenericResponseResult.CODE_INTERNAL_SRV_ERROR);
+    }
 }

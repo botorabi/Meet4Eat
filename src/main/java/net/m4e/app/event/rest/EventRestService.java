@@ -7,11 +7,11 @@
  */
 package net.m4e.app.event.rest;
 
+import io.swagger.annotations.*;
 import net.m4e.app.auth.*;
-import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.event.business.*;
-import net.m4e.app.event.rest.comm.EventLocationCmd;
-import net.m4e.app.notification.*;
+import net.m4e.app.event.rest.comm.*;
+import net.m4e.app.notification.Notification;
 import net.m4e.app.user.business.*;
 import net.m4e.common.*;
 import net.m4e.system.core.*;
@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.*;
 
 import javax.ejb.Stateless;
-import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.json.*;
 import javax.json.bind.JsonbBuilder;
@@ -30,75 +29,44 @@ import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 /**
- * REST services for Event entity operations.
- * The results of operations depend on the privileges of authenticated user.
- * 
+ * REST services for Event related operations.
+ *
  * @author boto
  * Date of creation Aug 18, 2017
  */
 @Stateless
 @Path("/rest/events")
+@Api(value = "Event service")
 public class EventRestService {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    /**
-     * Event used for notifying other users
-     */
-    @Inject
-    private Event<NotifyUsersEvent> notifyUsersEvent;
-
-    /**
-     * Event used for notifying other users
-     */
-    @Inject
-    private Event<NotifyUserRelativesEvent> notifyUserRelativesEvent;
-
-    /**
-     * Central place to hold all client connections
-     */
-    @Inject
-    private ConnectedClients connections;
-
-    /**
-     * Entities
-     */
-    @NotNull
     private final Entities entities;
 
-    /**
-     * Events
-     */
-    @NotNull
     private final Events events;
 
-    /**
-     * Users
-     */
-    @NotNull
     private final Users users;
 
-    /**
-     * The event locations
-     */
-    @NotNull
     private final EventLocations eventLocations;
 
-    /**
-     * AppInfos
-     */
-    @NotNull
+    private final EventNotifications eventNotifications;
+
     private final AppInfos appInfos;
 
-    /**
-     * Event input validator
-     */
-    @NotNull
     private final EventValidator validator;
 
+    /**
+     * The default constructor is needed fon an EJB.
+     */
+    protected EventRestService() {
+        entities = null;
+        events = null;
+        users = null;
+        validator = null;
+        eventLocations = null;
+        eventNotifications = null;
+        appInfos = null;
+    }
 
     /**
      * Create the event entity REST facade.
@@ -109,6 +77,7 @@ public class EventRestService {
                             @NotNull Users users,
                             @NotNull EventValidator validator,
                             @NotNull EventLocations eventLocations,
+                            @NotNull EventNotifications eventNotifications,
                             @NotNull AppInfos appInfos) {
 
         this.entities = entities;
@@ -116,248 +85,231 @@ public class EventRestService {
         this.users = users;
         this.validator = validator;
         this.eventLocations = eventLocations;
+        this.eventNotifications = eventNotifications;
         this.appInfos = appInfos;
     }
 
     /**
      * Create a new event.
-     * 
-     * @param eventJson  Event details in JSON format
-     * @param request    HTTP request
-     * @return           JSON response
      */
     @POST
     @Path("create")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String createEvent(String eventJson, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventEntity reqentity;
+    @ApiOperation(value = "Create an event")
+    public GenericResponseResult<EventId> createEvent(EventCmd eventCmd, @Context HttpServletRequest request) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        EventEntity eventEntity;
         try {
-            reqentity = validator.validateNewEntityInput(eventJson);
+            eventEntity = validator.validateNewEntityInput(eventCmd);
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not create new event, validation failed, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+            LOGGER.warn("*** Could not create new event, validation failed, reason: {}", ex.getMessage());
+            return GenericResponseResult.badRequest(ex.getMessage());
         }
 
-        EventEntity newevent;
+        EventEntity newEvent;
         try {
-            newevent = events.createNewEvent(reqentity, sessionuser.getId());
+            newEvent = events.createNewEvent(eventEntity, sessionUser.getId());
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not create new event, reaon: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to create new event.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            LOGGER.warn("*** Could not create new event, reason: {}", ex.getMessage());
+            return GenericResponseResult.internalError("Failed to create new event.");
         }
 
         // notify all event members about its creation, usually only the event owner is the only member at this point
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
-        notifications.sendNotifyEventChanged(EventNotifications.ChangeType.Add, AuthorityConfig.getInstance().getSessionUser(request), newevent);
+        eventNotifications.sendNotifyEventChanged(EventNotifications.ChangeType.Add, sessionUser, newEvent);
 
-        //! NOTE on successful entity creation the new event ID is sent back by results.data field.
-        jsonresponse.add("id", newevent.getId().toString());
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event was successfully created.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        EventId response = new EventId(newEvent.getId().toString());
+        return GenericResponseResult.ok("Event was successfully created.", response);
     }
 
     /**
      * Modify the event with given ID.
-     * 
-     * @param id        Event ID
-     * @param eventJson Entity modifications in JSON format
-     * @param request   HTTP request
-     * @return          JSON response
      */
     @PUT
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String edit(@PathParam("id") Long id, String eventJson, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id.toString());
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventEntity reqentity = events.importEventJSON(eventJson);
-        if (reqentity == null) {
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event, invalid input.", ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+    @ApiOperation(value = "Modify an event")
+    public GenericResponseResult<EventId> edit(@PathParam("id") Long id, EventCmd eventCmd, @Context HttpServletRequest request) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        EventId response = new EventId(id.toString());
+
+        EventEntity updateEvent;
+        try {
+            updateEvent = validator.validateUpdateEntityInput(eventCmd);
+        } catch (Exception e) {
+            return GenericResponseResult.badRequest("Failed to update event, invalid input.", response);
         }
 
-        EventEntity event = entities.find(EventEntity.class, id);
-        if (event == null) {
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find event for updating.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+        EventEntity existingEvent = entities.find(EventEntity.class, id);
+        if (existingEvent == null) {
+            return GenericResponseResult.notFound("Failed to update event, event does not exist.", response);
         }
 
         // check if the event owner or a user with higher privilege is trying to modify the event
-        if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!users.userIsOwnerOrAdmin(sessionUser, existingEvent.getStatus())) {
             LOGGER.warn("*** User was attempting to update an event without proper privilege!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+            return GenericResponseResult.forbidden("Failed to update event, insufficient privilege.", response);
         }
 
-        // take over non-empty fields
-        if ((reqentity.getName() != null) && !reqentity.getName().isEmpty()) {
-            event.setName(reqentity.getName());
-        }
-        if ((reqentity.getDescription() != null) && !reqentity.getDescription().isEmpty()) {
-            event.setDescription(reqentity.getDescription());
-        }
-        if (reqentity.getPhoto() != null) {
-            try {
-                events.updateEventImage(event, reqentity.getPhoto());
-            }
-            catch (Exception ex) {
-                LOGGER.warn("*** Event image could not be updated, reason: " + ex.getLocalizedMessage());
-            }
-        }
-        if (reqentity.getEventStart() > 0L) {
-            event.setEventStart(reqentity.getEventStart());
-        }
-        event.setIsPublic(reqentity.getIsPublic());
-        event.setRepeatWeekDays(reqentity.getRepeatWeekDays());
-        event.setRepeatDayTime(reqentity.getRepeatDayTime());
-        event.setVotingTimeBegin(reqentity.getVotingTimeBegin());
-
-        try {
-            events.updateEvent(event);
-        }
-        catch (Exception ex) {
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to update event.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
-        }
+        performEventUpdate(updateEvent, existingEvent);
 
         // notify all event members about its change
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
-        notifications.sendNotifyEventChanged(EventNotifications.ChangeType.Modify, AuthorityConfig.getInstance().getSessionUser(request), event);
+        eventNotifications.sendNotifyEventChanged(EventNotifications.ChangeType.Modify, sessionUser, existingEvent);
 
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event successfully updated", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return GenericResponseResult.ok("Event successfully updated.", response);
+    }
+
+    private void performEventUpdate(EventEntity updateEvent, EventEntity existingEvent) {
+        if ((updateEvent.getName() != null) && !updateEvent.getName().isEmpty()) {
+            existingEvent.setName(updateEvent.getName());
+        }
+        if ((updateEvent.getDescription() != null) && !updateEvent.getDescription().isEmpty()) {
+            existingEvent.setDescription(updateEvent.getDescription());
+        }
+        if (updateEvent.getPhoto() != null) {
+            try {
+                events.updateEventImage(existingEvent, updateEvent.getPhoto());
+            }
+            catch (Exception ex) {
+                LOGGER.warn("*** Event image could not be updated, reason: " + ex.getMessage());
+            }
+        }
+        if (updateEvent.getEventStart() > 0L) {
+            existingEvent.setEventStart(updateEvent.getEventStart());
+        }
+        existingEvent.setIsPublic(updateEvent.getIsPublic());
+        existingEvent.setRepeatWeekDays(updateEvent.getRepeatWeekDays());
+        existingEvent.setRepeatDayTime(updateEvent.getRepeatDayTime());
+        existingEvent.setVotingTimeBegin(updateEvent.getVotingTimeBegin());
+
+        events.updateEvent(existingEvent);
     }
 
     /**
      * Delete an event with given ID. The event will be marked as deleted, so it can be
      * purged later.
-     * 
-     * @param id        Event ID
-     * @param request   HTTP request
-     * @return          JSON response
      */
     @DELETE
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+    @ApiOperation(value = "Delete an event")
+    public GenericResponseResult<EventId> remove(@PathParam("id") Long id, @Context HttpServletRequest request) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        EventId response = new EventId(id.toString());
+
         EventEntity event = entities.find(EventEntity.class, id);
-        jsonresponse.add("id", id.toString());
         if (event == null) {
             LOGGER.warn("*** User was attempting to delete non-existing event!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to find user for deletion.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Failed to find user for deletion.", response);
         }
 
-        // check if the event owner or a user with higher privilege is trying to remove the event
-        if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
-            LOGGER.warn("*** User was attempting to remove an event without proper privilege!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+        if (!users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
+            LOGGER.warn("*** User was attempting to delete an event without proper privilege!");
+            return GenericResponseResult.forbidden("Failed to delete event, insufficient privilege.", response);
         }
 
-        // notify all event members about its removal, this must happen before we mark the event as deleted!
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
-        notifications.sendNotifyEventChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event);
+        eventNotifications.sendNotifyEventChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event);
 
         try {
             events.markEventAsDeleted(event);
         }
         catch (Exception ex) {
             LOGGER.warn("*** Could not mark event as deleted, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to delete event.", ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            return GenericResponseResult.internalError("Failed to delete event.", response);
         }
 
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event successfully deleted", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return GenericResponseResult.ok("Event successfully deleted", response);
     }
 
     /**
      * Find an event with given ID.
-     * 
-     * @param id        Event ID
-     * @param request   HTTP request
-     * @return          JSON response
      */
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
+    @ApiOperation(value = "Find an event")
+    public GenericResponseResult<EventInfo> find(@PathParam("id") Long id, @Context HttpServletRequest request) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        EventInfo response = new EventInfo();
+        response.setId(id.toString());
+
         EventEntity event = entities.find(EventEntity.class, id);
         if ((event == null) || !event.getStatus().getIsActive()) {
-            JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-            jsonresponse.add("id", id.toString());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Event was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Event was not found.", response);
         }
 
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        JsonObjectBuilder exportedevent = events.exportUserEventJSON(event, sessionuser, connections);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event was found.", ResponseResults.CODE_OK, exportedevent.build().toString());
+        boolean privilegedUser = users.checkUserRoles(sessionUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+        boolean doExport = (privilegedUser || event.getIsPublic() || events.getUserIsEventOwnerOrMember(sessionUser, event));
+        if (!doExport) {
+            return GenericResponseResult.unauthorized("Missing privilege for accessing the event.", response);
+        }
+
+        return GenericResponseResult.ok("Event was found.", events.exportEvent(event));
     }
 
     /**
      * Get all events.
-     * 
-     * @param request       HTTP request
-     * @return              JSON response
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String findAllEvents(@Context HttpServletRequest request) {
-        List<EventEntity> foundevents = entities.findAll(EventEntity.class);
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        JsonArrayBuilder exportedevents = events.exportUserEventsJSON(foundevents, sessionuser, connections);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of events", ResponseResults.CODE_OK, exportedevents.build().toString());
+    @ApiOperation(value = "Find all events accessible by user")
+    public GenericResponseResult<List<EventInfo>> findAllEvents(@Context HttpServletRequest request) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        List<EventEntity> foundEvents = entities.findAll(EventEntity.class);
+
+        return createEventsResponse(sessionUser, foundEvents);
     }
 
     /**
      * Get events in given range.
-     * 
-     * @param from          Range begin
-     * @param to            Range end
-     * @param request       HTTP request
-     * @return              JSON response
      */
     @GET
     @Path("{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
-        List<EventEntity> foundevents = entities.findRange(EventEntity.class, from, to);
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        JsonArrayBuilder exportedevents = events.exportUserEventsJSON(foundevents, sessionuser, connections);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "List of events", ResponseResults.CODE_OK, exportedevents.build().toString());
+    @ApiOperation(value = "Find all events accessible by user in given range")
+    public GenericResponseResult<List<EventInfo>> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to, @Context HttpServletRequest request) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+        List<EventEntity> foundEvents = entities.findRange(EventEntity.class, from, to);
+
+        return createEventsResponse(sessionUser, foundEvents);
+    }
+
+    @NotNull
+    private GenericResponseResult<List<EventInfo>> createEventsResponse(UserEntity sessionUser, List<EventEntity> foundEvents) {
+        boolean privilegedUser = users.checkUserRoles(sessionUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+        List<EventInfo> exportedEvents = new ArrayList<>();
+        foundEvents.stream()
+                .filter(event -> (event.getStatus().getIsActive() && (privilegedUser || event.getIsPublic() || events.getUserIsEventOwnerOrMember(sessionUser, event))))
+                .forEach(event -> exportedEvents.add(events.exportEvent(event)));
+
+        return GenericResponseResult.ok("List of events", exportedEvents);
     }
 
     /**
      * Get the total count of events.
-     * 
-     * @return JSON response
      */
     @GET
     @Path("count")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String countREST() {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        // NOTE the final event count is the count of EventEntity entries in database minus the count of events to be purged
-        AppInfoEntity appinfo = appInfos.getAppInfoEntity();
-        Long eventpurges = appinfo.getEventCountPurge();
-        jsonresponse.add("count", entities.getCount(EventEntity.class) - eventpurges);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Count of events", ResponseResults.CODE_OK, jsonresponse.build().toString());
+    @ApiOperation(value = "Get the count of events")
+    public GenericResponseResult<EventCount> count() {
+        AppInfoEntity appInfo = appInfos.getAppInfoEntity();
+        EventCount count = new EventCount(entities.getCount(EventEntity.class) - appInfo.getEventCountPurge());
+        return GenericResponseResult.ok("Count of users", count);
     }
 
     /**
      * Add a member to given event.
-     * 
-     * @param eventId      Event ID
-     * @param memberId     Member ID
-     * @param request      HTTP request
-     * @return             JSON response
      */
     @PUT
     @Path("addmember/{eventId}/{memberId}")
@@ -404,8 +356,7 @@ public class EventRestService {
         }
 
         // notify all event members about a new member
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
-        notifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Add, AuthorityConfig.getInstance().getSessionUser(request), event, memberId);
+        eventNotifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Add, AuthorityConfig.getInstance().getSessionUser(request), event, memberId);
 
         events.createEventJoiningMail(event, user2add);
 
@@ -466,8 +417,7 @@ public class EventRestService {
         }
 
         // notify all event members about removing a member
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
-        notifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event, memberId);
+        eventNotifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event, memberId);
 
         events.createEventLeavingMail(event, user2remove);
 
@@ -504,8 +454,7 @@ public class EventRestService {
 
         Notification notification = JsonbBuilder.create().fromJson(notificationJson, Notification.class);
 
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
-        notifications.notifyEventMembers(AuthorityConfig.getInstance().getSessionUser(request), event, notification);
+        eventNotifications.notifyEventMembers(AuthorityConfig.getInstance().getSessionUser(request), event, notification);
 
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event members were notified.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }
@@ -618,8 +567,7 @@ public class EventRestService {
         }
 
         // notify all event members about the location change
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
-        notifications.sendNotifyLocationChanged(changetype, AuthorityConfig.getInstance().getSessionUser(request), event, location.getId());
+        eventNotifications.sendNotifyLocationChanged(changetype, AuthorityConfig.getInstance().getSessionUser(request), event, location.getId());
 
         //! NOTE on successful entity location creation the new ID is sent back by results.data field.
         jsonresponse.add("eventId", event.getId().toString());
@@ -681,8 +629,7 @@ public class EventRestService {
         }
 
         // notify all event members about removing a location
-        EventNotifications notifications = new EventNotifications(notifyUsersEvent, notifyUserRelativesEvent);
-        notifications.sendNotifyLocationChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event, locationId);
+        eventNotifications.sendNotifyLocationChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event, locationId);
 
         return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Location was succssfully removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
     }

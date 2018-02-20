@@ -5,20 +5,20 @@
  * License: MIT License (MIT), read the LICENSE text in
  *          main directory for more details.
  */
-package net.m4e.app.user.rest.comm;
+package net.m4e.app.event.rest.comm;
 
 /**
  * @author boto
- * Date of creation January 23, 2018
+ * Date of creation February 20, 2018
  */
-public class CreateUser {
-    private final String id;
+public class EventCount {
+    private final long count;
 
-    public CreateUser(final String id) {
-        this.id = id;
+    public EventCount(final long count) {
+        this.count = count;
     }
 
-    public String getId() {
-        return id;
+    public long getCount() {
+        return count;
     }
 }

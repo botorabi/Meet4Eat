@@ -41,6 +41,7 @@ public class UserEntityCreator {
         user.setDateLastLogin(USER_DATE_LAST_LOGIN);
 
         StatusEntity status = new StatusEntity();
+        status.setEnabled(true);
         status.setId(USER_STATUS_ID);
         status.setDateCreation(USER_DATE_CREATION);
         status.setIdOwner(user.getId());

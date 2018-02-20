@@ -10,6 +10,7 @@ package net.m4e.app.event.business;
 
 import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
+import net.m4e.app.event.rest.comm.EventCmd;
 import net.m4e.app.mailbox.business.*;
 import net.m4e.app.resources.*;
 import net.m4e.app.user.business.*;
@@ -35,9 +36,6 @@ import java.util.*;
 @ApplicationScoped
 public class Events {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Users users;
@@ -50,6 +48,7 @@ public class Events {
 
     private final DocumentPool docPool;
 
+    private final ConnectedClients connectedClients;
 
     /**
      * Default constructor needed by the container.
@@ -60,6 +59,7 @@ public class Events {
         appInfos = null;
         mails = null;
         docPool = null;
+        connectedClients = null;
     }
 
     /**
@@ -70,12 +70,14 @@ public class Events {
                   @NotNull Users users,
                   @NotNull AppInfos appInfos,
                   @NotNull Mails mails,
-                  @NotNull DocumentPool docPool) {
+                  @NotNull DocumentPool docPool,
+                  @NotNull ConnectedClients connectedClients) {
         this.entities = entities;
         this.users = users;
         this.appInfos = appInfos;
         this.mails = mails;
         this.docPool = docPool;
+        this.connectedClients = connectedClients;
     }
 
     /**
@@ -88,16 +90,16 @@ public class Events {
      */
     public EventEntity createNewEvent(EventEntity inputEntity, Long creatorID) throws Exception {
         // setup the new entity
-        EventEntity newevent = new EventEntity();
-        newevent.setName(inputEntity.getName());
-        newevent.setDescription(inputEntity.getDescription());
-        newevent.setEventStart(inputEntity.getEventStart());
-        newevent.setRepeatWeekDays(inputEntity.getRepeatWeekDays());
-        newevent.setRepeatDayTime(inputEntity.getRepeatDayTime());
-        newevent.setVotingTimeBegin(inputEntity.getVotingTimeBegin());
+        EventEntity newEvent = new EventEntity();
+        newEvent.setName(inputEntity.getName());
+        newEvent.setDescription(inputEntity.getDescription());
+        newEvent.setEventStart(inputEntity.getEventStart());
+        newEvent.setRepeatWeekDays(inputEntity.getRepeatWeekDays());
+        newEvent.setRepeatDayTime(inputEntity.getRepeatDayTime());
+        newEvent.setVotingTimeBegin(inputEntity.getVotingTimeBegin());
 
         if (inputEntity.getPhoto() != null) {
-            updateEventImage(newevent, inputEntity.getPhoto());
+            updateEventImage(newEvent, inputEntity.getPhoto());
         }
 
         // setup the status
@@ -107,11 +109,11 @@ public class Events {
         Date now = new Date();
         status.setDateCreation(now.getTime());
         status.setDateLastUpdate(now.getTime());
-        newevent.setStatus(status);
+        newEvent.setStatus(status);
 
-        createEventEntity(newevent);
+        createEventEntity(newEvent);
 
-        return newevent;
+        return newEvent;
     }
 
     /**
@@ -177,7 +179,7 @@ public class Events {
         if ((event == null) || !event.getStatus().getIsActive()){
             return null;
         }
-        // go throuh the event locations and check if the given locationId is found among the event locations and is active
+        // go through the event locations and check if the given locationId is found among the event locations and is active
         EventLocationEntity loc = null;
         if (event.getLocations() != null) {
             for(EventLocationEntity l: event.getLocations()) {
@@ -395,28 +397,28 @@ public class Events {
      * @param member    Member who left the event
      */
     public void createEventLeavingMail(EventEntity event, UserEntity member) {
-        MailEntity mailuser = new MailEntity();
-        mailuser.setSenderId(0L);
-        mailuser.setReceiverId(member.getId());
-        mailuser.setReceiverName(member.getName());
-        mailuser.setSendDate((new Date()).getTime());
-        mailuser.setSubject("You have left an event");
-        mailuser.setContent("Hi " + member.getName() + ",\n\nwe wanted to confirm that you have left the event '" +
+        MailEntity mailUser = new MailEntity();
+        mailUser.setSenderId(0L);
+        mailUser.setReceiverId(member.getId());
+        mailUser.setReceiverName(member.getName());
+        mailUser.setSendDate((new Date()).getTime());
+        mailUser.setSubject("You have left an event");
+        mailUser.setContent("Hi " + member.getName() + ",\n\nwe wanted to confirm that you have left the event '" +
                                 event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
 
-        UserEntity ownerentity = entities.find(UserEntity.class, event.getStatus().getIdOwner());
+        UserEntity ownerEntity = entities.find(UserEntity.class, event.getStatus().getIdOwner());
 
-        MailEntity mailowner = new MailEntity();
-        mailowner.setSenderId(0L);
-        mailowner.setReceiverId(ownerentity.getId());
-        mailowner.setReceiverName(ownerentity.getName());
-        mailowner.setSendDate((new Date()).getTime());
-        mailowner.setSubject("A member has left your event");
-        mailowner.setContent("Hi " + ownerentity.getName() + ",\n\nwe wanted to let you know that member '" + member.getName() + "' has left your event '" +
+        MailEntity mailOwner = new MailEntity();
+        mailOwner.setSenderId(0L);
+        mailOwner.setReceiverId(ownerEntity.getId());
+        mailOwner.setReceiverName(ownerEntity.getName());
+        mailOwner.setSendDate((new Date()).getTime());
+        mailOwner.setSubject("A member has left your event");
+        mailOwner.setContent("Hi " + ownerEntity.getName() + ",\n\nwe wanted to let you know that member '" + member.getName() + "' has left your event '" +
                                 event.getName() + "'.\n\nBest Regards\nMeet4Eat Team\n");
         try {
-            mails.createMail(mailuser);
-            mails.createMail(mailowner);
+            mails.createMail(mailUser);
+            mails.createMail(mailOwner);
         }
         catch (Exception ex) {
             LOGGER.warn("*** could not create mail, reason: " + ex.getLocalizedMessage());
@@ -424,191 +426,34 @@ public class Events {
     }
 
     /**
-     * Given an event entity, export the necessary fields into a JSON object.
-     * 
-     * @param entity        Event entity to export
-     * @param connections   Real-time user connections
-     * @return              A JSON object containing builder the proper entity fields
-     */
-    public JsonObjectBuilder exportEventJSON(EventEntity entity, ConnectedClients connections) {
-        JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
-            .add("name", (entity.getName() != null) ? entity.getName() : "")
-            .add("description", (entity.getDescription() != null) ? entity.getDescription(): "")
-            .add("public", entity.getIsPublic())
-            .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString(): "")
-            .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag(): "")
-            .add("eventStart", (entity.getEventStart() != null) ? entity.getEventStart(): 0)
-            .add("repeatWeekDays", (entity.getRepeatWeekDays() != null) ? entity.getRepeatWeekDays(): 0)
-            .add("repeatDayTime", (entity.getRepeatDayTime() != null) ? entity.getRepeatDayTime(): 0)
-            .add("votingTimeBegin", (entity.getVotingTimeBegin() != null) ? entity.getVotingTimeBegin(): 0);
-
-        JsonArrayBuilder members = Json.createArrayBuilder();
-        if (entity.getMembers() != null) {
-            entity.getMembers()
-                .stream()
-                .filter((mem) -> (mem.getStatus().getIsActive()))
-                .map((mem) -> {
-                    JsonObjectBuilder member = Json.createObjectBuilder();
-                    member.add("id", mem.getId().toString())
-                          .add("name", (mem.getName() != null) ? mem.getName() : "")
-                          .add("photoId", (mem.getPhoto() != null) ? mem.getPhoto().getId().toString(): "")
-                          .add("photoETag", (mem.getPhoto() != null) ? mem.getPhoto().getETag() : "");
-                    // set the online status
-                    boolean online = (connections.getConnectedUser(mem.getId()) != null);
-                    member.add("status", online ? "online" : "offline");
-                    return member;
-                })
-                .forEach((memobj) -> {
-                    members.add(memobj);
-                });
-        }
-        json.add("members", members);
-
-        JsonArrayBuilder locations = Json.createArrayBuilder();
-        if (entity.getLocations() != null) {
-            entity.getLocations()
-                .stream()
-                .filter((location) -> (location.getStatus().getIsActive()))
-                .map((location) -> {
-                    JsonObjectBuilder loc = Json.createObjectBuilder();
-                    loc.add("id", location.getId().toString())
-                       .add("name", (location.getName() != null) ? location.getName() : "")
-                       .add("description", (location.getDescription() != null) ? location.getDescription() : "")
-                       .add("photoId", (location.getPhoto() != null) ? location.getPhoto().getId().toString(): "")
-                       .add("photoETag", (location.getPhoto() != null) ? location.getPhoto().getETag(): "");
-                    return loc;
-                })
-                .forEach((loc) -> {
-                    locations.add( loc );
-                });
-        }
-        json.add("locations", locations);
-
-        String     ownername, ownerphotoetag;
-        Long       ownerphotoid;
-        Long       ownerid   = entity.getStatus().getIdOwner();
-        UserEntity owner     = users.findUser(ownerid);
-        boolean    owneronline;
-        if ((owner == null) || !owner.getStatus().getIsActive()) {
-            owneronline = false;
-            ownerid = 0L;
-            ownername = "";
-            ownerphotoid = 0L;
-            ownerphotoetag = "";
-        }
-        else {
-            ownername = owner.getName();
-            ownerphotoid = (owner.getPhoto() != null) ? owner.getPhoto().getId() : 0L;
-            ownerphotoetag = (owner.getPhoto() != null) ? owner.getPhoto().getETag(): "";
-            owneronline = (connections.getConnectedUser(owner.getId()) != null);
-        }
-        json.add("ownerId", (ownerid > 0)? ownerid.toString() : "")
-            .add("ownerName", ownername)
-            .add("ownerPhotoId", (ownerphotoid > 0)? ownerphotoid.toString() : "")
-            .add("ownerPhotoETag", ownerphotoetag)
-            .add("status", owneronline ? "online" : "offline");
-        return json;
-    }
-
-    /**
-     * Given a JSON string, import the necessary fields and create an event entity.
-     * 
+     * Create an event entity out of given data.
+     *
      * NOTE: Event members and locations are not imported by this method.
-     * 
-     * @param jsonString  JSON string representing an event entity
-     * @return            Event entity or null if the JSON string was not appropriate
+     *
+     * @param eventCmd    Data representing an event entity
+     * @return            Event entity
      */
-    public EventEntity importEventJSON(String jsonString) {
-        if (jsonString == null) {
-            return null;
+    public EventEntity importEvent(@NotNull EventCmd eventCmd) {
+        EventEntity eventEntity = new EventEntity();
+        eventEntity.setName(eventCmd.getName());
+        eventEntity.setDescription(eventCmd.getDescription());
+        eventEntity.setIsPublic(eventCmd.getIsPublic());
+        eventEntity.setEventStart(eventCmd.getEventStart());
+        eventEntity.setRepeatWeekDays(eventCmd.getRepeatWeekDays());
+        eventEntity.setRepeatDayTime(eventCmd.getRepeatDayTime());
+        eventEntity.setVotingTimeBegin(eventCmd.getVotingTimeBegin());
+
+        if (eventCmd.getPhoto() != null) {
+            eventEntity.setPhoto(PhotoCreator.createPhoto(eventCmd.getPhoto().getBytes()));
         }
 
-        String name, description, photo;
-        Long eventstart, repeatweekdays, repeatdaytime, votingbegin;
-        boolean ispublic;
-        try {
-            JsonReader jreader = Json.createReader(new StringReader(jsonString));
-            JsonObject jobject = jreader.readObject();
-
-            name           = jobject.getString("name", null);
-            description    = jobject.getString("description", null);
-            ispublic       = jobject.getBoolean("public", false);
-            photo          = jobject.getString("photo", null);
-            eventstart     = new Long(jobject.getInt("eventStart", 0));
-            repeatweekdays = new Long(jobject.getInt("repeatWeekDays", 0));
-            repeatdaytime  = new Long(jobject.getInt("repeatDayTime", 0));
-            votingbegin    = new Long(jobject.getInt("votingTimeBegin", 0));
-        }
-        catch(Exception ex) {
-            LOGGER.warn("Could not setup user entity out of given JSON string, reason: " + ex.getLocalizedMessage());
-            return null;
-        }
-
-        EventEntity entity = new EventEntity();
-        if (name != null) {
-            entity.setName(Strings.limitStringLen(name, 32));
-        }
-        if (description != null) {
-            entity.setDescription(Strings.limitStringLen(description, 1000));
-        }
-        if (eventstart > 0L) {
-            entity.setEventStart(eventstart);
-        }
-        entity.setIsPublic(ispublic);
-        entity.setRepeatWeekDays(repeatweekdays);
-        entity.setRepeatDayTime(repeatdaytime);
-        entity.setVotingTimeBegin(votingbegin);
-
-        if (photo != null) {
-            entity.setPhoto(PhotoCreator.createPhoto(photo.getBytes()));
-        }
-
-        return entity;
+        return eventEntity;
     }
 
     /**
-     * Export the given event if it is public, or it belongs to given user, or
-     * the user is a member of event.
-     * If the user has admin role then the event is exported.
-     * 
-     * @param event         Events used for filtering the user relevant events from
-     * @param user          User
-     * @param connections   Real-time user connections
-     * @return              All user relevant events in JSON format
+     * Export the given event.
      */
-    public JsonObjectBuilder exportUserEventJSON(EventEntity event, UserEntity user, ConnectedClients connections) {
-        boolean           privuser  = users.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
-        JsonObjectBuilder json      = Json.createObjectBuilder();
-        boolean           doexp     = event.getStatus().getIsActive()&& 
-                                      (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event));
-
-        if (!doexp) {
-            return json;
-        }
-        return exportEventJSON(event, connections);
+    public EventInfo exportEvent(EventEntity event) {
+        return EventInfo.fromEventEntity(event, connectedClients, users);
     }
-
-    /**
-     * Export all public events and those associated (owner or member) to given user to JSON.
-     * If the user has admin role then all events are exported.
-     * 
-     * @param events        Events used for filtering the user relevant events from
-     * @param user          User
-     * @param connections   Real-time user connections
-     * @return              All user relevant events in JSON format
-     */
-    public JsonArrayBuilder exportUserEventsJSON(List<EventEntity> events, UserEntity user, ConnectedClients connections) {
-        //! NOTE: Although we could make use of method exportUserEventJSON here, we don't in the sake of performance!
-        boolean          privuser  = users.checkUserRoles(user, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
-        JsonArrayBuilder allevents = Json.createArrayBuilder();
-        events.stream()
-            .filter((event) -> (event.getStatus().getIsActive() && (privuser || event.getIsPublic() || getUserIsEventOwnerOrMember(user, event))))
-            .forEach((event) -> {
-                allevents.add(exportEventJSON(event, connections));
-            });
-
-        return allevents;
-    }
-
 }
