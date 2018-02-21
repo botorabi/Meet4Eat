@@ -7,6 +7,7 @@
  */
 package net.m4e.app.event.rest;
 
+import com.sun.tools.javah.Gen;
 import io.swagger.annotations.*;
 import net.m4e.app.auth.*;
 import net.m4e.app.event.business.*;
@@ -164,7 +165,7 @@ public class EventRestService {
         return GenericResponseResult.ok("Event successfully updated.", response);
     }
 
-    private void performEventUpdate(EventEntity updateEvent, EventEntity existingEvent) {
+    protected void performEventUpdate(EventEntity updateEvent, EventEntity existingEvent) {
         if ((updateEvent.getName() != null) && !updateEvent.getName().isEmpty()) {
             existingEvent.setName(updateEvent.getName());
         }
@@ -214,13 +215,13 @@ public class EventRestService {
             return GenericResponseResult.forbidden("Failed to delete event, insufficient privilege.", response);
         }
 
-        eventNotifications.sendNotifyEventChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event);
+        eventNotifications.sendNotifyEventChanged(EventNotifications.ChangeType.Remove, sessionUser, event);
 
         try {
             events.markEventAsDeleted(event);
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not mark event as deleted, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not mark event as deleted, reason: " + ex.getMessage());
             return GenericResponseResult.internalError("Failed to delete event.", response);
         }
 
@@ -284,7 +285,7 @@ public class EventRestService {
     }
 
     @NotNull
-    private GenericResponseResult<List<EventInfo>> createEventsResponse(UserEntity sessionUser, List<EventEntity> foundEvents) {
+    protected GenericResponseResult<List<EventInfo>> createEventsResponse(UserEntity sessionUser, List<EventEntity> foundEvents) {
         boolean privilegedUser = users.checkUserRoles(sessionUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
         List<EventInfo> exportedEvents = new ArrayList<>();
         foundEvents.stream()
@@ -315,322 +316,302 @@ public class EventRestService {
     @Path("addmember/{eventId}/{memberId}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String addMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+    @ApiOperation(value = "Add a member to an events")
+    public GenericResponseResult<AddRemoveEventMember> addMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
         if ((eventId == null) || (memberId == null)) {
             LOGGER.error("*** Cannot add member to event, no valid inputs!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return GenericResponseResult.notAcceptable("Failed to add member to event, invalid input.");
         }
 
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
 
-        jsonresponse.add("eventId", eventId.toString());
-        jsonresponse.add("memberId", memberId.toString());
+        AddRemoveEventMember response = new AddRemoveEventMember(eventId.toString(), memberId.toString());
 
-        // check if both, member and event exist
-        UserEntity  user2add = users.findUser(memberId);
+        return checkAndAddMember(eventId, memberId, sessionUser, response);
+    }
+
+    @NotNull
+    protected GenericResponseResult<AddRemoveEventMember> checkAndAddMember(final Long eventId, final Long memberId, final UserEntity sessionUser, AddRemoveEventMember response) {
+        UserEntity  userToAdd = users.findUser(memberId);
         EventEntity event = entities.find(EventEntity.class, eventId);
-        if ((user2add == null) || !user2add.getStatus().getIsActive()) {
-            user2add = null;
+        if ((userToAdd == null) || !userToAdd.getStatus().getIsActive()) {
+            userToAdd = null;
         }
-        if ((event == null) || !event.getStatus().getIsActive()) {
+        else if ((event == null) || !event.getStatus().getIsActive()) {
             event = null;
         }
-        if ((event == null) || (user2add == null)) {
+        if ((event == null) || (userToAdd == null)) {
             LOGGER.warn("*** Cannot add member to event: non-existing member or event!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Failed to add member to event, invalid user or event ID.", response);
         }
 
-        // check if the event owner or a user with higher privilege is trying to modify the event
-        if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to modify (add member) an event without proper privilege!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+            return GenericResponseResult.forbidden("Failed to add member to event, insufficient privilege.", response);
         }
 
         try {
-            events.addMember(event, user2add);
+            events.addMember(event, userToAdd);
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not add member to event, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add member to event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            LOGGER.warn("*** Could not add member to event, reason: {}", ex.getMessage());
+            return GenericResponseResult.notAcceptable("Failed to add member to event. Reason: " + ex.getMessage(), response);
         }
 
-        // notify all event members about a new member
-        eventNotifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Add, AuthorityConfig.getInstance().getSessionUser(request), event, memberId);
+        eventNotifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Add, sessionUser, event, memberId);
 
-        events.createEventJoiningMail(event, user2add);
+        events.createEventJoiningMail(event, userToAdd);
 
-        jsonresponse.add("memberName", user2add.getName());
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Member was added to event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return GenericResponseResult.ok("Member was added to event.", response);
     }
 
     /**
      * Remove a member from given event.
-     * 
-     * @param eventId      Event ID
-     * @param memberId     Member ID
-     * @param request      HTTP request
-     * @return             JSON response
      */
     @PUT
     @Path("removemember/{eventId}/{memberId}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String removeMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+    @ApiOperation(value = "Remove a member from an events")
+    public GenericResponseResult<AddRemoveEventMember> removeMember(@PathParam("eventId") Long eventId, @PathParam("memberId") Long memberId, @Context HttpServletRequest request) {
         if ((eventId == null) || (memberId == null)) {
             LOGGER.error("*** Cannot remove member from event, no valid inputs!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return GenericResponseResult.notAcceptable("Failed to remove member from event, invalid input.");
         }
 
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
 
-        jsonresponse.add("eventId", eventId.toString());
-        jsonresponse.add("memberId", memberId.toString());
+        AddRemoveEventMember response = new AddRemoveEventMember(eventId.toString(), memberId.toString());
 
-        // check if both, member and event exist
-        UserEntity  user2remove = users.findUser(memberId);
+        return checkAndRemoveMember(eventId, memberId, sessionUser, response);
+    }
+
+    @NotNull
+    protected GenericResponseResult<AddRemoveEventMember> checkAndRemoveMember(final Long eventId, final Long memberId, final UserEntity sessionUser, AddRemoveEventMember response) {
+        UserEntity userToRemove = users.findUser(memberId);
         EventEntity event = entities.find(EventEntity.class, eventId);
-        if ((user2remove == null) || !user2remove.getStatus().getIsActive()) {
-            user2remove = null;
+        if ((userToRemove == null) || !userToRemove.getStatus().getIsActive()) {
+            userToRemove = null;
         }
-        if ((event == null) || !event.getStatus().getIsActive()) {
+        else if ((event == null) || !event.getStatus().getIsActive()) {
             event = null;
         }
-        if ((event == null) || (user2remove == null)) {
+        if ((event == null) || (userToRemove == null)) {
             LOGGER.warn("*** Cannot remove member from event: non-existing member or event!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Failed to remove member from event.", response);
         }
 
         // check if the member himself, event owner, or a user with higher privilege is trying to modify the event
-        if ((!Objects.equals(memberId, sessionuser.getId())) && !users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if ((!Objects.equals(memberId, sessionUser.getId())) && !users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to modify (remove member) an event without proper privilege!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+            return GenericResponseResult.forbidden("Failed to remove member from event, insufficient privilege.", response);
         }
 
         try {
-            events.removeMember(event, user2remove);
+            events.removeMember(event, userToRemove);
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not remove member from event, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove member from event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            LOGGER.warn("*** Could not remove member from event, reason: {}", ex.getMessage());
+            return GenericResponseResult.notAcceptable("Failed to remove member from event. Reason: " + ex.getMessage(), response);
         }
 
-        // notify all event members about removing a member
-        eventNotifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event, memberId);
+        eventNotifications.sendNotifyMemberChanged(EventNotifications.ChangeType.Remove, sessionUser, event, memberId);
 
-        events.createEventLeavingMail(event, user2remove);
+        events.createEventLeavingMail(event, userToRemove);
 
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Member was removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return GenericResponseResult.ok("Member was removed from event.", response);
     }
 
     /**
-     * Notify all event members. This service can be used e.g. for buzzing all members.
-     * 
-     * @param eventId           Event ID
-     * @param notificationJson  Notification content
-     * @param request           HTTP request
-     * @return                  JSON response
+     * Send a notification to all event members. This service method is only meant to be used by an admin.
      */
     @POST
     @Path("notifyMembers/{eventId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String notifyMembers(@PathParam("eventId") Long eventId, String notificationJson, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+    @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.USER_ROLE_ADMIN})
+    @ApiOperation(value = "Send a notification to all event members")
+    public GenericResponseResult<EventId> notifyMembers(@PathParam("eventId") Long eventId, String notificationJson, @Context HttpServletRequest request) {
         if (eventId == null) {
             LOGGER.error("*** Cannot notify event members, no valid inputs!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to notify event members, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return GenericResponseResult.notAcceptable("Failed to notify event members, invalid input.");
         }
 
-        jsonresponse.add("eventId", eventId.toString());
+        EventId response = new EventId(eventId.toString());
 
         EventEntity event = entities.find(EventEntity.class, eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
             LOGGER.warn("*** Cannot notify event members: non-existing event!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed notify event members, invalid event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Failed notify event members, invalid event.", response);
         }
 
         Notification notification = JsonbBuilder.create().fromJson(notificationJson, Notification.class);
 
         eventNotifications.notifyEventMembers(AuthorityConfig.getInstance().getSessionUser(request), event, notification);
 
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Event members were notified.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        return GenericResponseResult.ok("Event members were notified.", response);
     }
 
     /**
      * Get the location with given ID.
-     * 
-     * @param eventId      Event ID
-     * @param locationId   Location ID
-     * @param request      HTTP request
-     * @return             JSON response
      */
     @GET
     @Path("location/{eventId}/{locationId}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String getLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+    @ApiOperation(value = "Get event location")
+    public GenericResponseResult<EventLocation> getLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
         if ((eventId == null) || (locationId == null)) {
             LOGGER.error("*** Cannot get event location, no valid inputs!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return GenericResponseResult.notAcceptable("Failed to get event location, invalid input.");
         }
 
         EventEntity event = events.findEvent(eventId);
         if (event == null) {
             LOGGER.warn("*** Cannot get location: non-existing event!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location. Event does not exist.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Failed to get event location. Event does not exist.");
         }
 
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        // check if the event owner or a user with higher privilege is trying to modify the event locations
-        if (!event.getIsPublic() && !users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+
+        if (!event.getIsPublic() && !users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to get event information without proper privilege!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+            return GenericResponseResult.forbidden("Failed to get event location, insufficient privilege.");
         }
 
         EventLocationEntity location = eventLocations.findLocation(locationId);
         if ((location == null) || !location.getStatus().getIsActive()) {
             LOGGER.warn("*** Failed to get event location, it does not exist!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to get event location. Location does not exist.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Failed to get event location. Location does not exist.");
         }
 
-        JsonObjectBuilder exportedlocation = eventLocations.exportEventLocationJSON(location);
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Location was successfully added/update.", ResponseResults.CODE_OK, exportedlocation.build().toString());
+        return GenericResponseResult.ok("Location was successfully added/update.", eventLocations.exportEventLocation(location));
     }
 
     /**
      * Add a new or update an existing location. If the input has an id field, then
      * an update attempt for that location entity with given ID is performed. If no id
      * field exists, then a new location entity is created and added to given event.
-     * 
-     * @param eventId      Event ID
-     * @param eventLocationCmd Location to add in JSON format
-     * @param request      HTTP request
-     * @return             JSON response
      */
     @PUT
     @Path("putlocation/{eventId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String putLocation(@PathParam("eventId") Long eventId, EventLocationCmd eventLocationCmd, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+    @ApiOperation(value = "Add a new location to an event")
+    public GenericResponseResult<AddRemoveEventLocation> putLocation(@PathParam("eventId") Long eventId, EventLocationCmd eventLocationCmd, @Context HttpServletRequest request) {
         if ((eventId == null) || (eventLocationCmd == null)) {
             LOGGER.error("*** Cannot add location to event, no valid inputs!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update event location, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return GenericResponseResult.notAcceptable("Failed to add/update event location, invalid input.");
         }
 
         EventEntity event = events.findEvent(eventId);
         if (event == null) {
             LOGGER.warn("*** Cannot add location to event: non-existing event!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update member from event.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Failed to add/update member from event.");
         }
 
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
-        // check if the event owner or a user with higher privilege is trying to modify the event locations
-        if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
+
+        if (!users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to update an event without proper privilege!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location to event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+            return GenericResponseResult.forbidden("Failed to add/update location to event, insufficient privilege.");
         }
 
-        EventLocationEntity inputlocation;
+        EventLocationEntity inputLocation;
         try {
-            inputlocation = validator.validateLocationInput(eventLocationCmd, event);
+            inputLocation = validator.validateLocationInput(eventLocationCmd, event);
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not add location, validation failed, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, ex.getLocalizedMessage(), ResponseResults.CODE_BAD_REQUEST, jsonresponse.build().toString());
+            LOGGER.warn("*** Could not add location, validation failed, reason: {}", ex.getMessage());
+            return GenericResponseResult.badRequest(ex.getMessage());
         }
 
-        EventNotifications.ChangeType changetype;
+        return checkAndAddLocation(inputLocation, sessionUser, event);
+    }
+
+    @NotNull
+    protected GenericResponseResult<AddRemoveEventLocation> checkAndAddLocation(final EventLocationEntity inputLocation, final UserEntity sessionUser, EventEntity event) {
+        EventNotifications.ChangeType changeType;
         EventLocationEntity location;
         try {
             // add new location or update an existing one?
-            if ((inputlocation.getId() != null) && (inputlocation.getId() > 0)) {
-                location = eventLocations.updateLocation(inputlocation);   
-                changetype = EventNotifications.ChangeType.Add;
+            if ((inputLocation.getId() != null) && (inputLocation.getId() > 0)) {
+                location = eventLocations.updateLocation(inputLocation);
+                changeType = EventNotifications.ChangeType.Add;
             }
             else {
-                if (!validator.validateUniqueLocationName(event, inputlocation.getName())) {
+                if (!validator.validateUniqueLocationName(event, inputLocation.getName())) {
                     throw new Exception("There is already a location with this name.");
                 }
-                location = eventLocations.createNewLocation(event, inputlocation, sessionuser.getId());
-                changetype = EventNotifications.ChangeType.Modify;
+                location = eventLocations.createNewLocation(inputLocation, sessionUser.getId(), event);
+                changeType = EventNotifications.ChangeType.Modify;
             }
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not add/update location, reaon: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to add/update location. " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
-        }
+            LOGGER.warn("*** Could not add/update location, reason: {}", ex.getMessage());
+            return GenericResponseResult.notAcceptable("Failed to add/update location. Reason: " + ex.getMessage());
+         }
 
-        // notify all event members about the location change
-        eventNotifications.sendNotifyLocationChanged(changetype, AuthorityConfig.getInstance().getSessionUser(request), event, location.getId());
+        eventNotifications.sendNotifyLocationChanged(changeType, sessionUser, event, location.getId());
 
-        //! NOTE on successful entity location creation the new ID is sent back by results.data field.
-        jsonresponse.add("eventId", event.getId().toString());
-        jsonresponse.add("locationId", location.getId().toString());
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Location was successfully added/update.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        AddRemoveEventLocation response = new AddRemoveEventLocation(event.getId().toString(), location.getId().toString());
+
+        return GenericResponseResult.ok("Location was successfully added/update.", response);
     }
 
     /**
      * Remove a location from given event.
-     * 
-     * @param eventId      Event ID
-     * @param locationId   Location ID
-     * @param request      HTTP request
-     * @return             JSON response
      */
     @POST
     @Path("removelocation/{eventId}/{locationId}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String removeLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
+    @ApiOperation(value = "Remove a location from an event")
+    public GenericResponseResult<AddRemoveEventLocation>  removeLocation(@PathParam("eventId") Long eventId, @PathParam("locationId") Long locationId, @Context HttpServletRequest request) {
         if ((eventId == null) || (locationId == null)) {
             LOGGER.error("*** Cannot remove location from event, no valid inputs!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event, invalid input.", ResponseResults.CODE_NOT_ACCEPTABLE, jsonresponse.build().toString());
+            return GenericResponseResult.notAcceptable("Failed to remove location from event, invalid input.");
         }
 
-        UserEntity sessionuser = AuthorityConfig.getInstance().getSessionUser(request);
+        UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
 
-        jsonresponse.add("eventId", eventId.toString());
-        jsonresponse.add("locationId", locationId.toString());
+        return checkAndRemoveLocation(eventId, locationId, sessionUser);
+    }
 
-        // check if both, member and event exist
-        EventLocationEntity loc2remove = eventLocations.findLocation(locationId);
+    @NotNull
+    protected GenericResponseResult<AddRemoveEventLocation> checkAndRemoveLocation(final Long eventId, final Long locationId, final UserEntity sessionUser) {
+        EventLocationEntity locationToRemove = eventLocations.findLocation(locationId);
         EventEntity event = entities.find(EventEntity.class, eventId);
 
-        if ((loc2remove == null) || !loc2remove.getStatus().getIsActive()) {
-            loc2remove = null;
+        if ((locationToRemove == null) || !locationToRemove.getStatus().getIsActive()) {
+            locationToRemove = null;
         }
-        if ((event == null) || !event.getStatus().getIsActive()) {
+        else if ((event == null) || !event.getStatus().getIsActive()) {
             event = null;
         }
-        if ((event == null) || (loc2remove == null)) {
+        if ((event == null) || (locationToRemove == null)) {
             LOGGER.warn("*** Cannot remove location from event: non-existing location or event!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event. Event or location does not exist.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Failed to remove location from event. Event or location does not exist.");
         }
 
-        // check if the event owner or a user with higher privilege is trying to modify the event
-        if (!users.userIsOwnerOrAdmin(sessionuser, event.getStatus())) {
+        if (!users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to modify (remove location) an event without proper privilege!");
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event, insufficient privilege.", ResponseResults.CODE_FORBIDDEN, jsonresponse.build().toString());
+            return GenericResponseResult.forbidden("Failed to remove location from event, insufficient privilege.");
         }
 
         try {
-            eventLocations.markLocationAsDeleted(event, loc2remove);
+            eventLocations.markLocationAsDeleted(event, locationToRemove);
         }
         catch (Exception ex) {
-            LOGGER.warn("*** Could not remove location from event, reason: " + ex.getLocalizedMessage());
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Failed to remove location from event. Reason: " + ex.getLocalizedMessage(), ResponseResults.CODE_INTERNAL_SRV_ERROR, jsonresponse.build().toString());
+            LOGGER.warn("*** Could not remove location from event, reason: {}", ex.getMessage());
+            return GenericResponseResult.notAcceptable("Failed to remove location from event. Reason: " + ex.getMessage());
         }
 
-        // notify all event members about removing a location
-        eventNotifications.sendNotifyLocationChanged(EventNotifications.ChangeType.Remove, AuthorityConfig.getInstance().getSessionUser(request), event, locationId);
+        eventNotifications.sendNotifyLocationChanged(EventNotifications.ChangeType.Remove, sessionUser, event, locationId);
 
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Location was succssfully removed from event.", ResponseResults.CODE_OK, jsonresponse.build().toString());
+        AddRemoveEventLocation response = new AddRemoveEventLocation(event.getId().toString(), locationId.toString());
+
+        return GenericResponseResult.ok("Location was successfully removed from event.", response);
     }
 }

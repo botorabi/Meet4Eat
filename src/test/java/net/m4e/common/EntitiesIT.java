@@ -219,7 +219,7 @@ public class EntitiesIT {
      * Test of create method, of class Entities.
      */
     @Test
-    public void testCreate() {
+    public void create() {
         assertFalse(persistEntity(null));
 
         AppInfoEntity entity = new AppInfoEntity();
@@ -243,7 +243,7 @@ public class EntitiesIT {
      * Test of delete method, of class Entities.
      */
     @Test
-    public void testDelete() {
+    public void delete() {
         assertFalse(deleteEntity(null));
 
         AppInfoEntity entity = new AppInfoEntity();
@@ -262,7 +262,7 @@ public class EntitiesIT {
      * Test of update method, of class Entities.
      */
     @Test
-    public void testUpdate() {
+    public void update() {
         assertFalse(updateEntity(null));
 
         AppInfoEntity entity = new AppInfoEntity();
@@ -285,7 +285,7 @@ public class EntitiesIT {
      * Test of getCount method, of class Entities.
      */
     @Test
-    public void testGetCount() {
+    public void getCount() {
         AppInfoEntity entity = new AppInfoEntity();
         persistEntity(entity);
         assertNotEquals("Invalid entity", entity.getId(), null);
@@ -300,7 +300,7 @@ public class EntitiesIT {
      * Test of findAll method, of class Entities.
      */
     @Test
-    public void testFindAll() {
+    public void findAll() {
         AppInfoEntity entity = new AppInfoEntity();
         persistEntity(entity);
         assertNotEquals("Invalid entity", entity.getId(), null);
@@ -315,7 +315,7 @@ public class EntitiesIT {
      * Test of findRange method, of class Entities.
      */
     @Test
-    public void testFindRange() {
+    public void findRange() {
         AppInfoEntity entity1 = new AppInfoEntity();
         persistEntity(entity1);
         assertNotEquals("Invalid entity", entity1.getId(), null);
@@ -334,7 +334,7 @@ public class EntitiesIT {
      * Test of find method, of class Entities.
      */
     @Test
-    public void testFind() {
+    public void find() {
         AppInfoEntity entity = new AppInfoEntity();
         persistEntity(entity);
         assertNotEquals("Invalid entity", entity.getId(), null);
@@ -349,7 +349,7 @@ public class EntitiesIT {
      * Test of findByField method, of class Entities.
      */
     @Test
-    public void testFindByField() {
+    public void findByField() {
         final String FIELD_VALUE = "VERSION";
         final String FIELD_VALUE_WRONG = "VERZ";
 
@@ -370,7 +370,7 @@ public class EntitiesIT {
      * Test of search method, of class Entities.
      */
     @Test
-    public void testSearch() {
+    public void search() {
         final String FIELD_VALUE = "$$$TestTheSearch";
         final String KEYWORD = "$$$Test";
         final String KEYWORD_NO_HIT = "this leads to no hit";
@@ -386,7 +386,7 @@ public class EntitiesIT {
         List result = entities.searchForString(AppInfoEntity.class, KEYWORD, searchFields, 10);
         assertTrue("Search failed: " + result.size(), result.size() > 0);
 
-        result = entities.searchForString(AppInfoEntity.class, KEYWORD_NO_HIT, new ArrayList(), 10);
+        result = entities.searchForString(AppInfoEntity.class, KEYWORD_NO_HIT, new ArrayList<>(), 10);
         assertTrue("Could not handle empty search fields", result.size() == 0);
 
         result = entities.searchForString(AppInfoEntity.class, KEYWORD_NO_HIT, searchFields, 10);

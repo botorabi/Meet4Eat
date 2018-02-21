@@ -163,6 +163,7 @@ class EventRestServiceTest {
             event2.setId(2000L);
 
             Mockito.when(entities.findAll(eq(EventEntity.class))).thenReturn(Arrays.asList(event1, event2));
+            Mockito.when(entities.findRange(eq(EventEntity.class), anyInt(), anyInt())).thenReturn(Arrays.asList(event1, event2));
         }
 
         @Test
@@ -170,6 +171,15 @@ class EventRestServiceTest {
             Mockito.doReturn(true).when(events).getUserIsEventOwnerOrMember(anyObject(), anyObject());
 
             GenericResponseResult<List<EventInfo>> response = restService.findAllEvents(request);
+
+            ResponseAssertions.assertThat(response.getData()).hasSize(2);
+        }
+
+        @Test
+        void findRange() {
+            Mockito.doReturn(true).when(events).getUserIsEventOwnerOrMember(anyObject(), anyObject());
+
+            GenericResponseResult<List<EventInfo>> response = restService.findRange(1, 2, request);
 
             ResponseAssertions.assertThat(response.getData()).hasSize(2);
         }

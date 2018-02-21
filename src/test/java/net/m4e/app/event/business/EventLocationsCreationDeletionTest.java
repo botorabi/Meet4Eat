@@ -32,7 +32,7 @@ public class EventLocationsCreationDeletionTest extends EventLocationsTestBase {
     @Test
     void createNewLocation() {
         EventLocationEntity locationEntity = EventLocationEntityCreator.create();
-        eventLocations.createNewLocation(new EventEntity(), locationEntity, 0L);
+        eventLocations.createNewLocation(locationEntity, 0L, new EventEntity());
     }
 
     @Test

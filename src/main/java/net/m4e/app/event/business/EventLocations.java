@@ -61,11 +61,6 @@ public class EventLocations {
 
     /**
      * Create an instance of Events.
-     * 
-     * @param entityManager The entity manager
-     * @param entities      The Entities instance
-     * @param appInfos      The AppInfos instance
-     * @param docPool       The document pool instance
      */
     @Inject
     public EventLocations(@NotNull EntityManager entityManager,
@@ -81,12 +76,12 @@ public class EventLocations {
     /**
      * Create a new event location in database.
      * 
-     * @param event        The event getting the new location
      * @param inputEntity  Entity containing the new location data
      * @param creatorID    Creator ID
+     * @param event        The event getting the new location
      * @return             A new created event location entity if successfully, otherwise null.
      */
-    public EventLocationEntity createNewLocation(EventEntity event, EventLocationEntity inputEntity, Long creatorID) {
+    public EventLocationEntity createNewLocation(final EventLocationEntity inputEntity, final Long creatorID, EventEntity event) {
         // setup the new entity
         EventLocationEntity newLocation = new EventLocationEntity();
         newLocation.setName(inputEntity.getName());
@@ -152,7 +147,7 @@ public class EventLocations {
      */
     public void updateEventLocationImage(EventLocationEntity location, DocumentEntity image) {
         // make sure that the resource URL is set
-        image.setResourceURL("/EventLoction/Image");
+        image.setResourceURL("/EventLocation/Image");
         docPool.updatePhoto(location, image);
     }
 
@@ -327,23 +322,6 @@ public class EventLocations {
         }
 
         return entity;
-    }
-
-    /**
-     * Given an event location entity, export the necessary fields into a JSON object.
-     * 
-     * @param entity    Event location entity to export
-     * @return          A JSON object containing builder the proper entity fields
-     */
-    @Deprecated
-    public JsonObjectBuilder exportEventLocationJSON(EventLocationEntity entity) {
-        JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", (entity.getId() != null) ? entity.getId().toString() : "")
-            .add("name", (entity.getName() != null) ? entity.getName() : "")
-            .add("description", (entity.getDescription() != null) ? entity.getDescription(): "")
-            .add("photoId", (entity.getPhoto() != null) ? entity.getPhoto().getId().toString() : "")
-            .add("photoETag", (entity.getPhoto() != null) ? entity.getPhoto().getETag() : "");
-        return json;
     }
 
     /**
