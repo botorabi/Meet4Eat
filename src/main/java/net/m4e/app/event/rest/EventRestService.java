@@ -135,9 +135,9 @@ public class EventRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Modify an event")
-    public GenericResponseResult<EventId> edit(@PathParam("id") Long id, EventCmd eventCmd, @Context HttpServletRequest request) {
+    public GenericResponseResult<EventId> edit(@PathParam("id") Long eventId, EventCmd eventCmd, @Context HttpServletRequest request) {
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
-        EventId response = new EventId(id.toString());
+        EventId response = new EventId(eventId.toString());
 
         EventEntity updateEvent;
         try {
@@ -146,7 +146,7 @@ public class EventRestService {
             return GenericResponseResult.badRequest("Failed to update event, invalid input.", response);
         }
 
-        EventEntity existingEvent = entities.find(EventEntity.class, id);
+        EventEntity existingEvent = events.findEvent(eventId);
         if (existingEvent == null) {
             return GenericResponseResult.notFound("Failed to update event, event does not exist.", response);
         }
@@ -154,7 +154,7 @@ public class EventRestService {
         // check if the event owner or a user with higher privilege is trying to modify the event
         if (!users.userIsOwnerOrAdmin(sessionUser, existingEvent.getStatus())) {
             LOGGER.warn("*** User was attempting to update an event without proper privilege!");
-            return GenericResponseResult.forbidden("Failed to update event, insufficient privilege.", response);
+            return GenericResponseResult.unauthorized("Failed to update event, insufficient privilege.", response);
         }
 
         performEventUpdate(updateEvent, existingEvent);
@@ -165,7 +165,7 @@ public class EventRestService {
         return GenericResponseResult.ok("Event successfully updated.", response);
     }
 
-    protected void performEventUpdate(EventEntity updateEvent, EventEntity existingEvent) {
+    protected void performEventUpdate(final EventEntity updateEvent, EventEntity existingEvent) {
         if ((updateEvent.getName() != null) && !updateEvent.getName().isEmpty()) {
             existingEvent.setName(updateEvent.getName());
         }
@@ -173,12 +173,7 @@ public class EventRestService {
             existingEvent.setDescription(updateEvent.getDescription());
         }
         if (updateEvent.getPhoto() != null) {
-            try {
-                events.updateEventImage(existingEvent, updateEvent.getPhoto());
-            }
-            catch (Exception ex) {
-                LOGGER.warn("*** Event image could not be updated, reason: " + ex.getMessage());
-            }
+            events.updateEventImage(existingEvent, updateEvent.getPhoto());
         }
         if (updateEvent.getEventStart() > 0L) {
             existingEvent.setEventStart(updateEvent.getEventStart());
@@ -204,15 +199,15 @@ public class EventRestService {
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
         EventId response = new EventId(id.toString());
 
-        EventEntity event = entities.find(EventEntity.class, id);
-        if (event == null) {
+        EventEntity event = events.findEvent(id);
+        if ((event == null) || !event.getStatus().isEnabled()) {
             LOGGER.warn("*** User was attempting to delete non-existing event!");
-            return GenericResponseResult.notFound("Failed to find user for deletion.", response);
+            return GenericResponseResult.notFound("Failed to find event for deletion.", response);
         }
 
         if (!users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to delete an event without proper privilege!");
-            return GenericResponseResult.forbidden("Failed to delete event, insufficient privilege.", response);
+            return GenericResponseResult.unauthorized("Failed to delete event, insufficient privilege.", response);
         }
 
         eventNotifications.sendNotifyEventChanged(EventNotifications.ChangeType.Remove, sessionUser, event);
@@ -236,12 +231,12 @@ public class EventRestService {
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
     @ApiOperation(value = "Find an event")
-    public GenericResponseResult<EventInfo> find(@PathParam("id") Long id, @Context HttpServletRequest request) {
+    public GenericResponseResult<EventInfo> find(@PathParam("id") Long eventId, @Context HttpServletRequest request) {
         UserEntity sessionUser = AuthorityConfig.getInstance().getSessionUser(request);
         EventInfo response = new EventInfo();
-        response.setId(id.toString());
+        response.setId(eventId.toString());
 
-        EventEntity event = entities.find(EventEntity.class, id);
+        EventEntity event = events.findEvent(eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
             return GenericResponseResult.notFound("Event was not found.", response);
         }
@@ -333,7 +328,7 @@ public class EventRestService {
     @NotNull
     protected GenericResponseResult<AddRemoveEventMember> checkAndAddMember(final Long eventId, final Long memberId, final UserEntity sessionUser, AddRemoveEventMember response) {
         UserEntity  userToAdd = users.findUser(memberId);
-        EventEntity event = entities.find(EventEntity.class, eventId);
+        EventEntity event = events.findEvent(eventId);
         if ((userToAdd == null) || !userToAdd.getStatus().getIsActive()) {
             userToAdd = null;
         }
@@ -347,7 +342,7 @@ public class EventRestService {
 
         if (!users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to modify (add member) an event without proper privilege!");
-            return GenericResponseResult.forbidden("Failed to add member to event, insufficient privilege.", response);
+            return GenericResponseResult.unauthorized("Failed to add member to event, insufficient privilege.", response);
         }
 
         try {
@@ -389,7 +384,7 @@ public class EventRestService {
     @NotNull
     protected GenericResponseResult<AddRemoveEventMember> checkAndRemoveMember(final Long eventId, final Long memberId, final UserEntity sessionUser, AddRemoveEventMember response) {
         UserEntity userToRemove = users.findUser(memberId);
-        EventEntity event = entities.find(EventEntity.class, eventId);
+        EventEntity event = events.findEvent(eventId);
         if ((userToRemove == null) || !userToRemove.getStatus().getIsActive()) {
             userToRemove = null;
         }
@@ -404,7 +399,7 @@ public class EventRestService {
         // check if the member himself, event owner, or a user with higher privilege is trying to modify the event
         if ((!Objects.equals(memberId, sessionUser.getId())) && !users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to modify (remove member) an event without proper privilege!");
-            return GenericResponseResult.forbidden("Failed to remove member from event, insufficient privilege.", response);
+            return GenericResponseResult.unauthorized("Failed to remove member from event, insufficient privilege.", response);
         }
 
         try {
@@ -439,7 +434,7 @@ public class EventRestService {
 
         EventId response = new EventId(eventId.toString());
 
-        EventEntity event = entities.find(EventEntity.class, eventId);
+        EventEntity event = events.findEvent(eventId);
         if ((event == null) || !event.getStatus().getIsActive()) {
             LOGGER.warn("*** Cannot notify event members: non-existing event!");
             return GenericResponseResult.notFound("Failed notify event members, invalid event.", response);
@@ -476,7 +471,7 @@ public class EventRestService {
 
         if (!event.getIsPublic() && !users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to get event information without proper privilege!");
-            return GenericResponseResult.forbidden("Failed to get event location, insufficient privilege.");
+            return GenericResponseResult.unauthorized("Failed to get event location, insufficient privilege.");
         }
 
         EventLocationEntity location = eventLocations.findLocation(locationId);
@@ -506,7 +501,7 @@ public class EventRestService {
         }
 
         EventEntity event = events.findEvent(eventId);
-        if (event == null) {
+        if ((event == null) || !event.getStatus().isEnabled()) {
             LOGGER.warn("*** Cannot add location to event: non-existing event!");
             return GenericResponseResult.notFound("Failed to add/update member from event.");
         }
@@ -515,7 +510,7 @@ public class EventRestService {
 
         if (!users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to update an event without proper privilege!");
-            return GenericResponseResult.forbidden("Failed to add/update location to event, insufficient privilege.");
+            return GenericResponseResult.unauthorized("Failed to add/update location to event, insufficient privilege.");
         }
 
         EventLocationEntity inputLocation;
@@ -582,7 +577,7 @@ public class EventRestService {
     @NotNull
     protected GenericResponseResult<AddRemoveEventLocation> checkAndRemoveLocation(final Long eventId, final Long locationId, final UserEntity sessionUser) {
         EventLocationEntity locationToRemove = eventLocations.findLocation(locationId);
-        EventEntity event = entities.find(EventEntity.class, eventId);
+        EventEntity event = events.findEvent(eventId);
 
         if ((locationToRemove == null) || !locationToRemove.getStatus().getIsActive()) {
             locationToRemove = null;
@@ -597,7 +592,7 @@ public class EventRestService {
 
         if (!users.userIsOwnerOrAdmin(sessionUser, event.getStatus())) {
             LOGGER.warn("*** User was attempting to modify (remove location) an event without proper privilege!");
-            return GenericResponseResult.forbidden("Failed to remove location from event, insufficient privilege.");
+            return GenericResponseResult.unauthorized("Failed to remove location from event, insufficient privilege.");
         }
 
         try {

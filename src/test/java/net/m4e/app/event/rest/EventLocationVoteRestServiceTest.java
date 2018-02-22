@@ -9,13 +9,11 @@ package net.m4e.app.event.rest;
 
 import net.m4e.app.event.business.*;
 import net.m4e.app.event.rest.comm.LocationVote;
-import net.m4e.app.notification.NotifyUsersEvent;
 import net.m4e.common.*;
 import net.m4e.tests.ResponseAssertions;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 
-import javax.enterprise.event.Event;
 import javax.servlet.http.*;
 import java.util.List;
 

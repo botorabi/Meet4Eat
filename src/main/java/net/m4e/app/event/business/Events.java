@@ -8,7 +8,6 @@
 
 package net.m4e.app.event.business;
 
-import net.m4e.app.auth.AuthRole;
 import net.m4e.app.communication.ConnectedClients;
 import net.m4e.app.event.rest.comm.EventCmd;
 import net.m4e.app.mailbox.business.*;
@@ -21,8 +20,6 @@ import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.*;
-import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 
@@ -46,7 +43,7 @@ public class Events {
 
     private final Mails mails;
 
-    private final DocumentPool docPool;
+    private final DocumentPool documentPool;
 
     private final ConnectedClients connectedClients;
 
@@ -58,7 +55,7 @@ public class Events {
         users = null;
         appInfos = null;
         mails = null;
-        docPool = null;
+        documentPool = null;
         connectedClients = null;
     }
 
@@ -70,13 +67,13 @@ public class Events {
                   @NotNull Users users,
                   @NotNull AppInfos appInfos,
                   @NotNull Mails mails,
-                  @NotNull DocumentPool docPool,
+                  @NotNull DocumentPool documentPool,
                   @NotNull ConnectedClients connectedClients) {
         this.entities = entities;
         this.users = users;
         this.appInfos = appInfos;
         this.mails = mails;
-        this.docPool = docPool;
+        this.documentPool = documentPool;
         this.connectedClients = connectedClients;
     }
 
@@ -197,12 +194,11 @@ public class Events {
      * 
      * @param event         Event entity
      * @param image         Image to set to given event
-     * @throws Exception  Throws an exception if something goes wrong.
      */
-    public void updateEventImage(EventEntity event, DocumentEntity image) throws Exception {
+    public void updateEventImage(EventEntity event, DocumentEntity image) {
         // make sure that the resource URL is set
         image.setResourceURL("/Event/Image");
-        docPool.updatePhoto(event, image);
+        documentPool.updatePhoto(event, image);
     }
 
     /**
