@@ -19,6 +19,7 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 
 
 /**
@@ -145,6 +146,21 @@ public class EventLocationsCreationDeletionTest extends EventLocationsTestBase {
             eventLocations.markLocationAsDeleted(eventEntity, eventLocationEntity);
 
             assertThat(eventLocationEntity.getStatus().getIsDeleted()).isTrue();
+        }
+
+        @Test
+        void getEventLocationsMarkedAsDeleted() {
+            EventLocationEntity entity = EventLocationEntityCreator.create();
+
+            EventLocationEntity deletedEntity1 = EventLocationEntityCreator.create();
+            deletedEntity1.getStatus().setDateDeletion(Instant.now().toEpochMilli());
+
+            EventLocationEntity deletedEntity2 = EventLocationEntityCreator.create();
+            deletedEntity2.getStatus().setDateDeletion(Instant.now().toEpochMilli());
+
+            Mockito.doReturn(Arrays.asList(entity, deletedEntity1, deletedEntity2)).when(entities).findAll(eq(EventLocationEntity.class));
+
+            assertThat(eventLocations.getLocationsMarkedAsDeleted()).hasSize(2);
         }
     }
 }

@@ -299,6 +299,24 @@ public class EventLocations {
     }
 
     /**
+     * Get all event locations which are marked as deleted.
+     *
+     * @return List of event locations which are marked as deleted.
+     */
+    public List<EventLocationEntity> getLocationsMarkedAsDeleted() {
+        List<EventLocationEntity> locations = entities.findAll(EventLocationEntity.class);
+        List<EventLocationEntity> deletedLocations = new ArrayList<>();
+        // speed up the task by using parallel processing
+        locations.stream().parallel()
+                .filter((loc) -> (loc.getStatus().getIsDeleted()))
+                .forEach((loc) -> {
+                    deletedLocations.add(loc);
+                });
+
+        return deletedLocations;
+    }
+
+    /**
      * Given an event location input data, import the necessary fields and create an event location entity.
      * 
      * @param locationCmd Event location data

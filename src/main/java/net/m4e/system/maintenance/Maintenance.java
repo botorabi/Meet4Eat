@@ -8,27 +8,19 @@
 
 package net.m4e.system.maintenance;
 
-import net.m4e.app.event.business.EventEntity;
-import net.m4e.app.event.business.EventLocationEntity;
-import net.m4e.app.event.business.Events;
+import net.m4e.app.event.business.*;
 import net.m4e.app.resources.DocumentPool;
-import net.m4e.app.user.business.UserEntity;
-import net.m4e.app.user.business.UserRegistrations;
-import net.m4e.app.user.business.Users;
+import net.m4e.app.user.business.*;
 import net.m4e.common.Entities;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.m4e.system.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -55,6 +47,8 @@ public class Maintenance {
 
     private final Events events;
 
+    private final EventLocations eventLocations;
+
     private final Entities entities;
 
     private final DocumentPool docPool;
@@ -68,6 +62,7 @@ public class Maintenance {
         userRegistration = null;
         users = null;
         events = null;
+        eventLocations = null;
         entities = null;
         docPool = null;
     }
@@ -75,7 +70,7 @@ public class Maintenance {
     /**
      * Create the maintenance instance.
      * 
-     * @param appInfos      The ppplication information instance
+     * @param appInfos      The application information instance
      * @param registration  The user registration instance
      * @param users         The Users instance
      * @param events        The Events instance
@@ -83,17 +78,19 @@ public class Maintenance {
      * @param docPool       The document pool instance
      */
     @Inject
-    public Maintenance(AppInfos appInfos,
-                       UserRegistrations registration,
-                       Users users,
-                       Events events,
-                       Entities entities,
-                       DocumentPool docPool) {
+    public Maintenance(@NotNull AppInfos appInfos,
+                       @NotNull UserRegistrations registration,
+                       @NotNull Users users,
+                       @NotNull Events events,
+                       @NotNull EventLocations eventLocations,
+                       @NotNull Entities entities,
+                       @NotNull DocumentPool docPool) {
 
         this.appInfos = appInfos;
         this.userRegistration = registration;
         this.users = users;
         this.events = events;
+        this.eventLocations = eventLocations;
         this.entities = entities;
         this.docPool = docPool;
     }
@@ -137,10 +134,10 @@ public class Maintenance {
      * @return Count of purged resources
      */
     public int purgeAllResources() {
-        int countpurges = purgeExpiredResources();
-        countpurges += purgeDeletedResources();
+        int countPurges = purgeExpiredResources();
+        countPurges += purgeDeletedResources();
         updateAppInfo();
-        return countpurges;
+        return countPurges;
     }
 
     /**
@@ -227,8 +224,8 @@ public class Maintenance {
 
         // update the purge counters
         int     purgeusers     = users.getMarkedAsDeletedUsers().size();
-        int     purgeevents    = events.getMarkedAsDeletedEvents().size();
-        int     purgeeventlocs = events.getMarkedAsDeletedEventLocations().size();
+        int     purgeevents    = events.getEventsMarkedAsDeleted().size();
+        int     purgeeventlocs = eventLocations.getLocationsMarkedAsDeleted().size();
 
         info.setEventCountPurge(new Long(purgeevents));
         info.setEventLocationCountPurge(new Long(purgeeventlocs));

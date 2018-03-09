@@ -110,14 +110,7 @@ public class EventRestService {
             return GenericResponseResult.badRequest(ex.getMessage());
         }
 
-        EventEntity newEvent;
-        try {
-            newEvent = events.createNewEvent(eventEntity, sessionUser.getId());
-        }
-        catch (Exception ex) {
-            LOGGER.warn("*** Could not create new event, reason: {}", ex.getMessage());
-            return GenericResponseResult.internalError("Failed to create new event.");
-        }
+        EventEntity newEvent = events.createNewEvent(eventEntity, sessionUser.getId());
 
         // notify all event members about its creation, usually only the event owner is the only member at this point
         eventNotifications.sendNotifyEventChanged(EventNotifications.ChangeType.Add, sessionUser, newEvent);

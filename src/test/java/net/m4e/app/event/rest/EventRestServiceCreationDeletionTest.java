@@ -45,20 +45,6 @@ class EventRestServiceCreationDeletionTest extends EventRestServiceTestBase {
         }
 
         @Test
-        void eventCreationFailure() throws Exception {
-            userMockUp.mockSomeUser();
-            mockSessionUser(userMockUp.mockAdminUser());
-
-            Mockito.doThrow(new Exception("Failure creating a new event")).when(events).createNewEvent(anyObject(), anyLong());
-
-            GenericResponseResult<EventId> response = restService.createEvent(createEventCmd(), request);
-
-            ResponseAssertions.assertThat(response)
-                    .hasStatusNotOk()
-                    .codeIsInternalError();
-        }
-
-        @Test
         void createEventSuccess() throws Exception {
             mockSessionUser(userMockUp.mockSomeUser());
             mockNewEventValidationSuccess();

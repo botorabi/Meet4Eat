@@ -83,9 +83,8 @@ public class Events {
      * @param inputEntity   Input data for new entity
      * @param creatorID     ID of creator
      * @return              New created entity
-     * @throws Exception    Throws exception if something went wrong.
      */
-    public EventEntity createNewEvent(EventEntity inputEntity, Long creatorID) throws Exception {
+    public EventEntity createNewEvent(EventEntity inputEntity, Long creatorID) {
         // setup the new entity
         EventEntity newEvent = new EventEntity();
         newEvent.setName(inputEntity.getName());
@@ -320,7 +319,7 @@ public class Events {
         // update the app stats
         AppInfoEntity appinfo = appInfos.getAppInfoEntity();
         if (appinfo == null) {
-            throw new Exception("Problem occured while retrieving AppInfo entity!");
+            throw new Exception("Problem occurred while retrieving AppInfo entity!");
         }
         appinfo.incrementEventCountPurge(1L);
         entities.update(appinfo);
@@ -331,35 +330,17 @@ public class Events {
      * 
      * @return List of events which are marked as deleted.
      */
-    public List<EventEntity> getMarkedAsDeletedEvents() {
+    public List<EventEntity> getEventsMarkedAsDeleted() {
         List<EventEntity> events = entities.findAll(EventEntity.class);
-        List<EventEntity> deletedevents = new ArrayList<>();
+        List<EventEntity> deletedEvents = new ArrayList<>();
         // speed up the task by using parallel processing
         events.stream().parallel()
             .filter((event) -> (event.getStatus().getIsDeleted()))
             .forEach((event) -> {
-                deletedevents.add(event);
+                deletedEvents.add(event);
             });
 
-        return deletedevents;
-    }
-
-    /**
-     * Get all event locations which are marked as deleted.
-     * 
-     * @return List of event locations which are marked as deleted.
-     */
-    public List<EventLocationEntity> getMarkedAsDeletedEventLocations() {
-        List<EventLocationEntity> eventlocs = entities.findAll(EventLocationEntity.class);
-        List<EventLocationEntity> deletedeventlocs = new ArrayList<>();
-        // speed up the task by using parallel processing
-        eventlocs.stream().parallel()
-            .filter((loc) -> (loc.getStatus().getIsDeleted()))
-            .forEach((loc) -> {
-                deletedeventlocs.add(loc);
-            });
-
-        return deletedeventlocs;
+        return deletedEvents;
     }
 
     /**

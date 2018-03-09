@@ -20,7 +20,7 @@ import static org.mockito.Matchers.*;
 
 
 /**
- * Base class for event related tests
+ * Base class for event location related tests
  *
  * @author boto
  * Date of creation February 14, 2018
