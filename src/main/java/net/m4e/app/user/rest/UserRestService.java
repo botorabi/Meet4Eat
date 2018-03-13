@@ -327,7 +327,7 @@ public class UserRestService {
                 users.updateUserImage(existingUser, updateEntity.getPhoto());
                 needsUpdate = true;
             } catch (RuntimeException ex) {
-                LOGGER.warn("*** User image could not be updated, reason: " + ex.getMessage());
+                LOGGER.warn("*** User image could not be updated, reason: {}", ex.getMessage());
             }
         }
 

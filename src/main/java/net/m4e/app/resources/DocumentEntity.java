@@ -213,14 +213,14 @@ public class DocumentEntity extends EntityBase implements Serializable {
     }
 
     /**
-     * Set document's etag.
+     * Set document's ETag.
      */
-    public void setDocumentETag(String etag) {
-        this.eTag = etag;
+    public void setETag(String eTag) {
+        this.eTag = eTag;
     }
 
     /**
-     * Update the hash (etag) string out of the document content. If the content is empty
+     * Update the hash (ETag) string out of the document content. If the content is empty
      * then the hash will set to an empty string.
      *
      * NOTE: Call this method whenever the content was changed.
@@ -240,29 +240,5 @@ public class DocumentEntity extends EntityBase implements Serializable {
      */
     public boolean getIsEmpty() {
         return content == null;
-    }
-
-    /**
-     * Export all fields into a JSON string
-     */
-    //! TODO move this method out  of the entity class
-    public String toJsonString() {
-        JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("id", getOrDefault(id.toString(), ""))
-            .add("name", getOrDefault(name, ""))
-            .add("type", getOrDefault(type, ""))
-            .add("content", (content == null) ? "" : new String(content))
-            .add("eTag", getOrDefault(eTag, ""))
-            .add("encoding", getOrDefault(encoding, ""));
-
-            return json.build().toString();
-    }
-
-    /**
-     * Get the given value, if it does not exit (i.e. null) then return a given default.
-     */
-    //! TODO move this method out  of the entity class
-    private <T> T getOrDefault(T value, T defaultValue) {
-        return value != null ? value : defaultValue;
     }
 }

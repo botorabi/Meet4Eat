@@ -66,4 +66,16 @@ class StringsTest {
     void checkMinMaxLength_longerThanMax() {
         assertThat(checkMinMaxLength("Test", 0, 3)).isFalse();
     }
+
+    @Test
+    void checkNullOrEmpty() {
+        String inputNull = null;
+        assertThat(nullOrEmpty(inputNull)).isTrue();
+
+        String inputEmpty = "";
+        assertThat(nullOrEmpty(inputEmpty)).isTrue();
+
+        String inputNonEmpty = "A String";
+        assertThat(nullOrEmpty(inputNonEmpty)).isFalse();
+    }
 }

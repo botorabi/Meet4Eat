@@ -21,18 +21,18 @@ import java.time.temporal.ChronoUnit;
  */
 public class EventEntityCreator {
 
-    public static Long EVENT_ID = 1000L;
-    public static String EVENT_NAME = "My Event";
-    public static String EVENT_DESCRIPTION = "Event description...";
-    public static boolean EVENT_IS_PUBLIC = false;
-    public static Long EVENT_STATUS_ID = 3000L;
-    public static Long EVENT_PHOTO_ID = 4000L;
-    public static String EVENT_PHOTO_ETAG = "PhotoETAG";
-    public static Long EVENT_DATE_CREATION = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
-    public static Long EVENT_START = 10L;
-    public static Long EVENT_REPEAT_WEEKDAYS = 7L;
-    public static Long EVENT_REPEAT_DAYTIME = 20L;
-    public static Long EVENT_VOTING_BEGIN = 30L;
+    public static final Long EVENT_ID = 1000L;
+    public static final String EVENT_NAME = "My Event";
+    public static final String EVENT_DESCRIPTION = "Event description...";
+    public static final boolean EVENT_IS_PUBLIC = false;
+    public static final Long EVENT_STATUS_ID = 3000L;
+    public static final Long EVENT_PHOTO_ID = 4000L;
+    public static final String EVENT_PHOTO_ETAG = "PhotoETAG";
+    public static final Long EVENT_DATE_CREATION = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
+    public static final Long EVENT_START = 10L;
+    public static final Long EVENT_REPEAT_WEEKDAYS = 7L;
+    public static final Long EVENT_REPEAT_DAYTIME = 20L;
+    public static final Long EVENT_VOTING_BEGIN = 30L;
 
     /**
      * Create an event entity with default data.
@@ -56,7 +56,7 @@ public class EventEntityCreator {
 
         DocumentEntity photo = new DocumentEntity();
         photo.setId(EVENT_PHOTO_ID);
-        photo.setDocumentETag(EVENT_PHOTO_ETAG);
+        photo.setETag(EVENT_PHOTO_ETAG);
         event.setPhoto(photo);
 
         return event;

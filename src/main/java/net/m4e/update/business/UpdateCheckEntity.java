@@ -6,10 +6,11 @@
  *          main directory for more details.
  */
 
-package net.m4e.update;
+package net.m4e.update.business;
 
 import net.m4e.common.EntityBase;
 
+import javax.json.bind.annotation.*;
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -130,14 +131,14 @@ public class UpdateCheckEntity extends EntityBase implements Serializable {
     /**
      * Get the operating system such as MSWin, MacOS, Linux
      */
-    public String getOS() {
+    public String getOs() {
         return os;
     }
 
     /**
      * Set the operating system.
      */
-    public void setOS(String os) {
+    public void setOs(String os) {
         this.os = os;
     }
 
@@ -201,14 +202,14 @@ public class UpdateCheckEntity extends EntityBase implements Serializable {
     /**
      * Is the update active?
      */
-    public boolean getIsActive() {
+    public boolean isActive() {
         return active;
     }
 
     /**
      * Activate/deactivate the update.
      */
-    public void setIsActive(boolean active) {
+    public void setActive(boolean active) {
         this.active = active;
     }
 }

@@ -8,21 +8,16 @@
 
 package net.m4e.app.resources;
 
+import io.swagger.annotations.*;
 import net.m4e.app.auth.AuthRole;
-import net.m4e.common.Entities;
-import net.m4e.common.ResponseResults;
+import net.m4e.common.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
 /**
  * REST services for Document entity operations
@@ -32,14 +27,15 @@ import javax.ws.rs.core.MediaType;
  */
 @Stateless
 @Path("/rest/docs")
-public class DocumentEntityFacadeREST {
+@Api(value = "Service for accessing documents")
+public class DocumentRestService {
 
     private final Entities entities;
 
     /**
      * EJB's default constructor
      */
-    protected DocumentEntityFacadeREST() {
+    protected DocumentRestService() {
         entities = null;
     }
 
@@ -48,7 +44,7 @@ public class DocumentEntityFacadeREST {
      * @param entities
      */
     @Inject
-    public DocumentEntityFacadeREST(Entities entities) {
+    public DocumentRestService(@NotNull Entities entities) {
         this.entities = entities;
     }
 
@@ -63,14 +59,13 @@ public class DocumentEntityFacadeREST {
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @net.m4e.app.auth.AuthRole(grantRoles={AuthRole.VIRT_ROLE_USER})
-    public String find(@PathParam("id") Long id, @Context HttpServletRequest request) {
-        JsonObjectBuilder jsonresponse = Json.createObjectBuilder();
-        jsonresponse.add("id", id.toString());
+    @ApiOperation(value = "Find the document with given ID")
+    public GenericResponseResult<DocumentInfo> find(@PathParam("id") Long id, @Context HttpServletRequest request) {
         DocumentEntity document = entities.find(DocumentEntity.class, id);
         if ((document == null) || !document.getStatus().getIsActive()) {
-            return ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK, "Document was not found.", ResponseResults.CODE_NOT_FOUND, jsonresponse.build().toString());
+            return GenericResponseResult.notFound("Document was not found.");
         }
 
-        return ResponseResults.toJSON(ResponseResults.STATUS_OK, "Document was found.", ResponseResults.CODE_OK, document.toJsonString());
+        return GenericResponseResult.ok("Document was found.", DocumentInfo.fromDocumentEntity(document));
     }
 }

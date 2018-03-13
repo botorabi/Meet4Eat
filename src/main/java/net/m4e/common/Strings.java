@@ -48,4 +48,14 @@ public class Strings {
         final int len = input.length();
         return (len >= minLen) && (len <= maxLen);
     }
+
+    /**
+     * Check if the given string is null or empty.
+     *
+     * @param input the input string
+     * @return true if the string is null or empty.
+     */
+    public static boolean nullOrEmpty(final String input) {
+        return input == null || input.isEmpty();
+    }
 }

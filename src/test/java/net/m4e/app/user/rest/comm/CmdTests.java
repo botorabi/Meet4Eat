@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 
 import javax.json.bind.*;
-
 import java.util.*;
 
 import static com.revinate.assertj.json.JsonPathAssert.assertThat;

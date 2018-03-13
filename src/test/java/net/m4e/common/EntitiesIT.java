@@ -70,7 +70,7 @@ public class EntitiesIT {
                 .addClass(net.m4e.app.user.business.UserPasswordResetEntity.class)
                 .addClass(net.m4e.app.user.business.UserProfileEntity.class)
                 .addClass(net.m4e.app.user.business.UserRegistrationEntity.class)
-                .addClass(net.m4e.update.UpdateCheckEntity.class)
+                .addClass(net.m4e.update.business.UpdateCheckEntity.class)
                 .addClass(net.m4e.common.EntityWithPhoto.class); // this is needed by some entities
                 */
                 .addClass(net.m4e.system.core.AppInfoEntity.class);

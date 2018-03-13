@@ -231,7 +231,7 @@ public class StatusEntity extends EntityBase implements Serializable {
     }
 
     /**
-     * Is the resource enabled? See method getIsActive.
+     * Is the resource enabled? See method isActive.
      */
     public boolean isEnabled() {
         return enabled;

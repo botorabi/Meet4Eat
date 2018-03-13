@@ -16,6 +16,10 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+/**
+ * @author boto
+ * Date of creation February 6, 2018
+ */
 public class UserEntityCreator {
 
     public static Long USER_ID = 1000L;
@@ -48,8 +52,11 @@ public class UserEntityCreator {
         user.setStatus(status);
 
         DocumentEntity photo = new DocumentEntity();
+        StatusEntity photoStatus = new StatusEntity();
+        photoStatus.setReferenceCount(1L);
+        photo.setStatus(photoStatus);
         photo.setId(USER_PHOTO_ID);
-        photo.setDocumentETag(USER_PHOTO_ETAG);
+        photo.setETag(USER_PHOTO_ETAG);
         user.setPhoto(photo);
 
         UserProfileEntity profile = new UserProfileEntity();

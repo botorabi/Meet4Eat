@@ -9,6 +9,7 @@
 package net.m4e.app.resources;
 
 import net.m4e.common.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -75,10 +76,10 @@ public class DocumentPool {
      * 
      * @param document   The document to release
      * @return           Return true if the document was successfully released from pool. Return false
-     *                    if the document was invalid or it was not found in pool.
+     *                    if the document was inactive or it was not referenced at least once.
      */
-    public boolean releasePoolDocument(DocumentEntity document) {
-        if ((document == null) || !document.getStatus().getIsActive()) {
+    public boolean releasePoolDocument(@NotNull DocumentEntity document) {
+        if (!document.getStatus().getIsActive()) {
             return false;
         }
         if (document.getStatus().getReferenceCount() < 1L) {
@@ -150,7 +151,7 @@ public class DocumentPool {
     private DocumentEntity findPoolDocument(String etag) {
         List<DocumentEntity> documents = entities.findByField(DocumentEntity.class, "eTag", etag);
         for (DocumentEntity doc: documents) {
-            if ((doc.getStatus() != null) && doc.getStatus().getIsActive() && Objects.equals(doc.getETag(), etag)) {
+            if ((doc.getStatus() != null) && doc.getStatus().getIsActive()) {
                 // update the document reference count
                 doc.getStatus().increaseRefCount();
                 doc.getStatus().setDateLastUpdate((new Date()).getTime());
@@ -178,11 +179,13 @@ public class DocumentPool {
      */
     public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto) {
         DocumentEntity img = getOrCreatePoolDocument(newPhoto.getETag());
-        // is the old photo the same as the new one?
+        // check if the old photo is the same as the new one
         if (!compareETag(entity.getPhoto(), img.getETag())) {
             // release the old photo
-            releasePoolDocument(entity.getPhoto());
-            // was the document an existing one?
+            if (entity.getPhoto() != null) {
+                releasePoolDocument(entity.getPhoto());
+            }
+            // was the document an existing one, or was it fresh created?
             if (img.getIsEmpty()) {
                 img.updateContent(newPhoto.getContent());
                 img.setType(DocumentEntity.TYPE_IMAGE);

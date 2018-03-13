@@ -26,10 +26,10 @@ public class EventInfo {
     private boolean isPublic;
     private String photoId;
     private String photoETag;
-    private long eventStart;
-    private long repeatWeekDays;
-    private long repeatDayTime;
-    private long votingTimeBegin;
+    private Long eventStart;
+    private Long repeatWeekDays;
+    private Long repeatDayTime;
+    private Long votingTimeBegin;
     private List<EventMember> members;
     private List<EventLocation> locations;
     private String ownerId;
@@ -65,19 +65,19 @@ public class EventInfo {
         return photoETag;
     }
 
-    public long getEventStart() {
+    public Long getEventStart() {
         return eventStart;
     }
 
-    public long getRepeatWeekDays() {
+    public Long getRepeatWeekDays() {
         return repeatWeekDays;
     }
 
-    public long getRepeatDayTime() {
+    public Long getRepeatDayTime() {
         return repeatDayTime;
     }
 
-    public long getVotingTimeBegin() {
+    public Long getVotingTimeBegin() {
         return votingTimeBegin;
     }
 
@@ -133,19 +133,19 @@ public class EventInfo {
         this.photoETag = photoETag;
     }
 
-    public void setEventStart(long eventStart) {
+    public void setEventStart(Long eventStart) {
         this.eventStart = eventStart;
     }
 
-    public void setRepeatWeekDays(long repeatWeekDays) {
+    public void setRepeatWeekDays(Long repeatWeekDays) {
         this.repeatWeekDays = repeatWeekDays;
     }
 
-    public void setRepeatDayTime(long repeatDayTime) {
+    public void setRepeatDayTime(Long repeatDayTime) {
         this.repeatDayTime = repeatDayTime;
     }
 
-    public void setVotingTimeBegin(long votingTimeBegin) {
+    public void setVotingTimeBegin(Long votingTimeBegin) {
         this.votingTimeBegin = votingTimeBegin;
     }
 

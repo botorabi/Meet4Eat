@@ -234,7 +234,7 @@ class UserRestServiceTest {
             UserEntity inactiveUser = UserEntityCreator.create();
             inactiveUser.getStatus().setEnabled(false);
 
-            Mockito.when(entities.searchForString(anyObject(), anyString(), anyList(), anyInt()))
+            Mockito.when(entities.searchForString(anyObject(), anyString(), anyListOf(String.class), anyInt()))
                     .thenReturn(Arrays.asList(user1, user2, inactiveUser));
         }
 
@@ -275,7 +275,7 @@ class UserRestServiceTest {
 
         @Test
         void noHitsOfAdmins() {
-            Mockito.when(users.checkUserRoles(anyObject(), anyList())).thenReturn(true);
+            Mockito.when(users.checkUserRoles(anyObject(), anyListOf(String.class))).thenReturn(true);
 
             GenericResponseResult<List<SearchHitUser>> response = restService.search("theusername");
 

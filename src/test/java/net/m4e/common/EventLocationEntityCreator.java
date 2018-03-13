@@ -46,7 +46,7 @@ public class EventLocationEntityCreator {
 
         DocumentEntity photo = new DocumentEntity();
         photo.setId(EVENT_LOCATION_PHOTO_ID);
-        photo.setDocumentETag(EVENT_LOCATION_PHOTO_ETAG);
+        photo.setETag(EVENT_LOCATION_PHOTO_ETAG);
         event.setPhoto(photo);
 
         return event;
