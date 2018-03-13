@@ -8,9 +8,6 @@
 package net.m4e.system.core;
 
 import io.swagger.jaxrs.config.BeanConfig;
-import net.m4e.app.event.rest.*;
-import net.m4e.app.resources.DocumentRestService;
-import net.m4e.update.rest.UpdateCheckRestService;
 
 import javax.ws.rs.core.Application;
 import java.util.Set;
@@ -25,10 +22,10 @@ import java.util.Set;
 public class AppStart extends Application {
 
     public AppStart() {
-        String appversion = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_APP_VERSION);
+        String appVersion = AppConfiguration.getInstance().getConfigValue(AppConfiguration.TOKEN_APP_VERSION);
 
         BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion(appversion);
+        beanConfig.setVersion(appVersion);
         beanConfig.setTitle("Meat4Eat");
         beanConfig.setSchemes(new String[] {"http", "https"});
         beanConfig.setHost("localhost:8080");
@@ -47,14 +44,14 @@ public class AppStart extends Application {
     }
 
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(EventRestService.class);
-        resources.add(EventLocationVoteRestService.class);
+        resources.add(net.m4e.app.event.rest.EventRestService.class);
+        resources.add(net.m4e.app.event.rest.EventLocationVoteRestService.class);
         resources.add(net.m4e.app.mailbox.rest.MailRestService.class);
-        resources.add(DocumentRestService.class);
+        resources.add(net.m4e.app.resources.DocumentRestService.class);
         resources.add(net.m4e.app.user.rest.UserAuthenticationRestService.class);
         resources.add(net.m4e.app.user.rest.UserRestService.class);
         resources.add(net.m4e.system.core.AppInfoEntityFacadeREST.class);
         resources.add(net.m4e.system.maintenance.MaintenanceFacadeREST.class);
-        resources.add(UpdateCheckRestService.class);
+        resources.add(net.m4e.update.rest.UpdateCheckRestService.class);
     }
 }
