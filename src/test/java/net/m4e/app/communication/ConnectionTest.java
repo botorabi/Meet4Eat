@@ -7,19 +7,13 @@
  */
 package net.m4e.app.communication;
 
-import java.util.Collections;
-import java.util.Map;
-
-import javax.websocket.DecodeException;
-import javax.websocket.EncodeException;
-
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import net.m4e.app.communication.Connection.JsonBEncoder;
-import net.m4e.app.communication.Connection.PacketMapDecoder;
+import com.jayway.jsonpath.*;
+import net.m4e.app.communication.Connection.*;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
+import javax.websocket.*;
+import java.util.*;
 
 import static com.revinate.assertj.json.JsonPathAssert.assertThat;
 

@@ -8,7 +8,7 @@
 
 package net.m4e.app.mailbox.business;
 
-import javax.json.bind.annotation.JsonbTransient;
+import javax.json.bind.annotation.*;
 import java.time.Instant;
 
 /**
@@ -66,6 +66,7 @@ public class Mail {
      * 
      * @param mailContent The mail entity
      */
+    @JsonbProperty("mailContent")
     public void setMailContent(MailEntity mailContent) {
         this.mailContent = mailContent;
     }
@@ -77,7 +78,7 @@ public class Mail {
      */
     @JsonbTransient
     public boolean isTrashed() {
-        return (trashDate == null) ? false : (trashDate.getEpochSecond() != 0);
+        return (trashDate != null) && (trashDate.getEpochSecond() != 0);
     }
 
     /**
@@ -95,6 +96,7 @@ public class Mail {
      * 
      * @param trashDate Date of trashing the mail
      */
+    @JsonbProperty("trashDate")
     public void setTrashDate(Instant trashDate) {
         this.trashDate = trashDate;
     }
@@ -113,6 +115,7 @@ public class Mail {
      * 
      * @param unread Pass false once the mail was read
      */
+    @JsonbProperty("unread")
     public void setUnread(boolean unread) {
         this.unread = unread;
     }

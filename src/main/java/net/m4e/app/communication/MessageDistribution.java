@@ -16,7 +16,7 @@ import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.websocket.Session;
 
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,12 +86,8 @@ public class MessageDistribution {
      * @param session   WebSocket session receiving the packet
      */
     private void distributeToChannelChat(Packet<Map<String,Object>> packet, Session session) {
-        //TODO: Merge with distributeToChannelEvent, distributeToChannelSystem
-        UserEntity user = connections.getUser(session);
-        ChannelChatEvent ev = new ChannelChatEvent();
-        ev.setSenderId(user.getId());
-        ev.setPacket(packet);
-        channelChatEvent.fireAsync(ev);
+        ChannelChatEvent event = new ChannelChatEvent();
+        channelChatEvent.fireAsync(distributeToChannel(event, packet, session));
     }
 
     /**
@@ -101,11 +97,8 @@ public class MessageDistribution {
      * @param session   WebSocket session receiving the packet
      */
     private void distributeToChannelEvent(Packet<Map<String,Object>> packet, Session session) {
-        UserEntity user = connections.getUser(session);
-        ChannelEventEvent ev = new ChannelEventEvent();
-        ev.setSenderId(user.getId());
-        ev.setPacket(packet);
-        channelEventEvent.fireAsync(ev);
+        ChannelEventEvent event = new ChannelEventEvent();
+        channelEventEvent.fireAsync(distributeToChannel(event, packet, session));
     }
 
     /**
@@ -114,14 +107,17 @@ public class MessageDistribution {
      * @param packet    Incoming event packet
      * @param session   WebSocket session receiving the packet
      */
-    private void distributeToChannelSystem(Packet<Map<String,Object>> packet, Session session) {
+    private void distributeToChannelSystem(Packet<Map<String, Object>> packet, Session session) {
+        ChannelEventSystem event = new ChannelEventSystem();
+        channelEventSystem.fireAsync(distributeToChannel(event, packet, session));
+    }
+
+    private <T extends ChannelEvent<Map<String, Object>>> T distributeToChannel(T event, Packet<Map<String, Object>> packet, Session session) {
         UserEntity user = connections.getUser(session);
-        ChannelEventSystem ev = new ChannelEventSystem();
-        ev.setSenderId(user.getId());
-        ev.setPacket(packet);
-        //TODO: Session only needed in this case?
-        ev.setSessionId(session.getId());
-        channelEventSystem.fireAsync(ev);
+        event.setSenderId(user.getId());
+        event.setPacket(packet);
+        event.setSessionId(session.getId());
+        return event;
     }
 
     /**

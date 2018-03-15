@@ -28,7 +28,7 @@ function Meet4EatUI() {
 	self._version              = "0.9.0";
 
 	self._m4eAppInfo           = {'clientVersion' : '0.0.0', 'serverVersion' : '0.0.0', 'viewVersion' : '0'};
-	self._m4eAuthUser          = {'auth': 'no', 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
+	self._m4eAuthUser          = {'auth': false, 'id' : 0, 'login': '', 'name' : '', 'roles' : [] };
 
 	self._m4eRESTAuth          = null;
 	self._m4eREST              = null;
@@ -384,7 +384,7 @@ function Meet4EatUI() {
 		self._m4eRESTAuth.getAuthState({
 			success: function(results, response) {
 				if (results.status === "ok") {
-					if (results.data.auth === "yes") {
+					if (results.data.auth) {
 						self._showElement('main_content', true);
 						self._showElement('main_login', false);
 						// get some info on logged-in user
@@ -392,7 +392,7 @@ function Meet4EatUI() {
 							self._m4eRESTUsers.find({
 								success: function(res, resp) {
 									if (res.status === "ok") {
-										self._m4eAuthUser.auth = 'yes';
+										self._m4eAuthUser.auth = true;
 										self._m4eAuthUser.login = res.data.login;
 										self._m4eAuthUser.name = res.data.name;
 										self._m4eAuthUser.id = res.data.id;

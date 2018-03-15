@@ -149,21 +149,31 @@ public class ResponseAssert<T> extends AbstractObjectAssert<ResponseAssert<T>, G
         return this;
     }
 
-    public ResponseAssert<T> is401() {
-        return isStatusCode(401);
+    public ResponseAssert<T> codeIsUnauthorized() {
+        return isStatusCode(GenericResponseResult.CODE_UNAUTHORIZED);
     }
 
-    public ResponseAssert<T> isUnauthorized() {
-        return is401();
+    public ResponseAssert<T> codeIsOk() {
+        return isStatusCode(GenericResponseResult.CODE_OK);
     }
 
-    public ResponseAssert<T> is200() {
-        return isStatusCode(200);
+    public ResponseAssert<T> codeIsNotFound() {
+        return isStatusCode(GenericResponseResult.CODE_NOT_FOUND);
     }
 
-    public ResponseAssert<T> isOk() {
-        return is200();
+    public ResponseAssert<T> codeIsNotAcceptable() {
+        return isStatusCode(GenericResponseResult.CODE_NOT_ACCEPTABLE);
     }
 
+    public ResponseAssert<T> codeIsBadRequest() {
+        return isStatusCode(GenericResponseResult.CODE_BAD_REQUEST);
+    }
 
+    public ResponseAssert<T> codeIsForbidden() {
+        return isStatusCode(GenericResponseResult.CODE_FORBIDDEN);
+    }
+
+    public ResponseAssert<T> codeIsInternalError() {
+        return isStatusCode(GenericResponseResult.CODE_INTERNAL_SRV_ERROR);
+    }
 }

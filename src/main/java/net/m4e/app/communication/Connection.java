@@ -13,13 +13,14 @@ import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.json.bind.JsonbBuilder;
+import javax.json.bind.*;
+import javax.json.bind.annotation.JsonbProperty;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 
 import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.system.core.AppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +87,7 @@ public class Connection {
             LOGGER.warn("could not store user's connection");
         }
 
-        Packet<WebSocketStatus> response = createResponse("ok", "User " + user.getName() + " established a connection");
+        Packet<WSConnectionStatus> response = createResponse("ok", "User " + user.getName() + " established a connection");
         session.getBasicRemote().sendObject(response);
     }
 
@@ -97,10 +98,10 @@ public class Connection {
      * @param description Response description
      * @return String in JSON format ready to send.
      */
-    private Packet<WebSocketStatus> createResponse(String status, String description) {
-        Packet<WebSocketStatus> packet = new Packet<>();
+    private Packet<WSConnectionStatus> createResponse(String status, String description) {
+        Packet<WSConnectionStatus> packet = new Packet<>();
         packet.setChannel(Packet.CHANNEL_SYSTEM);
-        packet.setData(new WebSocketStatus(PROTOCOL_VERSION, status, description));
+        packet.setData(new WSConnectionStatus(PROTOCOL_VERSION, status, description));
         return packet;
 
     }
@@ -127,15 +128,17 @@ public class Connection {
         msgHandler.dispatchMessage(packet, session);
     }
 
-    //TODO: Naming
-    static class WebSocketStatus {
+    /**
+     * Used for transferring the web socket connection status to client.
+     */
+    public static class WSConnectionStatus {
         private final String protocolVersion;
-
         private final String status;
-
         private final String description;
 
-        WebSocketStatus(final String protocolVersion, final String status, final String description) {
+        WSConnectionStatus(@JsonbProperty("protocolVersion") final String protocolVersion,
+                           @JsonbProperty("status") final String status,
+                           @JsonbProperty("description") final String description) {
             this.protocolVersion = protocolVersion;
             this.status = status;
             this.description = description;
@@ -158,15 +161,14 @@ public class Connection {
      * Decoder for Text-Messages. Parses Json to Packet.
      */
     public static class PacketMapDecoder implements Decoder.Text<Packet<Map<String, Object>>> {
-        @SuppressWarnings("unchecked")
+
         @Override
-        public Packet<Map<String, Object>> decode(final String string) throws DecodeException {
-            try {
-                return JsonbBuilder.create().fromJson(string, Packet.class);
+        public Packet<Map<String, Object>> decode(final String string) {
+            try (Jsonb jsonb = JsonbBuilder.create()) {
+                return jsonb.fromJson(string, Packet.class);
             } catch (Exception ex) {
-                LOGGER.debug("Could not read JSON string, reason: {}", ex.getLocalizedMessage(), ex);
+                LOGGER.debug("Could not read JSON string, reason: {}", ex.getMessage(), ex);
             }
-            //Todo: null or Exception?
             return null;
         }
 
@@ -189,8 +191,13 @@ public class Connection {
      */
     public static class JsonBEncoder implements Encoder.Text<Object> {
         @Override
-        public String encode(final Object object) throws EncodeException {
-            return JsonbBuilder.create().toJson(object);
+        public String encode(final Object object) {
+            try (Jsonb jsonb = JsonbBuilder.create()) {
+                return jsonb.toJson(object);
+            } catch (Exception ex) {
+                LOGGER.debug("Could not create JSON string, reason: {}", ex.getMessage(), ex);
+            }
+            return null;
         }
 
         @Override

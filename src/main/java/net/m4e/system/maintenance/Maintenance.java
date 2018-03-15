@@ -8,27 +8,20 @@
 
 package net.m4e.system.maintenance;
 
-import net.m4e.app.event.EventEntity;
-import net.m4e.app.event.EventLocationEntity;
-import net.m4e.app.event.Events;
+import net.m4e.app.event.business.*;
 import net.m4e.app.resources.DocumentPool;
-import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.UserRegistrations;
-import net.m4e.app.user.Users;
+import net.m4e.app.user.business.*;
 import net.m4e.common.Entities;
-import net.m4e.system.core.AppInfoEntity;
-import net.m4e.system.core.AppInfos;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.m4e.system.core.*;
+import net.m4e.system.maintenance.business.MaintenanceInfo;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -42,9 +35,6 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class Maintenance {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final UserRegistrations userRegistration;
@@ -54,6 +44,8 @@ public class Maintenance {
     private final Users users;
 
     private final Events events;
+
+    private final EventLocations eventLocations;
 
     private final Entities entities;
 
@@ -68,6 +60,7 @@ public class Maintenance {
         userRegistration = null;
         users = null;
         events = null;
+        eventLocations = null;
         entities = null;
         docPool = null;
     }
@@ -75,7 +68,7 @@ public class Maintenance {
     /**
      * Create the maintenance instance.
      * 
-     * @param appInfos      The ppplication information instance
+     * @param appInfos      The application information instance
      * @param registration  The user registration instance
      * @param users         The Users instance
      * @param events        The Events instance
@@ -83,41 +76,28 @@ public class Maintenance {
      * @param docPool       The document pool instance
      */
     @Inject
-    public Maintenance(AppInfos appInfos,
-                       UserRegistrations registration,
-                       Users users,
-                       Events events,
-                       Entities entities,
-                       DocumentPool docPool) {
+    public Maintenance(@NotNull AppInfos appInfos,
+                       @NotNull UserRegistrations registration,
+                       @NotNull Users users,
+                       @NotNull Events events,
+                       @NotNull EventLocations eventLocations,
+                       @NotNull Entities entities,
+                       @NotNull DocumentPool docPool) {
 
         this.appInfos = appInfos;
         this.userRegistration = registration;
         this.users = users;
         this.events = events;
+        this.eventLocations = eventLocations;
         this.entities = entities;
         this.docPool = docPool;
     }
 
     /**
-     * Give an app info entity export the necessary fields into a JSON object.
-     * 
-     * @param entity    App info entity to export
-     * @return          A JSON object containing builder the proper entity fields
+     * Export the maintenance info.
      */
-    public JsonObjectBuilder exportInfoJSON(AppInfoEntity entity) {
-        int pendingaccounts = userRegistration.getCountPendingAccountActivations();
-        int pendingpwresets = userRegistration.getCountPendingPasswordResets();
-
-        JsonObjectBuilder json = Json.createObjectBuilder();
-        json.add("version", entity.getVersion())
-            .add("dateLastMaintenance", entity.getDateLastMaintenance())
-            .add("dateLastUpdate", entity.getDateLastUpdate())
-            .add("userCountPurge", entity.getUserCountPurge())
-            .add("eventCountPurge", entity.getEventCountPurge())
-            .add("eventLocationCountPurge", entity.getEventLocationCountPurge())
-            .add("pendingAccountRegistration", pendingaccounts)
-            .add("pendingPasswordResets", pendingpwresets);
-        return json;
+    public MaintenanceInfo exportInfo(@NotNull AppInfoEntity infoEntity) {
+        return MaintenanceInfo.fromInfoEntity(infoEntity, userRegistration);
     }
 
     /**
@@ -137,10 +117,10 @@ public class Maintenance {
      * @return Count of purged resources
      */
     public int purgeAllResources() {
-        int countpurges = purgeExpiredResources();
-        countpurges += purgeDeletedResources();
+        int countPurges = purgeExpiredResources();
+        countPurges += purgeDeletedResources();
         updateAppInfo();
-        return countpurges;
+        return countPurges;
     }
 
     /**
@@ -149,12 +129,39 @@ public class Maintenance {
      * @return Count of purged resources
      */
     private int purgeDeletedResources() {
-        int countpurges = 0;
-        List<UserEntity>  theusers = users.getMarkedAsDeletedUsers();
-        List<EventEntity> theevents = entities.findAll(EventEntity.class);
+        List<UserEntity>  deletedUsers = users.getMarkedAsDeletedUsers();
+        List<EventEntity> eventEntities = entities.findAll(EventEntity.class);
 
-        // first purge dead events and make sure that dead users are removed from remaining events
-        for (EventEntity event: theevents) {
+        int countPurges = purgeEvents(deletedUsers, eventEntities);
+
+        countPurges += purgeUsers(deletedUsers);
+
+        return countPurges;
+    }
+
+    private int purgeUsers(List<UserEntity> deletedUsers) {
+        int countPurges = 0;
+        // remove all dead users
+        for (UserEntity user: deletedUsers) {
+            try {
+                if (user.getPhoto() != null) {
+                    docPool.releasePoolDocument(user.getPhoto());
+                }
+                users.deleteUser(user);
+                countPurges++;
+            }
+            catch(Exception ex) {
+                LOGGER.warn("Could not delete user: " + user.getId() + ", name: " +
+                            user.getName() + ", reason: " + ex.getLocalizedMessage());
+            }
+        }
+        return countPurges;
+    }
+
+    private int purgeEvents(List<UserEntity> userEntities, List<EventEntity> eventEntities) {
+        int countPurges = 0;
+        // purge dead events and make sure that dead users are removed from remaining events
+        for (EventEntity event: eventEntities) {
             try {
                 if (event.getStatus().getIsDeleted()) {
                     if (event.getPhoto() != null) {
@@ -170,11 +177,11 @@ public class Maintenance {
                             });
                     }
                     events.deleteEvent(event);
-                    countpurges++;
+                    countPurges++;
                 }
                 else {
                     // remove dead members
-                    events.removeAnyMember(event, theusers);
+                    events.removeAnyMember(event, userEntities);
                     // purge deleted event locations
                     Collection<EventLocationEntity> locs = event.getLocations();
                     if (locs != null) {
@@ -187,30 +194,16 @@ public class Maintenance {
                         for (EventLocationEntity loc: deadlocs) {
                             entities.delete(loc);
                         }
-                        countpurges += deadlocs.size();
+                        countPurges += deadlocs.size();
                     }
                 }
             }
             catch(Exception ex) {
                 LOGGER.warn("Could not delete event: " + event.getId() + ", name: " +
-                            event.getName() + ", reason: " + ex.getLocalizedMessage());
+                            event.getName() + ", reason: " + ex.getMessage());
             }
         }
-        // now remove all dead users
-        for (UserEntity user: theusers) {
-            try {
-                if (user.getPhoto() != null) {
-                    docPool.releasePoolDocument(user.getPhoto());
-                }
-                users.deleteUser(user);
-                countpurges++;
-            }
-            catch(Exception ex) {
-                LOGGER.warn("Could not delete user: " + user.getId() + ", name: " +
-                            user.getName() + ", reason: " + ex.getLocalizedMessage());
-            }
-        }
-        return countpurges;
+        return countPurges;
     }
 
     /**
@@ -227,8 +220,8 @@ public class Maintenance {
 
         // update the purge counters
         int     purgeusers     = users.getMarkedAsDeletedUsers().size();
-        int     purgeevents    = events.getMarkedAsDeletedEvents().size();
-        int     purgeeventlocs = events.getMarkedAsDeletedEventLocations().size();
+        int     purgeevents    = events.getEventsMarkedAsDeleted().size();
+        int     purgeeventlocs = eventLocations.getLocationsMarkedAsDeleted().size();
 
         info.setEventCountPurge(new Long(purgeevents));
         info.setEventLocationCountPurge(new Long(purgeeventlocs));

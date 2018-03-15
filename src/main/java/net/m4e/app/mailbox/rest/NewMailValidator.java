@@ -10,8 +10,8 @@ package net.m4e.app.mailbox.rest;
 
 import net.m4e.app.mailbox.business.MailEntity;
 import net.m4e.app.mailbox.rest.comm.NewMailCmd;
-import net.m4e.app.user.UserEntity;
-import net.m4e.app.user.Users;
+import net.m4e.app.user.business.UserEntity;
+import net.m4e.app.user.business.Users;
 import net.m4e.common.Strings;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -64,6 +64,9 @@ public class NewMailValidator {
     public MailEntity validateNewEntityInput(NewMailCmd mail, UserEntity sender) throws Exception {
         if (mail == null) {
             throw new Exception("Failed to send mail, invalid input.");
+        }
+        if (sender == null) {
+            throw new Exception("Failed to send mail, invalid sender.");
         }
         if (mail.getReceiverId() == 0L) {
             throw new Exception("Failed to send mail, invalid recipient.");

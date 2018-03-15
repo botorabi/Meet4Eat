@@ -221,3 +221,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/java,macos,linux,maven,windows,eclipse,netbeans,intellij
+
+# TODO the entries will be removed, once issue 24 is resolved: https://github.com/botorabi/Meet4Eat/issues/24
+src/main/webapp/WEB-INF/mailer.cfg
+src/main/webapp/WEB-INF/accountregistration.cfg
+

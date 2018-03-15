@@ -9,16 +9,17 @@ package net.m4e.app.mailbox.rest.comm;
 
 import net.m4e.app.mailbox.business.MailOperation;
 
+import javax.json.bind.annotation.JsonbProperty;
+
 /**
  * @author ybroeker
  */
 public class MailOperationCmd {
     private MailOperation operation;
 
-    public MailOperationCmd() {
-    }
+    public MailOperationCmd() {}
 
-    public MailOperationCmd(final MailOperation operation) {
+    public MailOperationCmd(MailOperation operation) {
         this.operation = operation;
     }
 
@@ -26,6 +27,7 @@ public class MailOperationCmd {
         return operation;
     }
 
+    @JsonbProperty("operation")
     public void setOperation(final MailOperation operation) {
         this.operation = operation;
     }

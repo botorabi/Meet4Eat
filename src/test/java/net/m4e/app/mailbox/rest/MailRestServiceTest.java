@@ -7,32 +7,26 @@
  */
 package net.m4e.app.mailbox.rest;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.mailbox.business.*;
 import net.m4e.app.mailbox.rest.comm.*;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.GenericResponseResult;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
+import net.m4e.tests.ResponseAssertions;
+import org.hamcrest.*;
 import org.junit.internal.matchers.TypeSafeMatcher;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 import org.mockito.*;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static net.m4e.tests.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.servlet.http.*;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static java.util.Collections.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
@@ -68,14 +62,6 @@ class MailRestServiceTest {
     }
 
 
-    /**
-     * Check, that {@link MailRestService} is createable by container.
-     */
-    @Test
-    void checkNoArgsConstructor() {
-        new MailRestService();
-    }
-
     @Nested
     class GetMailsTest {
         @Mock
@@ -98,7 +84,7 @@ class MailRestServiceTest {
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, request);
 
 
-            assertThat(retrievedMails).isOk()
+            ResponseAssertions.assertThat(retrievedMails).codeIsOk()
                     .hasDescription()
                     .hasStatusOk()
                     .hasData(emptyList());
@@ -113,8 +99,8 @@ class MailRestServiceTest {
 
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, request);
 
-            assertThat(retrievedMails.getData()).hasSize(1);
-            assertThat(retrievedMails).isOk()
+            ResponseAssertions.assertThat(retrievedMails.getData()).hasSize(1);
+            ResponseAssertions.assertThat(retrievedMails).codeIsOk()
                     .hasDescription()
                     .hasStatusOk();
         }
@@ -126,7 +112,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<List<Mail>> retrievedMails = mailRestService.getMails(0, 0, requestWithSessionUser(null));
 
-            assertThat(retrievedMails).isUnauthorized()
+            ResponseAssertions.assertThat(retrievedMails).codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription()
                     .hasNoData();
@@ -158,13 +144,13 @@ class MailRestServiceTest {
             GenericResponseResult<MailCount> retrievedMails = mailRestService.getCount(request);
 
 
-            assertThat(retrievedMails).isOk()
+            ResponseAssertions.assertThat(retrievedMails).codeIsOk()
                     .hasDescription()
                     .hasStatusOk()
                     .hasDataOfType(MailCount.class)
             ;
-            assertThat(retrievedMails.getData().getTotalMails()).isEqualTo(5);
-            assertThat(retrievedMails.getData().getUnreadMails()).isEqualTo(2);
+            ResponseAssertions.assertThat(retrievedMails.getData().getTotalMails()).isEqualTo(5);
+            ResponseAssertions.assertThat(retrievedMails.getData().getUnreadMails()).isEqualTo(2);
         }
 
         @Test
@@ -175,7 +161,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<MailCount> retrievedMails = mailRestService.getCount(requestWithSessionUser(null));
 
-            assertThat(retrievedMails).isUnauthorized()
+            ResponseAssertions.assertThat(retrievedMails).codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription()
                     .hasNoData();
@@ -203,12 +189,12 @@ class MailRestServiceTest {
 
             GenericResponseResult<UnreadMailCount> countUnread = mailRestService.getCountUnread(request);
 
-            assertThat(countUnread).isOk()
+            ResponseAssertions.assertThat(countUnread).codeIsOk()
                     .hasDescription()
                     .hasStatusOk()
                     .hasDataOfType(UnreadMailCount.class)
             ;
-            assertThat(countUnread.getData().getUnreadMails()).isEqualTo(2);
+            ResponseAssertions.assertThat(countUnread.getData().getUnreadMails()).isEqualTo(2);
         }
 
 
@@ -218,7 +204,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<UnreadMailCount> countUnread = mailRestService.getCountUnread(requestWithSessionUser(null));
 
-            assertThat(countUnread).isUnauthorized()
+            ResponseAssertions.assertThat(countUnread).codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription()
                     .hasNoData();
@@ -245,7 +231,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<Void> response = mailRestService.send(newMailCmd, requestWithSessionUser(null));
 
-            assertThat(response).isUnauthorized()
+            ResponseAssertions.assertThat(response).codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription()
                     .hasNoData();
@@ -264,7 +250,7 @@ class MailRestServiceTest {
 
             verify(mails).createMail(argThat(matchesMail("Subject", "Content", userEntity.getId(), 84L)));
 
-            assertThat(response).isOk()
+            ResponseAssertions.assertThat(response).codeIsOk()
                     .hasStatusOk()
                     .hasDescription()
                     .hasNoData();
@@ -283,7 +269,7 @@ class MailRestServiceTest {
 
             verify(mails, times(0)).createMail(argThat(matchesMail("Subject", "Content", userEntity.getId(), 84L)));
 
-            assertThat(response).isClientError()
+            ResponseAssertions.assertThat(response).isClientError()
                     .hasStatusNotOk()
                     .hasDescription("An Error...")
                     .hasNoData();
@@ -300,24 +286,26 @@ class MailRestServiceTest {
 
             GenericResponseResult<Void> response = mailRestService.send(newMailCmd, requestWithSessionUser(userEntity));
 
-            assertThat(response).isServerError()
+            ResponseAssertions.assertThat(response).isServerError()
                     .hasStatusNotOk()
                     .hasDescription("Problem occurred while sending mail")
                     .hasNoData();
         }
 
         Answer<MailEntity> createMailEntity() {
-            return new Answer<MailEntity>() {
-                @Override
-                public MailEntity answer(final InvocationOnMock args) throws Throwable {
-                    return new MailEntity(args.getArgumentAt(1, UserEntity.class).getId(),
-                            "",
-                            args.getArgumentAt(0, NewMailCmd.class).getReceiverId(),
-                            "",
-                            0L,
-                            args.getArgumentAt(0, NewMailCmd.class).getSubject(),
-                            args.getArgumentAt(0, NewMailCmd.class).getContent());
-                }
+            return args -> {
+                NewMailCmd mailCmd = args.getArgumentAt(0, NewMailCmd.class);
+                UserEntity user = args.getArgumentAt(1, UserEntity.class);
+                MailEntity mailEntity = new MailEntity();
+
+                mailEntity.setReceiverName("");
+                mailEntity.setReceiverId(mailCmd.getReceiverId());
+                mailEntity.setSenderId(user.getId());
+                mailEntity.setSenderName("");
+                mailEntity.setSendDate(0L);
+                mailEntity.setSubject(mailCmd.getSubject());
+                mailEntity.setContent(mailCmd.getContent());
+                return mailEntity;
             };
         }
 
@@ -364,12 +352,12 @@ class MailRestServiceTest {
 
             verify(mails).performMailOperation(42L, 42L, op);
 
-            assertThat(excecutedMailOperation).is200()
+            ResponseAssertions.assertThat(excecutedMailOperation).codeIsOk()
                     .hasStatusOk()
                     .hasDescription();
-            assertThat(excecutedMailOperation).hasDataOfType(ExcecutedMailOperation.class);
-            assertThat(excecutedMailOperation.getData().getId()).isEqualTo("42");
-            assertThat(excecutedMailOperation.getData().getOperation()).isEqualTo(op);
+            ResponseAssertions.assertThat(excecutedMailOperation).hasDataOfType(ExcecutedMailOperation.class);
+            ResponseAssertions.assertThat(excecutedMailOperation.getData().getId()).isEqualTo("42");
+            ResponseAssertions.assertThat(excecutedMailOperation.getData().getOperation()).isEqualTo(op);
         }
 
         @ParameterizedTest
@@ -379,8 +367,8 @@ class MailRestServiceTest {
 
             GenericResponseResult<ExcecutedMailOperation> excecutedMailOperation = mailRestService.operate(42L, new MailOperationCmd(op), requestWithSessionUser(null));
 
-            assertThat(excecutedMailOperation).hasNoData()
-                    .isUnauthorized()
+            ResponseAssertions.assertThat(excecutedMailOperation).hasNoData()
+                    .codeIsUnauthorized()
                     .hasStatusNotOk()
                     .hasDescription();
         }
@@ -394,7 +382,7 @@ class MailRestServiceTest {
 
             GenericResponseResult<ExcecutedMailOperation> excecutedMailOperation = mailRestService.operate(42L, new MailOperationCmd(op), request);
 
-            assertThat(excecutedMailOperation).isClientError()
+            ResponseAssertions.assertThat(excecutedMailOperation).isClientError()
                     .hasNoData()
                     .hasStatusNotOk()
                     .hasDescription();

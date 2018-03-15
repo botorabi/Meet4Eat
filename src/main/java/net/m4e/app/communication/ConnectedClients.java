@@ -18,9 +18,9 @@ import javax.inject.Inject;
 import javax.websocket.EncodeException;
 import javax.websocket.Session;
 
-import net.m4e.app.event.EventNotifications;
+import net.m4e.app.event.business.EventNotifications;
 import net.m4e.app.notification.NotifyUserRelativesEvent;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +37,6 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class ConnectedClients {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
@@ -52,8 +49,20 @@ public class ConnectedClients {
      * Class used for a user entry
      */
     private class UserEntry {
-        public UserEntity user;
-        public List<Session /*WebSocket session*/> sessions = new ArrayList<>();
+        private UserEntity user;
+        private List<Session /*WebSocket session*/> sessions = new ArrayList<>();
+
+        public UserEntity getUser() {
+            return user;
+        }
+
+        public void setUser(UserEntity user) {
+            this.user = user;
+        }
+
+        public List<Session> getSessions() {
+            return sessions;
+        }
     }
 
     /**
@@ -70,7 +79,7 @@ public class ConnectedClients {
     public UserEntity getConnectedUser(Long userId) {
         UserEntry entry = connections.get(userId);
         if (entry != null) {
-            return entry.user;
+            return entry.getUser();
         }
         return null;
     }
@@ -84,14 +93,14 @@ public class ConnectedClients {
      */
     public void sendPacket(Packet<?> packet, List<Long> recipientIds) {
         recipientIds.forEach(id -> {
-            UserEntry recentry = connections.get(id);
-            if (recentry != null) {
-                recentry.sessions.forEach(session -> {
+            UserEntry receiverEntry = connections.get(id);
+            if (receiverEntry != null) {
+                receiverEntry.getSessions().forEach(session -> {
                     try {
                         session.getBasicRemote().sendObject(packet);
                     }
                     catch(IOException | EncodeException ex) {
-                        LOGGER.warn("problem occurred while sending notification to user ({}), reason: {}" ,id, ex.getLocalizedMessage());
+                        LOGGER.warn("problem occurred while sending notification to user ({}), reason: {}" , id, ex.getLocalizedMessage());
                     }
                 });
             }
@@ -107,11 +116,11 @@ public class ConnectedClients {
      * @param sessionId     Session ID of a WebSocket connection
      */
     public void sendPacket(Packet<?> packet, Long userId, String sessionId) {
-        UserEntry recentry = connections.get(userId);
-        if (recentry != null) {
-            recentry.sessions.stream().
-                    filter((session) -> (session.getId().equals(sessionId))).
-                    forEach((session) -> {
+        UserEntry receiverEntry = connections.get(userId);
+        if (receiverEntry != null) {
+            receiverEntry.getSessions().stream().
+                    filter(session -> (session.getId().equals(sessionId))).
+                    forEach(session -> {
                         try {
                             session.getBasicRemote().sendObject(packet);
                         }
@@ -130,8 +139,7 @@ public class ConnectedClients {
      * @return          User entity using this session
      */
     public UserEntity getUser(Session session) {
-        UserEntity user = (UserEntity)session.getUserProperties().get("user");
-        return user;
+        return (UserEntity)session.getUserProperties().get("user");
     }
 
     /**
@@ -148,20 +156,20 @@ public class ConnectedClients {
         UserEntry entry = connections.get(user.getId());
         if (entry == null) {
             entry = new UserEntry();
-            entry.user = user;
+            entry.setUser(user);
             connections.put(user.getId(), entry);
         }
-        if (entry.sessions.contains(session)) {
-            LOGGER.warn("session for user " + user.getId() + " already exists!");
+        if (entry.getSessions().contains(session)) {
+            LOGGER.warn("session for user {} already exists!", user.getId());
             return false;
         }
         // store the user in session, we need it later while handling incoming messages
         session.getUserProperties().put("user", user);
-        entry.sessions.add(session);
+        entry.getSessions().add(session);
 
         // send a notification to user's relatives about going online
         // note that a user can be logged in multiple times, we send this notification only for the first login
-        if (entry.sessions.size() == 1) {
+        if (entry.getSessions().size() == 1) {
             sendNotificationToRelatives(user, true);
         }
 
@@ -181,17 +189,14 @@ public class ConnectedClients {
         if (entry == null) {
             return false;
         }
-        if (!entry.sessions.remove(session)) {
+        if (!entry.getSessions().remove(session)) {
             return false;
         }
-        // if there are no futher connections then remove the user entry
-        if (entry.sessions.size() < 1) {
+        // If there are no further connections then remove the user entry.
+        // Send also a notification to user's relatives about going offline.
+        // Note that a user can be logged in multiple times, we send this notification only if the user is completely logged out.
+        if (entry.getSessions().isEmpty()) {
             connections.remove(user.getId());
-        }
-
-        // send a notification to user's relatives about going offline
-         // note that a user can be logged in multiple times, we send this notification only if the user is completely logged out
-        if (entry.sessions.isEmpty()) {
             sendNotificationToRelatives(user, false);
         }
 

@@ -7,6 +7,8 @@
  */
 package net.m4e.common;
 
+import javax.json.bind.*;
+
 /**
  * @author ybroeker
  */
@@ -93,43 +95,77 @@ public class GenericResponseResult<T> {
     public GenericResponseResult() {
     }
 
+    /**
+     * This method is used for allowing the call of result methods with or without a 'data' as second parameter.
+     */
+    @SafeVarargs
+    private static final <T> T getResponseData(final T... data) {
+        if (data != null && data.length > 1) {
+            throw new RuntimeException("GenericResponseResult: Only one data object can be passed!");
+        }
+        return data == null ? null : (data.length > 0 ? data[0] : null);
+    }
 
     /**
      * 200.
      */
-    public static <T> GenericResponseResult<T> ok(final String description, final T data) {
-        return new GenericResponseResult<>(STATUS_OK, description, CODE_OK, data);
+    @SafeVarargs
+    public static <T> GenericResponseResult<T> ok(final String description, final T... data) {
+        return new GenericResponseResult<>(STATUS_OK, description, CODE_OK, getResponseData(data));
+    }
+
+    /**
+     * 400.
+     */
+    @SafeVarargs
+    public static <T> GenericResponseResult<T> badRequest(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_BAD_REQUEST, getResponseData(data));
     }
 
     /**
      * 401
      */
-    public static <T> GenericResponseResult<T> unauthorized(final String desc) {
-        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_UNAUTHORIZED, null);
+    @SafeVarargs
+    public static <T> GenericResponseResult<T> unauthorized(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_UNAUTHORIZED, getResponseData(data));
     }
 
     /**
-     * 400.
+     * 403
      */
-    public static <T> GenericResponseResult<T> badRequest(final String desc) {
-        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_BAD_REQUEST, null);
+    @SafeVarargs
+    public static <T> GenericResponseResult<T> forbidden(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_FORBIDDEN, getResponseData(data));
     }
 
     /**
-     * 400.
+     * 404
      */
-    public static <T> GenericResponseResult<T> badRequest(final String desc, final T data) {
-        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_BAD_REQUEST, data);
+    @SafeVarargs
+    public static <T> GenericResponseResult<T> notFound(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_FOUND, getResponseData(data));
+    }
+
+    /**
+     * 406
+     */
+    @SafeVarargs
+    public static <T> GenericResponseResult<T> notAcceptable(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_NOT_ACCEPTABLE, getResponseData(data));
     }
 
     /**
      * 500.
      */
-    public static <T> GenericResponseResult<T> internalError(final String desc) {
-        return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, desc, ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
+    @SafeVarargs
+    public static <T> GenericResponseResult<T> internalError(final String desc, final T... data) {
+        return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_INTERNAL_SRV_ERROR, getResponseData(data));
     }
 
-
+    public String toJSON() {
+        Jsonb json = JsonbBuilder.create();
+        return json.toJson(this);
+    }
 
     public String getStatus() {
         return status;
@@ -162,5 +198,4 @@ public class GenericResponseResult<T> {
     public void setData(final T data) {
         this.data = data;
     }
-
 }

@@ -7,14 +7,12 @@
  */
 package net.m4e.app.mailbox.rest.comm;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.*;
 import net.m4e.app.mailbox.business.MailOperation;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import javax.json.bind.*;
 
 import static com.revinate.assertj.json.JsonPathAssert.assertThat;
 
@@ -23,7 +21,6 @@ import static com.revinate.assertj.json.JsonPathAssert.assertThat;
  * @author ybroeker
  */
 class MailOperationCmdTest {
-
 
     @Test
     void deserialize() {
@@ -46,6 +43,4 @@ class MailOperationCmdTest {
         DocumentContext ctx = JsonPath.parse(json);
         assertThat(ctx).jsonPathAsString("$.operation").isEqualTo("trash");
     }
-
-
 }

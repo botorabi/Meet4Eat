@@ -33,7 +33,7 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 	var self = this;
 
 	/* UI version */
-	self._version = "1.0.0";
+	self._version = "1.0.1";
 
 	/**
 	 * Initialize the Meet4Eat UI module for update check.
@@ -113,7 +113,9 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 
 		var fields = {};
 		var newentry = (inputfields.id === null) || (inputfields.id === "");
-		fields['id'] = inputfields.id;
+		if (!newentry) {
+            fields['id'] = inputfields.id;
+        }
 		fields['name'] = inputfields.name;
 		fields['os'] = inputfields.os;
 		fields['flavor'] = inputfields.flavor;
@@ -217,7 +219,7 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 	};
 
 	self._updateUiUpdateCheckEntryTableAdd = function(entryFields) {
-		if (entryFields.id === "") {
+		if (entryFields.id === "" || entryFields.id === undefined) {
 			base.showModalBox("updateUiCheckEntryTableAdd: Cannot add update entry, invalid id!", "Internal Error", "Dismiss");
 			return;
 		}
@@ -236,8 +238,8 @@ function Meet4EatUI_UpdateCheck(baseModule) {
 				"releasedate" : releasedate,
 				"url" : url,
 				"active" : (entryFields.active ? "Yes" : "No"),
-				"ops" :	"<a role='button' onclick='getMeet4EatUI().onBtnUpdateEntryDelete(\"" + entryFields.id + "\")'>DELETE</a> | " +
-						"<a role='button' onclick='getMeet4EatUI().onBtnUpdateEntryEdit(\"" + entryFields.id + "\")'>EDIT</a>"
+				"ops" :	"<a role='button' onclick='getMeet4EatUI().onBtnUpdateEntryDelete(" + entryFields.id + ")'>DELETE</a> | " +
+						"<a role='button' onclick='getMeet4EatUI().onBtnUpdateEntryEdit(" + entryFields.id + ")'>EDIT</a>"
 			});
 	};
 

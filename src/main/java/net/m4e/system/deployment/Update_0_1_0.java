@@ -9,7 +9,7 @@
 package net.m4e.system.deployment;
 
 import net.m4e.common.Entities;
-import net.m4e.system.core.AppUdateBaseHandler;
+import net.m4e.system.core.AppUpdateBaseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,11 +22,8 @@ import java.lang.invoke.MethodHandles;
  * @author boto
  * Date of creation Aug 22, 2017
  */
-public class Update_0_1_0 extends AppUdateBaseHandler {
+public class Update_0_1_0 extends AppUpdateBaseHandler {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**

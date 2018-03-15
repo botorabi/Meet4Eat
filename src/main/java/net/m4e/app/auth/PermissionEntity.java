@@ -7,10 +7,9 @@
  */
 package net.m4e.app.auth;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import net.m4e.common.EntityBase;
+
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -20,7 +19,7 @@ import java.io.Serializable;
  * Date of creation Aug 21, 2017
  */
 @Entity
-public class PermissionEntity implements Serializable {
+public class PermissionEntity extends EntityBase implements Serializable {
 
     /**
      * Serialization version
@@ -41,26 +40,22 @@ public class PermissionEntity implements Serializable {
 
     /**
      * Get the entity ID.
-     * 
-     * @return Entity ID
      */
+    @Override
     public Long getId() {
         return id;
     }
 
     /**
      * Set the entity ID.
-     * 
-     * @param id Entity ID
      */
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
      * Get permission name.
-     * 
-     * @return The permission name
      */
     public String getName() {
         return name;
@@ -68,31 +63,8 @@ public class PermissionEntity implements Serializable {
 
     /**
      * Set permission name.
-     * 
-     * @param name Permission name
      */
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof PermissionEntity)) {
-            return false;
-        }
-        PermissionEntity other = (PermissionEntity) object;
-        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
-    }
-
-    @Override
-    public String toString() {
-        return "net.m4e.auth.PermissionEntity[ id=" + id + ", name=" + name + " ]";
     }
 }

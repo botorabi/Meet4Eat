@@ -13,9 +13,9 @@ import net.m4e.app.auth.AuthorityConfig;
 import net.m4e.app.auth.PermissionEntity;
 import net.m4e.app.auth.RoleEntity;
 import net.m4e.app.resources.StatusEntity;
-import net.m4e.app.user.UserEntity;
+import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.Entities;
-import net.m4e.system.core.AppUdateBaseHandler;
+import net.m4e.system.core.AppUpdateBaseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,11 +31,8 @@ import java.util.*;
  * @author boto
  * Date of creation Aug 22, 2017
  */
-public class UpdateInit extends AppUdateBaseHandler {
+public class UpdateInit extends AppUpdateBaseHandler {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
@@ -48,9 +45,6 @@ public class UpdateInit extends AppUdateBaseHandler {
      */
     private static final String APP_VERSION = "0.0.0";
 
-    /**
-     * Construct the update instance.
-     */
     public UpdateInit() {
         incUpdateNumber = INC_NUMBER;
         appVersion = APP_VERSION;

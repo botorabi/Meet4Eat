@@ -60,15 +60,13 @@ public class Entities {
      * 
      * @param <T>           Entity class type
      * @param entity        Entity instance which is created in database
-     * @return              Return false if the passed entity was null, otherwise return true.
      */
-    public <T> boolean create(T entity) {
+    public <T> void create(T entity) {
         if (entity == null) {
             LOGGER.error("Cannot create entity, a null object was passed.");
-            return false;
+            throw new IllegalArgumentException("Invalid input entity");
         }
         entityManager.persist(entity);
-        return true;
     }
 
     /**
@@ -76,15 +74,13 @@ public class Entities {
      * 
      * @param <T>           Entity class type
      * @param entity        Entity instance which is deleted in database
-     * @return              Return false if the passed entity was null, otherwise return true.
      */
-    public <T> boolean delete(T entity) {
+    public <T> void delete(T entity) {
         if (entity == null) {
             LOGGER.error("Cannot delete entity, a null object was passed.");
-            return false;
+            throw new IllegalArgumentException("Invalid input entity");
         }
         entityManager.remove(entityManager.merge(entity));
-        return true;
     }
 
     /**
@@ -92,15 +88,13 @@ public class Entities {
      * 
      * @param <T>           Entity class type
      * @param entity        Entity instance which is updated in database
-     * @return              Return false if the passed entity was null, otherwise return true.
      */
-    public <T> boolean update(T entity) {
+    public <T> void update(T entity) {
         if (entity == null) {
             LOGGER.error("Cannot update entity, a null object was passed.");
-            return false;
+            throw new IllegalArgumentException("Invalid input entity");
         }
         entityManager.merge(entity);
-        return true;
     }
 
    /**

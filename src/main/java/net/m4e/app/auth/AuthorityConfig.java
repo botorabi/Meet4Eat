@@ -7,18 +7,17 @@
  */
 package net.m4e.app.auth;
 
+import net.m4e.app.resources.DocumentRestService;
+import net.m4e.app.user.business.UserEntity;
+import net.m4e.common.HashCreator;
+import net.m4e.system.core.AppInfoRestService;
+import net.m4e.system.maintenance.rest.MaintenanceRestService;
+import net.m4e.update.rest.UpdateCheckRestService;
+import org.slf4j.*;
+
+import javax.servlet.http.*;
 import java.lang.invoke.MethodHandles;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import net.m4e.app.mailbox.rest.MailRestService;
-import net.m4e.app.user.UserEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Central place for holding all authority related configuration
@@ -28,11 +27,6 @@ import org.slf4j.LoggerFactory;
  */
 public class AuthorityConfig {
 
-    //TODO: see https://github.com/botorabi/Meet4Eat/issues/8
-
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
@@ -44,22 +38,22 @@ public class AuthorityConfig {
      * A list of java beans which should be unter control of authority checker.
      * Extend the list whenever new REST beans are created which need protected access.
      */
-    private final Class[] accessBeanClasses = {
-        net.m4e.update.UpdateCheckEntityFacadeREST.class,
-        net.m4e.system.core.AppInfoEntityFacadeREST.class,
-        net.m4e.system.maintenance.MaintenanceFacadeREST.class,
-        net.m4e.app.user.UserEntityFacadeREST.class,
-        net.m4e.app.user.UserAuthenticationFacadeREST.class,
-        net.m4e.app.event.EventEntityFacadeREST.class,
-        net.m4e.app.event.EventLocationVoteEntityFacadeREST.class,
-        net.m4e.app.resources.DocumentEntityFacadeREST.class,
-        MailRestService.class
+    private static final Class[] accessBeanClasses = {
+            UpdateCheckRestService.class,
+            AppInfoRestService.class,
+            MaintenanceRestService.class,
+            net.m4e.app.user.rest.UserRestService.class,
+            net.m4e.app.user.rest.UserAuthenticationRestService.class,
+            net.m4e.app.event.rest.EventRestService.class,
+            net.m4e.app.event.rest.EventLocationVoteRestService.class,
+            DocumentRestService.class,
+            net.m4e.app.mailbox.rest.MailRestService.class
     };
 
     /**
      * Count of iterations for creating a hash.
      */
-    private static final int PW_HASH_ITERATOIN = 10;
+    private static final int PW_HASH_ITERATION = 10;
 
     /**
      * Construct the instance.
@@ -83,11 +77,11 @@ public class AuthorityConfig {
      * @return          Return session's UserEntity, or null if no user was set in session
      */
     public UserEntity getSessionUser(HttpSession session) {
-        Object sessionuser = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
-        if ((sessionuser == null) || !(sessionuser instanceof UserEntity)) {
+        Object sessionUser = session.getAttribute(AuthorityConfig.SESSION_ATTR_USER);
+        if ((sessionUser == null) || !(sessionUser instanceof UserEntity)) {
             return null;
         }
-        return (UserEntity)sessionuser;
+        return (UserEntity)sessionUser;
     }
 
     /**
@@ -134,10 +128,10 @@ public class AuthorityConfig {
      */
     public String createPassword(String string) {
         String pw = "" + string;
-        for (int i = 0; i < PW_HASH_ITERATOIN; i++) {
+        for (int i = 0; i < PW_HASH_ITERATION; i++) {
             pw = createHash(pw);
             if (pw == null) {
-                //TODO: better handling
+                //TODO: better handling, see Issue #8 on github
                 return null;
             }
         }
@@ -151,28 +145,14 @@ public class AuthorityConfig {
      * @return          Hash string, null if something went wrong
      */
     public String createHash(String string) {
-        String res = null;
         try {
-            MessageDigest diggest = MessageDigest.getInstance("SHA-512");
             //TODO: Better use explicit password-hash
-            //TODO: Refactor to Interface
-            diggest.update(string.getBytes());
-            byte data[] = diggest.digest();
-            StringBuilder hexstring = new StringBuilder();
-            for (int i=0; i < data.length; i++) {
-                String hex = Integer.toHexString(0xff & data[i]);
-                if (hex.length() == 1) {
-                    hexstring.append('0');
-                }
-                hexstring.append(hex);
-            }
-            res = hexstring.toString();
+            return HashCreator.createSHA512(string.getBytes());
         }
-        catch (NoSuchAlgorithmException ex) {
-            //TODO: Fail-fast or better Exceptionhandling
-            LOGGER.error("Problem occurred while hashing a string, reason: " + ex.getLocalizedMessage());
+        catch (Exception ex) {
+            LOGGER.error("Problem occurred while hashing a string, reason: {}", ex.getMessage());
         }
-        return res;
+        return null;
     }
 
     /**

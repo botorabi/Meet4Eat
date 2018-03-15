@@ -8,17 +8,14 @@
 
 package net.m4e.app.resources;
 
-import net.m4e.common.Entities;
-import net.m4e.common.EntityWithPhoto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.m4e.common.*;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.lang.invoke.MethodHandles;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class manages a pool of documents. Documents are handled as sharable entities which
@@ -33,9 +30,6 @@ import java.util.Objects;
 @ApplicationScoped
 public class DocumentPool {
 
-    /**
-     * Logger.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Entities entities;
@@ -65,11 +59,10 @@ public class DocumentPool {
      * 
      * @param etag        Document etag to find
      * @return            A document entity with given content etag
-     * @throws Exception  Throws an exception if something goes wrong.
      */
-    public DocumentEntity getOrCreatePoolDocument(String etag) throws Exception {
+    public DocumentEntity getOrCreatePoolDocument(String etag) {
         if (etag == null) {
-            throw new Exception("Invalid document etag");
+            throw new IllegalArgumentException("Invalid document etag");
         }
         DocumentEntity doc = findPoolDocument(etag);
         if (doc == null) {
@@ -83,10 +76,10 @@ public class DocumentPool {
      * 
      * @param document   The document to release
      * @return           Return true if the document was successfully released from pool. Return false
-     *                    if the document was invalid or it was not found in pool.
+     *                    if the document was inactive or it was not referenced at least once.
      */
-    public boolean releasePoolDocument(DocumentEntity document) {
-        if ((document == null) || !document.getStatus().getIsActive()) {
+    public boolean releasePoolDocument(@NotNull DocumentEntity document) {
+        if (!document.getStatus().getIsActive()) {
             return false;
         }
         if (document.getStatus().getReferenceCount() < 1L) {
@@ -158,7 +151,7 @@ public class DocumentPool {
     private DocumentEntity findPoolDocument(String etag) {
         List<DocumentEntity> documents = entities.findByField(DocumentEntity.class, "eTag", etag);
         for (DocumentEntity doc: documents) {
-            if ((doc.getStatus() != null) && doc.getStatus().getIsActive() && Objects.equals(doc.getETag(), etag)) {
+            if ((doc.getStatus() != null) && doc.getStatus().getIsActive()) {
                 // update the document reference count
                 doc.getStatus().increaseRefCount();
                 doc.getStatus().setDateLastUpdate((new Date()).getTime());
@@ -183,15 +176,16 @@ public class DocumentPool {
      * @param <T>           The entity type
      * @param entity        The entity which must implement the EntityWithPhoto interface
      * @param newPhoto      New photo
-     * @throws Exception    Throws an exception if something goes wrong
      */
-    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto) throws Exception {
+    public <T extends EntityWithPhoto> void updatePhoto(T entity, DocumentEntity newPhoto) {
         DocumentEntity img = getOrCreatePoolDocument(newPhoto.getETag());
-        // is the old photo the same as the new one?
+        // check if the old photo is the same as the new one
         if (!compareETag(entity.getPhoto(), img.getETag())) {
             // release the old photo
-            releasePoolDocument(entity.getPhoto());
-            // was the document an existing one?
+            if (entity.getPhoto() != null) {
+                releasePoolDocument(entity.getPhoto());
+            }
+            // was the document an existing one, or was it fresh created?
             if (img.getIsEmpty()) {
                 img.updateContent(newPhoto.getContent());
                 img.setType(DocumentEntity.TYPE_IMAGE);

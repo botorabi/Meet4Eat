@@ -7,8 +7,8 @@
  */
 package net.m4e.app.auth;
 
-import net.m4e.app.user.UserEntity;
-import net.m4e.common.ResponseResults;
+import net.m4e.app.user.business.UserEntity;
+import net.m4e.common.*;
 import net.m4e.system.core.AppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,12 +96,10 @@ public class AuthFilter implements Filter {
             publicBasePath = filterConfig.getInitParameter(PARAM_BASE_PATH_PUBLIC);
             protectedBasePath = filterConfig.getInitParameter(PARAM_BASE_PATH_PROTECTED);
 
-            LOGGER.debug("Initializing filter: " +
-                "basePath(" + basePath + ") | " +
-                "publicBasePath(" + basePath + "/" + publicBasePath + ") | " + 
-                "protectedBasePath(" + basePath + "/" + protectedBasePath + ")");
+            LOGGER.debug("Initializing filter: basePath({}) | publicBasePath({}) | protectedBasePath({})",
+                    basePath, basePath + "/" + publicBasePath, basePath + "/" + protectedBasePath);
         }
-        LOGGER.debug("Setup authorization check for protected path: " + basePath + "/" + protectedBasePath);
+        LOGGER.debug("Setup authorization check for protected path: {}/{}", basePath, protectedBasePath);
         // setup the auth checker
         authChecker.initialize(AuthorityConfig.getInstance().getAccessBeanClasses());
         // ADMIN role gets always access to resources
@@ -130,67 +128,76 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        HttpServletRequest httprequest = (HttpServletRequest)request;
-        String             url         = httprequest.getRequestURL().toString();
+        HttpServletRequest httpRequest = (HttpServletRequest)request;
+        String             url         = httpRequest.getRequestURL().toString();
         String             path        = new URL(url).getPath();
 
         LOGGER.trace("Requesting for resource: " + path);
 
         if (path.startsWith("/" + basePath)) {
 
-            boolean allowaccess = false;
+            boolean allowAccess = checkResourceAccess(httpRequest, path);
 
-            // check for accessing html files in base path
-            if (path.equals("/" + basePath + "/") || path.matches("/" + basePath + "/.*\\.html")) {
-                allowaccess = true;
-            }
-            // check for accessing public resources
-            else if (path.startsWith("/" + basePath + "/" + publicBasePath)) {
-                LOGGER.trace("  Fetching public resource: " + path);
-                allowaccess = true;
-            }
-            // check for websocket endpoint access
-            else if (path.equals("/" + basePath + AppConfiguration.WEBSOCKET_URL)) {
-                allowaccess = true;
-            }
-            // check for swagger access
-            else if (path.matches("/" + basePath + "/" + protectedBasePath + "/swagger\\..*")) {
-                allowaccess = true;
-            }
-            // check for accessing protected resources such as rest-services
-            else if (path.startsWith("/" + basePath + "/" + protectedBasePath)) {
-                // get the user roles out of the http session
-                UserEntity sessionuser = getSessionUser(httprequest);
-                List<String> userroles;
-                if (sessionuser != null) {
-                    LOGGER.trace("   User '" + sessionuser.getLogin() + "' accessing protected resource: " + path);
-                    userroles = sessionuser.getRolesAsString();
-                    // authenticated users get automatically the role USER
-                    if (userroles.contains(AuthRole.VIRT_ROLE_USER)) {
-                        LOGGER.warn("   *** Virtual user role " + AuthRole.VIRT_ROLE_USER + " was detected on user!");
-                    }
-                    userroles.add(AuthRole.VIRT_ROLE_USER);
-                }
-                else {
-                    LOGGER.trace("  Accessing protected resource: " + path);
-                    // non-authenticated users get automatically the role GUEST
-                    userroles = new ArrayList<>();
-                    userroles.add(AuthRole.VIRT_ROLE_GUEST);
-                }
-                if (authChecker.checkAccess("/" + basePath + "/" + protectedBasePath, httprequest, userroles)) {
-                    allowaccess = true;
-                }
-            }
-
-            if (allowaccess) {
+            if (allowAccess) {
                 processRequest(request, response, chain);
             }
             else {
-                LOGGER.warn("*** Access denied to protected resource: " + path);
-                response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
-                        "Denied access to: " + path, ResponseResults.CODE_FORBIDDEN, null));
+                LOGGER.warn("*** Access denied to protected resource: {}", path);
+                response.getWriter().print(GenericResponseResult.forbidden("Denied access to: " + path).toJSON());
             }
         }
+    }
+
+    private boolean checkResourceAccess(HttpServletRequest httpRequest, String path) {
+        boolean allowAccess = false;
+
+        // check for accessing html files in base path
+        if (path.equals("/" + basePath + "/") || path.matches("/" + basePath + "/.*\\.html")) {
+            allowAccess = true;
+        }
+        // check for accessing public resources
+        else if (path.startsWith("/" + basePath + "/" + publicBasePath)) {
+            LOGGER.trace("  Fetching public resource: " + path);
+            allowAccess = true;
+        }
+        // check for WebSocket endpoint access
+        else if (path.equals("/" + basePath + AppConfiguration.WEBSOCKET_URL)) {
+            allowAccess = true;
+        }
+        // check for swagger access
+        else if (path.matches("/" + basePath + "/" + protectedBasePath + "/swagger\\..*")) {
+            allowAccess = true;
+        }
+        // check for accessing protected resources such as rest-services
+        else if (path.startsWith("/" + basePath + "/" + protectedBasePath)) {
+            // get the user roles out of the http session
+            allowAccess = checkProtectedPath(httpRequest, path);
+        }
+        return allowAccess;
+    }
+
+    private boolean checkProtectedPath(HttpServletRequest httpRequest, String path) {
+        UserEntity sessionUser = getSessionUser(httpRequest);
+        List<String> userRoles;
+        if (sessionUser != null) {
+            LOGGER.trace("   User '{}' accessing protected resource: {}", sessionUser.getLogin(), path);
+            userRoles = sessionUser.getRolesAsString();
+            // authenticated users get automatically the role USER
+            if (userRoles.contains(AuthRole.VIRT_ROLE_USER)) {
+                LOGGER.warn("   *** Virtual user role {} was detected on user!", AuthRole.VIRT_ROLE_USER);
+            }
+            userRoles.add(AuthRole.VIRT_ROLE_USER);
+        }
+        else {
+            LOGGER.trace("  Accessing protected resource: {}", path);
+            // non-authenticated users get automatically the role GUEST
+            userRoles = new ArrayList<>();
+            userRoles.add(AuthRole.VIRT_ROLE_GUEST);
+        }
+        if (authChecker.checkAccess("/" + basePath + "/" + protectedBasePath, httpRequest, userRoles)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -209,7 +216,7 @@ public class AuthFilter implements Filter {
                 return (UserEntity)user;
             }
             else {
-                LOGGER.error("*** Unexpected session object type detected for '" + AuthorityConfig.SESSION_ATTR_USER + "'");
+                LOGGER.error("*** Unexpected session object type detected for '{}'", AuthorityConfig.SESSION_ATTR_USER);
             }
         }
         return null;
@@ -217,12 +224,6 @@ public class AuthFilter implements Filter {
 
     /**
      * Process the request on the filter chain.
-     * 
-     * @param request
-     * @param response
-     * @param chain
-     * @throws IOException
-     * @throws ServletException 
      */
     protected void processRequest(ServletRequest request, ServletResponse response, FilterChain chain)
                                     throws IOException, ServletException {
@@ -231,10 +232,8 @@ public class AuthFilter implements Filter {
             chain.doFilter(request, response);
         }
         catch (IOException | ServletException ex) {
-            LOGGER.error("*** A problem occured while executing filters, reason: " + ex.getLocalizedMessage());
-            response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
-                                       "Problem occurred while processing filter chain, reason: " + ex.getLocalizedMessage(),
-                                       ResponseResults.CODE_INTERNAL_SRV_ERROR, null));
+            LOGGER.error("*** A problem occurred while executing filters, reason: {}", ex.getMessage());
+            response.getWriter().print(GenericResponseResult.internalError("Problem occurred while processing filter chain, reason: " + ex.getMessage()).toJSON());
             throw ex;
         }
     }
@@ -244,7 +243,7 @@ public class AuthFilter implements Filter {
      * @return Filter configuration
      */
     public FilterConfig getFilterConfig() {
-        return (this.filterConfig);
+        return filterConfig;
     }
 
     /**

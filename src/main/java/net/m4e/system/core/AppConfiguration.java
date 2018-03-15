@@ -7,16 +7,13 @@
  */
 package net.m4e.system.core;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Central place for application configuration. This is a singleton class.
@@ -122,6 +119,23 @@ public class AppConfiguration {
      * Private constructor of singleton.
      */
     private AppConfiguration() {
+    }
+
+    protected void setup(ServletContext context) {
+        // save the context parameters in app configuration
+        String appVersion = context.getInitParameter(AppConfiguration.TOKEN_APP_VERSION);
+        AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_APP_VERSION, appVersion);
+        String mailerCfg = context.getInitParameter(AppConfiguration.TOKEN_MAILER_CONFIG_FILE);
+        AppConfiguration.getInstance().setConfigValue(AppConfiguration.TOKEN_MAILER_CONFIG_FILE, mailerCfg);
+
+        // setup the user registration configuration
+        String accountRegCfg = context.getInitParameter(AppConfiguration.TOKEN_ACC_REGISTRATION_CONFIG_FILE);
+        InputStream configContent = context.getResourceAsStream("/WEB-INF/" + accountRegCfg);
+        AppConfiguration.getInstance().setupAccountRegistrationConfig(configContent);
+        if (configContent == null) {
+            LOGGER.warn("No account registration config file was found, using defaults!");
+        }
+
     }
 
     /**
