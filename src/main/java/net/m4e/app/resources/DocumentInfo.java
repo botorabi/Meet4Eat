@@ -9,7 +9,7 @@ package net.m4e.app.resources;
 
 import org.jetbrains.annotations.NotNull;
 
-import javax.json.bind.annotation.JsonbTransient;
+import javax.json.bind.annotation.*;
 
 /**
  * @author boto
@@ -47,6 +47,7 @@ public class DocumentInfo {
         return content;
     }
 
+    @JsonbProperty("eTag")
     public String getETag() {
         return eTag;
     }
@@ -75,6 +76,7 @@ public class DocumentInfo {
         this.content = content;
     }
 
+    @JsonbProperty("eTag")
     public void setETag(String eTag) {
         this.eTag = eTag;
     }
