@@ -221,7 +221,7 @@ public class EventInfo {
                         eventMember.setPhotoId((member.getPhoto() != null) ? member.getPhoto().getId().toString() : "");
                         eventMember.setPhotoETag((member.getPhoto() != null) ? member.getPhoto().getETag() : "");
                         boolean online = (connectedClients.getConnectedUser(member.getId()) != null);
-                        eventMember.setStatus(online ? EventMember.OnlineStatus.ONLINE: EventMember.OnlineStatus.OFFLINE);
+                        eventMember.setStatus(online ? EventMember.OnlineStatus.online : EventMember.OnlineStatus.offline);
                         return eventMember;
                     })
                     .forEach(member -> eventInfo.getMembers().add(member));
@@ -257,7 +257,7 @@ public class EventInfo {
         eventInfo.setOwnerName(ownerName);
         eventInfo.setOwnerPhotoId((ownerPhotoId > 0)? ownerPhotoId.toString() : "");
         eventInfo.setOwnerPhotoETag(ownerPhotoETag);
-        eventInfo.setOwnerStatus(ownerOnline ? EventMember.OnlineStatus.ONLINE : EventMember.OnlineStatus.OFFLINE);
+        eventInfo.setOwnerStatus(ownerOnline ? EventMember.OnlineStatus.online : EventMember.OnlineStatus.offline);
     }
 
     @JsonbTransient
