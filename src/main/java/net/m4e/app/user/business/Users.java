@@ -400,7 +400,7 @@ public class Users {
      */
     public UserInfo exportUser(@NotNull UserEntity entity, ConnectedClients connections) {
         boolean online = (connections.getConnectedUser(entity.getId()) != null);
-        return UserInfo.fromUserEntity(entity, online ? UserInfo.OnlineStatus.ONLINE : UserInfo.OnlineStatus.OFFLINE);
+        return UserInfo.fromUserEntity(entity, online ? UserInfo.OnlineStatus.online : UserInfo.OnlineStatus.offline);
     }
 
     /**

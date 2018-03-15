@@ -12,7 +12,11 @@ package net.m4e.app.event.rest.comm;
  * Date of creation February 20, 2018
  */
 public class EventMember {
-    public enum OnlineStatus {ONLINE, OFFLINE}
+
+    public enum OnlineStatus {
+        online,
+        offline
+    }
 
     private String id;
     private String name;

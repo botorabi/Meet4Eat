@@ -46,7 +46,7 @@ class UsersExportImportTest extends UsersTestBase {
 
             UserInfo userInfo = users.exportUser(user, connections);
 
-            assertThat(userInfo.getStatus()).isEqualTo(UserInfo.OnlineStatus.ONLINE);
+            assertThat(userInfo.getStatus()).isEqualTo(UserInfo.OnlineStatus.online);
         }
 
         @Test
@@ -56,7 +56,7 @@ class UsersExportImportTest extends UsersTestBase {
 
             UserInfo userInfo = users.exportUser(user, connections);
 
-            assertThat(userInfo.getStatus()).isEqualTo(UserInfo.OnlineStatus.OFFLINE);
+            assertThat(userInfo.getStatus()).isEqualTo(UserInfo.OnlineStatus.offline);
         }
 
         @Test
