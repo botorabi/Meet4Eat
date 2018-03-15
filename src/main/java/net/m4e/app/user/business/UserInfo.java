@@ -10,7 +10,6 @@ package net.m4e.app.user.business;
 import org.jetbrains.annotations.NotNull;
 
 import javax.json.bind.annotation.JsonbTransient;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +19,11 @@ import java.util.List;
  * Date of creation January 23, 2018
  */
 public class UserInfo {
-    public enum OnlineStatus { ONLINE, OFFLINE }
+
+    public enum OnlineStatus {
+        online,
+        offline
+    }
 
     private String id;
     private String name;

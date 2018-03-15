@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.mockito.MockitoAnnotations;
 
+import javax.json.bind.*;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class UserInfoTest extends UserEntityCreator {
 
-    final static UserInfo.OnlineStatus STATUS_ONLINE = UserInfo.OnlineStatus.ONLINE;
+    final static UserInfo.OnlineStatus STATUS_ONLINE = UserInfo.OnlineStatus.online;
     final static List<String> ROLES_AS_STRINGS = Arrays.asList("ROLE1", "ROLE2");
 
 
@@ -67,7 +68,7 @@ class UserInfoTest extends UserEntityCreator {
     void fromUserEntity() {
         UserEntity user = createWithRoles(ROLES_AS_STRINGS);
 
-        UserInfo userInfoFromEntity = UserInfo.fromUserEntity(user, UserInfo.OnlineStatus.ONLINE);
+        UserInfo userInfoFromEntity = UserInfo.fromUserEntity(user, UserInfo.OnlineStatus.online);
 
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(userInfoFromEntity.getId()).isEqualTo(idAsString(USER_ID));
@@ -90,7 +91,7 @@ class UserInfoTest extends UserEntityCreator {
 
         UserEntity user = createUserEntityWithDocumentAndStatus(null, status);
 
-        UserInfo userInfoFromEntity = UserInfo.fromUserEntity(user, UserInfo.OnlineStatus.ONLINE);
+        UserInfo userInfoFromEntity = UserInfo.fromUserEntity(user, UserInfo.OnlineStatus.online);
 
         assertThat(userInfoFromEntity.getPhotoId()).isEqualTo("");
         assertThat(userInfoFromEntity.getPhotoETag()).isEqualTo("");
@@ -100,7 +101,7 @@ class UserInfoTest extends UserEntityCreator {
     void fromUserNoStatus() {
         UserEntity user = createUserEntityWithDocumentAndStatus(null, null);
 
-        UserInfo userInfoFromEntity = UserInfo.fromUserEntity(user, UserInfo.OnlineStatus.ONLINE);
+        UserInfo userInfoFromEntity = UserInfo.fromUserEntity(user, UserInfo.OnlineStatus.online);
 
         assertThat(userInfoFromEntity.getDateCreation()).isEqualTo(0L);
     }
