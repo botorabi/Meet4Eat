@@ -33,9 +33,6 @@ public class UserInfo {
     private long dateCreation;
     private OnlineStatus status;
 
-    public UserInfo() {
-    }
-
     public String getId() {
         return id;
     }
@@ -117,7 +114,7 @@ public class UserInfo {
     }
 
     @JsonbTransient
-    public static UserInfo fromUserEntity(@NotNull UserEntity userEntity, final OnlineStatus onlineStatus) {
+    public static UserInfo fromUserEntity(@NotNull final UserEntity userEntity, final OnlineStatus onlineStatus) {
         UserInfo userInfo = new UserInfo();
         userInfo.setId(userEntity.getId().toString());
         userInfo.setName(userEntity.getName());

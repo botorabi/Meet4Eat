@@ -38,8 +38,10 @@ public class AppStart extends Application {
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new java.util.HashSet<>();
         addRestResourceClasses(resources);
+
         resources.add(io.swagger.jaxrs.listing.ApiListingResource.class);
         resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
+
         return resources;
     }
 
@@ -50,8 +52,8 @@ public class AppStart extends Application {
         resources.add(net.m4e.app.resources.DocumentRestService.class);
         resources.add(net.m4e.app.user.rest.UserAuthenticationRestService.class);
         resources.add(net.m4e.app.user.rest.UserRestService.class);
-        resources.add(net.m4e.system.core.AppInfoEntityFacadeREST.class);
-        resources.add(net.m4e.system.maintenance.MaintenanceFacadeREST.class);
+        resources.add(net.m4e.system.core.AppInfoRestService.class);
+        resources.add(net.m4e.system.maintenance.rest.MaintenanceRestService.class);
         resources.add(net.m4e.update.rest.UpdateCheckRestService.class);
     }
 }

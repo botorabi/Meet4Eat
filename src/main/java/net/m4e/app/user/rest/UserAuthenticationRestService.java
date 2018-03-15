@@ -7,34 +7,19 @@
  */
 package net.m4e.app.user.rest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import net.m4e.app.auth.AuthRole;
-import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.user.business.UserEntity;
-import net.m4e.app.user.business.Users;
-import net.m4e.app.user.rest.comm.AuthState;
-import net.m4e.app.user.rest.comm.LoggedIn;
-import net.m4e.app.user.rest.comm.LoginCmd;
+import io.swagger.annotations.*;
+import net.m4e.app.auth.*;
+import net.m4e.app.user.business.*;
+import net.m4e.app.user.rest.comm.*;
 import net.m4e.common.GenericResponseResult;
-import net.m4e.common.ResponseResults;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import javax.servlet.http.*;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import java.io.StringReader;
+import javax.ws.rs.core.*;
 import java.lang.invoke.MethodHandles;
 
 /**

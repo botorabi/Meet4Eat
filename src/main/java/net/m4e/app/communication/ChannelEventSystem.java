@@ -18,8 +18,5 @@ import java.util.Map;
  * @author boto
  * Date of creation Nov 27, 2017
  */
-//TODO: Better Type instead of Map
 public class ChannelEventSystem extends ChannelEvent<Map<String,Object>> {
-
-    public ChannelEventSystem() {}
 }

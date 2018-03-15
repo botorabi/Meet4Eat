@@ -10,6 +10,8 @@ package net.m4e.app.auth;
 import net.m4e.app.resources.DocumentRestService;
 import net.m4e.app.user.business.UserEntity;
 import net.m4e.common.HashCreator;
+import net.m4e.system.core.AppInfoRestService;
+import net.m4e.system.maintenance.rest.MaintenanceRestService;
 import net.m4e.update.rest.UpdateCheckRestService;
 import org.slf4j.*;
 
@@ -38,8 +40,8 @@ public class AuthorityConfig {
      */
     private static final Class[] accessBeanClasses = {
             UpdateCheckRestService.class,
-            net.m4e.system.core.AppInfoEntityFacadeREST.class,
-            net.m4e.system.maintenance.MaintenanceFacadeREST.class,
+            AppInfoRestService.class,
+            MaintenanceRestService.class,
             net.m4e.app.user.rest.UserRestService.class,
             net.m4e.app.user.rest.UserAuthenticationRestService.class,
             net.m4e.app.event.rest.EventRestService.class,

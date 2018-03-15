@@ -71,14 +71,14 @@ public class EventSystem {
      * @param event Chat event
      */
     public void dispatchMessage(@ObservesAsync ChannelEventEvent event) {
-        Long senderid = event.getSenderId();
-        UserEntity user = connections.getConnectedUser(senderid);
+        Long senderId = event.getSenderId();
+        UserEntity user = connections.getConnectedUser(senderId);
         if (user == null) {
-            LOGGER.warn("invalid sender id detected: " + senderid);
+            LOGGER.warn("invalid sender id detected: " + senderId);
             return;
         }
 
-        //TODO: NOTE we may introduce some sort of package validation in future.
+        //TODO: we may introduce some sort of package validation in future.
         //       for instance the type of the event notification could be validated.
 
         Packet<Map<String, Object>> packet = event.getPacket();
@@ -89,15 +89,15 @@ public class EventSystem {
 
         try {
             if (!maybeEventId.isEmpty()) {
-                Long evenetId = Long.parseLong(maybeEventId);
-                sendMessageEvent(user, evenetId, packet);
+                Long eventId = Long.parseLong(maybeEventId);
+                sendMessageEvent(user, eventId, packet);
             }
             else {
                 LOGGER.warn("invalid receiver event ID detected, ignoring the event message!");
             }
         }
         catch(NumberFormatException ex) {
-            LOGGER.warn("could not distribute event notification from sender " + senderid + ", reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("could not distribute event notification from sender " + senderId + ", reason: " + ex.getLocalizedMessage());
         }
     }
 
@@ -109,11 +109,11 @@ public class EventSystem {
      * @param packet        Chat packet to send
      */
     private void sendMessageEvent(UserEntity sender, Long eventId, Packet<Map<String, Object>> packet) {
-        Set<Long> receiverids = events.getMembers(eventId);
-        receiverids.add(sender.getId());
+        Set<Long> receiverIds = events.getMembers(eventId);
+        receiverIds.add(sender.getId());
         packet.setSourceId(sender.getId().toString());
         packet.setSource(sender.getName());
         packet.setTime((new Date()).getTime());
-        connections.sendPacket(packet, new ArrayList<>(receiverids));
+        connections.sendPacket(packet, new ArrayList<>(receiverIds));
     }
 }

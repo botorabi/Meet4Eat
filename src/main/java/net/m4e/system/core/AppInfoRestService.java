@@ -7,18 +7,14 @@
  */
 package net.m4e.system.core;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import net.m4e.app.auth.AuthRole;
 import net.m4e.common.GenericResponseResult;
-import net.m4e.common.ResponseResults;
 import org.jetbrains.annotations.NotNull;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -30,7 +26,7 @@ import javax.ws.rs.core.MediaType;
 @Stateless
 @Path("/rest/appinfo")
 @Api(value = "Application information")
-public class AppInfoEntityFacadeREST {
+public class AppInfoRestService {
 
     private final AppInfos appInfos;
 
@@ -38,7 +34,7 @@ public class AppInfoEntityFacadeREST {
      * Create the REST bean.
      */
     @Inject
-    public AppInfoEntityFacadeREST(@NotNull AppInfos appInfos) {
+    public AppInfoRestService(@NotNull AppInfos appInfos) {
         this.appInfos = appInfos;
     }
 
@@ -54,10 +50,10 @@ public class AppInfoEntityFacadeREST {
     public GenericResponseResult<ResponseDataAppInfo> getInfo() {
         AppInfoEntity info = appInfos.getAppInfoEntity();
         if (info == null) {
-            return new GenericResponseResult<>(ResponseResults.STATUS_NOT_OK, "Internal error: no application information exists.", ResponseResults.CODE_INTERNAL_SRV_ERROR, null);
+            return GenericResponseResult.internalError("Internal error: no application information exists.");
         }
         ResponseDataAppInfo appInfo = new ResponseDataAppInfo(info.getVersion());
-        return new GenericResponseResult<>(ResponseResults.STATUS_OK, "", ResponseResults.CODE_OK, appInfo);
+        return GenericResponseResult.ok("App information", appInfo);
     }
 
 

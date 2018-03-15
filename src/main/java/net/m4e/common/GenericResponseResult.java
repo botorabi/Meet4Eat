@@ -7,6 +7,8 @@
  */
 package net.m4e.common;
 
+import javax.json.bind.*;
+
 /**
  * @author ybroeker
  */
@@ -160,6 +162,10 @@ public class GenericResponseResult<T> {
         return new GenericResponseResult<>(STATUS_NOT_OK, desc, CODE_INTERNAL_SRV_ERROR, getResponseData(data));
     }
 
+    public String toJSON() {
+        Jsonb json = JsonbBuilder.create();
+        return json.toJson(this);
+    }
 
     public String getStatus() {
         return status;

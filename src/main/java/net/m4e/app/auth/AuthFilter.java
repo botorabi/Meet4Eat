@@ -8,7 +8,7 @@
 package net.m4e.app.auth;
 
 import net.m4e.app.user.business.UserEntity;
-import net.m4e.common.ResponseResults;
+import net.m4e.common.*;
 import net.m4e.system.core.AppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,8 +143,7 @@ public class AuthFilter implements Filter {
             }
             else {
                 LOGGER.warn("*** Access denied to protected resource: {}", path);
-                response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
-                        "Denied access to: " + path, ResponseResults.CODE_FORBIDDEN, null));
+                response.getWriter().print(GenericResponseResult.forbidden("Denied access to: " + path).toJSON());
             }
         }
     }
@@ -234,9 +233,7 @@ public class AuthFilter implements Filter {
         }
         catch (IOException | ServletException ex) {
             LOGGER.error("*** A problem occurred while executing filters, reason: {}", ex.getMessage());
-            response.getWriter().print(ResponseResults.toJSON(ResponseResults.STATUS_NOT_OK,
-                                       "Problem occurred while processing filter chain, reason: " + ex.getMessage(),
-                                       ResponseResults.CODE_INTERNAL_SRV_ERROR, null));
+            response.getWriter().print(GenericResponseResult.internalError("Problem occurred while processing filter chain, reason: " + ex.getMessage()).toJSON());
             throw ex;
         }
     }

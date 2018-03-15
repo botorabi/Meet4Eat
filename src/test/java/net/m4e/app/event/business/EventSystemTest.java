@@ -36,8 +36,6 @@ class EventSystemTest {
         event.setSenderId(1L);
         event.setPacket(buildPacket());
         eventSystem.dispatchMessage(event);
-        //TODO
-
 
         Mockito.verify(connections).sendPacket(any(), eq(singletonList(42L)));
     }

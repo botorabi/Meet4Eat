@@ -17,8 +17,5 @@ import java.util.Map;
  * @author boto
  * Date of creation Oct 9, 2017
  */
-//TODO: 'Chat'-Type instead of Map
-public class ChannelChatEvent extends ChannelEvent<Map<String,Object>> {
-
-    public ChannelChatEvent() {}
+public class ChannelChatEvent extends ChannelEvent<Map<String, Object>> {
 }
