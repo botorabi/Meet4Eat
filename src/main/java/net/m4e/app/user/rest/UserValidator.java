@@ -9,11 +9,10 @@
 package net.m4e.app.user.rest;
 
 import net.m4e.app.auth.AuthorityConfig;
-import net.m4e.app.user.business.UserEntity;
-import net.m4e.app.user.business.Users;
+import net.m4e.app.user.business.*;
 import net.m4e.app.user.rest.comm.UserCmd;
 import net.m4e.common.Strings;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -61,12 +60,13 @@ public class UserValidator {
 
     /**
      * Validate all fields of given user data and return an UserEntity, or throw an exception if the validation failed.
-     * 
-     * @param userCmd     Data for creating a new user
+     *
+     * @param requestingUser The user requesting for validation, pass null for a user without privilege.
+     * @param userCmd        Data for creating a new user
      * @return               A UserEntity created out of given input
      * @throws Exception     Throws an exception if the validation fails.
      */
-    public UserEntity validateNewEntityInput(UserEntity requestingUser, UserCmd userCmd) throws Exception {
+    public UserEntity validateNewEntityInput(@Nullable UserEntity requestingUser, UserCmd userCmd) throws Exception {
         UserEntity newEntity = users.importUser(userCmd);
         if (newEntity == null) {
             throw new Exception("Failed to create user, invalid input.");

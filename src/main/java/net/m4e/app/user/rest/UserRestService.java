@@ -128,7 +128,7 @@ public class UserRestService {
         try {
             userEntity = validator.validateNewEntityInput(sessionUser, userCmd);
         } catch (Exception ex) {
-            LOGGER.warn("*** Could not register a new user, validation failed, reason: {}", ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not register a new user, validation failed, reason: {}", ex.getMessage());
             return GenericResponseResult.badRequest(ex.getLocalizedMessage());
         }
 
@@ -150,6 +150,9 @@ public class UserRestService {
         String adminEmail = getAccRegCfgNotificationMail();
 
         registration.registerUserAccount(newEntity, activationUrl, adminEmail);
+
+        LOGGER.info("A new user was successfully registered and waits for account activation: {} ({})",
+                newEntity.getName(), newEntity.getEmail());
 
         //! NOTE on successful entity creation the new ID is sent back by results.data field.
         return GenericResponseResult.ok("User was successfully created.", new UserId(newEntity.getId().toString()));
