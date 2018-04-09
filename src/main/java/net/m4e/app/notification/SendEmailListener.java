@@ -8,19 +8,15 @@
 package net.m4e.app.notification;
 
 import net.m4e.system.core.AppConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 import javax.ejb.Stateless;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import javax.mail.internet.*;
 import javax.servlet.ServletContext;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.util.Properties;
 
@@ -108,7 +104,7 @@ public class SendEmailListener {
             Transport.send(message);
         }
         catch (MessagingException | UnsupportedEncodingException ex){
-            LOGGER.warn("*** could not send out e-mail, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** could not send out e-mail, reason: " + ex.getMessage());
         }
     }
 
@@ -138,7 +134,7 @@ public class SendEmailListener {
             mailServerConfig = cfg;
         }
         catch (IOException ex) {
-            LOGGER.warn("*** Could not read e-mail sender configuration, reason: " + ex.getLocalizedMessage());
+            LOGGER.warn("*** Could not read e-mail sender configuration, reason: " + ex.getMessage());
         }
 
         return mailServerConfig;

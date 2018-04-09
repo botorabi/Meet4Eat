@@ -15,7 +15,7 @@ import net.m4e.app.resources.*;
 import net.m4e.app.user.rest.comm.UserCmd;
 import net.m4e.common.*;
 import net.m4e.system.core.*;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 import org.slf4j.*;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -99,7 +99,7 @@ public class Users {
      * @param roles     Roles to check against user's roles
      * @return          Return true if at least one of given roles matches.
      */
-    public boolean checkUserRoles(UserEntity user, List<String> roles) {
+    public boolean checkUserRoles(@NotNull UserEntity user, List<String> roles) {
         if (user.getRolesAsString().isEmpty() || roles.isEmpty()) {
             return false;
         }
@@ -112,12 +112,12 @@ public class Users {
      * requested roles, the requesting user's roles are checked too thus avoiding
      * to be able to add roles with higher privileges as the requesting user has.
      * 
-     * @param requestingUser    User requesting for roles
+     * @param requestingUser    User requesting for roles, pass null for a user without any privilege.
      * @param requestedRoles    Request roles
      * @return A list of valid roles. An empty list is returned if the requestRoles is null.
      */
-    public Collection<RoleEntity> adaptRequestedRoles(@NotNull UserEntity requestingUser, Collection<RoleEntity> requestedRoles) {
-        boolean isAdmin = checkUserRoles(requestingUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
+    public Collection<RoleEntity> adaptRequestedRoles(@Nullable UserEntity requestingUser, Collection<RoleEntity> requestedRoles) {
+        boolean isAdmin = (requestingUser != null) && checkUserRoles(requestingUser, Arrays.asList(AuthRole.USER_ROLE_ADMIN));
 
         return (requestedRoles == null) ? Collections.emptyList() : addUniqueRoles(requestedRoles, isAdmin);
     }
