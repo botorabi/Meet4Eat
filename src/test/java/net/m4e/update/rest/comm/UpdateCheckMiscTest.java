@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018 by Botorabi. All rights reserved.
+ * Copyright (c) 2017-2019 by Botorabi. All rights reserved.
  * https://github.com/botorabi/Meet4Eat
  *
  * License: MIT License (MIT), read the LICENSE text in
